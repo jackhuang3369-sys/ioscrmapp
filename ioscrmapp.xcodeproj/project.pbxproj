@@ -11,6 +11,13 @@
 		04E692CB2F5EA2CE0082C59F /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04E692CA2F5EA2CE0082C59F /* ContentView.swift */; };
 		04E692CD2F5EA2CF0082C59F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 04E692CC2F5EA2CF0082C59F /* Assets.xcassets */; };
 		04E692D02F5EA2CF0082C59F /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 04E692CF2F5EA2CF0082C59F /* Preview Assets.xcassets */; };
+		A10000000000000000000001 /* SessionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000001 /* SessionStore.swift */; };
+		A10000000000000000000002 /* AuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000002 /* AuthService.swift */; };
+		A10000000000000000000003 /* AuthModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000003 /* AuthModels.swift */; };
+		A10000000000000000000004 /* AuthLoginViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000004 /* AuthLoginViewModel.swift */; };
+		A10000000000000000000005 /* AuthViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000005 /* AuthViews.swift */; };
+		A10000000000000000000006 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000006 /* HomeView.swift */; };
+		A10000000000000000000007 /* DesignSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000007 /* DesignSystem.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -19,6 +26,13 @@
 		04E692CA2F5EA2CE0082C59F /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		04E692CC2F5EA2CF0082C59F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		04E692CF2F5EA2CF0082C59F /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		A20000000000000000000001 /* SessionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionStore.swift; sourceTree = "<group>"; };
+		A20000000000000000000002 /* AuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthService.swift; sourceTree = "<group>"; };
+		A20000000000000000000003 /* AuthModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthModels.swift; sourceTree = "<group>"; };
+		A20000000000000000000004 /* AuthLoginViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthLoginViewModel.swift; sourceTree = "<group>"; };
+		A20000000000000000000005 /* AuthViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthViews.swift; sourceTree = "<group>"; };
+		A20000000000000000000006 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
+		A20000000000000000000007 /* DesignSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignSystem.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -53,6 +67,10 @@
 			children = (
 				04E692C82F5EA2CE0082C59F /* ioscrmappApp.swift */,
 				04E692CA2F5EA2CE0082C59F /* ContentView.swift */,
+				A30000000000000000000001 /* Core */,
+				A30000000000000000000002 /* Services */,
+				A30000000000000000000003 /* Modules */,
+				A30000000000000000000004 /* DesignSystem */,
 				04E692CC2F5EA2CF0082C59F /* Assets.xcassets */,
 				04E692CE2F5EA2CF0082C59F /* Preview Content */,
 			);
@@ -65,6 +83,97 @@
 				04E692CF2F5EA2CF0082C59F /* Preview Assets.xcassets */,
 			);
 			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		A30000000000000000000001 /* Core */ = {
+			isa = PBXGroup;
+			children = (
+				A30000000000000000000005 /* Storage */,
+			);
+			path = Core;
+			sourceTree = "<group>";
+		};
+		A30000000000000000000002 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				A20000000000000000000002 /* AuthService.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		A30000000000000000000003 /* Modules */ = {
+			isa = PBXGroup;
+			children = (
+				A30000000000000000000006 /* Auth */,
+				A30000000000000000000007 /* Home */,
+			);
+			path = Modules;
+			sourceTree = "<group>";
+		};
+		A30000000000000000000004 /* DesignSystem */ = {
+			isa = PBXGroup;
+			children = (
+				A20000000000000000000007 /* DesignSystem.swift */,
+			);
+			path = DesignSystem;
+			sourceTree = "<group>";
+		};
+		A30000000000000000000005 /* Storage */ = {
+			isa = PBXGroup;
+			children = (
+				A20000000000000000000001 /* SessionStore.swift */,
+			);
+			path = Storage;
+			sourceTree = "<group>";
+		};
+		A30000000000000000000006 /* Auth */ = {
+			isa = PBXGroup;
+			children = (
+				A30000000000000000000008 /* Models */,
+				A30000000000000000000009 /* ViewModels */,
+				A3000000000000000000000A /* Views */,
+			);
+			path = Auth;
+			sourceTree = "<group>";
+		};
+		A30000000000000000000007 /* Home */ = {
+			isa = PBXGroup;
+			children = (
+				A3000000000000000000000B /* Views */,
+			);
+			path = Home;
+			sourceTree = "<group>";
+		};
+		A30000000000000000000008 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				A20000000000000000000003 /* AuthModels.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		A30000000000000000000009 /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				A20000000000000000000004 /* AuthLoginViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		A3000000000000000000000A /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				A20000000000000000000005 /* AuthViews.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		A3000000000000000000000B /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				A20000000000000000000006 /* HomeView.swift */,
+			);
+			path = Views;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -137,6 +246,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A10000000000000000000005 /* AuthViews.swift in Sources */,
+				A10000000000000000000003 /* AuthModels.swift in Sources */,
+				A10000000000000000000004 /* AuthLoginViewModel.swift in Sources */,
+				A10000000000000000000007 /* DesignSystem.swift in Sources */,
+				A10000000000000000000006 /* HomeView.swift in Sources */,
+				A10000000000000000000002 /* AuthService.swift in Sources */,
+				A10000000000000000000001 /* SessionStore.swift in Sources */,
 				04E692CB2F5EA2CE0082C59F /* ContentView.swift in Sources */,
 				04E692C92F5EA2CE0082C59F /* ioscrmappApp.swift in Sources */,
 			);
@@ -195,7 +311,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 16.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -249,7 +365,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 16.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
@@ -275,6 +391,7 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -304,6 +421,7 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

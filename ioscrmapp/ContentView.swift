@@ -8,19 +8,35 @@
 import SwiftUI
 
 struct ContentView: View {
+    @ObservedObject var sessionStore: SessionStore
+    let authService: any AuthServicing
+
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundColor(.accentColor)
-            Text("Hello, world!")
+        Group {
+            if let session = sessionStore.session {
+                HomeView(session: session, sessionStore: sessionStore)
+            } else {
+                AuthLoginContainerView(sessionStore: sessionStore, authService: authService)
+            }
         }
-        .padding()
+        .animation(.easeInOut(duration: 0.2), value: sessionStore.isAuthenticated)
     }
 }
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
-        ContentView()
+        Group {
+            ContentView(
+                sessionStore: SessionStore(),
+                authService: MockAuthService()
+            )
+            .previewDisplayName("Login")
+
+            ContentView(
+                sessionStore: SessionStore.previewAuthenticated,
+                authService: MockAuthService()
+            )
+            .previewDisplayName("Home")
+        }
     }
 }
