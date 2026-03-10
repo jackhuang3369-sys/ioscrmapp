@@ -45,9 +45,9 @@ enum AuthError: Error, LocalizedError, Equatable {
         case .invalidPhone:
             return "Enter a valid UAE phone number."
         case .invalidPasswordFormat:
-            return "Password must be at least 8 characters with letters and numbers."
+            return "Enter a valid password."
         case .invalidOTPFormat:
-            return "Enter the 6-digit OTP code."
+            return "Enter a valid OTP code."
         case let .invalidCredentials(remainingAttempts):
             return remainingAttempts > 0
                 ? "Incorrect phone number or password. \(remainingAttempts) attempts left."
@@ -70,36 +70,56 @@ enum AuthError: Error, LocalizedError, Equatable {
 }
 
 enum AuthValidator {
-    nonisolated static let demoPhone = "+971 50 123 4567"
-    nonisolated static let demoPassword = "Password123"
-    nonisolated static let demoOTP = "246810"
+    nonisolated static let countryCode = "971"
+    nonisolated static let localPhoneLength = 9
+    nonisolated static let fullPhoneLength = 12
+    nonisolated static let demoPhone = "+971 52 123 4567"
+    nonisolated static let demoPassword = "111"
+    nonisolated static let demoOTP = "111"
+
+    nonisolated static func localPhoneDigits(_ value: String) -> String {
+        let digits = value.filter(\.isNumber)
+
+        if digits.hasPrefix(countryCode) {
+            return String(digits.dropFirst(countryCode.count).prefix(localPhoneLength))
+        }
+        if digits.hasPrefix("0") {
+            return String(digits.dropFirst().prefix(localPhoneLength))
+        }
+
+        return String(digits.prefix(localPhoneLength))
+    }
 
     nonisolated static func normalizedPhone(_ value: String) -> String {
-        let digits = value.filter(\.isNumber)
-        if digits.hasPrefix("0"), digits.count == 10 {
-            return "971" + digits.dropFirst()
+        let localDigits = localPhoneDigits(value)
+        guard !localDigits.isEmpty else {
+            return ""
         }
-        if digits.count == 9, digits.first == "5" {
-            return "971" + digits
+        return countryCode + localDigits
+    }
+
+    nonisolated static func formattedPhone(_ value: String) -> String {
+        let localDigits = localPhoneDigits(value)
+        guard localDigits.count == localPhoneLength else {
+            return localDigits.isEmpty ? "+\(countryCode)" : "+\(countryCode) \(localDigits)"
         }
-        return digits
+
+        let prefix = localDigits.prefix(2)
+        let middle = localDigits.dropFirst(2).prefix(3)
+        let suffix = localDigits.suffix(4)
+        return "+\(countryCode) \(prefix) \(middle) \(suffix)"
     }
 
     nonisolated static func isValidPhone(_ value: String) -> Bool {
         let digits = normalizedPhone(value)
-        return digits.count == 12 && digits.hasPrefix("9715")
+        return digits.count == fullPhoneLength && digits.hasPrefix(countryCode)
     }
 
     nonisolated static func isValidPassword(_ value: String) -> Bool {
-        guard value.count >= 8 else {
-            return false
-        }
-        let hasLetter = value.range(of: "[A-Za-z]", options: .regularExpression) != nil
-        let hasNumber = value.range(of: "[0-9]", options: .regularExpression) != nil
-        return hasLetter && hasNumber
+        value.trimmingCharacters(in: .whitespacesAndNewlines).count >= 3
     }
 
     nonisolated static func isValidOTP(_ value: String) -> Bool {
-        value.count == 6 && value.allSatisfy(\.isNumber)
+        value.count >= 3 && value.count <= 6 && value.allSatisfy(\.isNumber)
     }
 }

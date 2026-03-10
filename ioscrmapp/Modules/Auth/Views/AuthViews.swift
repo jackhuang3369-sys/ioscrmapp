@@ -13,33 +13,34 @@ struct AuthLoginContainerView: View {
     }
 
     var body: some View {
-        ScrollView(showsIndicators: false) {
-            VStack(spacing: DUSpacing.xxl) {
-                Spacer(minLength: 12)
-                logo
-                header
-                tabs
-                if let bannerMessage = viewModel.bannerMessage {
-                    banner(message: bannerMessage, tone: viewModel.bannerTone)
+        GeometryReader { proxy in
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: DUSpacing.xxl) {
+                    logo
+                    header
+                    tabs
+                    if let bannerMessage = viewModel.bannerMessage {
+                        banner(message: bannerMessage, tone: viewModel.bannerTone)
+                    }
+                    phoneField
+                    if viewModel.selectedMode == .password {
+                        passwordField
+                        loginOptions
+                    } else {
+                        otpField
+                    }
+                    Group {
+                        primaryButton
+                        socialLogin
+                        registerLink
+                    }
                 }
-                phoneField
-                if viewModel.selectedMode == .password {
-                    passwordField
-                    loginOptions
-                } else {
-                    otpField
-                }
-                Group {
-                    primaryButton
-                    mockHelper
-                    socialLogin
-                    registerLink
-                }
+                .padding(.horizontal, DUSpacing.xl)
+                .padding(.top, max(proxy.safeAreaInsets.top, DUSpacing.sm))
+                .padding(.bottom, DUSpacing.xxxl)
             }
-            .padding(.horizontal, DUSpacing.xl)
-            .padding(.vertical, DUSpacing.xxxl)
+            .background(DUTheme.background.ignoresSafeArea())
         }
-        .background(DUTheme.background.ignoresSafeArea())
     }
 
     private var logo: some View {
@@ -49,18 +50,19 @@ struct AuthLoginContainerView: View {
                 .frame(width: 88, height: 88)
                 .shadow(color: DUTheme.cyan.opacity(0.25), radius: 18, x: 0, y: 8)
             Text("DU")
-                .font(.system(size: 32, weight: .bold))
+                .font(.du(32, weight: .bold))
                 .foregroundColor(.white)
         }
+        .padding(.top, DUSpacing.sm)
     }
 
     private var header: some View {
         VStack(spacing: DUSpacing.sm) {
             Text("Welcome back")
-                .font(.system(size: 28, weight: .bold))
+                .font(.du(28, weight: .bold))
                 .foregroundColor(DUTheme.ink)
             Text("Sign in to your DU account")
-                .font(.system(size: 15, weight: .medium))
+                .font(.du(15, weight: .medium))
                 .foregroundColor(DUTheme.inkTertiary)
         }
     }
@@ -74,7 +76,7 @@ struct AuthLoginContainerView: View {
                     }
                 } label: {
                     Text(mode == .password ? "Password Login" : "OTP Login")
-                        .font(.system(size: 15, weight: .semibold))
+                        .font(.du(15, weight: .semibold))
                         .foregroundColor(viewModel.selectedMode == mode ? DUTheme.ink : DUTheme.inkSecondary)
                         .frame(maxWidth: .infinity)
                         .frame(height: 48)
@@ -98,12 +100,12 @@ struct AuthLoginContainerView: View {
     }
 
     private var phoneField: some View {
-        DUInputField(
+        DUPhoneNumberField(
             title: "Phone Number",
-            placeholder: "+971 50 123 4567",
+            countryCode: "+\(AuthValidator.countryCode)",
+            placeholder: "52 123 4567",
             text: $viewModel.phoneNumber,
-            error: viewModel.phoneError,
-            keyboardType: .phonePad
+            error: viewModel.phoneError
         )
     }
 
@@ -120,12 +122,12 @@ struct AuthLoginContainerView: View {
     private var otpField: some View {
         VStack(alignment: .leading, spacing: DUSpacing.sm) {
             Text("OTP")
-                .font(.system(size: 14, weight: .semibold))
+                .font(.du(14, weight: .semibold))
                 .foregroundColor(DUTheme.inkSecondary)
             HStack(alignment: .top, spacing: DUSpacing.md) {
                 DUInputField(
                     title: nil,
-                    placeholder: "Enter 6-digit OTP",
+                    placeholder: "Enter OTP",
                     text: $viewModel.otp,
                     error: viewModel.otpError,
                     keyboardType: .numberPad
@@ -134,7 +136,7 @@ struct AuthLoginContainerView: View {
                     viewModel.sendOTP()
                 } label: {
                     Text(viewModel.otpButtonTitle)
-                        .font(.system(size: 14, weight: .semibold))
+                        .font(.du(14, weight: .semibold))
                         .foregroundColor(viewModel.isSendOTPEnabled ? DUTheme.cyan : DUTheme.inkDisabled)
                         .frame(width: 114, height: 52)
                         .background(viewModel.isSendOTPEnabled ? DUTheme.cyanBackground : DUTheme.backgroundSecondary)
@@ -144,7 +146,7 @@ struct AuthLoginContainerView: View {
                 .disabled(!viewModel.isSendOTPEnabled)
             }
             Text(viewModel.otpExpiryDescription)
-                .font(.system(size: 12, weight: .medium))
+                .font(.du(12, weight: .medium))
                 .foregroundColor(DUTheme.inkTertiary)
         }
     }
@@ -160,7 +162,7 @@ struct AuthLoginContainerView: View {
                     Text("Remember me")
                         .foregroundColor(DUTheme.inkSecondary)
                 }
-                .font(.system(size: 13, weight: .medium))
+                .font(.du(13, weight: .medium))
             }
             .buttonStyle(.plain)
 
@@ -169,7 +171,7 @@ struct AuthLoginContainerView: View {
             Button("Forgot password?") {
                 viewModel.showPlaceholderMessage(for: "Forgot password")
             }
-            .font(.system(size: 13, weight: .medium))
+            .font(.du(13, weight: .medium))
             .foregroundColor(DUTheme.cyan)
         }
     }
@@ -181,10 +183,10 @@ struct AuthLoginContainerView: View {
             HStack(spacing: DUSpacing.sm) {
                 if viewModel.isLoading {
                     ProgressView()
-                        .accentColor(.white)
+                        .tint(.white)
                 }
                 Text(viewModel.selectedMode == .password ? "Login" : "Verify and Login")
-                    .font(.system(size: 17, weight: .bold))
+                    .font(.du(17, weight: .bold))
             }
             .foregroundColor(.white)
             .frame(maxWidth: .infinity)
@@ -210,22 +212,6 @@ struct AuthLoginContainerView: View {
         .disabled(!viewModel.isPrimaryActionEnabled)
     }
 
-    private var mockHelper: some View {
-        VStack(spacing: DUSpacing.sm) {
-            Text(viewModel.mockHint)
-                .font(.system(size: 13, weight: .semibold))
-                .foregroundColor(DUTheme.cyan)
-            Text("Use \(AuthValidator.demoPhone) to test the mock flow.")
-                .font(.system(size: 12, weight: .medium))
-                .foregroundColor(DUTheme.inkTertiary)
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, DUSpacing.lg)
-        .background(DUTheme.panel)
-        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-        .shadow(color: Color.black.opacity(0.03), radius: 10, x: 0, y: 5)
-    }
-
     private var socialLogin: some View {
         VStack(spacing: DUSpacing.lg) {
             HStack {
@@ -233,7 +219,7 @@ struct AuthLoginContainerView: View {
                     .fill(DUTheme.lineLight)
                     .frame(height: 1)
                 Text("Other ways")
-                    .font(.system(size: 13, weight: .medium))
+                    .font(.du(13, weight: .medium))
                     .foregroundColor(DUTheme.inkTertiary)
                     .padding(.horizontal, DUSpacing.sm)
                 Rectangle()
@@ -242,14 +228,14 @@ struct AuthLoginContainerView: View {
             }
 
             HStack(spacing: DUSpacing.lg) {
-                PlaceholderCircleButton(symbol: "faceid", title: "Biometrics") {
-                    viewModel.showPlaceholderMessage(for: "Biometric login")
+                PlaceholderCircleButton(assetName: "LoginSMSIcon", title: "SMS") {
+                    viewModel.showPlaceholderMessage(for: "SMS login")
                 }
-                PlaceholderCircleButton(symbol: "message", title: "SMS") {
-                    viewModel.showPlaceholderMessage(for: "Social login")
+                PlaceholderCircleButton(systemName: "touchid", title: "Fingerprint") {
+                    viewModel.showPlaceholderMessage(for: "Fingerprint login")
                 }
-                PlaceholderCircleButton(symbol: "lock.shield", title: "Secure") {
-                    viewModel.showPlaceholderMessage(for: "Secure sign in")
+                PlaceholderCircleButton(systemName: "faceid", title: "Face") {
+                    viewModel.showPlaceholderMessage(for: "Face login")
                 }
             }
         }
@@ -264,7 +250,7 @@ struct AuthLoginContainerView: View {
             }
             .foregroundColor(DUTheme.cyan)
         }
-        .font(.system(size: 14, weight: .medium))
+        .font(.du(14, weight: .medium))
         .padding(.bottom, DUSpacing.xxxl)
     }
 
@@ -287,7 +273,7 @@ struct AuthLoginContainerView: View {
         return HStack(spacing: DUSpacing.sm) {
             Image(systemName: tone == .error ? "exclamationmark.triangle.fill" : "sparkles")
             Text(message)
-                .font(.system(size: 13, weight: .semibold))
+                .font(.du(13, weight: .semibold))
                 .multilineTextAlignment(.leading)
             Spacer()
         }
@@ -315,18 +301,11 @@ private struct DUInputField: View {
         return DUTheme.line
     }
 
-    private var shadowColor: Color {
-        if error != nil {
-            return DUTheme.errorBackground
-        }
-        return .clear
-    }
-
     var body: some View {
         VStack(alignment: .leading, spacing: DUSpacing.sm) {
             if let title = title {
                 Text(title)
-                    .font(.system(size: 14, weight: .semibold))
+                    .font(.du(14, weight: .semibold))
                     .foregroundColor(DUTheme.inkSecondary)
             }
 
@@ -341,7 +320,7 @@ private struct DUInputField: View {
                 }
                 .autocapitalization(.none)
                 .disableAutocorrection(true)
-                .font(.system(size: 16, weight: .medium))
+                .font(.du(16, weight: .medium))
                 .foregroundColor(DUTheme.ink)
 
                 if isSecure {
@@ -356,16 +335,85 @@ private struct DUInputField: View {
             }
             .padding(.horizontal, DUSpacing.lg)
             .frame(height: 52)
-            .background(DUTheme.panel)
+            .background(
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .fill(DUTheme.panel)
+            )
             .overlay(
                 RoundedRectangle(cornerRadius: 18, style: .continuous)
                     .stroke(strokeColor, lineWidth: 1.2)
             )
-            .shadow(color: shadowColor, radius: 0, x: 0, y: 0)
+            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
 
             if let error = error {
                 Text(error)
-                    .font(.system(size: 12, weight: .medium))
+                    .font(.du(12, weight: .medium))
+                    .foregroundColor(DUTheme.error)
+            }
+        }
+    }
+}
+
+private struct DUPhoneNumberField: View {
+    let title: String
+    let countryCode: String
+    let placeholder: String
+    @Binding var text: String
+    let error: String?
+
+    private var sanitizedPhoneBinding: Binding<String> {
+        Binding(
+            get: { AuthValidator.localPhoneDigits(text) },
+            set: { newValue in
+                text = AuthValidator.normalizedPhone(newValue)
+            }
+        )
+    }
+
+    private var strokeColor: Color {
+        if error != nil {
+            return DUTheme.error
+        }
+        return DUTheme.line
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: DUSpacing.sm) {
+            Text(title)
+                .font(.du(14, weight: .semibold))
+                .foregroundColor(DUTheme.inkSecondary)
+
+            HStack(spacing: DUSpacing.md) {
+                Text(countryCode)
+                    .font(.du(16, weight: .semibold))
+                    .foregroundColor(DUTheme.inkSecondary)
+
+                Rectangle()
+                    .fill(DUTheme.lineLight)
+                    .frame(width: 1, height: 22)
+
+                TextField(placeholder, text: sanitizedPhoneBinding)
+                    .keyboardType(.numberPad)
+                    .autocapitalization(.none)
+                    .disableAutocorrection(true)
+                    .font(.du(16, weight: .medium))
+                    .foregroundColor(DUTheme.ink)
+            }
+            .padding(.horizontal, DUSpacing.lg)
+            .frame(height: 52)
+            .background(
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .fill(DUTheme.panel)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .stroke(strokeColor, lineWidth: 1.2)
+            )
+            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+
+            if let error = error {
+                Text(error)
+                    .font(.du(12, weight: .medium))
                     .foregroundColor(DUTheme.error)
             }
         }
@@ -373,9 +421,25 @@ private struct DUInputField: View {
 }
 
 private struct PlaceholderCircleButton: View {
-    let symbol: String
+    let assetName: String?
+    let systemName: String?
     let title: String
     let action: () -> Void
+    private let iconVerticalOffset: CGFloat = 6
+
+    init(assetName: String, title: String, action: @escaping () -> Void) {
+        self.assetName = assetName
+        self.systemName = nil
+        self.title = title
+        self.action = action
+    }
+
+    init(systemName: String, title: String, action: @escaping () -> Void) {
+        self.assetName = nil
+        self.systemName = systemName
+        self.title = title
+        self.action = action
+    }
 
     var body: some View {
         Button(action: action) {
@@ -383,13 +447,24 @@ private struct PlaceholderCircleButton: View {
                 ZStack {
                     Circle()
                         .fill(DUTheme.backgroundSecondary)
-                        .frame(width: 52, height: 52)
-                    Image(systemName: symbol)
-                        .font(.system(size: 20, weight: .semibold))
-                        .foregroundColor(DUTheme.inkSecondary)
+                        .frame(width: 64, height: 64)
+                    if let assetName {
+                        Image(assetName)
+                            .renderingMode(.original)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 48, height: 48)
+                            .offset(y: iconVerticalOffset)
+                    } else if let systemName {
+                        Image(systemName: systemName)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 30, height: 30)
+                            .foregroundColor(DUTheme.inkSecondary)
+                    }
                 }
                 Text(title)
-                    .font(.system(size: 11, weight: .medium))
+                    .font(.du(11, weight: .medium))
                     .foregroundColor(DUTheme.inkTertiary)
             }
         }

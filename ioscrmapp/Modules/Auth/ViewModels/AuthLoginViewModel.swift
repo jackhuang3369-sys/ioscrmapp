@@ -16,7 +16,6 @@ final class AuthLoginViewModel: ObservableObject {
     @Published var bannerTone: BannerTone = .info
     @Published var otpCooldownRemaining = 0
     @Published var otpExpiryDescription = "OTP valid for 5 minutes."
-    @Published var mockHint = "Mock password: Password123"
 
     enum BannerTone {
         case info
@@ -32,9 +31,9 @@ final class AuthLoginViewModel: ObservableObject {
         self.authService = authService
         self.sessionStore = sessionStore
         selectedMode = sessionStore.preferredLoginMode
-        phoneNumber = sessionStore.rememberedPhone.isEmpty ? AuthValidator.demoPhone : sessionStore.rememberedPhone
+        let initialPhone = sessionStore.rememberedPhone.isEmpty ? AuthValidator.demoPhone : sessionStore.rememberedPhone
+        phoneNumber = AuthValidator.normalizedPhone(initialPhone)
         rememberMe = !sessionStore.rememberedPhone.isEmpty
-        updateMockHint()
     }
 
     deinit {
@@ -65,7 +64,6 @@ final class AuthLoginViewModel: ObservableObject {
         selectedMode = mode
         sessionStore.updatePreferredLoginMode(mode)
         clearMessages()
-        updateMockHint()
     }
 
     func sendOTP() {
@@ -82,7 +80,7 @@ final class AuthLoginViewModel: ObservableObject {
                 startCountdown(from: seconds)
                 otpExpiryDescription = "OTP valid for 5 minutes."
                 bannerTone = .success
-                bannerMessage = "Mock OTP sent. Use \(result.demoCode) to continue."
+                bannerMessage = "OTP sent successfully."
             } catch {
                 apply(error: error)
             }
@@ -186,7 +184,7 @@ final class AuthLoginViewModel: ObservableObject {
             if selectedMode == .password {
                 passwordError = authError.errorDescription
             } else {
-                otpError = "Incorrect OTP. Try 246810 for the mock flow."
+                otpError = authError.errorDescription
             }
         case let .otpCooldown(secondsRemaining):
             otpCooldownRemaining = secondsRemaining
@@ -211,11 +209,5 @@ final class AuthLoginViewModel: ObservableObject {
                 }
             }
         }
-    }
-
-    private func updateMockHint() {
-        mockHint = selectedMode == .password
-            ? "Mock password: Password123"
-            : "Mock OTP: 246810"
     }
 }

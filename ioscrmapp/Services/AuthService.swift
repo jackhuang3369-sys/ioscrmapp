@@ -13,7 +13,6 @@ actor MockAuthService: AuthServicing {
         let expiresAt: Date
     }
 
-    private let validPhone = AuthValidator.normalizedPhone(AuthValidator.demoPhone)
     private let validPassword = AuthValidator.demoPassword
     private let validOTP = AuthValidator.demoOTP
     private let cooldownSeconds = 60
@@ -31,7 +30,7 @@ actor MockAuthService: AuthServicing {
         try checkLock(for: normalizedPhone)
         try maybeSimulateNetworkFailure(phone: normalizedPhone)
 
-        guard normalizedPhone == validPhone, password == validPassword else {
+        guard password == validPassword else {
             throw registerFailure(for: normalizedPhone)
         }
 
@@ -79,7 +78,7 @@ actor MockAuthService: AuthServicing {
             throw AuthError.otpExpired
         }
 
-        guard normalizedPhone == validPhone, otp == record.code else {
+        guard otp == record.code else {
             throw registerFailure(for: normalizedPhone)
         }
 
@@ -91,7 +90,7 @@ actor MockAuthService: AuthServicing {
     private func demoSession(phone: String) -> UserSession {
         UserSession(
             displayName: "Ahmed Mohammed",
-            phoneNumber: phone,
+            phoneNumber: AuthValidator.formattedPhone(phone),
             greeting: "Good Morning",
             balanceText: "128.50 AED"
         )

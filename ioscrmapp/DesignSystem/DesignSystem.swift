@@ -51,6 +51,12 @@ enum DUSpacing {
     static let xxxl: CGFloat = 32
 }
 
+extension Font {
+    static func du(_ size: CGFloat, weight: Weight = .regular) -> Font {
+        .system(size: size, weight: weight, design: .rounded)
+    }
+}
+
 extension Color {
     init(hex: UInt32, opacity: Double = 1) {
         let red = Double((hex & 0xFF0000) >> 16) / 255
