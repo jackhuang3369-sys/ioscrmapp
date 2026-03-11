@@ -3,6 +3,7 @@ import SwiftUI
 struct HomeView: View {
     let session: UserSession
     @ObservedObject var sessionStore: SessionStore
+    let meService: any MeServicing
 
     @State private var placeholderMessage: String?
     @State private var selectedTab: HomeTab = .home
@@ -104,11 +105,7 @@ struct HomeView: View {
             }
             .tag(HomeTab.video)
 
-            FeaturePlaceholderView(
-                title: HomeTab.me.title,
-                icon: HomeTab.me.emoji,
-                message: "Personal center is coming soon."
-            )
+            MeContainerView(session: session, meService: meService)
             .tabItem {
                 Image(HomeTab.me.assetName)
                     .renderingMode(.original)
@@ -592,7 +589,8 @@ struct HomeView_Previews: PreviewProvider {
                 greeting: "Good Morning",
                 balanceText: "128.50 AED"
             ),
-            sessionStore: SessionStore.previewAuthenticated
+            sessionStore: SessionStore.previewAuthenticated,
+            meService: MockMeService()
         )
     }
 }

@@ -10,11 +10,12 @@ import SwiftUI
 struct ContentView: View {
     @ObservedObject var sessionStore: SessionStore
     let authService: any AuthServicing
+    let meService: any MeServicing
 
     var body: some View {
         Group {
             if let session = sessionStore.session {
-                HomeView(session: session, sessionStore: sessionStore)
+                HomeView(session: session, sessionStore: sessionStore, meService: meService)
             } else {
                 AuthLoginContainerView(sessionStore: sessionStore, authService: authService)
             }
@@ -24,17 +25,21 @@ struct ContentView: View {
 }
 
 struct ContentView_Previews: PreviewProvider {
+    private static let previewServices = AppServices(configuration: AppConfig.preview.serviceConfiguration)
+
     static var previews: some View {
         Group {
             ContentView(
                 sessionStore: SessionStore(),
-                authService: MockAuthService()
+                authService: previewServices.authService,
+                meService: previewServices.meService
             )
             .previewDisplayName("Login")
 
             ContentView(
                 sessionStore: SessionStore.previewAuthenticated,
-                authService: MockAuthService()
+                authService: previewServices.authService,
+                meService: previewServices.meService
             )
             .previewDisplayName("Home")
         }

@@ -10,11 +10,15 @@ import SwiftUI
 @main
 struct ioscrmappApp: App {
     @StateObject private var sessionStore = SessionStore()
-    private let authService = MockAuthService()
+    private let services = AppServices()
 
     var body: some Scene {
         WindowGroup {
-            ContentView(sessionStore: sessionStore, authService: authService)
+            ContentView(
+                sessionStore: sessionStore,
+                authService: services.authService,
+                meService: services.meService
+            )
         }
     }
 }

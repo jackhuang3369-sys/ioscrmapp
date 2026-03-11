@@ -6,6 +6,22 @@ protocol AuthServicing: Sendable {
     func loginWithOTP(phone: String, otp: String) async throws -> UserSession
 }
 
+struct RemoteAuthService: AuthServicing {
+    let serverURL: URL
+
+    func loginWithPassword(phone: String, password: String) async throws -> UserSession {
+        throw AuthError.featureUnavailable(message: "Remote auth service is not configured yet.")
+    }
+
+    func sendOTP(to phone: String) async throws -> OTPSendResult {
+        throw AuthError.featureUnavailable(message: "Remote OTP service is not configured yet.")
+    }
+
+    func loginWithOTP(phone: String, otp: String) async throws -> UserSession {
+        throw AuthError.featureUnavailable(message: "Remote auth service is not configured yet.")
+    }
+}
+
 actor MockAuthService: AuthServicing {
     private struct OTPRecord {
         let code: String
