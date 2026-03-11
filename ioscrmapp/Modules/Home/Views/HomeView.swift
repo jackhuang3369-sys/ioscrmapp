@@ -466,45 +466,45 @@ private enum HomeTab: Hashable {
     var emoji: String {
         switch self {
         case .home:
-            "🏠"
+            return "🏠"
         case .service:
-            "📱"
+            return "📱"
         case .mall:
-            "🛒"
+            return "🛒"
         case .video:
-            "🎬"
+            return "🎬"
         case .me:
-            "👤"
+            return "👤"
         }
     }
 
     var assetName: String {
         switch self {
         case .home:
-            "TabHomeIcon"
+            return "TabHomeIcon"
         case .service:
-            "TabServiceIcon"
+            return "TabServiceIcon"
         case .mall:
-            "TabMallIcon"
+            return "TabMallIcon"
         case .video:
-            "TabVideoIcon"
+            return "TabVideoIcon"
         case .me:
-            "TabMeIcon"
+            return "TabMeIcon"
         }
     }
 
     var title: String {
         switch self {
         case .home:
-            "Home"
+            return "Home"
         case .service:
-            "Service"
+            return "Service"
         case .mall:
-            "Mall"
+            return "Mall"
         case .video:
-            "Video"
+            return "Video"
         case .me:
-            "Me"
+            return "Me"
         }
     }
 }
