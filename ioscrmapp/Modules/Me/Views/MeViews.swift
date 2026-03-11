@@ -1,52 +1,35 @@
 import SwiftUI
 
 struct MeContainerView: View {
-    @EnvironmentObject private var languageStore: AppLanguageStore
     @StateObject private var viewModel: MeViewModel
 
-    private let onSignOut: () -> Void
-
-    init(session: UserSession, meService: any MeServicing, onSignOut: @escaping () -> Void = {}) {
+    init(session: UserSession, meService: any MeServicing) {
         _viewModel = StateObject(
             wrappedValue: MeViewModel(session: session, meService: meService)
         )
-        self.onSignOut = onSignOut
     }
 
     var body: some View {
-        NavigationView {
-            ZStack {
-                screenContent
-                NavigationLink(
-                    destination: LanguageSettingsView(),
-                    isActive: $viewModel.isLanguageSettingsPresented
-                ) {
-                    EmptyView()
-                }
-                .hidden()
-            }
+        screenContent
             .background(DUTheme.background.ignoresSafeArea())
-            .navigationBarHidden(true)
-        }
-        .navigationViewStyle(.stack)
-        .task {
-            await viewModel.loadIfNeeded()
-        }
-        .duBottomSheet(
-            isPresented: $viewModel.isRevealSheetPresented,
-            preferredHeight: 300
-        ) {
-            phoneRevealSheet
-        }
-        .alert(isPresented: placeholderAlertIsPresented) {
-            Alert(
-                title: Text(localized("common.comingSoon.title")),
-                message: Text(localized(viewModel.placeholderMessage)),
-                dismissButton: .default(Text(localized("common.ok"))) {
-                    viewModel.placeholderMessage = nil
-                }
-            )
-        }
+            .task {
+                await viewModel.loadIfNeeded()
+            }
+            .duBottomSheet(
+                isPresented: $viewModel.isRevealSheetPresented,
+                preferredHeight: 300
+            ) {
+                phoneRevealSheet
+            }
+            .alert(isPresented: placeholderAlertIsPresented) {
+                Alert(
+                    title: Text("Coming Soon"),
+                    message: Text(viewModel.placeholderMessage ?? ""),
+                    dismissButton: .default(Text("OK")) {
+                        viewModel.placeholderMessage = nil
+                    }
+                )
+            }
     }
 
     @ViewBuilder
@@ -134,7 +117,6 @@ struct MeContainerView: View {
                     VStack(spacing: DUSpacing.lg) {
                         badgesSection(items: content.badges)
                         menuGroupsSection(groups: content.menuGroups)
-                        signOutButton
                     }
                     .padding(.horizontal, DUSpacing.lg)
                     .padding(.bottom, DUSpacing.xxxl)
@@ -154,16 +136,16 @@ struct MeContainerView: View {
                 .font(.du(42, weight: .semibold))
                 .foregroundColor(DUTheme.cyan)
 
-            Text(localized("me.empty.title"))
+            Text("Your personal center is almost ready")
                 .font(.du(22, weight: .bold))
                 .foregroundColor(DUTheme.ink)
 
-            Text(localized("me.empty.subtitle"))
+            Text("We couldn't find profile modules to display yet. Pull to refresh or try again later.")
                 .font(.du(15, weight: .medium))
                 .foregroundColor(DUTheme.inkSecondary)
                 .multilineTextAlignment(.center)
 
-            Button(localized("common.reload")) {
+            Button("Reload") {
                 Task {
                     await viewModel.refresh()
                 }
@@ -174,29 +156,27 @@ struct MeContainerView: View {
             .frame(height: 46)
             .background(DUTheme.brandGradient)
             .clipShape(Capsule())
-
-            signOutButton
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(.horizontal, DUSpacing.xxl)
     }
 
-    private func errorState(message: LocalizedTextValue) -> some View {
+    private func errorState(message: String) -> some View {
         VStack(spacing: DUSpacing.lg) {
             Image(systemName: "wifi.exclamationmark")
                 .font(.du(42, weight: .bold))
                 .foregroundColor(DUTheme.error)
 
-            Text(localized("me.error.title"))
+            Text("Couldn't load Me")
                 .font(.du(22, weight: .bold))
                 .foregroundColor(DUTheme.ink)
 
-            Text(localized(message))
+            Text(message)
                 .font(.du(15, weight: .medium))
                 .foregroundColor(DUTheme.inkSecondary)
                 .multilineTextAlignment(.center)
 
-            Button(localized("common.retry")) {
+            Button("Retry") {
                 Task {
                     await viewModel.refresh()
                 }
@@ -207,8 +187,6 @@ struct MeContainerView: View {
             .frame(height: 46)
             .background(DUTheme.brandGradient)
             .clipShape(Capsule())
-
-            signOutButton
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(.horizontal, DUSpacing.xxl)
@@ -224,13 +202,7 @@ struct MeContainerView: View {
                 } label: {
                     HStack(spacing: DUSpacing.xs) {
                         Image(systemName: viewModel.isPhoneNumberRevealed ? "eye.slash.fill" : "eye.fill")
-                        Text(
-                            localized(
-                                viewModel.isPhoneNumberRevealed
-                                    ? "me.profile.hide"
-                                    : "me.profile.reveal"
-                            )
-                        )
+                        Text(viewModel.isPhoneNumberRevealed ? "Hide" : "Reveal")
                     }
                     .font(.du(12, weight: .semibold))
                     .foregroundColor(.white)
@@ -265,7 +237,7 @@ struct MeContainerView: View {
 
             HStack(spacing: DUSpacing.xs) {
                 Image(systemName: "star.fill")
-                Text(localized(profile.membershipLabel))
+                Text(profile.membershipLabel)
             }
             .font(.du(12, weight: .semibold))
             .foregroundColor(.white)
@@ -288,7 +260,7 @@ struct MeContainerView: View {
         ) {
             ForEach(items) { item in
                 Button {
-                    viewModel.handleAction(item.actionID, localizedTitle: localized(item.title))
+                    viewModel.handleAction(named: item.actionTitle)
                 } label: {
                     VStack(spacing: DUSpacing.xs) {
                         Image(item.assetName)
@@ -301,7 +273,7 @@ struct MeContainerView: View {
                             .font(.du(15, weight: .bold))
                             .foregroundColor(DUTheme.ink)
 
-                        Text(localized(item.title))
+                        Text(item.title)
                             .font(.du(10, weight: .medium))
                             .foregroundColor(DUTheme.inkTertiary)
                             .multilineTextAlignment(.center)
@@ -320,14 +292,14 @@ struct MeContainerView: View {
     private func badgesSection(items: [MeBadgeItem]) -> some View {
         VStack(alignment: .leading, spacing: DUSpacing.md) {
             HStack {
-                Text(localized("me.section.badges"))
+                Text("My Badges")
                     .font(.du(15, weight: .bold))
                     .foregroundColor(DUTheme.ink)
 
                 Spacer()
 
-                Button(localized("me.section.viewAll")) {
-                    viewModel.handleAction(.badges, localizedTitle: localized("me.section.badges"))
+                Button("View All") {
+                    viewModel.handleAction(named: "My Badges")
                 }
                 .font(.du(12, weight: .semibold))
                 .foregroundColor(DUTheme.cyan)
@@ -338,10 +310,10 @@ struct MeContainerView: View {
                     Image(systemName: "rosette")
                         .font(.du(24, weight: .semibold))
                         .foregroundColor(DUTheme.inkDisabled)
-                    Text(localized("me.badge.emptyTitle"))
+                    Text("No badges yet")
                         .font(.du(14, weight: .semibold))
                         .foregroundColor(DUTheme.inkSecondary)
-                    Text(localized("me.badge.emptySubtitle"))
+                    Text("Your achievements will appear here after new activity.")
                         .font(.du(12, weight: .medium))
                         .foregroundColor(DUTheme.inkTertiary)
                         .multilineTextAlignment(.center)
@@ -353,7 +325,7 @@ struct MeContainerView: View {
                     HStack(spacing: DUSpacing.md) {
                         ForEach(items) { item in
                             Button {
-                                viewModel.handleAction(item.actionID, localizedTitle: localized(item.title))
+                                viewModel.handleAction(named: item.actionTitle)
                             } label: {
                                 VStack(spacing: DUSpacing.sm) {
                                     Image(item.assetName)
@@ -361,7 +333,7 @@ struct MeContainerView: View {
                                         .resizable()
                                         .scaledToFit()
                                         .frame(width: 52, height: 52)
-                                    Text(localized(item.title))
+                                    Text(item.title)
                                         .font(.du(10, weight: .medium))
                                         .foregroundColor(DUTheme.inkSecondary)
                                         .multilineTextAlignment(.center)
@@ -386,7 +358,7 @@ struct MeContainerView: View {
                     Image(systemName: "square.grid.2x2")
                         .font(.du(24, weight: .semibold))
                         .foregroundColor(DUTheme.inkDisabled)
-                    Text(localized("me.menu.empty"))
+                    Text("Menu shortcuts will appear soon")
                         .font(.du(14, weight: .semibold))
                         .foregroundColor(DUTheme.inkSecondary)
                 }
@@ -398,7 +370,7 @@ struct MeContainerView: View {
                     VStack(spacing: 0) {
                         ForEach(Array(group.items.enumerated()), id: \.element.id) { index, item in
                             Button {
-                                viewModel.handleAction(item.actionID, localizedTitle: localized(item.title))
+                                viewModel.handleAction(named: item.actionTitle)
                             } label: {
                                 HStack(spacing: DUSpacing.md) {
                                     Image(item.assetName)
@@ -408,10 +380,10 @@ struct MeContainerView: View {
                                         .frame(width: 38, height: 38)
 
                                     VStack(alignment: .leading, spacing: DUSpacing.xs) {
-                                        Text(localized(item.title))
+                                        Text(item.title)
                                             .font(.du(15, weight: .semibold))
                                             .foregroundColor(DUTheme.ink)
-                                        Text(localized(item.subtitle))
+                                        Text(item.subtitle)
                                             .font(.du(12, weight: .medium))
                                             .foregroundColor(DUTheme.inkTertiary)
                                             .multilineTextAlignment(.leading)
@@ -421,11 +393,11 @@ struct MeContainerView: View {
 
                                     switch item.accessory {
                                     case .chevron:
-                                        Image(systemName: "chevron.forward")
+                                        Image(systemName: "chevron.right")
                                             .font(.du(12, weight: .bold))
                                             .foregroundColor(DUTheme.inkDisabled)
                                     case let .badge(text):
-                                        Text(localized(text))
+                                        Text(text)
                                             .font(.du(10, weight: .bold))
                                             .foregroundColor(DUTheme.warning)
                                             .padding(.horizontal, DUSpacing.sm)
@@ -453,15 +425,15 @@ struct MeContainerView: View {
 
     private var phoneRevealSheet: some View {
         VStack(alignment: .leading, spacing: DUSpacing.lg) {
-            Text(localized("me.reveal.title"))
+            Text("Reveal full number")
                 .font(.du(20, weight: .bold))
                 .foregroundColor(DUTheme.ink)
 
-            Text(localized("me.reveal.subtitle"))
+            Text("Enter your login password to view the full phone number on this device.")
                 .font(.du(14, weight: .medium))
                 .foregroundColor(DUTheme.inkSecondary)
 
-            SecureField(localized("me.reveal.placeholder"), text: $viewModel.revealPassword)
+            SecureField("Enter password", text: $viewModel.revealPassword)
                 .textContentType(.password)
                 .font(.du(16, weight: .medium))
                 .padding(.horizontal, DUSpacing.lg)
@@ -476,7 +448,7 @@ struct MeContainerView: View {
                 )
 
             if let revealErrorMessage = viewModel.revealErrorMessage {
-                Text(localized(revealErrorMessage))
+                Text(revealErrorMessage)
                     .font(.du(12, weight: .medium))
                     .foregroundColor(DUTheme.error)
             }
@@ -490,7 +462,7 @@ struct MeContainerView: View {
                         ProgressView()
                             .tint(.white)
                     } else {
-                        Text(localized("me.reveal.submit"))
+                        Text("Reveal number")
                             .font(.du(16, weight: .bold))
                     }
                     Spacer()
@@ -509,19 +481,6 @@ struct MeContainerView: View {
         .background(DUTheme.background)
     }
 
-    private var signOutButton: some View {
-        Button(action: onSignOut) {
-            Text(localized("me.signOut.button"))
-                .font(.du(16, weight: .bold))
-                .foregroundColor(.white)
-                .frame(maxWidth: .infinity)
-                .frame(height: 52)
-                .background(DUTheme.error)
-                .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-        }
-        .buttonStyle(.plain)
-    }
-
     private var placeholderAlertIsPresented: Binding<Bool> {
         Binding(
             get: { viewModel.placeholderMessage != nil },
@@ -532,22 +491,14 @@ struct MeContainerView: View {
             }
         )
     }
-
-    private func localized(_ key: String, arguments: [String] = []) -> String {
-        languageStore.string(key, arguments: arguments)
-    }
-
-    private func localized(_ value: LocalizedTextValue?) -> String {
-        languageStore.string(value)
-    }
 }
 
 struct MeContainerView_Previews: PreviewProvider {
     static var previewSession = UserSession(
         displayName: "Ahmed Mohammed",
         phoneNumber: AuthValidator.demoPhone,
-        greetingKey: "home.greeting.morning",
-        balanceAmount: "128.50"
+        greeting: "Good Morning",
+        balanceText: "128.50 AED"
     )
 
     static var previews: some View {
@@ -561,6 +512,5 @@ struct MeContainerView_Previews: PreviewProvider {
             MeContainerView(session: previewSession, meService: MockMeService(mode: .failed))
                 .previewDisplayName("Error")
         }
-        .environmentObject(AppLanguageStore(initialLanguage: .english))
     }
 }

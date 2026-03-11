@@ -6,15 +6,14 @@ final class MeViewModel: ObservableObject {
         case idle
         case loading
         case loaded(MeContent)
-        case failed(LocalizedTextValue)
+        case failed(String)
     }
 
     @Published private(set) var screenState: ScreenState = .idle
-    @Published var placeholderMessage: LocalizedTextValue?
+    @Published var placeholderMessage: String?
     @Published var isRevealSheetPresented = false
-    @Published var isLanguageSettingsPresented = false
     @Published var revealPassword = ""
-    @Published var revealErrorMessage: LocalizedTextValue?
+    @Published var revealErrorMessage: String?
     @Published private(set) var isPhoneNumberRevealed = false
     @Published private(set) var isValidatingPassword = false
 
@@ -50,18 +49,13 @@ final class MeViewModel: ObservableObject {
             let content = try await meService.fetchMeContent(session: session)
             screenState = .loaded(content)
         } catch {
-            let errorText = (error as? MeServiceError)?.textValue ?? .key("me.error.subtitle")
-            screenState = .failed(errorText)
+            let localizedMessage = (error as? LocalizedError)?.errorDescription
+            screenState = .failed(localizedMessage ?? "Unable to load your profile right now.")
         }
     }
 
-    func handleAction(_ actionID: MeActionID, localizedTitle: String) {
-        switch actionID {
-        case .changeLanguage:
-            isLanguageSettingsPresented = true
-        default:
-            placeholderMessage = .key("common.placeholder.feature", arguments: [localizedTitle])
-        }
+    func handleAction(named title: String) {
+        placeholderMessage = "\(title) is coming soon."
     }
 
     func togglePhoneNumberVisibility() {
@@ -93,13 +87,13 @@ final class MeViewModel: ObservableObject {
                         isRevealSheetPresented = false
                         revealPassword = ""
                     } else {
-                        revealErrorMessage = MeServiceError.invalidPassword.textValue
+                        revealErrorMessage = MeServiceError.invalidPassword.errorDescription
                     }
                 }
             } catch {
                 await MainActor.run {
                     isValidatingPassword = false
-                    revealErrorMessage = (error as? MeServiceError)?.textValue ?? .key("me.reveal.verifyFailed")
+                    revealErrorMessage = (error as? LocalizedError)?.errorDescription ?? "Unable to verify your password."
                 }
             }
         }

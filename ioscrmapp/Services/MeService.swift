@@ -5,19 +5,19 @@ protocol MeServicing: Sendable {
     func validateRevealPassword(_ password: String, session: UserSession) async throws -> Bool
 }
 
-enum MeServiceError: Error {
+enum MeServiceError: Error, LocalizedError {
     case invalidPassword
     case featureUnavailable(message: String)
     case networkUnavailable
 
-    var textValue: LocalizedTextValue {
+    var errorDescription: String? {
         switch self {
         case .invalidPassword:
-            return .key("me.reveal.invalidPassword")
+            return "Enter the correct password to reveal the full phone number."
         case let .featureUnavailable(message):
-            return .literal(message)
+            return message
         case .networkUnavailable:
-            return .key("me.error.subtitle")
+            return "Unable to load your profile right now. Please try again."
         }
     }
 }
@@ -59,48 +59,48 @@ actor MockMeService: MeServicing {
             displayName: session.displayName,
             maskedPhoneNumber: MePhoneNumberFormatter.masked(session.phoneNumber),
             fullPhoneNumber: AuthValidator.formattedPhone(session.phoneNumber),
-            membershipLabel: .key("me.membership.vip"),
+            membershipLabel: "VIP Member",
             initials: String(session.displayName.prefix(2)).uppercased()
         )
 
         let stats = [
             MeStatItem(
                 id: "balance",
-                title: .key("me.stat.balance"),
-                value: session.balanceAmount,
+                title: "Balance (AED)",
+                value: session.balanceText.replacingOccurrences(of: " AED", with: ""),
                 assetName: "MeStatBalanceIcon",
-                actionID: .balance
+                actionTitle: "Balance"
             ),
             MeStatItem(
                 id: "points",
-                title: .key("me.stat.points"),
+                title: "Points",
                 value: "2,580",
                 assetName: "MeStatPointsIcon",
-                actionID: .points
+                actionTitle: "Points"
             ),
             MeStatItem(
                 id: "coupons",
-                title: .key("me.stat.coupons"),
+                title: "Coupons",
                 value: "5",
                 assetName: "MeStatCouponsIcon",
-                actionID: .coupons
+                actionTitle: "Coupons"
             ),
             MeStatItem(
                 id: "badges",
-                title: .key("me.stat.badges"),
+                title: "Badges",
                 value: "12",
                 assetName: "MeStatBadgesIcon",
-                actionID: .badges
+                actionTitle: "Badges"
             )
         ]
 
         let badges = includeContent
             ? [
-                MeBadgeItem(id: "new-user", title: .key("me.badge.newUser"), assetName: "MeBadgeNewUserIcon", actionID: .badges),
-                MeBadgeItem(id: "first-recharge", title: .key("me.badge.firstRecharge"), assetName: "MeBadgeRechargeIcon", actionID: .badges),
-                MeBadgeItem(id: "first-order", title: .key("me.badge.firstOrder"), assetName: "MeBadgeOrderIcon", actionID: .badges),
-                MeBadgeItem(id: "vip", title: .key("me.badge.vip"), assetName: "MeBadgeVipIcon", actionID: .badges),
-                MeBadgeItem(id: "streak", title: .key("me.badge.streak"), assetName: "MeBadgeStreakIcon", actionID: .badges)
+                MeBadgeItem(id: "new-user", title: "New User", assetName: "MeBadgeNewUserIcon", actionTitle: "New User badge"),
+                MeBadgeItem(id: "first-recharge", title: "First Recharge", assetName: "MeBadgeRechargeIcon", actionTitle: "First Recharge badge"),
+                MeBadgeItem(id: "first-order", title: "First Order", assetName: "MeBadgeOrderIcon", actionTitle: "First Order badge"),
+                MeBadgeItem(id: "vip", title: "VIP Member", assetName: "MeBadgeVipIcon", actionTitle: "VIP Member badge"),
+                MeBadgeItem(id: "streak", title: "Streak", assetName: "MeBadgeStreakIcon", actionTitle: "Streak badge")
             ]
             : []
 
@@ -109,25 +109,25 @@ actor MockMeService: MeServicing {
                 MeMenuGroup(
                     id: "telecom",
                     items: [
-                        MeMenuItem(id: "plan", title: .key("me.menu.plan.title"), subtitle: .key("me.menu.plan.subtitle"), assetName: "MeMenuPlanIcon", actionID: .myPlan, accessory: .chevron),
-                        MeMenuItem(id: "data", title: .key("me.menu.data.title"), subtitle: .key("me.menu.data.subtitle"), assetName: "MeMenuDataIcon", actionID: .dataManagement, accessory: .chevron),
-                        MeMenuItem(id: "billing", title: .key("me.menu.billing.title"), subtitle: .key("me.menu.billing.subtitle"), assetName: "MeMenuBillingIcon", actionID: .billing, accessory: .badge(.key("me.badge.new")))
+                        MeMenuItem(id: "plan", title: "My Plan", subtitle: "Premium Plan 99 AED/month", assetName: "MeMenuPlanIcon", actionTitle: "My Plan", accessory: .chevron),
+                        MeMenuItem(id: "data", title: "Data Management", subtitle: "8.5GB remaining", assetName: "MeMenuDataIcon", actionTitle: "Data Management", accessory: .chevron),
+                        MeMenuItem(id: "billing", title: "Billing", subtitle: "View billing history", assetName: "MeMenuBillingIcon", actionTitle: "Billing", accessory: .badge("New"))
                     ]
                 ),
                 MeMenuGroup(
                     id: "account",
                     items: [
-                        MeMenuItem(id: "orders", title: .key("me.menu.orders.title"), subtitle: .key("me.menu.orders.subtitle"), assetName: "MeMenuOrdersIcon", actionID: .orders, accessory: .chevron),
-                        MeMenuItem(id: "favorites", title: .key("me.menu.favorites.title"), subtitle: .key("me.menu.favorites.subtitle"), assetName: "MeMenuFavoritesIcon", actionID: .favorites, accessory: .chevron),
-                        MeMenuItem(id: "address", title: .key("me.menu.address.title"), subtitle: .key("me.menu.address.subtitle"), assetName: "MeMenuAddressIcon", actionID: .address, accessory: .chevron)
+                        MeMenuItem(id: "orders", title: "My Orders", subtitle: "View all orders", assetName: "MeMenuOrdersIcon", actionTitle: "My Orders", accessory: .chevron),
+                        MeMenuItem(id: "favorites", title: "Favorites", subtitle: "Saved items and content", assetName: "MeMenuFavoritesIcon", actionTitle: "Favorites", accessory: .chevron),
+                        MeMenuItem(id: "address", title: "Delivery Address", subtitle: "Manage addresses", assetName: "MeMenuAddressIcon", actionTitle: "Delivery Address", accessory: .chevron)
                     ]
                 ),
                 MeMenuGroup(
                     id: "settings",
                     items: [
-                        MeMenuItem(id: "language", title: .key("me.menu.language.title"), subtitle: .key("me.menu.language.subtitle"), assetName: "MeMenuSettingsIcon", actionID: .changeLanguage, accessory: .chevron),
-                        MeMenuItem(id: "help", title: .key("me.menu.help.title"), subtitle: .key("me.menu.help.subtitle"), assetName: "MeMenuHelpIcon", actionID: .help, accessory: .chevron),
-                        MeMenuItem(id: "about", title: .key("me.menu.about.title"), subtitle: .key("me.menu.about.subtitle", arguments: [AppVersionFormatter.currentVersion]), assetName: "MeMenuAboutIcon", actionID: .about, accessory: .chevron)
+                        MeMenuItem(id: "settings", title: "Settings", subtitle: "Account, notifications, privacy", assetName: "MeMenuSettingsIcon", actionTitle: "Settings", accessory: .chevron),
+                        MeMenuItem(id: "help", title: "Help & Feedback", subtitle: "FAQ, customer service", assetName: "MeMenuHelpIcon", actionTitle: "Help & Feedback", accessory: .chevron),
+                        MeMenuItem(id: "about", title: "About Us", subtitle: "Version \(AppVersionFormatter.currentVersion)", assetName: "MeMenuAboutIcon", actionTitle: "About Us", accessory: .chevron)
                     ]
                 )
             ]

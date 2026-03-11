@@ -28,15 +28,12 @@ struct ContentView_Previews: PreviewProvider {
     private static let previewServices = AppServices(configuration: AppConfig.preview.serviceConfiguration)
 
     static var previews: some View {
-        let languageStore = AppLanguageStore(initialLanguage: .english)
-
         Group {
             ContentView(
                 sessionStore: SessionStore(),
                 authService: previewServices.authService,
                 meService: previewServices.meService
             )
-            .environmentObject(languageStore)
             .previewDisplayName("Login")
 
             ContentView(
@@ -44,7 +41,6 @@ struct ContentView_Previews: PreviewProvider {
                 authService: previewServices.authService,
                 meService: previewServices.meService
             )
-            .environmentObject(languageStore)
             .previewDisplayName("Home")
         }
     }

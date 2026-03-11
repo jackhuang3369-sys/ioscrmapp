@@ -1,77 +1,60 @@
 import SwiftUI
 
 struct HomeView: View {
-    @EnvironmentObject private var languageStore: AppLanguageStore
-
     let session: UserSession
     @ObservedObject var sessionStore: SessionStore
     let meService: any MeServicing
 
-    @State private var placeholderMessage: LocalizedTextValue?
+    @State private var placeholderMessage: String?
     @State private var selectedTab: HomeTab = .home
     @State private var selectedBannerIndex = 0
 
     private let pageHorizontalPadding: CGFloat = DUSpacing.md
     private let bannerTimer = Timer.publish(every: 4, on: .main, in: .common).autoconnect()
     private let quickActions: [HomeItem] = [
-        .init(title: .key("home.quick.recharge"), assetName: "QuickRechargeIcon"),
-        .init(title: .key("home.quick.plans"), assetName: "QuickPlansIcon"),
-        .init(title: .key("home.quick.offers"), assetName: "QuickOffersIcon"),
-        .init(title: .key("home.quick.mall"), assetName: "QuickMallIcon")
+        .init(title: "Recharge", assetName: "QuickRechargeIcon"),
+        .init(title: "Plans", assetName: "QuickPlansIcon"),
+        .init(title: "Offers", assetName: "QuickOffersIcon"),
+        .init(title: "Mall", assetName: "QuickMallIcon")
     ]
 
     private let services: [HomeItem] = [
-        .init(title: .key("home.service.dataPack"), assetName: "ServiceDataPackIcon"),
-        .init(title: .key("home.service.voicePack"), assetName: "ServiceVoicePackIcon"),
-        .init(title: .key("home.service.roaming"), assetName: "ServiceRoamingIcon"),
-        .init(title: .key("home.service.tickets"), assetName: "ServiceTicketsIcon"),
-        .init(title: .key("home.service.bills"), assetName: "ServiceBillsIcon"),
-        .init(title: .key("home.service.points"), assetName: "ServicePointsIcon"),
-        .init(title: .key("home.service.mail"), assetName: "ServiceMailIcon"),
-        .init(title: .key("home.service.support"), assetName: "ServiceSupportIcon")
+        .init(title: "Data Pack", assetName: "ServiceDataPackIcon"),
+        .init(title: "Voice Pack", assetName: "ServiceVoicePackIcon"),
+        .init(title: "Roaming", assetName: "ServiceRoamingIcon"),
+        .init(title: "Tickets", assetName: "ServiceTicketsIcon"),
+        .init(title: "Bills", assetName: "ServiceBillsIcon"),
+        .init(title: "Points", assetName: "ServicePointsIcon"),
+        .init(title: "Mail", assetName: "ServiceMailIcon"),
+        .init(title: "Support", assetName: "ServiceSupportIcon")
     ]
 
     private let products: [HomeProduct] = [
-        .init(
-            name: .key("home.product.iphone.name"),
-            price: .key("home.product.iphone.price"),
-            oldPrice: .key("home.product.iphone.oldPrice"),
-            assetName: "ProductIPhoneImage"
-        ),
-        .init(
-            name: .key("home.product.airpods.name"),
-            price: .key("home.product.airpods.price"),
-            oldPrice: nil,
-            assetName: "ProductAirPodsImage"
-        ),
-        .init(
-            name: .key("home.product.watch.name"),
-            price: .key("home.product.watch.price"),
-            oldPrice: nil,
-            assetName: "ProductWatchImage"
-        )
+        .init(name: "iPhone 15 Pro Max 256GB", price: "AED 5,999", oldPrice: "AED 6,999", assetName: "ProductIPhoneImage"),
+        .init(name: "AirPods Pro 2", price: "AED 1,299", oldPrice: nil, assetName: "ProductAirPodsImage"),
+        .init(name: "Apple Watch S9", price: "AED 2,499", oldPrice: nil, assetName: "ProductWatchImage")
     ]
 
     private let usageItems: [UsageItem] = [
-        .init(title: .key("home.usage.data.title"), value: .key("home.usage.data.value"), progress: 0.85),
-        .init(title: .key("home.usage.voice.title"), value: .key("home.usage.voice.value"), progress: 0.78),
-        .init(title: .key("home.usage.sms.title"), value: .key("home.usage.sms.value"), progress: 0.90)
+        .init(title: "Data", value: "8.5 / 10 GB", progress: 0.85),
+        .init(title: "Voice", value: "156 / 200 min", progress: 0.78),
+        .init(title: "SMS", value: "45 / 50", progress: 0.90)
     ]
 
     private let banners: [HomeBanner] = [
         .init(
-            title: .key("home.banner.newCustomer.title"),
-            subtitle: .key("home.banner.newCustomer.subtitle"),
+            title: "New customer special",
+            subtitle: "Get 50% extra data on your first recharge. Offer ends in 3 days.",
             colors: [DUTheme.cyanLight, DUTheme.blueLight]
         ),
         .init(
-            title: .key("home.banner.weekendData.title"),
-            subtitle: .key("home.banner.weekendData.subtitle"),
+            title: "Weekend double data",
+            subtitle: "Activate before Friday and enjoy 2× data on selected add-ons.",
             colors: [DUTheme.blueLight, DUTheme.indigo]
         ),
         .init(
-            title: .key("home.banner.mallFlash.title"),
-            subtitle: .key("home.banner.mallFlash.subtitle"),
+            title: "Mall flash offers",
+            subtitle: "Hot devices and accessories with limited-time monthly installment deals.",
             colors: [DUTheme.indigo, DUTheme.magenta]
         )
     ]
@@ -82,66 +65,60 @@ struct HomeView: View {
                 .tabItem {
                     Image(HomeTab.home.assetName)
                         .renderingMode(.original)
-                    Text(localized(HomeTab.home.title))
+                    Text(HomeTab.home.title)
                 }
                 .tag(HomeTab.home)
 
             FeaturePlaceholderView(
                 title: HomeTab.service.title,
                 icon: HomeTab.service.emoji,
-                message: .key("home.feature.service.message")
+                message: "Service hub is coming soon."
             )
             .tabItem {
                 Image(HomeTab.service.assetName)
                     .renderingMode(.original)
-                Text(localized(HomeTab.service.title))
+                Text(HomeTab.service.title)
             }
             .tag(HomeTab.service)
 
             FeaturePlaceholderView(
                 title: HomeTab.mall.title,
                 icon: HomeTab.mall.emoji,
-                message: .key("home.feature.mall.message")
+                message: "Mall is coming soon."
             )
             .tabItem {
                 Image(HomeTab.mall.assetName)
                     .renderingMode(.original)
-                Text(localized(HomeTab.mall.title))
+                Text(HomeTab.mall.title)
             }
             .tag(HomeTab.mall)
 
             FeaturePlaceholderView(
                 title: HomeTab.video.title,
                 icon: HomeTab.video.emoji,
-                message: .key("home.feature.video.message")
+                message: "Video experiences are coming soon."
             )
             .tabItem {
                 Image(HomeTab.video.assetName)
                     .renderingMode(.original)
-                Text(localized(HomeTab.video.title))
+                Text(HomeTab.video.title)
             }
             .tag(HomeTab.video)
 
-            MeContainerView(
-                session: session,
-                meService: meService,
-                onSignOut: {
-                    sessionStore.signOut()
-                }
-            )
+            MeContainerView(session: session, meService: meService)
             .tabItem {
                 Image(HomeTab.me.assetName)
                     .renderingMode(.original)
-                Text(localized(HomeTab.me.title))
+                Text(HomeTab.me.title)
             }
             .tag(HomeTab.me)
         }
         .background(DUTheme.background.ignoresSafeArea())
         .alert(isPresented: placeholderAlertIsPresented) {
             Alert(
-                title: Text(localized("common.comingSoon.title")),
-                message: Text(localized(placeholderMessage)),
-                dismissButton: .default(Text(localized("common.ok"))) {
+                title: Text("Coming Soon"),
+                message: Text(placeholderMessage ?? ""),
+                dismissButton: .default(Text("OK")) {
                     placeholderMessage = nil
                 }
             )
@@ -178,7 +155,7 @@ struct HomeView: View {
                         )
 
                     VStack(alignment: .leading, spacing: DUSpacing.xs) {
-                        Text(localized(session.greetingKey))
+                        Text(session.greeting)
                             .font(.du(11, weight: .medium))
                             .foregroundColor(.white.opacity(0.8))
 
@@ -192,10 +169,13 @@ struct HomeView: View {
 
                 HStack(spacing: DUSpacing.sm) {
                     CircleAction(symbol: "magnifyingglass") {
-                        placeholderMessage = .key("home.placeholder.search")
+                        placeholderMessage = "Search is coming soon."
                     }
                     CircleAction(symbol: "bell.fill") {
-                        placeholderMessage = .key("home.placeholder.notifications")
+                        placeholderMessage = "Notifications are coming soon."
+                    }
+                    CircleAction(symbol: "rectangle.portrait.and.arrow.right") {
+                        sessionStore.signOut()
                     }
                 }
             }
@@ -203,19 +183,19 @@ struct HomeView: View {
             VStack(spacing: DUSpacing.md) {
                 HStack {
                     VStack(alignment: .leading, spacing: DUSpacing.xs) {
-                        Text(localized("home.header.balanceTitle"))
+                        Text("Current Balance")
                             .font(.du(11, weight: .medium))
                             .foregroundColor(.white.opacity(0.8))
 
-                        Text(localized("home.header.balanceAmount", arguments: [session.balanceAmount]))
+                        Text(session.balanceText)
                             .font(.du(26, weight: .bold))
                             .foregroundColor(.white)
                     }
 
                     Spacer()
 
-                    Button(localized("home.header.recharge")) {
-                        showComingSoon(for: .key("home.quick.recharge"))
+                    Button("Recharge") {
+                        placeholderMessage = "Recharge is coming soon."
                     }
                     .font(.du(13, weight: .semibold))
                     .foregroundColor(DUTheme.ink)
@@ -228,11 +208,11 @@ struct HomeView: View {
                 HStack(spacing: DUSpacing.lg) {
                     ForEach(usageItems) { item in
                         VStack(alignment: .leading, spacing: DUSpacing.xs) {
-                            Text(localized(item.title))
+                            Text(item.title)
                                 .font(.du(10, weight: .medium))
                                 .foregroundColor(.white.opacity(0.7))
 
-                            Text(localized(item.value))
+                            Text(item.value)
                                 .font(.du(13, weight: .semibold))
                                 .foregroundColor(.white)
 
@@ -260,7 +240,7 @@ struct HomeView: View {
         ) {
             ForEach(quickActions) { item in
                 Button {
-                    showComingSoon(for: item.title)
+                    placeholderMessage = "\(item.title) is coming soon."
                 } label: {
                     VStack(spacing: DUSpacing.sm) {
                         ZStack {
@@ -275,7 +255,7 @@ struct HomeView: View {
                                 .frame(width: 48, height: 48)
                         }
 
-                        Text(localized(item.title))
+                        Text(item.title)
                             .font(.du(12, weight: .medium))
                             .foregroundColor(DUTheme.ink)
                     }
@@ -295,15 +275,15 @@ struct HomeView: View {
             TabView(selection: $selectedBannerIndex) {
                 ForEach(Array(banners.enumerated()), id: \.offset) { index, banner in
                     Button {
-                        showComingSoon(for: banner.title)
+                        placeholderMessage = "\(banner.title) is coming soon."
                     } label: {
                         HStack {
                             VStack(alignment: .leading, spacing: DUSpacing.sm) {
-                                Text("✨ \(localized(banner.title))")
+                                Text("✨ \(banner.title)")
                                     .font(.du(17, weight: .bold))
                                     .foregroundColor(.white)
 
-                                Text(localized(banner.subtitle))
+                                Text(banner.subtitle)
                                     .font(.du(12, weight: .medium))
                                     .foregroundColor(.white.opacity(0.92))
                                     .multilineTextAlignment(.leading)
@@ -346,7 +326,7 @@ struct HomeView: View {
 
     private var servicesSection: some View {
         VStack(alignment: .leading, spacing: DUSpacing.lg) {
-            sectionHeader(title: .key("home.section.popularServices"))
+            sectionHeader(title: "Popular Services")
 
             LazyVGrid(
                 columns: Array(repeating: GridItem(.flexible(), spacing: DUSpacing.md), count: 4),
@@ -354,7 +334,7 @@ struct HomeView: View {
             ) {
                 ForEach(services) { item in
                     Button {
-                        showComingSoon(for: item.title)
+                        placeholderMessage = "\(item.title) is coming soon."
                     } label: {
                         VStack(spacing: DUSpacing.sm) {
                             RoundedRectangle(cornerRadius: 18, style: .continuous)
@@ -368,7 +348,7 @@ struct HomeView: View {
                                         .frame(width: 48, height: 48)
                                 )
 
-                            Text(localized(item.title))
+                            Text(item.title)
                                 .font(.du(11, weight: .medium))
                                 .foregroundColor(DUTheme.ink)
                                 .multilineTextAlignment(.center)
@@ -385,13 +365,13 @@ struct HomeView: View {
 
     private var productsSection: some View {
         VStack(alignment: .leading, spacing: DUSpacing.lg) {
-            sectionHeader(title: .key("home.section.trendingProducts"))
+            sectionHeader(title: "Trending Products")
 
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: DUSpacing.md) {
                     ForEach(products) { product in
                         Button {
-                            showComingSoon(for: product.name)
+                            placeholderMessage = "\(product.name) details are coming soon."
                         } label: {
                             VStack(alignment: .leading, spacing: DUSpacing.md) {
                                 RoundedRectangle(cornerRadius: 18, style: .continuous)
@@ -406,19 +386,19 @@ struct HomeView: View {
                                     )
 
                                 VStack(alignment: .leading, spacing: DUSpacing.sm) {
-                                    Text(localized(product.name))
+                                    Text(product.name)
                                         .font(.du(14, weight: .semibold))
                                         .foregroundColor(DUTheme.ink)
                                         .lineLimit(2)
                                         .multilineTextAlignment(.leading)
 
                                     HStack(spacing: DUSpacing.sm) {
-                                        Text(localized(product.price))
+                                        Text(product.price)
                                             .font(.du(15, weight: .bold))
                                             .foregroundColor(DUTheme.cyan)
 
                                         if let oldPrice = product.oldPrice {
-                                            Text(localized(oldPrice))
+                                            Text(oldPrice)
                                                 .font(.du(12, weight: .medium))
                                                 .foregroundColor(DUTheme.inkDisabled)
                                                 .strikethrough()
@@ -447,16 +427,16 @@ struct HomeView: View {
         .padding(.horizontal, pageHorizontalPadding)
     }
 
-    private func sectionHeader(title: LocalizedTextValue) -> some View {
+    private func sectionHeader(title: String) -> some View {
         HStack {
-            Text(localized(title))
+            Text(title)
                 .font(.du(17, weight: .bold))
                 .foregroundColor(DUTheme.ink)
 
             Spacer()
 
-            Button(localized("home.section.viewAll")) {
-                showComingSoon(for: title)
+            Button("View all") {
+                placeholderMessage = "\(title) is coming soon."
             }
             .font(.du(12, weight: .semibold))
             .foregroundColor(DUTheme.cyan)
@@ -474,18 +454,6 @@ struct HomeView: View {
             }
         )
     }
-
-    private func showComingSoon(for title: LocalizedTextValue) {
-        placeholderMessage = .key("common.placeholder.feature", arguments: [localized(title)])
-    }
-
-    private func localized(_ key: String, arguments: [String] = []) -> String {
-        languageStore.string(key, arguments: arguments)
-    }
-
-    private func localized(_ value: LocalizedTextValue?) -> String {
-        languageStore.string(value)
-    }
 }
 
 private enum HomeTab: Hashable {
@@ -498,73 +466,73 @@ private enum HomeTab: Hashable {
     var emoji: String {
         switch self {
         case .home:
-            return "🏠"
+            "🏠"
         case .service:
-            return "📱"
+            "📱"
         case .mall:
-            return "🛒"
+            "🛒"
         case .video:
-            return "🎬"
+            "🎬"
         case .me:
-            return "👤"
+            "👤"
         }
     }
 
     var assetName: String {
         switch self {
         case .home:
-            return "TabHomeIcon"
+            "TabHomeIcon"
         case .service:
-            return "TabServiceIcon"
+            "TabServiceIcon"
         case .mall:
-            return "TabMallIcon"
+            "TabMallIcon"
         case .video:
-            return "TabVideoIcon"
+            "TabVideoIcon"
         case .me:
-            return "TabMeIcon"
+            "TabMeIcon"
         }
     }
 
-    var title: LocalizedTextValue {
+    var title: String {
         switch self {
         case .home:
-            return .key("home.tab.home")
+            "Home"
         case .service:
-            return .key("home.tab.service")
+            "Service"
         case .mall:
-            return .key("home.tab.mall")
+            "Mall"
         case .video:
-            return .key("home.tab.video")
+            "Video"
         case .me:
-            return .key("home.tab.me")
+            "Me"
         }
     }
 }
 
 private struct HomeItem: Identifiable {
     let id = UUID()
-    let title: LocalizedTextValue
+    let title: String
     let assetName: String
 }
 
 private struct HomeProduct: Identifiable {
     let id = UUID()
-    let name: LocalizedTextValue
-    let price: LocalizedTextValue
-    let oldPrice: LocalizedTextValue?
+    let name: String
+    let price: String
+    let oldPrice: String?
     let assetName: String
 }
 
 private struct HomeBanner {
-    let title: LocalizedTextValue
-    let subtitle: LocalizedTextValue
+    let title: String
+    let subtitle: String
     let colors: [Color]
 }
 
 private struct UsageItem: Identifiable {
     let id = UUID()
-    let title: LocalizedTextValue
-    let value: LocalizedTextValue
+    let title: String
+    let value: String
     let progress: Double
 }
 
@@ -588,22 +556,20 @@ private struct CircleAction: View {
 }
 
 private struct FeaturePlaceholderView: View {
-    @EnvironmentObject private var languageStore: AppLanguageStore
-
-    let title: LocalizedTextValue
+    let title: String
     let icon: String
-    let message: LocalizedTextValue
+    let message: String
 
     var body: some View {
         VStack(spacing: DUSpacing.lg) {
             Text(icon)
                 .font(.du(48))
 
-            Text(languageStore.string(title))
+            Text(title)
                 .font(.du(24, weight: .bold))
                 .foregroundColor(DUTheme.ink)
 
-            Text(languageStore.string(message))
+            Text(message)
                 .font(.du(15, weight: .medium))
                 .foregroundColor(DUTheme.inkSecondary)
                 .multilineTextAlignment(.center)
@@ -620,12 +586,11 @@ struct HomeView_Previews: PreviewProvider {
             session: UserSession(
                 displayName: "Ahmed Mohammed",
                 phoneNumber: AuthValidator.demoPhone,
-                greetingKey: "home.greeting.morning",
-                balanceAmount: "128.50"
+                greeting: "Good Morning",
+                balanceText: "128.50 AED"
             ),
             sessionStore: SessionStore.previewAuthenticated,
             meService: MockMeService()
         )
-        .environmentObject(AppLanguageStore(initialLanguage: .english))
     }
 }

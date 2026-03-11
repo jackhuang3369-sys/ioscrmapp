@@ -56,8 +56,8 @@ extension SessionStore {
         store.session = UserSession(
             displayName: "Ahmed Mohammed",
             phoneNumber: AuthValidator.demoPhone,
-            greetingKey: "home.greeting.morning",
-            balanceAmount: "128.50"
+            greeting: "Good Morning",
+            balanceText: "128.50 AED"
         )
         return store
     }

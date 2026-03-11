@@ -15,23 +15,23 @@ struct MeProfileSummary {
     let displayName: String
     let maskedPhoneNumber: String
     let fullPhoneNumber: String
-    let membershipLabel: LocalizedTextValue
+    let membershipLabel: String
     let initials: String
 }
 
 struct MeStatItem: Identifiable {
     let id: String
-    let title: LocalizedTextValue
+    let title: String
     let value: String
     let assetName: String
-    let actionID: MeActionID
+    let actionTitle: String
 }
 
 struct MeBadgeItem: Identifiable {
     let id: String
-    let title: LocalizedTextValue
+    let title: String
     let assetName: String
-    let actionID: MeActionID
+    let actionTitle: String
 }
 
 struct MeMenuGroup: Identifiable {
@@ -41,32 +41,16 @@ struct MeMenuGroup: Identifiable {
 
 struct MeMenuItem: Identifiable {
     let id: String
-    let title: LocalizedTextValue
-    let subtitle: LocalizedTextValue
+    let title: String
+    let subtitle: String
     let assetName: String
-    let actionID: MeActionID
+    let actionTitle: String
     let accessory: MeMenuAccessory
 }
 
 enum MeMenuAccessory {
     case chevron
-    case badge(LocalizedTextValue)
-}
-
-enum MeActionID: String, Sendable {
-    case balance
-    case points
-    case coupons
-    case badges
-    case myPlan
-    case dataManagement
-    case billing
-    case orders
-    case favorites
-    case address
-    case changeLanguage
-    case help
-    case about
+    case badge(String)
 }
 
 enum MePhoneNumberFormatter {
