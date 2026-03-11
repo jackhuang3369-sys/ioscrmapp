@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct AuthLoginContainerView: View {
+    @EnvironmentObject private var languageStore: AppLanguageStore
     @StateObject private var viewModel: AuthLoginViewModel
 
     init(sessionStore: SessionStore, authService: any AuthServicing) {
@@ -20,7 +21,7 @@ struct AuthLoginContainerView: View {
                     header
                     tabs
                     if let bannerMessage = viewModel.bannerMessage {
-                        banner(message: bannerMessage, tone: viewModel.bannerTone)
+                        banner(message: localized(bannerMessage), tone: viewModel.bannerTone)
                     }
                     phoneField
                     if viewModel.selectedMode == .password {
@@ -58,10 +59,10 @@ struct AuthLoginContainerView: View {
 
     private var header: some View {
         VStack(spacing: DUSpacing.sm) {
-            Text("Welcome back")
+            Text(localized("auth.header.title"))
                 .font(.du(28, weight: .bold))
                 .foregroundColor(DUTheme.ink)
-            Text("Sign in to your DU account")
+            Text(localized("auth.header.subtitle"))
                 .font(.du(15, weight: .medium))
                 .foregroundColor(DUTheme.inkTertiary)
         }
@@ -75,7 +76,7 @@ struct AuthLoginContainerView: View {
                         viewModel.select(mode: mode)
                     }
                 } label: {
-                    Text(mode == .password ? "Password Login" : "OTP Login")
+                    Text(localized(mode.titleKey))
                         .font(.du(15, weight: .semibold))
                         .foregroundColor(viewModel.selectedMode == mode ? DUTheme.ink : DUTheme.inkSecondary)
                         .frame(maxWidth: .infinity)
@@ -101,41 +102,41 @@ struct AuthLoginContainerView: View {
 
     private var phoneField: some View {
         DUPhoneNumberField(
-            title: "Phone Number",
+            title: localized("auth.field.phone.title"),
             countryCode: "+\(AuthValidator.countryCode)",
-            placeholder: "52 123 4567",
+            placeholder: localized("auth.field.phone.placeholder"),
             text: $viewModel.phoneNumber,
-            error: viewModel.phoneError
+            error: localized(viewModel.phoneError)
         )
     }
 
     private var passwordField: some View {
         DUInputField(
-            title: "Password",
-            placeholder: "Enter your password",
+            title: localized("auth.field.password.title"),
+            placeholder: localized("auth.field.password.placeholder"),
             text: $viewModel.password,
-            error: viewModel.passwordError,
+            error: localized(viewModel.passwordError),
             isSecure: true
         )
     }
 
     private var otpField: some View {
         VStack(alignment: .leading, spacing: DUSpacing.sm) {
-            Text("OTP")
+            Text(localized("auth.field.otp.title"))
                 .font(.du(14, weight: .semibold))
                 .foregroundColor(DUTheme.inkSecondary)
             HStack(alignment: .top, spacing: DUSpacing.md) {
                 DUInputField(
                     title: nil,
-                    placeholder: "Enter OTP",
+                    placeholder: localized("auth.field.otp.placeholder"),
                     text: $viewModel.otp,
-                    error: viewModel.otpError,
+                    error: localized(viewModel.otpError),
                     keyboardType: .numberPad
                 )
                 Button {
                     viewModel.sendOTP()
                 } label: {
-                    Text(viewModel.otpButtonTitle)
+                    Text(localized(viewModel.otpButtonText))
                         .font(.du(14, weight: .semibold))
                         .foregroundColor(viewModel.isSendOTPEnabled ? DUTheme.cyan : DUTheme.inkDisabled)
                         .frame(width: 114, height: 52)
@@ -145,7 +146,7 @@ struct AuthLoginContainerView: View {
                 .buttonStyle(.plain)
                 .disabled(!viewModel.isSendOTPEnabled)
             }
-            Text(viewModel.otpExpiryDescription)
+            Text(localized("auth.otp.expiry"))
                 .font(.du(12, weight: .medium))
                 .foregroundColor(DUTheme.inkTertiary)
         }
@@ -159,7 +160,7 @@ struct AuthLoginContainerView: View {
                 HStack(spacing: DUSpacing.sm) {
                     Image(systemName: viewModel.rememberMe ? "checkmark.square.fill" : "square")
                         .foregroundColor(viewModel.rememberMe ? DUTheme.cyan : DUTheme.inkDisabled)
-                    Text("Remember me")
+                    Text(localized("auth.option.rememberMe"))
                         .foregroundColor(DUTheme.inkSecondary)
                 }
                 .font(.du(13, weight: .medium))
@@ -168,8 +169,8 @@ struct AuthLoginContainerView: View {
 
             Spacer()
 
-            Button("Forgot password?") {
-                viewModel.showPlaceholderMessage(for: "Forgot password")
+            Button(localized("auth.option.forgotPassword")) {
+                viewModel.showPlaceholderMessage(for: "auth.placeholder.forgotPassword")
             }
             .font(.du(13, weight: .medium))
             .foregroundColor(DUTheme.cyan)
@@ -185,8 +186,14 @@ struct AuthLoginContainerView: View {
                     ProgressView()
                         .tint(.white)
                 }
-                Text(viewModel.selectedMode == .password ? "Login" : "Verify and Login")
-                    .font(.du(17, weight: .bold))
+                Text(
+                    localized(
+                        viewModel.selectedMode == .password
+                            ? "auth.primary.password"
+                            : "auth.primary.otp"
+                    )
+                )
+                .font(.du(17, weight: .bold))
             }
             .foregroundColor(.white)
             .frame(maxWidth: .infinity)
@@ -218,7 +225,7 @@ struct AuthLoginContainerView: View {
                 Rectangle()
                     .fill(DUTheme.lineLight)
                     .frame(height: 1)
-                Text("Other ways")
+                Text(localized("auth.social.otherWays"))
                     .font(.du(13, weight: .medium))
                     .foregroundColor(DUTheme.inkTertiary)
                     .padding(.horizontal, DUSpacing.sm)
@@ -228,14 +235,14 @@ struct AuthLoginContainerView: View {
             }
 
             HStack(spacing: DUSpacing.lg) {
-                PlaceholderCircleButton(assetName: "LoginSMSIcon", title: "SMS") {
-                    viewModel.showPlaceholderMessage(for: "SMS login")
+                PlaceholderCircleButton(assetName: "LoginSMSIcon", title: localized("auth.social.sms")) {
+                    viewModel.showPlaceholderMessage(for: "auth.placeholder.sms")
                 }
-                PlaceholderCircleButton(systemName: "touchid", title: "Fingerprint") {
-                    viewModel.showPlaceholderMessage(for: "Fingerprint login")
+                PlaceholderCircleButton(systemName: "touchid", title: localized("auth.social.fingerprint")) {
+                    viewModel.showPlaceholderMessage(for: "auth.placeholder.fingerprint")
                 }
-                PlaceholderCircleButton(systemName: "faceid", title: "Face") {
-                    viewModel.showPlaceholderMessage(for: "Face login")
+                PlaceholderCircleButton(systemName: "faceid", title: localized("auth.social.face")) {
+                    viewModel.showPlaceholderMessage(for: "auth.placeholder.face")
                 }
             }
         }
@@ -243,10 +250,10 @@ struct AuthLoginContainerView: View {
 
     private var registerLink: some View {
         HStack(spacing: DUSpacing.xs) {
-            Text("New here?")
+            Text(localized("auth.register.prompt"))
                 .foregroundColor(DUTheme.inkTertiary)
-            Button("Create an account") {
-                viewModel.showPlaceholderMessage(for: "Registration")
+            Button(localized("auth.register.action")) {
+                viewModel.showPlaceholderMessage(for: "auth.placeholder.registration")
             }
             .foregroundColor(DUTheme.cyan)
         }
@@ -281,6 +288,14 @@ struct AuthLoginContainerView: View {
         .padding(DUSpacing.lg)
         .background(background)
         .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+    }
+
+    private func localized(_ key: String, arguments: [String] = []) -> String {
+        languageStore.string(key, arguments: arguments)
+    }
+
+    private func localized(_ value: LocalizedTextValue?) -> String {
+        languageStore.string(value)
     }
 }
 
@@ -484,5 +499,6 @@ struct AuthLoginContainerView_Previews: PreviewProvider {
             )
             .previewDisplayName("OTP Mode")
         }
+        .environmentObject(AppLanguageStore(initialLanguage: .english))
     }
 }

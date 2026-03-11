@@ -107,8 +107,8 @@ actor MockAuthService: AuthServicing {
         UserSession(
             displayName: "Ahmed Mohammed",
             phoneNumber: AuthValidator.formattedPhone(phone),
-            greeting: "Good Morning",
-            balanceText: "128.50 AED"
+            greetingKey: "home.greeting.morning",
+            balanceAmount: "128.50"
         )
     }
 

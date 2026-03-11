@@ -1,0 +1,283 @@
+{
+  "common": {
+    "ok": "حسنًا",
+    "retry": "إعادة المحاولة",
+    "reload": "إعادة التحميل",
+    "save": "حفظ",
+    "comingSoon": {
+      "title": "قريبًا"
+    },
+    "placeholder": {
+      "feature": "ميزة %@ قادمة قريبًا."
+    }
+  },
+  "auth": {
+    "header": {
+      "title": "مرحبًا بعودتك",
+      "subtitle": "سجّل الدخول إلى حساب DU الخاص بك"
+    },
+    "mode": {
+      "password": "تسجيل بكلمة المرور",
+      "otp": "تسجيل برمز التحقق"
+    },
+    "field": {
+      "phone": {
+        "title": "رقم الهاتف",
+        "placeholder": "52 123 4567"
+      },
+      "password": {
+        "title": "كلمة المرور",
+        "placeholder": "أدخل كلمة المرور"
+      },
+      "otp": {
+        "title": "رمز التحقق",
+        "placeholder": "أدخل الرمز"
+      }
+    },
+    "otp": {
+      "send": "إرسال الرمز",
+      "resend": "إعادة الإرسال بعد %@ ث",
+      "expiry": "رمز التحقق صالح لمدة 5 دقائق.",
+      "sent": "تم إرسال رمز التحقق بنجاح."
+    },
+    "option": {
+      "rememberMe": "تذكّرني",
+      "forgotPassword": "هل نسيت كلمة المرور؟"
+    },
+    "primary": {
+      "password": "تسجيل الدخول",
+      "otp": "تحقق ثم ادخل"
+    },
+    "social": {
+      "otherWays": "طرق أخرى",
+      "sms": "رسائل SMS",
+      "fingerprint": "البصمة",
+      "face": "الوجه"
+    },
+    "register": {
+      "prompt": "جديد هنا؟",
+      "action": "إنشاء حساب"
+    },
+    "placeholder": {
+      "forgotPassword": "ميزة استعادة كلمة المرور قادمة قريبًا.",
+      "sms": "ميزة تسجيل الدخول عبر الرسائل قادمة قريبًا.",
+      "fingerprint": "ميزة تسجيل الدخول بالبصمة قادمة قريبًا.",
+      "face": "ميزة تسجيل الدخول بالوجه قادمة قريبًا.",
+      "registration": "ميزة التسجيل قادمة قريبًا."
+    },
+    "error": {
+      "invalidPhone": "أدخل رقم هاتف إماراتي صالح.",
+      "invalidPasswordFormat": "أدخل كلمة مرور صالحة.",
+      "invalidOTPFormat": "أدخل رمز تحقق صالح.",
+      "invalidCredentialsRemaining": "رقم الهاتف أو كلمة المرور غير صحيح. تبقى %@ محاولات.",
+      "invalidCredentials": "بيانات الدخول غير صحيحة.",
+      "otpExpired": "انتهت صلاحية الرمز. اطلب رمزًا جديدًا ثم حاول مرة أخرى.",
+      "otpCooldown": "حاول مرة أخرى بعد %@ ثانية.",
+      "accountLocked": "تم قفل الحساب. حاول لاحقًا.",
+      "featureUnavailable": "هذه الميزة غير متاحة بعد.",
+      "networkUnavailable": "خدمة المحاكاة غير متاحة مؤقتًا. حاول مرة أخرى."
+    }
+  },
+  "home": {
+    "tab": {
+      "home": "الرئيسية",
+      "service": "الخدمات",
+      "mall": "المتجر",
+      "video": "الفيديو",
+      "me": "أنا"
+    },
+    "feature": {
+      "service": {
+        "message": "مركز الخدمات قادم قريبًا."
+      },
+      "mall": {
+        "message": "المتجر قادم قريبًا."
+      },
+      "video": {
+        "message": "تجارب الفيديو قادمة قريبًا."
+      }
+    },
+    "greeting": {
+      "morning": "صباح الخير"
+    },
+    "header": {
+      "balanceTitle": "الرصيد الحالي",
+      "balanceAmount": "%@ درهم",
+      "recharge": "إعادة شحن"
+    },
+    "placeholder": {
+      "search": "ميزة البحث قادمة قريبًا.",
+      "notifications": "ميزة الإشعارات قادمة قريبًا."
+    },
+    "quick": {
+      "recharge": "إعادة شحن",
+      "plans": "الباقات",
+      "offers": "العروض",
+      "mall": "المتجر"
+    },
+    "section": {
+      "popularServices": "الخدمات الشائعة",
+      "trendingProducts": "المنتجات الرائجة",
+      "viewAll": "عرض الكل"
+    },
+    "service": {
+      "dataPack": "باقة بيانات",
+      "voicePack": "باقة دقائق",
+      "roaming": "التجوال",
+      "tickets": "التذاكر",
+      "bills": "الفواتير",
+      "points": "النقاط",
+      "mail": "البريد",
+      "support": "الدعم"
+    },
+    "product": {
+      "iphone": {
+        "name": "iPhone 15 Pro Max 256GB",
+        "price": "AED 5,999",
+        "oldPrice": "AED 6,999"
+      },
+      "airpods": {
+        "name": "AirPods Pro 2",
+        "price": "AED 1,299"
+      },
+      "watch": {
+        "name": "Apple Watch S9",
+        "price": "AED 2,499"
+      }
+    },
+    "banner": {
+      "newCustomer": {
+        "title": "عرض خاص للعملاء الجدد",
+        "subtitle": "احصل على 50%% بيانات إضافية عند أول إعادة شحن. ينتهي العرض خلال 3 أيام."
+      },
+      "weekendData": {
+        "title": "بيانات مضاعفة في عطلة نهاية الأسبوع",
+        "subtitle": "فعّل الإضافة قبل الجمعة واستمتع بضعف البيانات على الباقات المحددة."
+      },
+      "mallFlash": {
+        "title": "عروض المتجر السريعة",
+        "subtitle": "أجهزة وإكسسوارات بعروض تقسيط شهرية لفترة محدودة."
+      }
+    },
+    "usage": {
+      "data": {
+        "title": "البيانات",
+        "value": "8.5 / 10 جيجابايت"
+      },
+      "voice": {
+        "title": "الدقائق",
+        "value": "156 / 200 دقيقة"
+      },
+      "sms": {
+        "title": "الرسائل",
+        "value": "45 / 50"
+      }
+    }
+  },
+  "me": {
+    "empty": {
+      "title": "مركزك الشخصي يكاد يكون جاهزًا",
+      "subtitle": "لم نعثر على وحدات ملف شخصي لعرضها بعد. اسحب للتحديث أو حاول لاحقًا."
+    },
+    "error": {
+      "title": "تعذر تحميل صفحة أنا",
+      "subtitle": "يتعذر تحميل ملفك الشخصي الآن."
+    },
+    "profile": {
+      "reveal": "إظهار",
+      "hide": "إخفاء"
+    },
+    "membership": {
+      "vip": "عضو VIP"
+    },
+    "stat": {
+      "balance": "الرصيد (درهم)",
+      "points": "النقاط",
+      "coupons": "القسائم",
+      "badges": "الأوسمة"
+    },
+    "value": {
+      "points": "2,580",
+      "coupons": "5",
+      "badges": "12"
+    },
+    "section": {
+      "badges": "أوسمتي",
+      "viewAll": "عرض الكل"
+    },
+    "badge": {
+      "newUser": "مستخدم جديد",
+      "firstRecharge": "أول إعادة شحن",
+      "firstOrder": "أول طلب",
+      "vip": "عضو VIP",
+      "streak": "نشاط متواصل",
+      "emptyTitle": "لا توجد أوسمة بعد",
+      "emptySubtitle": "ستظهر إنجازاتك هنا بعد نشاطات جديدة.",
+      "new": "جديد"
+    },
+    "menu": {
+      "empty": "ستظهر اختصارات القائمة قريبًا",
+      "plan": {
+        "title": "باقتي",
+        "subtitle": "Premium Plan 99 AED/month"
+      },
+      "data": {
+        "title": "إدارة البيانات",
+        "subtitle": "المتبقي 8.5GB"
+      },
+      "billing": {
+        "title": "الفواتير",
+        "subtitle": "عرض سجل الفواتير"
+      },
+      "orders": {
+        "title": "طلباتي",
+        "subtitle": "عرض جميع الطلبات"
+      },
+      "favorites": {
+        "title": "المفضلة",
+        "subtitle": "العناصر والمحتوى المحفوظ"
+      },
+      "address": {
+        "title": "عنوان التوصيل",
+        "subtitle": "إدارة العناوين"
+      },
+      "language": {
+        "title": "تغيير اللغة",
+        "subtitle": "لغة التطبيق واتجاه التخطيط"
+      },
+      "help": {
+        "title": "المساعدة والملاحظات",
+        "subtitle": "الأسئلة الشائعة وخدمة العملاء"
+      },
+      "about": {
+        "title": "من نحن",
+        "subtitle": "الإصدار %@"
+      }
+    },
+    "reveal": {
+      "title": "إظهار الرقم الكامل",
+      "subtitle": "أدخل كلمة مرور تسجيل الدخول لعرض رقم الهاتف الكامل على هذا الجهاز.",
+      "placeholder": "أدخل كلمة المرور",
+      "submit": "إظهار الرقم",
+      "invalidPassword": "أدخل كلمة المرور الصحيحة لإظهار رقم الهاتف الكامل.",
+      "featureUnavailable": "لم يتم إعداد التحقق البعيد من كلمة المرور بعد.",
+      "verifyFailed": "تعذر التحقق من كلمة المرور."
+    },
+    "signOut": {
+      "button": "تسجيل الخروج"
+    }
+  },
+  "language": {
+    "settings": {
+      "title": "تغيير اللغة",
+      "subtitle": "اختر لغة التطبيق. سيتحدث اتجاه الواجهة بعد الحفظ.",
+      "current": "اللغة الحالية",
+      "save": "حفظ"
+    },
+    "name": {
+      "english": "الإنجليزية",
+      "chinese": "الصينية المبسطة",
+      "arabic": "العربية"
+    }
+  }
+}

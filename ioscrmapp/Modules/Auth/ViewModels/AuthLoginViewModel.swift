@@ -9,13 +9,12 @@ final class AuthLoginViewModel: ObservableObject {
     @Published var otp = ""
     @Published var rememberMe = true
     @Published var isLoading = false
-    @Published var phoneError: String?
-    @Published var passwordError: String?
-    @Published var otpError: String?
-    @Published var bannerMessage: String?
+    @Published var phoneError: LocalizedTextValue?
+    @Published var passwordError: LocalizedTextValue?
+    @Published var otpError: LocalizedTextValue?
+    @Published var bannerMessage: LocalizedTextValue?
     @Published var bannerTone: BannerTone = .info
     @Published var otpCooldownRemaining = 0
-    @Published var otpExpiryDescription = "OTP valid for 5 minutes."
 
     enum BannerTone {
         case info
@@ -52,8 +51,10 @@ final class AuthLoginViewModel: ObservableObject {
         }
     }
 
-    var otpButtonTitle: String {
-        otpCooldownRemaining > 0 ? "Resend in \(otpCooldownRemaining)s" : "Send OTP"
+    var otpButtonText: LocalizedTextValue {
+        otpCooldownRemaining > 0
+            ? .key("auth.otp.resend", arguments: ["\(otpCooldownRemaining)"])
+            : .key("auth.otp.send")
     }
 
     var isSendOTPEnabled: Bool {
@@ -78,9 +79,8 @@ final class AuthLoginViewModel: ObservableObject {
                 let result = try await authService.sendOTP(to: phoneNumber)
                 let seconds = max(0, Int(result.resendAvailableAt.timeIntervalSinceNow.rounded(.up)))
                 startCountdown(from: seconds)
-                otpExpiryDescription = "OTP valid for 5 minutes."
                 bannerTone = .success
-                bannerMessage = "OTP sent successfully."
+                bannerMessage = .key("auth.otp.sent")
             } catch {
                 apply(error: error)
             }
@@ -129,14 +129,14 @@ final class AuthLoginViewModel: ObservableObject {
         }
     }
 
-    func showPlaceholderMessage(for feature: String) {
+    func showPlaceholderMessage(for key: String) {
         bannerTone = .info
-        bannerMessage = "\(feature) is coming soon."
+        bannerMessage = .key(key)
     }
 
     private func validatePhone() -> Bool {
         guard AuthValidator.isValidPhone(phoneNumber) else {
-            phoneError = AuthError.invalidPhone.errorDescription
+            phoneError = AuthError.invalidPhone.textValue
             return false
         }
         phoneError = nil
@@ -145,7 +145,7 @@ final class AuthLoginViewModel: ObservableObject {
 
     private func validatePassword() -> Bool {
         guard AuthValidator.isValidPassword(password) else {
-            passwordError = AuthError.invalidPasswordFormat.errorDescription
+            passwordError = AuthError.invalidPasswordFormat.textValue
             return false
         }
         passwordError = nil
@@ -154,7 +154,7 @@ final class AuthLoginViewModel: ObservableObject {
 
     private func validateOTP() -> Bool {
         guard AuthValidator.isValidOTP(otp) else {
-            otpError = AuthError.invalidOTPFormat.errorDescription
+            otpError = AuthError.invalidOTPFormat.textValue
             return false
         }
         otpError = nil
@@ -171,20 +171,20 @@ final class AuthLoginViewModel: ObservableObject {
     private func apply(error: Error) {
         let authError = (error as? AuthError) ?? .networkUnavailable
         bannerTone = .error
-        bannerMessage = authError.errorDescription
+        bannerMessage = authError.textValue
 
         switch authError {
         case .invalidPhone:
-            phoneError = authError.errorDescription
+            phoneError = authError.textValue
         case .invalidPasswordFormat:
-            passwordError = authError.errorDescription
+            passwordError = authError.textValue
         case .invalidOTPFormat, .otpExpired:
-            otpError = authError.errorDescription
+            otpError = authError.textValue
         case .invalidCredentials:
             if selectedMode == .password {
-                passwordError = authError.errorDescription
+                passwordError = authError.textValue
             } else {
-                otpError = authError.errorDescription
+                otpError = authError.textValue
             }
         case let .otpCooldown(secondsRemaining):
             otpCooldownRemaining = secondsRemaining
@@ -203,7 +203,11 @@ final class AuthLoginViewModel: ObservableObject {
 
         countdownTask = Task {
             while !Task.isCancelled, otpCooldownRemaining > 0 {
-                try? await Task.sleep(nanoseconds: 1_000_000_000)
+                do {
+                    try await Task.sleep(nanoseconds: 1_000_000_000)
+                } catch {
+                    break
+                }
                 await MainActor.run {
                     otpCooldownRemaining = max(0, otpCooldownRemaining - 1)
                 }
