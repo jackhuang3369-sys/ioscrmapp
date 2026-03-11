@@ -13,19 +13,36 @@ final class AuthLoginViewModel: ObservableObject {
     @Published var passwordError: String?
     @Published var otpError: String?
     @Published var bannerMessage: String?
-    @Published var bannerTone: BannerTone = .info
+    @Published var bannerTone: AuthBannerTone = .info
     @Published var otpCooldownRemaining = 0
     @Published var otpExpiryDescription = "OTP valid for 5 minutes."
+    @Published var isRegistrationPresented = false
 
-    enum BannerTone {
-        case info
-        case success
-        case error
+    private enum RegistrationDismissal {
+        case success(phone: String)
+        case goToLogin(phone: String)
+    }
+
+    private struct Snapshot {
+        let selectedMode: LoginMode
+        let phoneNumber: String
+        let password: String
+        let otp: String
+        let rememberMe: Bool
+        let phoneError: String?
+        let passwordError: String?
+        let otpError: String?
+        let bannerMessage: String?
+        let bannerTone: AuthBannerTone
+        let otpCooldownRemaining: Int
+        let otpExpiryDescription: String
     }
 
     private let authService: any AuthServicing
     private let sessionStore: SessionStore
     private var countdownTask: Task<Void, Never>?
+    private var registrationSnapshot: Snapshot?
+    private var registrationDismissal: RegistrationDismissal?
 
     init(authService: any AuthServicing, sessionStore: SessionStore) {
         self.authService = authService
@@ -64,6 +81,53 @@ final class AuthLoginViewModel: ObservableObject {
         selectedMode = mode
         sessionStore.updatePreferredLoginMode(mode)
         clearMessages()
+    }
+
+    func openRegistration() {
+        registrationSnapshot = Snapshot(
+            selectedMode: selectedMode,
+            phoneNumber: phoneNumber,
+            password: password,
+            otp: otp,
+            rememberMe: rememberMe,
+            phoneError: phoneError,
+            passwordError: passwordError,
+            otpError: otpError,
+            bannerMessage: bannerMessage,
+            bannerTone: bannerTone,
+            otpCooldownRemaining: otpCooldownRemaining,
+            otpExpiryDescription: otpExpiryDescription
+        )
+        registrationDismissal = nil
+        isRegistrationPresented = true
+    }
+
+    func handleRegistrationSuccess(phone: String) {
+        registrationDismissal = .success(phone: phone)
+    }
+
+    func handleRegistrationGoToLogin(phone: String) {
+        registrationDismissal = .goToLogin(phone: phone)
+    }
+
+    func handleRegistrationDismissal() {
+        defer {
+            registrationSnapshot = nil
+            registrationDismissal = nil
+        }
+
+        switch registrationDismissal {
+        case let .success(phone):
+            applyRegistrationResult(
+                phone: phone,
+                bannerMessage: "Registration successful. Please sign in.",
+                showSuccessBanner: true
+            )
+        case let .goToLogin(phone):
+            applyRegistrationResult(phone: phone, bannerMessage: nil, showSuccessBanner: false)
+        case .none:
+            restoreSnapshot()
+        }
     }
 
     func sendOTP() {
@@ -178,7 +242,9 @@ final class AuthLoginViewModel: ObservableObject {
             phoneError = authError.errorDescription
         case .invalidPasswordFormat:
             passwordError = authError.errorDescription
-        case .invalidOTPFormat, .otpExpired:
+        case .invalidRegistrationPassword, .passwordMismatch:
+            break
+        case .invalidOTPFormat, .otpExpired, .otpIncorrect:
             otpError = authError.errorDescription
         case .invalidCredentials:
             if selectedMode == .password {
@@ -192,7 +258,9 @@ final class AuthLoginViewModel: ObservableObject {
         case .accountLocked:
             passwordError = nil
             otpError = nil
-        case .featureUnavailable, .networkUnavailable:
+        case .accountAlreadyRegistered:
+            break
+        case .backendMessage, .featureUnavailable, .networkUnavailable:
             break
         }
     }
@@ -208,6 +276,52 @@ final class AuthLoginViewModel: ObservableObject {
                     otpCooldownRemaining = max(0, otpCooldownRemaining - 1)
                 }
             }
+        }
+    }
+
+    private func applyRegistrationResult(phone: String, bannerMessage: String?, showSuccessBanner: Bool) {
+        selectedMode = .password
+        sessionStore.updatePreferredLoginMode(.password)
+        phoneNumber = AuthValidator.normalizedPhone(phone)
+        password = ""
+        otp = ""
+        phoneError = nil
+        passwordError = nil
+        otpError = nil
+        otpCooldownRemaining = 0
+        otpExpiryDescription = "OTP valid for 5 minutes."
+        countdownTask?.cancel()
+
+        if showSuccessBanner, let bannerMessage {
+            bannerTone = .success
+            self.bannerMessage = bannerMessage
+        } else {
+            self.bannerMessage = nil
+        }
+    }
+
+    private func restoreSnapshot() {
+        guard let snapshot = registrationSnapshot else {
+            return
+        }
+
+        selectedMode = snapshot.selectedMode
+        phoneNumber = snapshot.phoneNumber
+        password = snapshot.password
+        otp = snapshot.otp
+        rememberMe = snapshot.rememberMe
+        phoneError = snapshot.phoneError
+        passwordError = snapshot.passwordError
+        otpError = snapshot.otpError
+        bannerMessage = snapshot.bannerMessage
+        bannerTone = snapshot.bannerTone
+        otpExpiryDescription = snapshot.otpExpiryDescription
+
+        if snapshot.otpCooldownRemaining > 0 {
+            startCountdown(from: snapshot.otpCooldownRemaining)
+        } else {
+            otpCooldownRemaining = 0
+            countdownTask?.cancel()
         }
     }
 }

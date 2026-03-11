@@ -2,8 +2,10 @@ import SwiftUI
 
 struct AuthLoginContainerView: View {
     @StateObject private var viewModel: AuthLoginViewModel
+    private let authService: any AuthServicing
 
     init(sessionStore: SessionStore, authService: any AuthServicing) {
+        self.authService = authService
         _viewModel = StateObject(
             wrappedValue: AuthLoginViewModel(
                 authService: authService,
@@ -16,11 +18,11 @@ struct AuthLoginContainerView: View {
         GeometryReader { proxy in
             ScrollView(showsIndicators: false) {
                 VStack(spacing: DUSpacing.xxl) {
-                    logo
+                    AuthLogoView()
                     header
                     tabs
                     if let bannerMessage = viewModel.bannerMessage {
-                        banner(message: bannerMessage, tone: viewModel.bannerTone)
+                        AuthBannerView(message: bannerMessage, tone: viewModel.bannerTone)
                     }
                     phoneField
                     if viewModel.selectedMode == .password {
@@ -41,19 +43,21 @@ struct AuthLoginContainerView: View {
             }
             .background(DUTheme.background.ignoresSafeArea())
         }
-    }
-
-    private var logo: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .fill(DUTheme.brandGradient)
-                .frame(width: 88, height: 88)
-                .shadow(color: DUTheme.cyan.opacity(0.25), radius: 18, x: 0, y: 8)
-            Text("DU")
-                .font(.du(32, weight: .bold))
-                .foregroundColor(.white)
+        .fullScreenCover(
+            isPresented: $viewModel.isRegistrationPresented,
+            onDismiss: { viewModel.handleRegistrationDismissal() }
+        ) {
+            AuthRegistrationContainerView(
+                authService: authService,
+                initialPhone: viewModel.phoneNumber,
+                onSuccess: { phone in
+                    viewModel.handleRegistrationSuccess(phone: phone)
+                },
+                onGoToLogin: { phone in
+                    viewModel.handleRegistrationGoToLogin(phone: phone)
+                }
+            )
         }
-        .padding(.top, DUSpacing.sm)
     }
 
     private var header: some View {
@@ -132,18 +136,12 @@ struct AuthLoginContainerView: View {
                     error: viewModel.otpError,
                     keyboardType: .numberPad
                 )
-                Button {
+                SecondaryActionButton(
+                    title: viewModel.otpButtonTitle,
+                    isEnabled: viewModel.isSendOTPEnabled
+                ) {
                     viewModel.sendOTP()
-                } label: {
-                    Text(viewModel.otpButtonTitle)
-                        .font(.du(14, weight: .semibold))
-                        .foregroundColor(viewModel.isSendOTPEnabled ? DUTheme.cyan : DUTheme.inkDisabled)
-                        .frame(width: 114, height: 52)
-                        .background(viewModel.isSendOTPEnabled ? DUTheme.cyanBackground : DUTheme.backgroundSecondary)
-                        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
                 }
-                .buttonStyle(.plain)
-                .disabled(!viewModel.isSendOTPEnabled)
             }
             Text(viewModel.otpExpiryDescription)
                 .font(.du(12, weight: .medium))
@@ -246,41 +244,450 @@ struct AuthLoginContainerView: View {
             Text("New here?")
                 .foregroundColor(DUTheme.inkTertiary)
             Button("Create an account") {
-                viewModel.showPlaceholderMessage(for: "Registration")
+                viewModel.openRegistration()
             }
             .foregroundColor(DUTheme.cyan)
         }
         .font(.du(14, weight: .medium))
         .padding(.bottom, DUSpacing.xxxl)
     }
+}
 
-    private func banner(message: String, tone: AuthLoginViewModel.BannerTone) -> some View {
-        let background: Color
-        let foreground: Color
+private struct AuthRegistrationContainerView: View {
+    @Environment(\.dismiss) private var dismiss
+    @StateObject private var viewModel: AuthRegistrationViewModel
+    @State private var showsPasswordStep = false
 
+    private let onSuccess: (String) -> Void
+    private let onGoToLogin: (String) -> Void
+
+    init(
+        authService: any AuthServicing,
+        initialPhone: String,
+        onSuccess: @escaping (String) -> Void,
+        onGoToLogin: @escaping (String) -> Void
+    ) {
+        _viewModel = StateObject(
+            wrappedValue: AuthRegistrationViewModel(
+                authService: authService,
+                initialPhone: initialPhone
+            )
+        )
+        self.onSuccess = onSuccess
+        self.onGoToLogin = onGoToLogin
+    }
+
+    var body: some View {
+        NavigationView {
+            registrationScrollView {
+                VStack(spacing: DUSpacing.xl) {
+                    RegistrationTopBarView(title: "Create your account", onClose: { dismiss() })
+                    AuthLogoView()
+                    registrationHeader(
+                        title: "Create your account",
+                        subtitle: "Verify your phone number before setting a password."
+                    )
+                    RegistrationStepIndicator(currentStep: 1)
+                    if let bannerMessage = viewModel.bannerMessage {
+                        AuthBannerView(message: bannerMessage, tone: viewModel.bannerTone)
+                    }
+                    registrationVerificationCard
+                    verificationPrimaryButton
+                    if viewModel.showGoToLoginAction {
+                        SecondaryLinkButton(title: "Go to Login") {
+                            onGoToLogin(viewModel.currentPhoneForLogin)
+                            dismiss()
+                        }
+                    }
+                    footerLoginLink
+                }
+            }
+            .background(passwordNavigationLink)
+            .navigationBarHidden(true)
+        }
+        .navigationViewStyle(.stack)
+    }
+
+    private func registrationScrollView<Content: View>(@ViewBuilder content: @escaping () -> Content) -> some View {
+        GeometryReader { proxy in
+            let topPadding = max(proxy.safeAreaInsets.top, DUSpacing.sm)
+            let bottomPadding = DUSpacing.xxxl
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 0) {
+                    content()
+                    Spacer(minLength: 0)
+                }
+                .frame(
+                    maxWidth: .infinity,
+                    minHeight: max(0, proxy.size.height - topPadding - bottomPadding),
+                    alignment: .top
+                )
+                .padding(.horizontal, DUSpacing.xl)
+                .padding(.top, topPadding)
+                .padding(.bottom, bottomPadding)
+            }
+            .background(DUTheme.background.ignoresSafeArea())
+        }
+    }
+
+    private func registrationHeader(title: String, subtitle: String) -> some View {
+        VStack(spacing: DUSpacing.sm) {
+            Text(title)
+                .font(.du(28, weight: .bold))
+                .foregroundColor(DUTheme.ink)
+            Text(subtitle)
+                .font(.du(15, weight: .medium))
+                .foregroundColor(DUTheme.inkTertiary)
+                .multilineTextAlignment(.center)
+        }
+    }
+
+    private var registrationVerificationCard: some View {
+        VStack(spacing: DUSpacing.lg) {
+            DUPhoneNumberField(
+                title: "Phone Number",
+                countryCode: "+\(AuthValidator.countryCode)",
+                placeholder: "52 123 4567",
+                text: $viewModel.phoneNumber,
+                error: viewModel.phoneError,
+                storageMode: .localDigits
+            )
+
+            VStack(alignment: .leading, spacing: DUSpacing.sm) {
+                Text("OTP")
+                    .font(.du(14, weight: .semibold))
+                    .foregroundColor(DUTheme.inkSecondary)
+
+                HStack(alignment: .top, spacing: DUSpacing.md) {
+                    DUInputField(
+                        title: nil,
+                        placeholder: "Enter 6-digit OTP",
+                        text: $viewModel.otp,
+                        error: viewModel.otpError,
+                        keyboardType: .numberPad
+                    )
+
+                    SecondaryActionButton(
+                        title: viewModel.otpButtonTitle,
+                        isEnabled: viewModel.isSendOTPEnabled
+                    ) {
+                        viewModel.sendOTP()
+                    }
+                }
+
+                Text(viewModel.otpExpiryDescription)
+                    .font(.du(12, weight: .medium))
+                    .foregroundColor(DUTheme.inkTertiary)
+            }
+        }
+        .padding(DUSpacing.lg)
+        .duCardStyle()
+    }
+
+    private var verificationPrimaryButton: some View {
+        PrimaryActionButton(
+            title: "Verify and Continue",
+            isEnabled: viewModel.isVerifyEnabled,
+            isLoading: viewModel.isLoading
+        ) {
+            Task {
+                let result = await viewModel.verifyForPasswordSetup()
+                if case .advanceToPassword = result {
+                    showsPasswordStep = true
+                }
+            }
+        }
+    }
+
+    private var footerLoginLink: some View {
+        HStack(spacing: DUSpacing.xs) {
+            Text("Already have an account?")
+                .foregroundColor(DUTheme.inkTertiary)
+            Button("Back to login") {
+                onGoToLogin(viewModel.currentPhoneForLogin)
+                dismiss()
+            }
+            .foregroundColor(DUTheme.cyan)
+        }
+        .font(.du(14, weight: .medium))
+    }
+
+    private var registrationPasswordScreen: some View {
+        registrationScrollView {
+            VStack(spacing: DUSpacing.xl) {
+                RegistrationTopBarView(
+                    title: "Set your password",
+                    onBack: { showsPasswordStep = false },
+                    onClose: { dismiss() }
+                )
+                AuthLogoView()
+                registrationHeader(
+                    title: "Set your password",
+                    subtitle: "Use this password for future password login."
+                )
+                RegistrationStepIndicator(currentStep: 2)
+                if let bannerMessage = viewModel.bannerMessage {
+                    AuthBannerView(message: bannerMessage, tone: viewModel.bannerTone)
+                }
+                VStack(spacing: DUSpacing.lg) {
+                    VerifiedPhoneSummary(phone: viewModel.verifiedPhoneSummary)
+                    DUInputField(
+                        title: "New Password",
+                        placeholder: "Enter a secure password",
+                        text: $viewModel.password,
+                        error: viewModel.passwordError,
+                        isSecure: true
+                    )
+                    DUInputField(
+                        title: "Confirm Password",
+                        placeholder: "Re-enter your password",
+                        text: $viewModel.confirmPassword,
+                        error: viewModel.confirmPasswordError,
+                        isSecure: true
+                    )
+                }
+                .padding(DUSpacing.lg)
+                .duCardStyle()
+
+                PrimaryActionButton(
+                    title: "Complete Registration",
+                    isEnabled: viewModel.isRegisterEnabled,
+                    isLoading: viewModel.isLoading
+                ) {
+                    Task {
+                        let didRegister = await viewModel.submitRegistration()
+                        guard didRegister else {
+                            return
+                        }
+
+                        try? await Task.sleep(nanoseconds: 900_000_000)
+                        onSuccess(viewModel.currentPhoneForLogin)
+                        dismiss()
+                    }
+                }
+            }
+        }
+        .navigationBarHidden(true)
+    }
+
+    private var passwordNavigationLink: some View {
+        NavigationLink(
+            destination: registrationPasswordScreen,
+            isActive: $showsPasswordStep
+        ) {
+            EmptyView()
+        }
+        .hidden()
+    }
+}
+
+private struct AuthLogoView: View {
+    var body: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                .fill(DUTheme.brandGradient)
+                .frame(width: 88, height: 88)
+                .shadow(color: DUTheme.cyan.opacity(0.25), radius: 18, x: 0, y: 8)
+            Text("DU")
+                .font(.du(32, weight: .bold))
+                .foregroundColor(.white)
+        }
+        .padding(.top, DUSpacing.sm)
+    }
+}
+
+private struct RegistrationTopBarView: View {
+    let title: String
+    var onBack: (() -> Void)? = nil
+    let onClose: () -> Void
+
+    var body: some View {
+        HStack {
+            if let onBack {
+                Button(action: onBack) {
+                    Image(systemName: "chevron.left")
+                        .font(.du(16, weight: .bold))
+                        .foregroundColor(DUTheme.ink)
+                        .frame(width: 36, height: 36)
+                        .background(DUTheme.panel)
+                        .clipShape(Circle())
+                }
+                .buttonStyle(.plain)
+            } else {
+                Color.clear
+                    .frame(width: 36, height: 36)
+            }
+
+            Spacer()
+
+            Text(title)
+                .font(.du(15, weight: .semibold))
+                .foregroundColor(DUTheme.inkSecondary)
+
+            Spacer()
+
+            Button(action: onClose) {
+                Image(systemName: "xmark")
+                    .font(.du(14, weight: .bold))
+                    .foregroundColor(DUTheme.ink)
+                    .frame(width: 36, height: 36)
+                    .background(DUTheme.panel)
+                    .clipShape(Circle())
+            }
+            .buttonStyle(.plain)
+        }
+    }
+}
+
+private struct RegistrationStepIndicator: View {
+    let currentStep: Int
+
+    var body: some View {
+        HStack(spacing: DUSpacing.sm) {
+            ForEach(1...2, id: \.self) { step in
+                VStack(spacing: DUSpacing.xs) {
+                    Capsule()
+                        .fill(step <= currentStep ? DUTheme.cyan : DUTheme.lineLight)
+                        .frame(width: 96, height: 8)
+                    Text("Step \(step) of 2")
+                        .font(.du(11, weight: .medium))
+                        .foregroundColor(step == currentStep ? DUTheme.cyan : DUTheme.inkTertiary)
+                }
+            }
+        }
+    }
+}
+
+private struct VerifiedPhoneSummary: View {
+    let phone: String
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: DUSpacing.sm) {
+            Text("Verified Phone")
+                .font(.du(13, weight: .semibold))
+                .foregroundColor(DUTheme.inkSecondary)
+
+            HStack(spacing: DUSpacing.md) {
+                Image(systemName: "checkmark.shield.fill")
+                    .foregroundColor(DUTheme.success)
+                Text(phone)
+                    .font(.du(16, weight: .semibold))
+                    .foregroundColor(DUTheme.ink)
+                Spacer()
+            }
+            .padding(.horizontal, DUSpacing.lg)
+            .frame(height: 52)
+            .background(DUTheme.successBackground)
+            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+        }
+    }
+}
+
+private struct AuthBannerView: View {
+    let message: String
+    let tone: AuthBannerTone
+
+    private var colors: (background: Color, foreground: Color, icon: String) {
         switch tone {
         case .info:
-            background = DUTheme.cyanBackground
-            foreground = DUTheme.cyan
+            return (DUTheme.cyanBackground, DUTheme.cyan, "info.circle.fill")
         case .success:
-            background = DUTheme.successBackground
-            foreground = DUTheme.success
+            return (DUTheme.successBackground, DUTheme.success, "checkmark.circle.fill")
         case .error:
-            background = DUTheme.errorBackground
-            foreground = DUTheme.error
+            return (DUTheme.errorBackground, DUTheme.error, "exclamationmark.triangle.fill")
         }
+    }
 
-        return HStack(spacing: DUSpacing.sm) {
-            Image(systemName: tone == .error ? "exclamationmark.triangle.fill" : "sparkles")
+    var body: some View {
+        HStack(spacing: DUSpacing.sm) {
+            Image(systemName: colors.icon)
             Text(message)
                 .font(.du(13, weight: .semibold))
                 .multilineTextAlignment(.leading)
             Spacer()
         }
-        .foregroundColor(foreground)
+        .foregroundColor(colors.foreground)
         .padding(DUSpacing.lg)
-        .background(background)
+        .background(colors.background)
         .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+    }
+}
+
+private struct PrimaryActionButton: View {
+    let title: String
+    let isEnabled: Bool
+    let isLoading: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: DUSpacing.sm) {
+                if isLoading {
+                    ProgressView()
+                        .tint(.white)
+                }
+                Text(title)
+                    .font(.du(17, weight: .bold))
+            }
+            .foregroundColor(.white)
+            .frame(maxWidth: .infinity)
+            .frame(height: 56)
+            .background(
+                isEnabled
+                    ? DUTheme.brandGradient
+                    : LinearGradient(
+                        gradient: Gradient(colors: [DUTheme.inkDisabled]),
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+            )
+            .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+            .shadow(
+                color: isEnabled ? DUTheme.cyan.opacity(0.28) : .clear,
+                radius: 18,
+                x: 0,
+                y: 8
+            )
+        }
+        .buttonStyle(.plain)
+        .disabled(!isEnabled)
+    }
+}
+
+private struct SecondaryActionButton: View {
+    let title: String
+    let isEnabled: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Text(title)
+                .font(.du(14, weight: .semibold))
+                .foregroundColor(isEnabled ? DUTheme.cyan : DUTheme.inkDisabled)
+                .frame(width: 114, height: 52)
+                .background(isEnabled ? DUTheme.cyanBackground : DUTheme.backgroundSecondary)
+                .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+        }
+        .buttonStyle(.plain)
+        .disabled(!isEnabled)
+    }
+}
+
+private struct SecondaryLinkButton: View {
+    let title: String
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Text(title)
+                .font(.du(15, weight: .semibold))
+                .foregroundColor(DUTheme.cyan)
+                .frame(maxWidth: .infinity)
+                .frame(height: 52)
+                .background(DUTheme.cyanBackground)
+                .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+        }
+        .buttonStyle(.plain)
     }
 }
 
@@ -354,18 +761,29 @@ private struct DUInputField: View {
     }
 }
 
+private enum DUPhoneStorageMode {
+    case normalized
+    case localDigits
+}
+
 private struct DUPhoneNumberField: View {
     let title: String
     let countryCode: String
     let placeholder: String
     @Binding var text: String
     let error: String?
+    var storageMode: DUPhoneStorageMode = .normalized
 
     private var sanitizedPhoneBinding: Binding<String> {
         Binding(
             get: { AuthValidator.localPhoneDigits(text) },
             set: { newValue in
-                text = AuthValidator.normalizedPhone(newValue)
+                switch storageMode {
+                case .normalized:
+                    text = AuthValidator.normalizedPhone(newValue)
+                case .localDigits:
+                    text = AuthValidator.localPhoneDigits(newValue)
+                }
             }
         )
     }
@@ -483,6 +901,14 @@ struct AuthLoginContainerView_Previews: PreviewProvider {
                 authService: MockAuthService()
             )
             .previewDisplayName("OTP Mode")
+
+            AuthRegistrationContainerView(
+                authService: MockAuthService(),
+                initialPhone: "521234567",
+                onSuccess: { _ in },
+                onGoToLogin: { _ in }
+            )
+            .previewDisplayName("Registration")
         }
     }
 }
