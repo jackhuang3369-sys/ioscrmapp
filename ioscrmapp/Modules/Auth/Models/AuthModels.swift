@@ -6,12 +6,12 @@ enum LoginMode: String, CaseIterable, Identifiable {
 
     var id: String { rawValue }
 
-    var title: String {
+    var titleKey: String {
         switch self {
         case .password:
-            return "Password"
+            return "auth.mode.password"
         case .otp:
-            return "OTP"
+            return "auth.mode.otp"
         }
     }
 }
@@ -29,7 +29,7 @@ struct OTPSendResult: Equatable {
     let demoCode: String
 }
 
-enum AuthError: Error, LocalizedError, Equatable {
+enum AuthError: Error, Equatable {
     case invalidPhone
     case invalidPasswordFormat
     case invalidOTPFormat
@@ -40,31 +40,28 @@ enum AuthError: Error, LocalizedError, Equatable {
     case featureUnavailable(message: String)
     case networkUnavailable
 
-    var errorDescription: String? {
+    var textValue: LocalizedTextValue {
         switch self {
         case .invalidPhone:
-            return "Enter a valid UAE phone number."
+            return .key("auth.error.invalidPhone")
         case .invalidPasswordFormat:
-            return "Enter a valid password."
+            return .key("auth.error.invalidPasswordFormat")
         case .invalidOTPFormat:
-            return "Enter a valid OTP code."
+            return .key("auth.error.invalidOTPFormat")
         case let .invalidCredentials(remainingAttempts):
             return remainingAttempts > 0
-                ? "Incorrect phone number or password. \(remainingAttempts) attempts left."
-                : "Incorrect credentials."
+                ? .key("auth.error.invalidCredentialsRemaining", arguments: ["\(remainingAttempts)"])
+                : .key("auth.error.invalidCredentials")
         case .otpExpired:
-            return "OTP expired. Request a new code and try again."
+            return .key("auth.error.otpExpired")
         case let .otpCooldown(secondsRemaining):
-            return "Try again in \(secondsRemaining)s."
-        case let .accountLocked(until):
-            let formatter = RelativeDateTimeFormatter()
-            formatter.unitsStyle = .full
-            let lockMessage = formatter.localizedString(for: until, relativeTo: Date())
-            return "Account locked until \(lockMessage)."
+            return .key("auth.error.otpCooldown", arguments: ["\(secondsRemaining)"])
+        case .accountLocked:
+            return .key("auth.error.accountLocked")
         case let .featureUnavailable(message):
-            return message
+            return .literal(message)
         case .networkUnavailable:
-            return "Mock service is temporarily unavailable. Please try again."
+            return .key("auth.error.networkUnavailable")
         }
     }
 }

@@ -25,6 +25,11 @@
 		A1000000000000000000000C /* DUBottomSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000000C /* DUBottomSheet.swift */; };
 		A1000000000000000000000D /* AppServices.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000000D /* AppServices.swift */; };
 		A1000000000000000000000E /* AppEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000000E /* AppEnvironment.swift */; };
+		A1000000000000000000000F /* AppLanguage.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000000F /* AppLanguage.swift */; };
+		A10000000000000000000010 /* AppLanguageStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000010 /* AppLanguageStore.swift */; };
+		A10000000000000000000011 /* LocalizedTextValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000011 /* LocalizedTextValue.swift */; };
+		A10000000000000000000012 /* LanguageSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000012 /* LanguageSettingsView.swift */; };
+		A10000000000000000000013 /* Localizations in Resources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000013 /* Localizations */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -47,6 +52,11 @@
 		A2000000000000000000000C /* DUBottomSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DUBottomSheet.swift; sourceTree = "<group>"; };
 		A2000000000000000000000D /* AppServices.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppServices.swift; sourceTree = "<group>"; };
 		A2000000000000000000000E /* AppEnvironment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppEnvironment.swift; sourceTree = "<group>"; };
+		A2000000000000000000000F /* AppLanguage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLanguage.swift; sourceTree = "<group>"; };
+		A20000000000000000000010 /* AppLanguageStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLanguageStore.swift; sourceTree = "<group>"; };
+		A20000000000000000000011 /* LocalizedTextValue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalizedTextValue.swift; sourceTree = "<group>"; };
+		A20000000000000000000012 /* LanguageSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LanguageSettingsView.swift; sourceTree = "<group>"; };
+		A20000000000000000000013 /* Localizations */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Localizations; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -86,6 +96,7 @@
 				A30000000000000000000002 /* Services */,
 				A30000000000000000000003 /* Modules */,
 				A30000000000000000000004 /* DesignSystem */,
+				A20000000000000000000013 /* Localizations */,
 				04E692CC2F5EA2CF0082C59F /* Assets.xcassets */,
 				04E692CE2F5EA2CF0082C59F /* Preview Content */,
 			);
@@ -104,6 +115,7 @@
 			isa = PBXGroup;
 			children = (
 				A30000000000000000000012 /* Config */,
+				A30000000000000000000013 /* Localization */,
 				A30000000000000000000005 /* Storage */,
 			);
 			path = Core;
@@ -248,9 +260,20 @@
 		A3000000000000000000000F /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				A20000000000000000000012 /* LanguageSettingsView.swift */,
 				A2000000000000000000000B /* MeViews.swift */,
 			);
 			path = Views;
+			sourceTree = "<group>";
+		};
+		A30000000000000000000013 /* Localization */ = {
+			isa = PBXGroup;
+			children = (
+				A2000000000000000000000F /* AppLanguage.swift */,
+				A20000000000000000000010 /* AppLanguageStore.swift */,
+				A20000000000000000000011 /* LocalizedTextValue.swift */,
+			);
+			path = Localization;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -311,6 +334,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A10000000000000000000013 /* Localizations in Resources */,
 				04E692D02F5EA2CF0082C59F /* Preview Assets.xcassets in Resources */,
 				04E692CD2F5EA2CF0082C59F /* Assets.xcassets in Resources */,
 			);
@@ -323,6 +347,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A10000000000000000000012 /* LanguageSettingsView.swift in Sources */,
+				A10000000000000000000011 /* LocalizedTextValue.swift in Sources */,
+				A10000000000000000000010 /* AppLanguageStore.swift in Sources */,
+				A1000000000000000000000F /* AppLanguage.swift in Sources */,
 				A1000000000000000000000E /* AppEnvironment.swift in Sources */,
 				A1000000000000000000000D /* AppServices.swift in Sources */,
 				A1000000000000000000000C /* DUBottomSheet.swift in Sources */,

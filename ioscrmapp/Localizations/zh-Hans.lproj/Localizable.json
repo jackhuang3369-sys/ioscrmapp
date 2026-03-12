@@ -1,0 +1,283 @@
+{
+  "common": {
+    "ok": "确定",
+    "retry": "重试",
+    "reload": "重新加载",
+    "save": "保存",
+    "comingSoon": {
+      "title": "即将上线"
+    },
+    "placeholder": {
+      "feature": "%@ 功能即将上线。"
+    }
+  },
+  "auth": {
+    "header": {
+      "title": "欢迎回来",
+      "subtitle": "登录你的 DU 账号"
+    },
+    "mode": {
+      "password": "密码登录",
+      "otp": "验证码登录"
+    },
+    "field": {
+      "phone": {
+        "title": "手机号",
+        "placeholder": "52 123 4567"
+      },
+      "password": {
+        "title": "密码",
+        "placeholder": "请输入密码"
+      },
+      "otp": {
+        "title": "验证码",
+        "placeholder": "请输入验证码"
+      }
+    },
+    "otp": {
+      "send": "发送验证码",
+      "resend": "%@ 秒后重发",
+      "expiry": "验证码 5 分钟内有效。",
+      "sent": "验证码发送成功。"
+    },
+    "option": {
+      "rememberMe": "记住我",
+      "forgotPassword": "忘记密码？"
+    },
+    "primary": {
+      "password": "登录",
+      "otp": "验证并登录"
+    },
+    "social": {
+      "otherWays": "其他方式",
+      "sms": "短信",
+      "fingerprint": "指纹",
+      "face": "面容"
+    },
+    "register": {
+      "prompt": "第一次使用？",
+      "action": "创建账号"
+    },
+    "placeholder": {
+      "forgotPassword": "忘记密码功能即将上线。",
+      "sms": "短信登录功能即将上线。",
+      "fingerprint": "指纹登录功能即将上线。",
+      "face": "面容登录功能即将上线。",
+      "registration": "注册功能即将上线。"
+    },
+    "error": {
+      "invalidPhone": "请输入有效的阿联酋手机号。",
+      "invalidPasswordFormat": "请输入有效密码。",
+      "invalidOTPFormat": "请输入有效验证码。",
+      "invalidCredentialsRemaining": "手机号或密码错误，还剩 %@ 次尝试机会。",
+      "invalidCredentials": "登录信息错误。",
+      "otpExpired": "验证码已过期，请重新获取后再试。",
+      "otpCooldown": "请在 %@ 秒后重试。",
+      "accountLocked": "账号已被锁定，请稍后再试。",
+      "featureUnavailable": "该功能暂未开放。",
+      "networkUnavailable": "模拟服务暂时不可用，请稍后重试。"
+    }
+  },
+  "home": {
+    "tab": {
+      "home": "首页",
+      "service": "服务",
+      "mall": "商城",
+      "video": "视频",
+      "me": "我的"
+    },
+    "feature": {
+      "service": {
+        "message": "服务中心即将上线。"
+      },
+      "mall": {
+        "message": "商城即将上线。"
+      },
+      "video": {
+        "message": "视频体验即将上线。"
+      }
+    },
+    "greeting": {
+      "morning": "早上好"
+    },
+    "header": {
+      "balanceTitle": "当前余额",
+      "balanceAmount": "%@ 阿联酋迪拉姆",
+      "recharge": "充值"
+    },
+    "placeholder": {
+      "search": "搜索功能即将上线。",
+      "notifications": "通知功能即将上线。"
+    },
+    "quick": {
+      "recharge": "充值",
+      "plans": "套餐",
+      "offers": "优惠",
+      "mall": "商城"
+    },
+    "section": {
+      "popularServices": "热门服务",
+      "trendingProducts": "热门商品",
+      "viewAll": "查看全部"
+    },
+    "service": {
+      "dataPack": "流量包",
+      "voicePack": "语音包",
+      "roaming": "漫游",
+      "tickets": "票务",
+      "bills": "账单",
+      "points": "积分",
+      "mail": "邮箱",
+      "support": "客服"
+    },
+    "product": {
+      "iphone": {
+        "name": "iPhone 15 Pro Max 256GB",
+        "price": "AED 5,999",
+        "oldPrice": "AED 6,999"
+      },
+      "airpods": {
+        "name": "AirPods Pro 2",
+        "price": "AED 1,299"
+      },
+      "watch": {
+        "name": "Apple Watch S9",
+        "price": "AED 2,499"
+      }
+    },
+    "banner": {
+      "newCustomer": {
+        "title": "新用户专享",
+        "subtitle": "首次充值可额外获得 50%% 流量，活动仅剩 3 天。"
+      },
+      "weekendData": {
+        "title": "周末流量翻倍",
+        "subtitle": "周五前开通指定加购包，即可享受双倍流量。"
+      },
+      "mallFlash": {
+        "title": "商城限时闪购",
+        "subtitle": "热门设备和配件限时分期优惠。"
+      }
+    },
+    "usage": {
+      "data": {
+        "title": "流量",
+        "value": "8.5 / 10 GB"
+      },
+      "voice": {
+        "title": "语音",
+        "value": "156 / 200 分钟"
+      },
+      "sms": {
+        "title": "短信",
+        "value": "45 / 50"
+      }
+    }
+  },
+  "me": {
+    "empty": {
+      "title": "个人中心即将就绪",
+      "subtitle": "暂时没有可展示的资料模块，下拉刷新或稍后再试。"
+    },
+    "error": {
+      "title": "加载“我的”失败",
+      "subtitle": "当前无法加载你的个人资料。"
+    },
+    "profile": {
+      "reveal": "显示",
+      "hide": "隐藏"
+    },
+    "membership": {
+      "vip": "VIP 会员"
+    },
+    "stat": {
+      "balance": "余额（AED）",
+      "points": "积分",
+      "coupons": "优惠券",
+      "badges": "徽章"
+    },
+    "value": {
+      "points": "2,580",
+      "coupons": "5",
+      "badges": "12"
+    },
+    "section": {
+      "badges": "我的徽章",
+      "viewAll": "查看全部"
+    },
+    "badge": {
+      "newUser": "新用户",
+      "firstRecharge": "首次充值",
+      "firstOrder": "首单完成",
+      "vip": "VIP 会员",
+      "streak": "连续活跃",
+      "emptyTitle": "还没有徽章",
+      "emptySubtitle": "完成更多活动后，成就会显示在这里。",
+      "new": "新"
+    },
+    "menu": {
+      "empty": "菜单快捷入口即将出现",
+      "plan": {
+        "title": "我的套餐",
+        "subtitle": "Premium Plan 99 AED/月"
+      },
+      "data": {
+        "title": "流量管理",
+        "subtitle": "剩余 8.5GB"
+      },
+      "billing": {
+        "title": "账单",
+        "subtitle": "查看账单历史"
+      },
+      "orders": {
+        "title": "我的订单",
+        "subtitle": "查看全部订单"
+      },
+      "favorites": {
+        "title": "收藏",
+        "subtitle": "已保存的商品和内容"
+      },
+      "address": {
+        "title": "收货地址",
+        "subtitle": "管理地址信息"
+      },
+      "language": {
+        "title": "切换语言",
+        "subtitle": "应用语言与布局方向"
+      },
+      "help": {
+        "title": "帮助与反馈",
+        "subtitle": "常见问题与客服"
+      },
+      "about": {
+        "title": "关于我们",
+        "subtitle": "版本 %@"
+      }
+    },
+    "reveal": {
+      "title": "显示完整号码",
+      "subtitle": "输入登录密码后，即可在当前设备上查看完整手机号。",
+      "placeholder": "请输入密码",
+      "submit": "显示号码",
+      "invalidPassword": "请输入正确密码以显示完整手机号。",
+      "featureUnavailable": "远程密码校验尚未配置。",
+      "verifyFailed": "当前无法校验密码。"
+    },
+    "signOut": {
+      "button": "退出登录"
+    }
+  },
+  "language": {
+    "settings": {
+      "title": "切换语言",
+      "subtitle": "选择应用语言，保存后会同步更新布局方向。",
+      "current": "当前语言",
+      "save": "保存"
+    },
+    "name": {
+      "english": "英文",
+      "chinese": "简体中文",
+      "arabic": "阿拉伯语"
+    }
+  }
+}

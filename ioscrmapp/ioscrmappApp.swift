@@ -10,6 +10,7 @@ import SwiftUI
 @main
 struct ioscrmappApp: App {
     @StateObject private var sessionStore = SessionStore()
+    @StateObject private var languageStore = AppLanguageStore()
     private let services = AppServices()
 
     var body: some Scene {
@@ -19,6 +20,9 @@ struct ioscrmappApp: App {
                 authService: services.authService,
                 meService: services.meService
             )
+            .environmentObject(languageStore)
+            .environment(\.locale, languageStore.locale)
+            .environment(\.layoutDirection, languageStore.layoutDirection)
         }
     }
 }
