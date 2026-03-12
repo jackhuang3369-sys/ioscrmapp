@@ -58,6 +58,48 @@
       "prompt": "New here?",
       "action": "Create an account"
     },
+    "registration": {
+      "title": "Create your account",
+      "subtitle": "Verify your mobile number before setting a password.",
+      "passwordTitle": "Set your password",
+      "passwordSubtitle": "Use this password the next time you sign in.",
+      "step": {
+        "verify": "Step 1 of 2",
+        "password": "Step 2 of 2"
+      },
+      "field": {
+        "confirmPassword": {
+          "title": "Confirm Password",
+          "placeholder": "Re-enter your password"
+        }
+      },
+      "action": {
+        "verify": "Verify code",
+        "complete": "Create account",
+        "goToLogin": "Go to Login",
+        "backToLogin": "Back to Login"
+      },
+      "otp": {
+        "expiryFallback": "OTP valid for 5 minutes.",
+        "expiryDynamic": "OTP valid for %@ minutes."
+      },
+      "summary": {
+        "verifiedPhone": "Verified number"
+      },
+      "banner": {
+        "otpSent": "OTP sent successfully.",
+        "completed": "Registration complete. Redirecting to login..."
+      },
+      "success": {
+        "login": "Registration complete. Sign in with your new password."
+      },
+      "error": {
+        "alreadyRegistered": "This mobile number is already registered.",
+        "otpInvalid": "The OTP code is incorrect.",
+        "passwordRequirements": "Use at least 8 characters with uppercase, lowercase, number, and special character.",
+        "passwordMismatch": "Passwords do not match."
+      }
+    },
     "placeholder": {
       "forgotPassword": "Forgot password is coming soon.",
       "sms": "SMS login is coming soon.",

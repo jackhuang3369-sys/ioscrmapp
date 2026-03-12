@@ -58,6 +58,48 @@
       "prompt": "第一次使用？",
       "action": "创建账号"
     },
+    "registration": {
+      "title": "创建你的账号",
+      "subtitle": "先验证手机号，再设置登录密码。",
+      "passwordTitle": "设置你的密码",
+      "passwordSubtitle": "下次可使用该密码登录。",
+      "step": {
+        "verify": "第 1 步，共 2 步",
+        "password": "第 2 步，共 2 步"
+      },
+      "field": {
+        "confirmPassword": {
+          "title": "确认密码",
+          "placeholder": "请再次输入密码"
+        }
+      },
+      "action": {
+        "verify": "验证验证码",
+        "complete": "创建账号",
+        "goToLogin": "去登录",
+        "backToLogin": "返回登录"
+      },
+      "otp": {
+        "expiryFallback": "验证码 5 分钟内有效。",
+        "expiryDynamic": "验证码 %@ 分钟内有效。"
+      },
+      "summary": {
+        "verifiedPhone": "已验证手机号"
+      },
+      "banner": {
+        "otpSent": "验证码发送成功。",
+        "completed": "注册成功，正在返回登录页..."
+      },
+      "success": {
+        "login": "注册成功，请使用新密码登录。"
+      },
+      "error": {
+        "alreadyRegistered": "该手机号已注册。",
+        "otpInvalid": "验证码错误。",
+        "passwordRequirements": "密码至少 8 位，且需包含大小写字母、数字和特殊字符。",
+        "passwordMismatch": "两次输入的密码不一致。"
+      }
+    },
     "placeholder": {
       "forgotPassword": "忘记密码功能即将上线。",
       "sms": "短信登录功能即将上线。",

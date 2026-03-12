@@ -29,14 +29,60 @@ struct OTPSendResult: Equatable {
     let demoCode: String
 }
 
+struct RegistrationOTPSendResult: Equatable {
+    let resendAvailableAt: Date
+    let expiresAt: Date?
+    let demoCode: String
+}
+
+struct RegistrationEligibilityResult: Equatable {
+    let phoneNumber: String
+}
+
+struct RegistrationOTPVerificationResult: Equatable {
+    let verifiedPhoneNumber: String
+    let otpCode: String
+}
+
+struct RegistrationVerifiedContext: Equatable {
+    let phoneNumber: String
+    let otpCode: String
+}
+
+struct RegistrationSubmitInput: Equatable {
+    let phoneNumber: String
+    let otpCode: String
+    let password: String
+}
+
+struct RegistrationCompletionResult: Equatable {
+    let phoneNumber: String
+}
+
+enum RegistrationFlowResult: Equatable {
+    case completed(phoneNumber: String)
+    case goToLogin(phoneNumber: String)
+}
+
+enum AuthBannerTone {
+    case info
+    case success
+    case error
+}
+
 enum AuthError: Error, Equatable {
     case invalidPhone
     case invalidPasswordFormat
     case invalidOTPFormat
     case invalidCredentials(remainingAttempts: Int)
+    case otpInvalid
     case otpExpired
     case otpCooldown(secondsRemaining: Int)
     case accountLocked(until: Date)
+    case phoneAlreadyRegistered
+    case registrationPasswordFormat
+    case passwordMismatch
+    case backend(message: String, traceID: String?)
     case featureUnavailable(message: String)
     case networkUnavailable
 
@@ -52,12 +98,22 @@ enum AuthError: Error, Equatable {
             return remainingAttempts > 0
                 ? .key("auth.error.invalidCredentialsRemaining", arguments: ["\(remainingAttempts)"])
                 : .key("auth.error.invalidCredentials")
+        case .otpInvalid:
+            return .key("auth.registration.error.otpInvalid")
         case .otpExpired:
             return .key("auth.error.otpExpired")
         case let .otpCooldown(secondsRemaining):
             return .key("auth.error.otpCooldown", arguments: ["\(secondsRemaining)"])
         case .accountLocked:
             return .key("auth.error.accountLocked")
+        case .phoneAlreadyRegistered:
+            return .key("auth.registration.error.alreadyRegistered")
+        case .registrationPasswordFormat:
+            return .key("auth.registration.error.passwordRequirements")
+        case .passwordMismatch:
+            return .key("auth.registration.error.passwordMismatch")
+        case let .backend(message, _):
+            return .literal(message)
         case let .featureUnavailable(message):
             return .literal(message)
         case .networkUnavailable:
@@ -73,6 +129,8 @@ enum AuthValidator {
     nonisolated static let demoPhone = "+971 52 123 4567"
     nonisolated static let demoPassword = "111"
     nonisolated static let demoOTP = "111"
+    nonisolated static let demoRegistrationOTP = "123456"
+    nonisolated static let registrationPasswordSpecialCharacters = "!@#$%^&*()_+-=[]{}|;:'\",.<>/?`~"
 
     nonisolated static func localPhoneDigits(_ value: String) -> String {
         let digits = value.filter(\.isNumber)
@@ -118,5 +176,25 @@ enum AuthValidator {
 
     nonisolated static func isValidOTP(_ value: String) -> Bool {
         value.count >= 3 && value.count <= 6 && value.allSatisfy(\.isNumber)
+    }
+
+    nonisolated static func isValidRegistrationOTP(_ value: String) -> Bool {
+        value.count == 6 && value.allSatisfy(\.isNumber)
+    }
+
+    nonisolated static func isValidRegistrationPassword(_ value: String) -> Bool {
+        guard value.count >= 8 else {
+            return false
+        }
+        guard !value.contains(where: \.isWhitespace) else {
+            return false
+        }
+
+        let hasUppercase = value.contains(where: \.isUppercase)
+        let hasLowercase = value.contains(where: \.isLowercase)
+        let hasDigit = value.contains(where: \.isNumber)
+        let hasSpecial = value.contains { registrationPasswordSpecialCharacters.contains($0) }
+
+        return hasUppercase && hasLowercase && hasDigit && hasSpecial
     }
 }
