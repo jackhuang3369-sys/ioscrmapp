@@ -434,8 +434,10 @@ struct MeContainerView: View {
                                             .clipShape(Capsule())
                                     }
                                 }
+                                .frame(maxWidth: .infinity, alignment: .leading)
                                 .padding(.horizontal, DUSpacing.lg)
                                 .padding(.vertical, DUSpacing.lg)
+                                .contentShape(Rectangle())
                             }
                             .buttonStyle(.plain)
 

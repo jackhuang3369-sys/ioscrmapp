@@ -45,8 +45,10 @@ struct LanguageSettingsView: View {
                                 .font(.du(20, weight: .semibold))
                                 .foregroundColor(selectedLanguage == language ? DUTheme.cyan : DUTheme.inkDisabled)
                         }
+                        .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.horizontal, DUSpacing.lg)
                         .padding(.vertical, DUSpacing.lg)
+                        .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
                     .duCardStyle()
