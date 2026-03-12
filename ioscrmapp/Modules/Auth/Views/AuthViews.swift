@@ -105,17 +105,19 @@ struct AuthLoginContainerView: View {
     }
 
     private var phoneField: some View {
-        DUPhoneNumberField(
+        DUPhoneField(
             title: localized("auth.field.phone.title"),
             countryCode: "+\(AuthValidator.countryCode)",
             placeholder: localized("auth.field.phone.placeholder"),
             text: $viewModel.phoneNumber,
-            error: localized(viewModel.phoneError)
+            error: localized(viewModel.phoneError),
+            displayText: AuthValidator.localPhoneDigits,
+            normalizeText: AuthValidator.normalizedPhone
         )
     }
 
     private var passwordField: some View {
-        DUInputField(
+        DUTextField(
             title: localized("auth.field.password.title"),
             placeholder: localized("auth.field.password.placeholder"),
             text: $viewModel.password,
@@ -130,16 +132,19 @@ struct AuthLoginContainerView: View {
                 .font(.du(14, weight: .semibold))
                 .foregroundColor(DUTheme.inkSecondary)
             HStack(alignment: .top, spacing: DUSpacing.md) {
-                DUInputField(
+                DUTextField(
                     title: nil,
                     placeholder: localized("auth.field.otp.placeholder"),
                     text: $viewModel.otp,
                     error: localized(viewModel.otpError),
                     keyboardType: .numberPad
                 )
-                OTPActionButton(
+                DUButton(
                     title: localized(viewModel.otpButtonText),
-                    isEnabled: viewModel.isSendOTPEnabled
+                    style: .secondary,
+                    isEnabled: viewModel.isSendOTPEnabled,
+                    fixedWidth: 114,
+                    fontSize: 14
                 ) {
                     viewModel.sendOTP()
                 }
@@ -167,23 +172,29 @@ struct AuthLoginContainerView: View {
 
             Spacer()
 
-            Button(localized("auth.option.forgotPassword")) {
+            DUTextButton(
+                title: localized("auth.option.forgotPassword"),
+                fontSize: 13,
+                weight: .medium
+            ) {
                 viewModel.showPlaceholderMessage(for: "auth.placeholder.forgotPassword")
             }
-            .font(.du(13, weight: .medium))
-            .foregroundColor(DUTheme.cyan)
         }
     }
 
     private var primaryButton: some View {
-        AuthPrimaryButton(
+        DUButton(
             title: localized(
                 viewModel.selectedMode == .password
                     ? "auth.primary.password"
                     : "auth.primary.otp"
             ),
+            style: .primary,
             isLoading: viewModel.isLoading,
-            isEnabled: viewModel.isPrimaryActionEnabled
+            isEnabled: viewModel.isPrimaryActionEnabled,
+            height: 56,
+            cornerRadius: 22,
+            fontSize: 17
         ) {
             viewModel.login()
         }
@@ -205,13 +216,38 @@ struct AuthLoginContainerView: View {
             }
 
             HStack(spacing: DUSpacing.lg) {
-                PlaceholderCircleButton(assetName: "LoginSMSIcon", title: localized("auth.social.sms")) {
+                DUIconButton(
+                    title: localized("auth.social.sms")
+                ) {
+                    Image("LoginSMSIcon")
+                        .renderingMode(.original)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 48, height: 48)
+                        .offset(y: 6)
+                } action: {
                     viewModel.showPlaceholderMessage(for: "auth.placeholder.sms")
                 }
-                PlaceholderCircleButton(systemName: "touchid", title: localized("auth.social.fingerprint")) {
+                DUIconButton(
+                    title: localized("auth.social.fingerprint")
+                ) {
+                    Image(systemName: "touchid")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 30, height: 30)
+                        .foregroundColor(DUTheme.inkSecondary)
+                } action: {
                     viewModel.showPlaceholderMessage(for: "auth.placeholder.fingerprint")
                 }
-                PlaceholderCircleButton(systemName: "faceid", title: localized("auth.social.face")) {
+                DUIconButton(
+                    title: localized("auth.social.face")
+                ) {
+                    Image(systemName: "faceid")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 30, height: 30)
+                        .foregroundColor(DUTheme.inkSecondary)
+                } action: {
                     viewModel.showPlaceholderMessage(for: "auth.placeholder.face")
                 }
             }
@@ -222,10 +258,13 @@ struct AuthLoginContainerView: View {
         HStack(spacing: DUSpacing.xs) {
             Text(localized("auth.register.prompt"))
                 .foregroundColor(DUTheme.inkTertiary)
-            Button(localized("auth.register.action")) {
+            DUTextButton(
+                title: localized("auth.register.action"),
+                fontSize: 14,
+                weight: .medium
+            ) {
                 isShowingRegistration = true
             }
-            .foregroundColor(DUTheme.cyan)
         }
         .font(.du(14, weight: .medium))
         .padding(.bottom, DUSpacing.xxxl)
@@ -369,12 +408,14 @@ private struct AuthRegistrationVerifyView: View {
 
     private var contentCard: some View {
         VStack(spacing: DUSpacing.lg) {
-            DUPhoneNumberField(
+            DUPhoneField(
                 title: localized("auth.field.phone.title"),
                 countryCode: "+\(AuthValidator.countryCode)",
                 placeholder: localized("auth.field.phone.placeholder"),
                 text: $viewModel.phoneNumber,
-                error: localized(viewModel.phoneError)
+                error: localized(viewModel.phoneError),
+                displayText: AuthValidator.localPhoneDigits,
+                normalizeText: AuthValidator.normalizedPhone
             )
 
             VStack(alignment: .leading, spacing: DUSpacing.sm) {
@@ -383,7 +424,7 @@ private struct AuthRegistrationVerifyView: View {
                     .foregroundColor(DUTheme.inkSecondary)
 
                 HStack(alignment: .top, spacing: DUSpacing.md) {
-                    DUInputField(
+                    DUTextField(
                         title: nil,
                         placeholder: localized("auth.field.otp.placeholder"),
                         text: $viewModel.otp,
@@ -391,9 +432,12 @@ private struct AuthRegistrationVerifyView: View {
                         keyboardType: .numberPad
                     )
 
-                    OTPActionButton(
+                    DUButton(
                         title: localized(viewModel.otpButtonText),
-                        isEnabled: viewModel.canSendOTP
+                        style: .secondary,
+                        isEnabled: viewModel.canSendOTP,
+                        fixedWidth: 114,
+                        fontSize: 14
                     ) {
                         viewModel.sendOTP()
                     }
@@ -404,25 +448,27 @@ private struct AuthRegistrationVerifyView: View {
                     .foregroundColor(DUTheme.inkTertiary)
             }
 
-            AuthPrimaryButton(
+            DUButton(
                 title: localized("auth.registration.action.verify"),
+                style: .primary,
                 isLoading: viewModel.isLoading,
-                isEnabled: viewModel.canVerifyOTP
+                isEnabled: viewModel.canVerifyOTP,
+                height: 56,
+                cornerRadius: 22,
+                fontSize: 17
             ) {
                 verifyAction()
             }
 
             if viewModel.shouldShowGoToLoginAction {
-                Button(localized("auth.registration.action.goToLogin")) {
+                DUButton(
+                    title: localized("auth.registration.action.goToLogin"),
+                    style: .secondary,
+                    height: 50,
+                    fontSize: 15
+                ) {
                     goToLoginAction()
                 }
-                .font(.du(15, weight: .semibold))
-                .foregroundColor(DUTheme.cyan)
-                .frame(maxWidth: .infinity)
-                .frame(height: 50)
-                .background(DUTheme.cyanBackground)
-                .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-                .buttonStyle(.plain)
             }
         }
         .padding(DUSpacing.xl)
@@ -430,12 +476,9 @@ private struct AuthRegistrationVerifyView: View {
     }
 
     private var loginFooter: some View {
-        Button(localized("auth.registration.action.backToLogin")) {
+        DUTextButton(title: localized("auth.registration.action.backToLogin")) {
             goToLoginAction()
         }
-        .font(.du(14, weight: .semibold))
-        .foregroundColor(DUTheme.cyan)
-        .buttonStyle(.plain)
     }
 
     private func localized(_ key: String, arguments: [String] = []) -> String {
@@ -504,7 +547,7 @@ private struct AuthRegistrationPasswordView: View {
         VStack(spacing: DUSpacing.lg) {
             verifiedPhoneSummary
 
-            DUInputField(
+            DUTextField(
                 title: localized("auth.field.password.title"),
                 placeholder: localized("auth.field.password.placeholder"),
                 text: $viewModel.password,
@@ -512,7 +555,7 @@ private struct AuthRegistrationPasswordView: View {
                 isSecure: true
             )
 
-            DUInputField(
+            DUTextField(
                 title: localized("auth.registration.field.confirmPassword.title"),
                 placeholder: localized("auth.registration.field.confirmPassword.placeholder"),
                 text: $viewModel.confirmPassword,
@@ -520,10 +563,14 @@ private struct AuthRegistrationPasswordView: View {
                 isSecure: true
             )
 
-            AuthPrimaryButton(
+            DUButton(
                 title: localized("auth.registration.action.complete"),
+                style: .primary,
                 isLoading: viewModel.isLoading,
-                isEnabled: viewModel.canSubmitRegistration
+                isEnabled: viewModel.canSubmitRegistration,
+                height: 56,
+                cornerRadius: 22,
+                fontSize: 17
             ) {
                 submitAction()
             }
@@ -548,12 +595,9 @@ private struct AuthRegistrationPasswordView: View {
     }
 
     private var loginFooter: some View {
-        Button(localized("auth.registration.action.backToLogin")) {
+        DUTextButton(title: localized("auth.registration.action.backToLogin")) {
             goToLoginAction()
         }
-        .font(.du(14, weight: .semibold))
-        .foregroundColor(DUTheme.cyan)
-        .buttonStyle(.plain)
     }
 
     private func localized(_ key: String, arguments: [String] = []) -> String {
@@ -595,7 +639,20 @@ private struct AuthFlowChrome: View {
     var body: some View {
         HStack {
             if let backAction {
-                chromeButton(systemName: "chevron.left", action: backAction)
+                DUIconButton(
+                    title: nil,
+                    circleSize: 40,
+                    backgroundColor: DUTheme.panel,
+                    shadowColor: Color.black.opacity(0.06),
+                    shadowRadius: 10,
+                    shadowY: 6
+                ) {
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(DUTheme.ink)
+                } action: {
+                    backAction()
+                }
             } else {
                 Color.clear
                     .frame(width: 40, height: 40)
@@ -603,21 +660,21 @@ private struct AuthFlowChrome: View {
 
             Spacer()
 
-            chromeButton(systemName: "xmark", action: closeAction)
+            DUIconButton(
+                title: nil,
+                circleSize: 40,
+                backgroundColor: DUTheme.panel,
+                shadowColor: Color.black.opacity(0.06),
+                shadowRadius: 10,
+                shadowY: 6
+            ) {
+                Image(systemName: "xmark")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundColor(DUTheme.ink)
+            } action: {
+                closeAction()
+            }
         }
-    }
-
-    private func chromeButton(systemName: String, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            Image(systemName: systemName)
-                .font(.system(size: 16, weight: .semibold))
-                .foregroundColor(DUTheme.ink)
-                .frame(width: 40, height: 40)
-                .background(DUTheme.panel)
-                .clipShape(Circle())
-                .shadow(color: Color.black.opacity(0.06), radius: 10, x: 0, y: 6)
-        }
-        .buttonStyle(.plain)
     }
 }
 
@@ -632,47 +689,6 @@ private struct AuthStepBadge: View {
             .padding(.vertical, DUSpacing.sm)
             .background(DUTheme.cyanBackground)
             .clipShape(Capsule())
-    }
-}
-
-private struct AuthPrimaryButton: View {
-    let title: String
-    let isLoading: Bool
-    let isEnabled: Bool
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            HStack(spacing: DUSpacing.sm) {
-                if isLoading {
-                    ProgressView()
-                        .tint(.white)
-                }
-                Text(title)
-                    .font(.du(17, weight: .bold))
-            }
-            .foregroundColor(.white)
-            .frame(maxWidth: .infinity)
-            .frame(height: 56)
-            .background(
-                isEnabled
-                    ? DUTheme.brandGradient
-                    : LinearGradient(
-                        gradient: Gradient(colors: [DUTheme.inkDisabled]),
-                        startPoint: .leading,
-                        endPoint: .trailing
-                    )
-            )
-            .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
-            .shadow(
-                color: isEnabled ? DUTheme.cyan.opacity(0.28) : .clear,
-                radius: 18,
-                x: 0,
-                y: 8
-            )
-        }
-        .buttonStyle(.plain)
-        .disabled(!isEnabled)
     }
 }
 
@@ -711,213 +727,6 @@ private struct AuthBannerView: View {
         .padding(DUSpacing.lg)
         .background(background)
         .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-    }
-}
-
-private struct OTPActionButton: View {
-    let title: String
-    let isEnabled: Bool
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            Text(title)
-                .font(.du(14, weight: .semibold))
-                .foregroundColor(isEnabled ? DUTheme.cyan : DUTheme.inkDisabled)
-                .frame(width: 114, height: 52)
-                .background(isEnabled ? DUTheme.cyanBackground : DUTheme.backgroundSecondary)
-                .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-        }
-        .buttonStyle(.plain)
-        .disabled(!isEnabled)
-    }
-}
-
-private struct DUInputField: View {
-    let title: String?
-    let placeholder: String
-    @Binding var text: String
-    let error: String?
-    var keyboardType: UIKeyboardType = .default
-    var isSecure = false
-
-    @State private var isSecureRevealed = false
-
-    private var strokeColor: Color {
-        if error != nil {
-            return DUTheme.error
-        }
-        return DUTheme.line
-    }
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: DUSpacing.sm) {
-            if let title = title {
-                Text(title)
-                    .font(.du(14, weight: .semibold))
-                    .foregroundColor(DUTheme.inkSecondary)
-            }
-
-            HStack(spacing: DUSpacing.sm) {
-                Group {
-                    if isSecure, !isSecureRevealed {
-                        SecureField(placeholder, text: $text)
-                    } else {
-                        TextField(placeholder, text: $text)
-                            .keyboardType(keyboardType)
-                    }
-                }
-                .autocapitalization(.none)
-                .disableAutocorrection(true)
-                .font(.du(16, weight: .medium))
-                .foregroundColor(DUTheme.ink)
-
-                if isSecure {
-                    Button {
-                        isSecureRevealed.toggle()
-                    } label: {
-                        Image(systemName: isSecureRevealed ? "eye.slash" : "eye")
-                            .foregroundColor(DUTheme.inkTertiary)
-                    }
-                    .buttonStyle(.plain)
-                }
-            }
-            .padding(.horizontal, DUSpacing.lg)
-            .frame(height: 52)
-            .background(
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .fill(DUTheme.panel)
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .stroke(strokeColor, lineWidth: 1.2)
-            )
-            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-
-            if let error = error {
-                Text(error)
-                    .font(.du(12, weight: .medium))
-                    .foregroundColor(DUTheme.error)
-            }
-        }
-    }
-}
-
-private struct DUPhoneNumberField: View {
-    let title: String
-    let countryCode: String
-    let placeholder: String
-    @Binding var text: String
-    let error: String?
-
-    private var sanitizedPhoneBinding: Binding<String> {
-        Binding(
-            get: { AuthValidator.localPhoneDigits(text) },
-            set: { newValue in
-                text = AuthValidator.normalizedPhone(newValue)
-            }
-        )
-    }
-
-    private var strokeColor: Color {
-        if error != nil {
-            return DUTheme.error
-        }
-        return DUTheme.line
-    }
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: DUSpacing.sm) {
-            Text(title)
-                .font(.du(14, weight: .semibold))
-                .foregroundColor(DUTheme.inkSecondary)
-
-            HStack(spacing: DUSpacing.md) {
-                Text(countryCode)
-                    .font(.du(16, weight: .semibold))
-                    .foregroundColor(DUTheme.inkSecondary)
-
-                Rectangle()
-                    .fill(DUTheme.lineLight)
-                    .frame(width: 1, height: 22)
-
-                TextField(placeholder, text: sanitizedPhoneBinding)
-                    .keyboardType(.numberPad)
-                    .autocapitalization(.none)
-                    .disableAutocorrection(true)
-                    .font(.du(16, weight: .medium))
-                    .foregroundColor(DUTheme.ink)
-            }
-            .padding(.horizontal, DUSpacing.lg)
-            .frame(height: 52)
-            .background(
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .fill(DUTheme.panel)
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .stroke(strokeColor, lineWidth: 1.2)
-            )
-            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-
-            if let error = error {
-                Text(error)
-                    .font(.du(12, weight: .medium))
-                    .foregroundColor(DUTheme.error)
-            }
-        }
-    }
-}
-
-private struct PlaceholderCircleButton: View {
-    let assetName: String?
-    let systemName: String?
-    let title: String
-    let action: () -> Void
-    private let iconVerticalOffset: CGFloat = 6
-
-    init(assetName: String, title: String, action: @escaping () -> Void) {
-        self.assetName = assetName
-        self.systemName = nil
-        self.title = title
-        self.action = action
-    }
-
-    init(systemName: String, title: String, action: @escaping () -> Void) {
-        self.assetName = nil
-        self.systemName = systemName
-        self.title = title
-        self.action = action
-    }
-
-    var body: some View {
-        Button(action: action) {
-            VStack(spacing: DUSpacing.sm) {
-                ZStack {
-                    Circle()
-                        .fill(DUTheme.backgroundSecondary)
-                        .frame(width: 64, height: 64)
-                    if let assetName {
-                        Image(assetName)
-                            .renderingMode(.original)
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 48, height: 48)
-                            .offset(y: iconVerticalOffset)
-                    } else if let systemName {
-                        Image(systemName: systemName)
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 30, height: 30)
-                            .foregroundColor(DUTheme.inkSecondary)
-                    }
-                }
-                Text(title)
-                    .font(.du(11, weight: .medium))
-                    .foregroundColor(DUTheme.inkTertiary)
-            }
-        }
-        .buttonStyle(.plain)
     }
 }
 

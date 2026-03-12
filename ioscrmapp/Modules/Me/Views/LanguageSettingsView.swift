@@ -25,49 +25,24 @@ struct LanguageSettingsView: View {
 
             VStack(spacing: DUSpacing.md) {
                 ForEach(AppLanguage.allCases) { language in
-                    Button {
+                    DUListItem(
+                        title: language.nativeName,
+                        subtitle: languageStore.string(language.displayNameKey),
+                        accessory: .selection(isSelected: selectedLanguage == language)
+                    ) {
                         selectedLanguage = language
-                    } label: {
-                        HStack(spacing: DUSpacing.md) {
-                            VStack(alignment: .leading, spacing: DUSpacing.xs) {
-                                Text(language.nativeName)
-                                    .font(.du(16, weight: .bold))
-                                    .foregroundColor(DUTheme.ink)
-
-                                Text(languageStore.string(language.displayNameKey))
-                                    .font(.du(12, weight: .medium))
-                                    .foregroundColor(DUTheme.inkSecondary)
-                            }
-
-                            Spacer()
-
-                            Image(systemName: selectedLanguage == language ? "checkmark.circle.fill" : "circle")
-                                .font(.du(20, weight: .semibold))
-                                .foregroundColor(selectedLanguage == language ? DUTheme.cyan : DUTheme.inkDisabled)
-                        }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.horizontal, DUSpacing.lg)
-                        .padding(.vertical, DUSpacing.lg)
-                        .contentShape(Rectangle())
                     }
-                    .buttonStyle(.plain)
                     .duCardStyle()
                 }
             }
 
-            Button {
+            DUButton(
+                title: languageStore.string("language.settings.save"),
+                style: .primary
+            ) {
                 languageStore.updateLanguage(selectedLanguage)
                 presentationMode.wrappedValue.dismiss()
-            } label: {
-                Text(languageStore.string("language.settings.save"))
-                    .font(.du(16, weight: .bold))
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 52)
-                    .background(DUTheme.brandGradient)
-                    .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
             }
-            .buttonStyle(.plain)
 
             Spacer()
         }

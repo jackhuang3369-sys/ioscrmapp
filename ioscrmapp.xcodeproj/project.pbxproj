@@ -30,6 +30,14 @@
 		A10000000000000000000011 /* LocalizedTextValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000011 /* LocalizedTextValue.swift */; };
 		A10000000000000000000012 /* LanguageSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000012 /* LanguageSettingsView.swift */; };
 		A10000000000000000000013 /* Localizations in Resources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000013 /* Localizations */; };
+		A10000000000000000000014 /* DUButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000014 /* DUButton.swift */; };
+		A10000000000000000000015 /* DUTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000015 /* DUTextField.swift */; };
+		A10000000000000000000016 /* DUPhoneField.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000016 /* DUPhoneField.swift */; };
+		A10000000000000000000017 /* DUListItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000017 /* DUListItem.swift */; };
+		A10000000000000000000018 /* DUTextButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000018 /* DUTextButton.swift */; };
+		A10000000000000000000019 /* DUIconButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000019 /* DUIconButton.swift */; };
+		A1000000000000000000001A /* DUStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000001A /* DUStateView.swift */; };
+		A1000000000000000000001B /* DUSectionCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000001B /* DUSectionCard.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -57,6 +65,14 @@
 		A20000000000000000000011 /* LocalizedTextValue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalizedTextValue.swift; sourceTree = "<group>"; };
 		A20000000000000000000012 /* LanguageSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LanguageSettingsView.swift; sourceTree = "<group>"; };
 		A20000000000000000000013 /* Localizations */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Localizations; sourceTree = "<group>"; };
+		A20000000000000000000014 /* DUButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DUButton.swift; sourceTree = "<group>"; };
+		A20000000000000000000015 /* DUTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DUTextField.swift; sourceTree = "<group>"; };
+		A20000000000000000000016 /* DUPhoneField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DUPhoneField.swift; sourceTree = "<group>"; };
+		A20000000000000000000017 /* DUListItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DUListItem.swift; sourceTree = "<group>"; };
+		A20000000000000000000018 /* DUTextButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DUTextButton.swift; sourceTree = "<group>"; };
+		A20000000000000000000019 /* DUIconButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DUIconButton.swift; sourceTree = "<group>"; };
+		A2000000000000000000001A /* DUStateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DUStateView.swift; sourceTree = "<group>"; };
+		A2000000000000000000001B /* DUSectionCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DUSectionCard.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -176,9 +192,57 @@
 		A30000000000000000000011 /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				A30000000000000000000014 /* Buttons */,
+				A30000000000000000000017 /* Containers */,
+				A30000000000000000000015 /* Fields */,
+				A30000000000000000000016 /* Lists */,
+				A30000000000000000000018 /* States */,
 				A2000000000000000000000C /* DUBottomSheet.swift */,
 			);
 			path = Components;
+			sourceTree = "<group>";
+		};
+		A30000000000000000000014 /* Buttons */ = {
+			isa = PBXGroup;
+			children = (
+				A20000000000000000000014 /* DUButton.swift */,
+				A20000000000000000000018 /* DUTextButton.swift */,
+				A20000000000000000000019 /* DUIconButton.swift */,
+			);
+			path = Buttons;
+			sourceTree = "<group>";
+		};
+		A30000000000000000000015 /* Fields */ = {
+			isa = PBXGroup;
+			children = (
+				A20000000000000000000015 /* DUTextField.swift */,
+				A20000000000000000000016 /* DUPhoneField.swift */,
+			);
+			path = Fields;
+			sourceTree = "<group>";
+		};
+		A30000000000000000000016 /* Lists */ = {
+			isa = PBXGroup;
+			children = (
+				A20000000000000000000017 /* DUListItem.swift */,
+			);
+			path = Lists;
+			sourceTree = "<group>";
+		};
+		A30000000000000000000017 /* Containers */ = {
+			isa = PBXGroup;
+			children = (
+				A2000000000000000000001B /* DUSectionCard.swift */,
+			);
+			path = Containers;
+			sourceTree = "<group>";
+		};
+		A30000000000000000000018 /* States */ = {
+			isa = PBXGroup;
+			children = (
+				A2000000000000000000001A /* DUStateView.swift */,
+			);
+			path = States;
 			sourceTree = "<group>";
 		};
 		A30000000000000000000006 /* Auth */ = {
@@ -347,6 +411,14 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A1000000000000000000001B /* DUSectionCard.swift in Sources */,
+				A1000000000000000000001A /* DUStateView.swift in Sources */,
+				A10000000000000000000019 /* DUIconButton.swift in Sources */,
+				A10000000000000000000018 /* DUTextButton.swift in Sources */,
+				A10000000000000000000017 /* DUListItem.swift in Sources */,
+				A10000000000000000000016 /* DUPhoneField.swift in Sources */,
+				A10000000000000000000015 /* DUTextField.swift in Sources */,
+				A10000000000000000000014 /* DUButton.swift in Sources */,
 				A10000000000000000000012 /* LanguageSettingsView.swift in Sources */,
 				A10000000000000000000011 /* LocalizedTextValue.swift in Sources */,
 				A10000000000000000000010 /* AppLanguageStore.swift in Sources */,

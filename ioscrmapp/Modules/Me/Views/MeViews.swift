@@ -149,69 +149,33 @@ struct MeContainerView: View {
     }
 
     private var emptyState: some View {
-        VStack(spacing: DUSpacing.lg) {
-            Image(systemName: "person.crop.circle.badge.exclamationmark")
-                .font(.du(42, weight: .semibold))
-                .foregroundColor(DUTheme.cyan)
-
-            Text(localized("me.empty.title"))
-                .font(.du(22, weight: .bold))
-                .foregroundColor(DUTheme.ink)
-
-            Text(localized("me.empty.subtitle"))
-                .font(.du(15, weight: .medium))
-                .foregroundColor(DUTheme.inkSecondary)
-                .multilineTextAlignment(.center)
-
-            Button(localized("common.reload")) {
-                Task {
-                    await viewModel.refresh()
-                }
+        DUStateView(
+            systemImage: "person.crop.circle.badge.exclamationmark",
+            iconColor: DUTheme.cyan,
+            title: localized("me.empty.title"),
+            subtitle: localized("me.empty.subtitle"),
+            actionTitle: localized("common.reload"),
+            footer: AnyView(signOutButton)
+        ) {
+            Task {
+                await viewModel.refresh()
             }
-            .font(.du(15, weight: .semibold))
-            .foregroundColor(.white)
-            .padding(.horizontal, DUSpacing.xxl)
-            .frame(height: 46)
-            .background(DUTheme.brandGradient)
-            .clipShape(Capsule())
-
-            signOutButton
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding(.horizontal, DUSpacing.xxl)
     }
 
     private func errorState(message: LocalizedTextValue) -> some View {
-        VStack(spacing: DUSpacing.lg) {
-            Image(systemName: "wifi.exclamationmark")
-                .font(.du(42, weight: .bold))
-                .foregroundColor(DUTheme.error)
-
-            Text(localized("me.error.title"))
-                .font(.du(22, weight: .bold))
-                .foregroundColor(DUTheme.ink)
-
-            Text(localized(message))
-                .font(.du(15, weight: .medium))
-                .foregroundColor(DUTheme.inkSecondary)
-                .multilineTextAlignment(.center)
-
-            Button(localized("common.retry")) {
-                Task {
-                    await viewModel.refresh()
-                }
+        DUStateView(
+            systemImage: "wifi.exclamationmark",
+            iconColor: DUTheme.error,
+            title: localized("me.error.title"),
+            subtitle: localized(message),
+            actionTitle: localized("common.retry"),
+            footer: AnyView(signOutButton)
+        ) {
+            Task {
+                await viewModel.refresh()
             }
-            .font(.du(15, weight: .semibold))
-            .foregroundColor(.white)
-            .padding(.horizontal, DUSpacing.xxl)
-            .frame(height: 46)
-            .background(DUTheme.brandGradient)
-            .clipShape(Capsule())
-
-            signOutButton
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding(.horizontal, DUSpacing.xxl)
     }
 
     private func profileHeader(profile: MeProfileSummary, topInset: CGFloat) -> some View {
@@ -318,21 +282,13 @@ struct MeContainerView: View {
     }
 
     private func badgesSection(items: [MeBadgeItem]) -> some View {
-        VStack(alignment: .leading, spacing: DUSpacing.md) {
-            HStack {
-                Text(localized("me.section.badges"))
-                    .font(.du(15, weight: .bold))
-                    .foregroundColor(DUTheme.ink)
-
-                Spacer()
-
-                Button(localized("me.section.viewAll")) {
-                    viewModel.handleAction(.badges, localizedTitle: localized("me.section.badges"))
-                }
-                .font(.du(12, weight: .semibold))
-                .foregroundColor(DUTheme.cyan)
+        DUSectionCard(
+            title: localized("me.section.badges"),
+            trailingTitle: localized("me.section.viewAll"),
+            trailingAction: {
+                viewModel.handleAction(.badges, localizedTitle: localized("me.section.badges"))
             }
-
+        ) {
             if items.isEmpty {
                 VStack(spacing: DUSpacing.sm) {
                     Image(systemName: "rosette")
@@ -375,8 +331,6 @@ struct MeContainerView: View {
                 }
             }
         }
-        .padding(DUSpacing.lg)
-        .duCardStyle()
     }
 
     private func menuGroupsSection(groups: [MeMenuGroup]) -> some View {
@@ -402,67 +356,42 @@ struct MeContainerView: View {
     }
 
     private func menuGroupCard(_ group: MeMenuGroup) -> some View {
-        VStack(spacing: 0) {
-            ForEach(Array(group.items.enumerated()), id: \.element.id) { index, item in
-                menuGroupRow(item)
+        DUSectionCard(
+            title: nil,
+            spacing: 0,
+            horizontalPadding: 0,
+            verticalPadding: 0
+        ) {
+            VStack(spacing: 0) {
+                ForEach(Array(group.items.enumerated()), id: \.element.id) { index, item in
+                    menuGroupRow(item)
 
-                if index < group.items.count - 1 {
-                    Divider()
-                        .padding(.leading, 84)
+                    if index < group.items.count - 1 {
+                        Divider()
+                            .padding(.leading, 84)
+                    }
                 }
             }
         }
-        .duCardStyle()
     }
 
     private func menuGroupRow(_ item: MeMenuItem) -> some View {
-        Button {
+        DUListItem(
+            title: localized(item.title),
+            subtitle: localized(item.subtitle),
+            leading: .asset(item.assetName),
+            accessory: listItemAccessory(item.accessory)
+        ) {
             viewModel.handleAction(item.actionID, localizedTitle: localized(item.title))
-        } label: {
-            HStack(spacing: DUSpacing.md) {
-                Image(item.assetName)
-                    .renderingMode(.original)
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 38, height: 38)
-
-                VStack(alignment: .leading, spacing: DUSpacing.xs) {
-                    Text(localized(item.title))
-                        .font(.du(15, weight: .semibold))
-                        .foregroundColor(DUTheme.ink)
-                    Text(localized(item.subtitle))
-                        .font(.du(12, weight: .medium))
-                        .foregroundColor(DUTheme.inkTertiary)
-                        .multilineTextAlignment(.leading)
-                }
-
-                Spacer()
-
-                menuAccessoryView(item.accessory)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, DUSpacing.lg)
-            .padding(.vertical, DUSpacing.lg)
-            .contentShape(Rectangle())
         }
-        .buttonStyle(.plain)
     }
 
-    @ViewBuilder
-    private func menuAccessoryView(_ accessory: MeMenuAccessory) -> some View {
+    private func listItemAccessory(_ accessory: MeMenuAccessory) -> DUListItemAccessory {
         switch accessory {
         case .chevron:
-            Image(systemName: "chevron.forward")
-                .font(.du(12, weight: .bold))
-                .foregroundColor(DUTheme.inkDisabled)
+            return .chevron
         case let .badge(text):
-            Text(localized(text))
-                .font(.du(10, weight: .bold))
-                .foregroundColor(DUTheme.warning)
-                .padding(.horizontal, DUSpacing.sm)
-                .frame(height: 22)
-                .background(DUTheme.warningBackground)
-                .clipShape(Capsule())
+            return .badge(localized(text))
         }
     }
 
@@ -476,46 +405,21 @@ struct MeContainerView: View {
                 .font(.du(14, weight: .medium))
                 .foregroundColor(DUTheme.inkSecondary)
 
-            SecureField(localized("me.reveal.placeholder"), text: $viewModel.revealPassword)
-                .textContentType(.password)
-                .font(.du(16, weight: .medium))
-                .padding(.horizontal, DUSpacing.lg)
-                .frame(height: 52)
-                .background(
-                    RoundedRectangle(cornerRadius: 18, style: .continuous)
-                        .fill(DUTheme.panel)
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: 18, style: .continuous)
-                        .stroke(viewModel.revealErrorMessage == nil ? DUTheme.line : DUTheme.error, lineWidth: 1.2)
-                )
+            DUTextField(
+                title: nil,
+                placeholder: localized("me.reveal.placeholder"),
+                text: $viewModel.revealPassword,
+                error: localized(viewModel.revealErrorMessage),
+                isSecure: true
+            )
 
-            if let revealErrorMessage = viewModel.revealErrorMessage {
-                Text(localized(revealErrorMessage))
-                    .font(.du(12, weight: .medium))
-                    .foregroundColor(DUTheme.error)
-            }
-
-            Button {
+            DUButton(
+                title: localized("me.reveal.submit"),
+                style: .primary,
+                isLoading: viewModel.isValidatingPassword
+            ) {
                 viewModel.submitRevealPassword()
-            } label: {
-                HStack {
-                    Spacer()
-                    if viewModel.isValidatingPassword {
-                        ProgressView()
-                            .tint(.white)
-                    } else {
-                        Text(localized("me.reveal.submit"))
-                            .font(.du(16, weight: .bold))
-                    }
-                    Spacer()
-                }
-                .foregroundColor(.white)
-                .frame(height: 52)
-                .background(DUTheme.brandGradient)
-                .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
             }
-            .buttonStyle(.plain)
             .disabled(viewModel.isValidatingPassword)
 
             Spacer()
@@ -525,16 +429,12 @@ struct MeContainerView: View {
     }
 
     private var signOutButton: some View {
-        Button(action: onSignOut) {
-            Text(localized("me.signOut.button"))
-                .font(.du(16, weight: .bold))
-                .foregroundColor(.white)
-                .frame(maxWidth: .infinity)
-                .frame(height: 52)
-                .background(DUTheme.error)
-                .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+        DUButton(
+            title: localized("me.signOut.button"),
+            style: .danger
+        ) {
+            onSignOut()
         }
-        .buttonStyle(.plain)
     }
 
     private var placeholderAlertIsPresented: Binding<Bool> {

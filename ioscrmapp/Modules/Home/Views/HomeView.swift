@@ -254,37 +254,37 @@ struct HomeView: View {
     }
 
     private var quickActionsSection: some View {
-        LazyVGrid(
-            columns: Array(repeating: GridItem(.flexible(), spacing: DUSpacing.md), count: 4),
-            spacing: DUSpacing.md
-        ) {
-            ForEach(quickActions) { item in
-                Button {
-                    showComingSoon(for: item.title)
-                } label: {
-                    VStack(spacing: DUSpacing.sm) {
-                        ZStack {
-                            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                                .fill(DUTheme.backgroundSecondary)
-                                .frame(height: 64)
+        DUSectionCard(title: nil, spacing: 0) {
+            LazyVGrid(
+                columns: Array(repeating: GridItem(.flexible(), spacing: DUSpacing.md), count: 4),
+                spacing: DUSpacing.md
+            ) {
+                ForEach(quickActions) { item in
+                    Button {
+                        showComingSoon(for: item.title)
+                    } label: {
+                        VStack(spacing: DUSpacing.sm) {
+                            ZStack {
+                                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                                    .fill(DUTheme.backgroundSecondary)
+                                    .frame(height: 64)
 
-                            Image(item.assetName)
-                                .renderingMode(.original)
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 48, height: 48)
+                                Image(item.assetName)
+                                    .renderingMode(.original)
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 48, height: 48)
+                            }
+
+                            Text(localized(item.title))
+                                .font(.du(12, weight: .medium))
+                                .foregroundColor(DUTheme.ink)
                         }
-
-                        Text(localized(item.title))
-                            .font(.du(12, weight: .medium))
-                            .foregroundColor(DUTheme.ink)
                     }
+                    .buttonStyle(.plain)
                 }
-                .buttonStyle(.plain)
             }
         }
-        .padding(DUSpacing.lg)
-        .duCardStyle()
         .padding(.horizontal, pageHorizontalPadding)
         .offset(y: -8)
         .padding(.bottom, -8)
@@ -345,9 +345,13 @@ struct HomeView: View {
     }
 
     private var servicesSection: some View {
-        VStack(alignment: .leading, spacing: DUSpacing.lg) {
-            sectionHeader(title: .key("home.section.popularServices"))
-
+        DUSectionCard(
+            title: localized("home.section.popularServices"),
+            trailingTitle: localized("home.section.viewAll"),
+            trailingAction: {
+                showComingSoon(for: .key("home.section.popularServices"))
+            }
+        ) {
             LazyVGrid(
                 columns: Array(repeating: GridItem(.flexible(), spacing: DUSpacing.md), count: 4),
                 spacing: DUSpacing.md
@@ -378,15 +382,17 @@ struct HomeView: View {
                 }
             }
         }
-        .padding(DUSpacing.lg)
-        .duCardStyle()
         .padding(.horizontal, pageHorizontalPadding)
     }
 
     private var productsSection: some View {
-        VStack(alignment: .leading, spacing: DUSpacing.lg) {
-            sectionHeader(title: .key("home.section.trendingProducts"))
-
+        DUSectionCard(
+            title: localized("home.section.trendingProducts"),
+            trailingTitle: localized("home.section.viewAll"),
+            trailingAction: {
+                showComingSoon(for: .key("home.section.trendingProducts"))
+            }
+        ) {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: DUSpacing.md) {
                     ForEach(products) { product in
@@ -438,30 +444,10 @@ struct HomeView: View {
                         .buttonStyle(.plain)
                     }
                 }
-                .padding(.horizontal, DUSpacing.lg)
                 .padding(.vertical, 1)
             }
         }
-        .padding(.vertical, DUSpacing.lg)
-        .duCardStyle()
         .padding(.horizontal, pageHorizontalPadding)
-    }
-
-    private func sectionHeader(title: LocalizedTextValue) -> some View {
-        HStack {
-            Text(localized(title))
-                .font(.du(17, weight: .bold))
-                .foregroundColor(DUTheme.ink)
-
-            Spacer()
-
-            Button(localized("home.section.viewAll")) {
-                showComingSoon(for: title)
-            }
-            .font(.du(12, weight: .semibold))
-            .foregroundColor(DUTheme.cyan)
-        }
-        .padding(.horizontal, DUSpacing.lg)
     }
 
     private var placeholderAlertIsPresented: Binding<Bool> {
