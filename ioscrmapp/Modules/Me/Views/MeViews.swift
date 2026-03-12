@@ -395,61 +395,74 @@ struct MeContainerView: View {
                 .duCardStyle()
             } else {
                 ForEach(groups) { group in
-                    VStack(spacing: 0) {
-                        ForEach(Array(group.items.enumerated()), id: \.element.id) { index, item in
-                            Button {
-                                viewModel.handleAction(item.actionID, localizedTitle: localized(item.title))
-                            } label: {
-                                HStack(spacing: DUSpacing.md) {
-                                    Image(item.assetName)
-                                        .renderingMode(.original)
-                                        .resizable()
-                                        .scaledToFit()
-                                        .frame(width: 38, height: 38)
-
-                                    VStack(alignment: .leading, spacing: DUSpacing.xs) {
-                                        Text(localized(item.title))
-                                            .font(.du(15, weight: .semibold))
-                                            .foregroundColor(DUTheme.ink)
-                                        Text(localized(item.subtitle))
-                                            .font(.du(12, weight: .medium))
-                                            .foregroundColor(DUTheme.inkTertiary)
-                                            .multilineTextAlignment(.leading)
-                                    }
-
-                                    Spacer()
-
-                                    switch item.accessory {
-                                    case .chevron:
-                                        Image(systemName: "chevron.forward")
-                                            .font(.du(12, weight: .bold))
-                                            .foregroundColor(DUTheme.inkDisabled)
-                                    case let .badge(text):
-                                        Text(localized(text))
-                                            .font(.du(10, weight: .bold))
-                                            .foregroundColor(DUTheme.warning)
-                                            .padding(.horizontal, DUSpacing.sm)
-                                            .frame(height: 22)
-                                            .background(DUTheme.warningBackground)
-                                            .clipShape(Capsule())
-                                    }
-                                }
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding(.horizontal, DUSpacing.lg)
-                                .padding(.vertical, DUSpacing.lg)
-                                .contentShape(Rectangle())
-                            }
-                            .buttonStyle(.plain)
-
-                            if index < group.items.count - 1 {
-                                Divider()
-                                    .padding(.leading, 84)
-                            }
-                        }
-                    }
-                    .duCardStyle()
+                    menuGroupCard(group)
                 }
             }
+        }
+    }
+
+    private func menuGroupCard(_ group: MeMenuGroup) -> some View {
+        VStack(spacing: 0) {
+            ForEach(Array(group.items.enumerated()), id: \.element.id) { index, item in
+                menuGroupRow(item)
+
+                if index < group.items.count - 1 {
+                    Divider()
+                        .padding(.leading, 84)
+                }
+            }
+        }
+        .duCardStyle()
+    }
+
+    private func menuGroupRow(_ item: MeMenuItem) -> some View {
+        Button {
+            viewModel.handleAction(item.actionID, localizedTitle: localized(item.title))
+        } label: {
+            HStack(spacing: DUSpacing.md) {
+                Image(item.assetName)
+                    .renderingMode(.original)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 38, height: 38)
+
+                VStack(alignment: .leading, spacing: DUSpacing.xs) {
+                    Text(localized(item.title))
+                        .font(.du(15, weight: .semibold))
+                        .foregroundColor(DUTheme.ink)
+                    Text(localized(item.subtitle))
+                        .font(.du(12, weight: .medium))
+                        .foregroundColor(DUTheme.inkTertiary)
+                        .multilineTextAlignment(.leading)
+                }
+
+                Spacer()
+
+                menuAccessoryView(item.accessory)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, DUSpacing.lg)
+            .padding(.vertical, DUSpacing.lg)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+
+    @ViewBuilder
+    private func menuAccessoryView(_ accessory: MeMenuAccessory) -> some View {
+        switch accessory {
+        case .chevron:
+            Image(systemName: "chevron.forward")
+                .font(.du(12, weight: .bold))
+                .foregroundColor(DUTheme.inkDisabled)
+        case let .badge(text):
+            Text(localized(text))
+                .font(.du(10, weight: .bold))
+                .foregroundColor(DUTheme.warning)
+                .padding(.horizontal, DUSpacing.sm)
+                .frame(height: 22)
+                .background(DUTheme.warningBackground)
+                .clipShape(Capsule())
         }
     }
 
