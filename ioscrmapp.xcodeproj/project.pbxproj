@@ -38,6 +38,9 @@
 		A10000000000000000000019 /* DUIconButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000019 /* DUIconButton.swift */; };
 		A1000000000000000000001A /* DUStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000001A /* DUStateView.swift */; };
 		A1000000000000000000001B /* DUSectionCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000001B /* DUSectionCard.swift */; };
+		A1000000000000000000001C /* AuthAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000001C /* AuthAPI.swift */; };
+		A1000000000000000000001D /* HTTPClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000001D /* HTTPClient.swift */; };
+		A1000000000000000000001E /* NetworkContextBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000001E /* NetworkContextBuilder.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -73,6 +76,9 @@
 		A20000000000000000000019 /* DUIconButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DUIconButton.swift; sourceTree = "<group>"; };
 		A2000000000000000000001A /* DUStateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DUStateView.swift; sourceTree = "<group>"; };
 		A2000000000000000000001B /* DUSectionCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DUSectionCard.swift; sourceTree = "<group>"; };
+		A2000000000000000000001C /* AuthAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthAPI.swift; sourceTree = "<group>"; };
+		A2000000000000000000001D /* HTTPClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPClient.swift; sourceTree = "<group>"; };
+		A2000000000000000000001E /* NetworkContextBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkContextBuilder.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -132,6 +138,7 @@
 			children = (
 				A30000000000000000000012 /* Config */,
 				A30000000000000000000013 /* Localization */,
+				A30000000000000000000019 /* Networking */,
 				A30000000000000000000005 /* Storage */,
 			);
 			path = Core;
@@ -340,6 +347,16 @@
 			path = Localization;
 			sourceTree = "<group>";
 		};
+		A30000000000000000000019 /* Networking */ = {
+			isa = PBXGroup;
+			children = (
+				A2000000000000000000001C /* AuthAPI.swift */,
+				A2000000000000000000001D /* HTTPClient.swift */,
+				A2000000000000000000001E /* NetworkContextBuilder.swift */,
+			);
+			path = Networking;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -411,6 +428,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A1000000000000000000001E /* NetworkContextBuilder.swift in Sources */,
+				A1000000000000000000001D /* HTTPClient.swift in Sources */,
+				A1000000000000000000001C /* AuthAPI.swift in Sources */,
 				A1000000000000000000001B /* DUSectionCard.swift in Sources */,
 				A1000000000000000000001A /* DUStateView.swift in Sources */,
 				A10000000000000000000019 /* DUIconButton.swift in Sources */,
