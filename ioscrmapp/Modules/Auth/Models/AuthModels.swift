@@ -23,6 +23,17 @@ struct UserSession: Equatable {
     let balanceText: String
 }
 
+struct AuthToken: Codable, Equatable, Sendable {
+    let token: String
+    let expirationTime: String?
+    let renewal: Int64?
+}
+
+struct AuthSessionTokens: Codable, Equatable, Sendable {
+    let accessToken: AuthToken
+    let refreshToken: AuthToken?
+}
+
 struct OTPSendResult: Equatable {
     let resendAvailableAt: Date
     let expiresAt: Date
@@ -79,6 +90,7 @@ enum AuthError: Error, Equatable {
     case otpExpired
     case otpCooldown(secondsRemaining: Int)
     case accountLocked(until: Date)
+    case deviceNotUnique
     case phoneAlreadyRegistered
     case registrationPasswordFormat
     case passwordMismatch
@@ -106,6 +118,8 @@ enum AuthError: Error, Equatable {
             return .key("auth.error.otpCooldown", arguments: ["\(secondsRemaining)"])
         case .accountLocked:
             return .key("auth.error.accountLocked")
+        case .deviceNotUnique:
+            return .key("auth.error.deviceNotUnique")
         case .phoneAlreadyRegistered:
             return .key("auth.registration.error.alreadyRegistered")
         case .registrationPasswordFormat:

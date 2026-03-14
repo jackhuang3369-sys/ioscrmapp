@@ -208,7 +208,7 @@ final class AuthLoginViewModel: ObservableObject {
         case .accountLocked:
             passwordError = nil
             otpError = nil
-        case .featureUnavailable, .networkUnavailable, .phoneAlreadyRegistered, .registrationPasswordFormat, .passwordMismatch, .backend:
+        case .deviceNotUnique, .featureUnavailable, .networkUnavailable, .phoneAlreadyRegistered, .registrationPasswordFormat, .passwordMismatch, .backend:
             break
         }
     }
@@ -495,7 +495,7 @@ final class AuthRegistrationViewModel: ObservableObject {
             passwordError = authError.textValue
         case .passwordMismatch:
             confirmPasswordError = authError.textValue
-        case .invalidPasswordFormat, .invalidCredentials, .accountLocked, .backend, .featureUnavailable, .networkUnavailable:
+        case .invalidPasswordFormat, .invalidCredentials, .accountLocked, .deviceNotUnique, .backend, .featureUnavailable, .networkUnavailable:
             if stage == .register {
                 passwordError = nil
                 confirmPasswordError = nil

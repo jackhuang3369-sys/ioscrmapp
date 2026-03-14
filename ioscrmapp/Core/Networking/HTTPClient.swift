@@ -192,7 +192,11 @@ struct HTTPClient: Sendable {
         return merged
     }
 
-    private func send(_ request: URLRequest, endpoint: Endpoint) async throws -> ResponseData {
+    private func send(
+        _ request: URLRequest,
+        endpoint: Endpoint,
+        allowTokenRefresh: Bool = true
+    ) async throws -> ResponseData {
         do {
             let (data, response) = try await session.data(for: request)
 
@@ -205,6 +209,10 @@ struct HTTPClient: Sendable {
                 httpStatusCode: httpResponse.statusCode,
                 path: endpoint.path
             )
+        } catch let error as ClientError where shouldRefreshToken(for: error, endpoint: endpoint, allowTokenRefresh: allowTokenRefresh) {
+            _ = try await contextBuilder.refreshTokens(baseURL: baseURL, session: session)
+            let retryRequest = try await makeRequest(endpoint: endpoint, parameters: parameters(from: request, endpoint: endpoint))
+            return try await send(retryRequest, endpoint: endpoint, allowTokenRefresh: false)
         } catch let error as ClientError {
             throw error
         } catch {
@@ -212,6 +220,47 @@ struct HTTPClient: Sendable {
                 "Network request failed path=\(endpoint.path, privacy: .public) error=\(error.localizedDescription, privacy: .public)"
             )
             throw ClientError.networkUnavailable(underlying: error)
+        }
+    }
+
+    private func shouldRefreshToken(
+        for error: ClientError,
+        endpoint: Endpoint,
+        allowTokenRefresh: Bool
+    ) -> Bool {
+        guard allowTokenRefresh, endpoint.requiresAuthorization else {
+            return false
+        }
+
+        switch error {
+        case let .business(code, _, _):
+            return code == 40_014 || code == 40_015
+        default:
+            return false
+        }
+    }
+
+    private func parameters(from request: URLRequest, endpoint: Endpoint) -> [String: Any] {
+        switch endpoint.method {
+        case .get:
+            guard
+                let url = request.url,
+                let components = URLComponents(url: url, resolvingAgainstBaseURL: false)
+            else {
+                return [:]
+            }
+
+            return (components.queryItems ?? []).reduce(into: [String: Any]()) { partialResult, item in
+                partialResult[item.name] = item.value ?? ""
+            }
+        case .post:
+            guard let body = request.httpBody else {
+                return [:]
+            }
+            guard let jsonObject = try? JSONSerialization.jsonObject(with: body) as? [String: Any] else {
+                return [:]
+            }
+            return jsonObject
         }
     }
 

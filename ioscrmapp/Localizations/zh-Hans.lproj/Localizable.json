@@ -116,6 +116,7 @@
       "otpExpired": "验证码已过期，请重新获取后再试。",
       "otpCooldown": "请在 %@ 秒后重试。",
       "accountLocked": "账号已被锁定，请稍后再试。",
+      "deviceNotUnique": "该账号已在另一台设备上登录。",
       "featureUnavailable": "该功能暂未开放。",
       "networkUnavailable": "服务暂时不可用，请稍后重试。"
     }

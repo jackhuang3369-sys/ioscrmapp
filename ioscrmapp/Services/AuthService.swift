@@ -19,11 +19,14 @@ protocol AuthServicing: Sendable {
 struct RemoteAuthService: AuthServicing {
     private let client: HTTPClient
     private let registrationRequestEncryptor: RegistrationRequestEncryptor
+    private let tokenStore: KeychainAuthTokenStore
+    private let loginRequestBuilder: LoginRequestBuilder
 
     init(
         serverURL: URL,
         session: URLSession = .shared,
-        contextBuilder: NetworkContextBuilder = NetworkContextBuilder()
+        contextBuilder: NetworkContextBuilder = NetworkContextBuilder(),
+        tokenStore: KeychainAuthTokenStore = KeychainAuthTokenStore()
     ) {
         client = HTTPClient(
             baseURL: serverURL,
@@ -31,18 +34,102 @@ struct RemoteAuthService: AuthServicing {
             contextBuilder: contextBuilder
         )
         registrationRequestEncryptor = RegistrationRequestEncryptor()
+        self.tokenStore = tokenStore
+        loginRequestBuilder = LoginRequestBuilder(contextBuilder: contextBuilder)
     }
 
     func loginWithPassword(phone: String, password: String) async throws -> UserSession {
-        throw AuthError.featureUnavailable(message: "Remote auth service is not configured yet.")
+        do {
+            let encryptedPassword = try await registrationRequestEncryptor.encryptPassword(password)
+            let responseData = try await client.post(
+                AuthAPI.login,
+                body: loginRequestBuilder.passwordLoginPayload(
+                    phone: phone,
+                    encryptedPassword: encryptedPassword
+                )
+            )
+            let loginResponse = try LoginResponseMapper.map(
+                from: responseData,
+                fallbackPhone: AuthValidator.normalizedPhone(phone)
+            )
+            try tokenStore.save(loginResponse.tokens)
+            return loginResponse.session
+        } catch let error as HTTPClient.ClientError {
+            throw mapLoginClientError(error)
+        } catch let error as KeychainAuthTokenStoreError {
+            authLogger.error("Failed to persist login tokens status=\(String(describing: error), privacy: .public)")
+            throw AuthError.networkUnavailable
+        } catch let error as AuthError {
+            throw error
+        } catch {
+            throw AuthError.networkUnavailable
+        }
     }
 
     func sendOTP(to phone: String) async throws -> OTPSendResult {
-        throw AuthError.featureUnavailable(message: "Remote OTP service is not configured yet.")
+        let now = Date()
+
+        do {
+            let data = try await client.post(
+                AuthAPI.sendLoginOTP,
+                body: loginRequestBuilder.loginOTPSendPayload(phone: phone)
+            )
+            let resendSeconds = max(1, ResponseDataValue.int(in: data, keys: [
+                "resendSeconds",
+                "resendInterval",
+                "cooldownSeconds"
+            ]) ?? 60)
+            let expiresAt: Date
+            if let expirySeconds = ResponseDataValue.int(in: data, keys: [
+                "expireSeconds",
+                "expiresIn",
+                "otpValidSeconds",
+                "ttl"
+            ]) {
+                expiresAt = now.addingTimeInterval(TimeInterval(expirySeconds))
+            } else if let rawTimestamp = ResponseDataValue.double(in: data, keys: [
+                "expiresAt",
+                "otpExpiresAt"
+            ]) {
+                expiresAt = ResponseDataValue.date(fromTimestamp: rawTimestamp)
+            } else {
+                expiresAt = now.addingTimeInterval(5 * 60)
+            }
+
+            return OTPSendResult(
+                resendAvailableAt: now.addingTimeInterval(TimeInterval(resendSeconds)),
+                expiresAt: expiresAt,
+                demoCode: ""
+            )
+        } catch let error as HTTPClient.ClientError {
+            throw mapLoginClientError(error)
+        } catch {
+            throw AuthError.networkUnavailable
+        }
     }
 
     func loginWithOTP(phone: String, otp: String) async throws -> UserSession {
-        throw AuthError.featureUnavailable(message: "Remote auth service is not configured yet.")
+        do {
+            let responseData = try await client.post(
+                AuthAPI.login,
+                body: loginRequestBuilder.otpLoginPayload(phone: phone, otp: otp)
+            )
+            let loginResponse = try LoginResponseMapper.map(
+                from: responseData,
+                fallbackPhone: AuthValidator.normalizedPhone(phone)
+            )
+            try tokenStore.save(loginResponse.tokens)
+            return loginResponse.session
+        } catch let error as HTTPClient.ClientError {
+            throw mapLoginClientError(error)
+        } catch let error as KeychainAuthTokenStoreError {
+            authLogger.error("Failed to persist login tokens status=\(String(describing: error), privacy: .public)")
+            throw AuthError.networkUnavailable
+        } catch let error as AuthError {
+            throw error
+        } catch {
+            throw AuthError.networkUnavailable
+        }
     }
 
     func checkRegistrationEligibility(phone: String) async throws -> RegistrationEligibilityResult {
@@ -60,25 +147,25 @@ struct RemoteAuthService: AuthServicing {
             payload: ["mobile": AuthValidator.normalizedPhone(phone)]
         )
 
-        let resendSeconds = max(1, RegistrationPayloadValue.int(in: data, keys: [
+        let resendSeconds = max(1, ResponseDataValue.int(in: data, keys: [
             "resendSeconds",
             "resendInterval",
             "cooldownSeconds"
         ]) ?? 60)
 
         let expiresAt: Date?
-        if let expirySeconds = RegistrationPayloadValue.int(in: data, keys: [
+        if let expirySeconds = ResponseDataValue.int(in: data, keys: [
             "expireSeconds",
             "expiresIn",
             "otpValidSeconds",
             "ttl"
         ]) {
             expiresAt = now.addingTimeInterval(TimeInterval(expirySeconds))
-        } else if let rawTimestamp = RegistrationPayloadValue.double(in: data, keys: [
+        } else if let rawTimestamp = ResponseDataValue.double(in: data, keys: [
             "expiresAt",
             "otpExpiresAt"
         ]) {
-            expiresAt = RegistrationPayloadValue.date(fromTimestamp: rawTimestamp)
+            expiresAt = ResponseDataValue.date(fromTimestamp: rawTimestamp)
         } else {
             expiresAt = nil
         }
@@ -148,6 +235,15 @@ struct RemoteAuthService: AuthServicing {
         switch error {
         case let .business(code, message, traceID):
             return RegistrationRemoteErrorMapper.map(code: code, message: message, traceID: traceID)
+        case .httpStatus, .invalidJSON, .invalidResponse, .networkUnavailable:
+            return .networkUnavailable
+        }
+    }
+
+    private func mapLoginClientError(_ error: HTTPClient.ClientError) -> AuthError {
+        switch error {
+        case let .business(code, message, traceID):
+            return LoginRemoteErrorMapper.map(code: code, message: message, traceID: traceID)
         case .httpStatus, .invalidJSON, .invalidResponse, .networkUnavailable:
             return .networkUnavailable
         }
@@ -413,11 +509,146 @@ private enum RegistrationRemoteErrorMapper {
     }
 }
 
-private enum RegistrationPayloadValue {
+private struct LoginRequestBuilder {
+    private let contextBuilder: NetworkContextBuilder
+
+    init(contextBuilder: NetworkContextBuilder) {
+        self.contextBuilder = contextBuilder
+    }
+
+    func passwordLoginPayload(phone: String, encryptedPassword: String) -> [String: Any] {
+        var payload: [String: Any] = [
+            "authType": "1",
+            "serviceNumber": AuthValidator.localPhoneDigits(phone),
+            "password": encryptedPassword
+        ]
+        payload.merge(contextBuilder.loginParameters(), uniquingKeysWith: { _, new in new })
+        return payload
+    }
+
+    func otpLoginPayload(phone: String, otp: String) -> [String: Any] {
+        var payload: [String: Any] = [
+            "authType": "2",
+            "phonenumber": AuthValidator.localPhoneDigits(phone),
+            "smsCode": otp
+        ]
+        payload.merge(contextBuilder.loginParameters(), uniquingKeysWith: { _, new in new })
+        return payload
+    }
+
+    func loginOTPSendPayload(phone: String) -> [String: Any] {
+        var payload: [String: Any] = [
+            "type": "Mobile",
+            "phoneNumber": AuthValidator.localPhoneDigits(phone)
+        ]
+        payload.merge(contextBuilder.otpParameters(), uniquingKeysWith: { _, new in new })
+        return payload
+    }
+}
+
+private struct ParsedLoginResponse {
+    let session: UserSession
+    let tokens: AuthSessionTokens
+}
+
+private enum LoginResponseMapper {
+    static func map(from responseData: HTTPClient.ResponseData, fallbackPhone: String) throws -> ParsedLoginResponse {
+        guard let dictionary = responseData.objectValue else {
+            throw HTTPClient.ClientError.invalidResponse
+        }
+        guard let user = dictionary["user"]?.objectValue else {
+            throw HTTPClient.ClientError.invalidResponse
+        }
+        guard
+            let tokenDictionary = dictionary["token"]?.objectValue,
+            let accessToken = parseToken(tokenDictionary["accessToken"])
+        else {
+            throw HTTPClient.ClientError.invalidResponse
+        }
+
+        let displayName = ResponseDataValue.string(in: user, keys: ["username"]) ?? fallbackPhone
+        let phoneNumber = ResponseDataValue.string(in: user, keys: ["mobile"]) ?? fallbackPhone
+        let session = UserSession(
+            displayName: displayName,
+            phoneNumber: AuthValidator.formattedPhone(phoneNumber),
+            greeting: "Good Morning",
+            balanceText: "0.00 AED"
+        )
+
+        return ParsedLoginResponse(
+            session: session,
+            tokens: AuthSessionTokens(
+                accessToken: accessToken,
+                refreshToken: parseToken(tokenDictionary["refreshToken"])
+            )
+        )
+    }
+
+    private static func parseToken(_ responseData: HTTPClient.ResponseData?) -> AuthToken? {
+        guard
+            let dictionary = responseData?.objectValue,
+            let token = ResponseDataValue.string(in: dictionary, keys: ["token"]),
+            !token.isEmpty
+        else {
+            return nil
+        }
+
+        let renewal = ResponseDataValue.int(in: dictionary, keys: ["renewal"]).map(Int64.init)
+        return AuthToken(
+            token: token,
+            expirationTime: ResponseDataValue.string(in: dictionary, keys: ["expTime"]),
+            renewal: renewal
+        )
+    }
+}
+
+private enum LoginRemoteErrorMapper {
+    static func map(code: Int, message: String, traceID: String?) -> AuthError {
+        switch code {
+        case 40_001, 40_005:
+            return .invalidCredentials(remainingAttempts: 0)
+        case 40_002, 40_013:
+            return .accountLocked(until: Date())
+        case 41_003, 703:
+            return .deviceNotUnique
+        case 50_002, 50_004:
+            return .otpInvalid
+        case 50_003:
+            return .otpExpired
+        default:
+            let lowered = message.lowercased()
+            if lowered.contains("locked") {
+                return .accountLocked(until: Date())
+            }
+            if lowered.contains("another device") {
+                return .deviceNotUnique
+            }
+            if lowered.contains("otp") && lowered.contains("expire") {
+                return .otpExpired
+            }
+            if lowered.contains("otp") {
+                return .otpInvalid
+            }
+            if lowered.contains("password") || lowered.contains("user") {
+                return .invalidCredentials(remainingAttempts: 0)
+            }
+            return .backend(
+                message: message.isEmpty ? "Login request failed." : message,
+                traceID: traceID
+            )
+        }
+    }
+}
+
+private enum ResponseDataValue {
     static func int(in responseData: HTTPClient.ResponseData, keys: [String]) -> Int? {
         guard let dictionary = responseData.objectValue else {
             return nil
         }
+        return int(in: dictionary, keys: keys)
+    }
+
+    static func int(in dictionary: [String: HTTPClient.ResponseData], keys: [String]) -> Int? {
         for key in keys {
             if let value = dictionary[key]?.intValue {
                 return value
@@ -433,11 +664,24 @@ private enum RegistrationPayloadValue {
         guard let dictionary = responseData.objectValue else {
             return nil
         }
+        return double(in: dictionary, keys: keys)
+    }
+
+    static func double(in dictionary: [String: HTTPClient.ResponseData], keys: [String]) -> Double? {
         for key in keys {
             if let value = dictionary[key]?.doubleValue {
                 return value
             }
             if let stringValue = dictionary[key]?.stringValue, let value = Double(stringValue) {
+                return value
+            }
+        }
+        return nil
+    }
+
+    static func string(in dictionary: [String: HTTPClient.ResponseData], keys: [String]) -> String? {
+        for key in keys {
+            if let value = dictionary[key]?.stringValue, !value.isEmpty {
                 return value
             }
         }

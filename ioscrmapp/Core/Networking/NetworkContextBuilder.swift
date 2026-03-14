@@ -5,6 +5,26 @@ import UIKit
 #endif
 
 struct NetworkContextBuilder: Sendable {
+    private static let sharedTokenStore = KeychainAuthTokenStore()
+    private static let sharedRefreshCoordinator = AuthRefreshCoordinator(tokenStore: sharedTokenStore)
+
+    private let tokenStore: KeychainAuthTokenStore
+    private let refreshCoordinator: AuthRefreshCoordinator
+
+    init(
+        tokenStore: KeychainAuthTokenStore = NetworkContextBuilder.sharedTokenStore,
+        refreshCoordinator: AuthRefreshCoordinator? = nil
+    ) {
+        self.tokenStore = tokenStore
+        if let refreshCoordinator {
+            self.refreshCoordinator = refreshCoordinator
+        } else if tokenStore == NetworkContextBuilder.sharedTokenStore {
+            self.refreshCoordinator = NetworkContextBuilder.sharedRefreshCoordinator
+        } else {
+            self.refreshCoordinator = AuthRefreshCoordinator(tokenStore: tokenStore)
+        }
+    }
+
     func parameters(includeDeviceInfo: Bool) -> [String: Any] {
         var parameters: [String: Any] = [
             "appVersion": appVersion,
@@ -27,9 +47,48 @@ struct NetworkContextBuilder: Sendable {
         return parameters
     }
 
+    func loginParameters() -> [String: String] {
+        [
+            "loginPlatform": "iOS",
+            "osVersion": osVersion,
+            "deviceBrand": deviceBrand,
+            "deviceModel": deviceModel,
+            "loginLatitude": coordinateLatitude,
+            "loginLongitude": coordinateLongitude,
+            "appVersion": appVersion,
+            "privacyVersion": privacyVersion,
+            "networkType": networkType,
+            "deviceId": DeviceIdentityProvider().deviceID()
+        ]
+    }
+
+    func otpParameters() -> [String: String] {
+        [
+            "platform": "iOS",
+            "osVersion": osVersion,
+            "appVersion": appVersion,
+            "lang": languageCode,
+            "loginLatitude": coordinateLatitude,
+            "loginLongitude": coordinateLongitude
+        ]
+    }
+
     func headers(requiresAuthorization: Bool) -> [String: String] {
-        _ = requiresAuthorization
-        return ["timeZoneCode": timeZoneCode]
+        var headers = ["timeZoneCode": timeZoneCode]
+
+        if requiresAuthorization, let accessToken = tokenStore.loadTokens()?.accessToken.token, !accessToken.isEmpty {
+            headers["Authorization"] = "Bearer \(accessToken)"
+        }
+
+        return headers
+    }
+
+    func refreshTokens(baseURL: URL, session: URLSession) async throws -> AuthSessionTokens {
+        try await refreshCoordinator.refreshTokens(
+            baseURL: baseURL,
+            session: session,
+            timeZoneCode: timeZoneCode
+        )
     }
 
     private var appVersion: String {
@@ -55,6 +114,26 @@ struct NetworkContextBuilder: Sendable {
     private var defaultLatitude: Double { 25.2048 }
     private var defaultLongitude: Double { 55.2708 }
 
+    private var coordinateLatitude: String {
+        String(defaultLatitude)
+    }
+
+    private var coordinateLongitude: String {
+        String(defaultLongitude)
+    }
+
+    private var privacyVersion: String {
+        "1.0"
+    }
+
+    private var networkType: String {
+        "UNKNOWN"
+    }
+
+    private var deviceBrand: String {
+        "Apple"
+    }
+
     private var osName: String {
         #if canImport(UIKit)
         return UIDevice.current.systemName
@@ -69,6 +148,10 @@ struct NetworkContextBuilder: Sendable {
         #else
         return "iPhone"
         #endif
+    }
+
+    private var deviceModel: String {
+        deviceType
     }
 
     private var deviceName: String {

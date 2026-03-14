@@ -1,6 +1,30 @@
 import Foundation
 
 enum AuthAPI {
+    static let sendLoginOTP = HTTPClient.Endpoint(
+        path: "/ser-user-auth/api/auth/code",
+        method: .post,
+        includeCommonParameters: false,
+        includeDeviceInfo: false,
+        requiresAuthorization: false
+    )
+
+    static let login = HTTPClient.Endpoint(
+        path: "/ser-user-auth/api/auth/login",
+        method: .post,
+        includeCommonParameters: false,
+        includeDeviceInfo: false,
+        requiresAuthorization: false
+    )
+
+    static let refresh = HTTPClient.Endpoint(
+        path: "/ser-user-auth/api/auth/refresh",
+        method: .post,
+        includeCommonParameters: false,
+        includeDeviceInfo: false,
+        requiresAuthorization: false
+    )
+
     static let checkRegistrationEligibility = HTTPClient.Endpoint(
         path: "/ser-user-auth/api/auth/register/eligibility",
         method: .post,

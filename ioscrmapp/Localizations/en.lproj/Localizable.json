@@ -116,6 +116,7 @@
       "otpExpired": "OTP expired. Request a new code and try again.",
       "otpCooldown": "Try again in %@s.",
       "accountLocked": "Account locked. Try again later.",
+      "deviceNotUnique": "This account is already active on another device.",
       "featureUnavailable": "This feature is not available yet.",
       "networkUnavailable": "Service is temporarily unavailable. Please try again."
     }
