@@ -61,7 +61,7 @@ private enum Catalog {
     private static let defaultMode: AppServiceMode = .mock
 
     private static let environmentURLs: [AppEnvironment: URL] = [
-        .develop: URL(string: "https://dev-api.example.com")!,
+        .develop: URL(string: "http://10.72.61.85:9000")!,
         .test: URL(string: "https://staging-api.example.com")!,
         .production: URL(string: "https://api.example.com")!,
     ]
@@ -113,9 +113,9 @@ private enum Catalog {
             return AppServiceMode(rawValue: override.lowercased()) ?? fallback
         }
 
-        if isLocalDebugRun {
-            return .mock
-        }
+//        if isLocalDebugRun {
+//            return .mock
+//        }
 
         return fallback
     }

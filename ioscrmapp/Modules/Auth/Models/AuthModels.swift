@@ -126,11 +126,10 @@ enum AuthValidator {
     nonisolated static let countryCode = "971"
     nonisolated static let localPhoneLength = 9
     nonisolated static let fullPhoneLength = 12
-    nonisolated static let demoPhone = "+971 52 123 4567"
+    nonisolated static let demoPhone = "971521234567"
     nonisolated static let demoPassword = "111"
     nonisolated static let demoOTP = "111"
     nonisolated static let demoRegistrationOTP = "123456"
-    nonisolated static let registrationPasswordSpecialCharacters = "!@#$%^&*()_+-=[]{}|;:'\",.<>/?`~"
 
     nonisolated static func localPhoneDigits(_ value: String) -> String {
         let digits = value.filter(\.isNumber)
@@ -138,6 +137,7 @@ enum AuthValidator {
         if digits.hasPrefix(countryCode) {
             return String(digits.dropFirst(countryCode.count).prefix(localPhoneLength))
         }
+
         if digits.hasPrefix("0") {
             return String(digits.dropFirst().prefix(localPhoneLength))
         }
@@ -147,22 +147,15 @@ enum AuthValidator {
 
     nonisolated static func normalizedPhone(_ value: String) -> String {
         let localDigits = localPhoneDigits(value)
-        guard !localDigits.isEmpty else {
-            return ""
+        //guard localDigits.count == localPhoneLength, localDigits.hasPrefix("5") else {
+        guard localDigits.count == localPhoneLength else {
+            return localDigits
         }
         return countryCode + localDigits
     }
 
     nonisolated static func formattedPhone(_ value: String) -> String {
-        let localDigits = localPhoneDigits(value)
-        guard localDigits.count == localPhoneLength else {
-            return localDigits.isEmpty ? "+\(countryCode)" : "+\(countryCode) \(localDigits)"
-        }
-
-        let prefix = localDigits.prefix(2)
-        let middle = localDigits.dropFirst(2).prefix(3)
-        let suffix = localDigits.suffix(4)
-        return "+\(countryCode) \(prefix) \(middle) \(suffix)"
+        normalizedPhone(value)
     }
 
     nonisolated static func isValidPhone(_ value: String) -> Bool {
@@ -183,18 +176,6 @@ enum AuthValidator {
     }
 
     nonisolated static func isValidRegistrationPassword(_ value: String) -> Bool {
-        guard value.count >= 8 else {
-            return false
-        }
-        guard !value.contains(where: \.isWhitespace) else {
-            return false
-        }
-
-        let hasUppercase = value.contains(where: \.isUppercase)
-        let hasLowercase = value.contains(where: \.isLowercase)
-        let hasDigit = value.contains(where: \.isNumber)
-        let hasSpecial = value.contains { registrationPasswordSpecialCharacters.contains($0) }
-
-        return hasUppercase && hasLowercase && hasDigit && hasSpecial
+        value.trimmingCharacters(in: .whitespacesAndNewlines).count >= 8
     }
 }

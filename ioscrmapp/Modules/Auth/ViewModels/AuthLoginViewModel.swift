@@ -234,6 +234,8 @@ final class AuthLoginViewModel: ObservableObject {
 
 @MainActor
 final class AuthRegistrationViewModel: ObservableObject {
+    private static let otpValiditySeconds: TimeInterval = 5 * 60
+
     @Published var phoneNumber: String
     @Published var otp = ""
     @Published var password = ""
@@ -319,7 +321,9 @@ final class AuthRegistrationViewModel: ObservableObject {
         Task {
             do {
                 let result = try await authService.sendRegistrationOTP(to: phoneNumber)
-                otpExpiresAt = result.expiresAt
+                otpExpiresAt = result.expiresAt ?? Date().addingTimeInterval(Self.otpValiditySeconds)
+                otp = ""
+                otpError = nil
                 let seconds = max(0, Int(result.resendAvailableAt.timeIntervalSinceNow.rounded(.up)))
                 startCountdown(from: seconds)
                 bannerTone = .success

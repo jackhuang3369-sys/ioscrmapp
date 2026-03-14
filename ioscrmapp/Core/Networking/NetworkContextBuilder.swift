@@ -23,6 +23,7 @@ struct NetworkContextBuilder: Sendable {
         parameters["osName"] = osName
         parameters["deviceType"] = deviceType
         parameters["deviceName"] = deviceName
+        parameters["deviceId"] = DeviceIdentityProvider().deviceID()
         return parameters
     }
 

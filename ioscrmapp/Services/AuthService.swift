@@ -18,9 +18,19 @@ protocol AuthServicing: Sendable {
 
 struct RemoteAuthService: AuthServicing {
     private let client: HTTPClient
+    private let registrationRequestEncryptor: RegistrationRequestEncryptor
 
-    init(serverURL: URL) {
-        client = HTTPClient(baseURL: serverURL)
+    init(
+        serverURL: URL,
+        session: URLSession = .shared,
+        contextBuilder: NetworkContextBuilder = NetworkContextBuilder()
+    ) {
+        client = HTTPClient(
+            baseURL: serverURL,
+            session: session,
+            contextBuilder: contextBuilder
+        )
+        registrationRequestEncryptor = RegistrationRequestEncryptor()
     }
 
     func loginWithPassword(phone: String, password: String) async throws -> UserSession {
@@ -36,20 +46,18 @@ struct RemoteAuthService: AuthServicing {
     }
 
     func checkRegistrationEligibility(phone: String) async throws -> RegistrationEligibilityResult {
-        let localPhone = AuthValidator.localPhoneDigits(phone)
         _ = try await postRegistrationRequest(
             AuthAPI.checkRegistrationEligibility,
-            payload: ["mobile": localPhone]
+            payload: ["mobile": AuthValidator.normalizedPhone(phone)]
         )
         return RegistrationEligibilityResult(phoneNumber: AuthValidator.normalizedPhone(phone))
     }
 
     func sendRegistrationOTP(to phone: String) async throws -> RegistrationOTPSendResult {
         let now = Date()
-        let localPhone = AuthValidator.localPhoneDigits(phone)
         let data = try await postRegistrationRequest(
             AuthAPI.sendRegistrationOTP,
-            payload: ["mobile": localPhone]
+            payload: ["mobile": AuthValidator.normalizedPhone(phone)]
         )
 
         let resendSeconds = max(1, RegistrationPayloadValue.int(in: data, keys: [
@@ -83,14 +91,19 @@ struct RemoteAuthService: AuthServicing {
     }
 
     func verifyRegistrationOTP(phone: String, code: String) async throws -> RegistrationOTPVerificationResult {
-        let localPhone = AuthValidator.localPhoneDigits(phone)
-        _ = try await postRegistrationRequest(
+        let data = try await postRegistrationRequest(
             AuthAPI.verifyRegistrationOTP,
             payload: [
-                "mobile": localPhone,
+                "mobile": AuthValidator.normalizedPhone(phone),
                 "otpCode": code
             ]
         )
+        guard let isVerified = data.boolValue else {
+            throw AuthError.networkUnavailable
+        }
+        guard isVerified else {
+            throw AuthError.otpInvalid
+        }
 
         return RegistrationOTPVerificationResult(
             verifiedPhoneNumber: AuthValidator.normalizedPhone(phone),
@@ -99,15 +112,21 @@ struct RemoteAuthService: AuthServicing {
     }
 
     func register(input: RegistrationSubmitInput) async throws -> RegistrationCompletionResult {
-        let localPhone = AuthValidator.localPhoneDigits(input.phoneNumber)
-        _ = try await postRegistrationRequest(
-            AuthAPI.register,
-            payload: [
-                "mobile": localPhone,
-                "otpCode": input.otpCode,
-                "password": input.password
-            ]
-        )
+        do {
+            let encryptedPassword = try await registrationRequestEncryptor.encryptPassword(input.password)
+            _ = try await client.post(
+                AuthAPI.register,
+                body: [
+                    "mobile": AuthValidator.normalizedPhone(input.phoneNumber),
+                    "otpCode": input.otpCode,
+                    "password": encryptedPassword
+                ]
+            )
+        } catch let error as HTTPClient.ClientError {
+            throw mapClientError(error)
+        } catch {
+            throw AuthError.networkUnavailable
+        }
 
         return RegistrationCompletionResult(phoneNumber: AuthValidator.normalizedPhone(input.phoneNumber))
     }
@@ -115,13 +134,11 @@ struct RemoteAuthService: AuthServicing {
     private func postRegistrationRequest(
         _ endpoint: HTTPClient.Endpoint,
         payload: [String: Any]
-    ) async throws -> [String: Any] {
+    ) async throws -> HTTPClient.ResponseData {
         do {
             return try await client.post(endpoint, body: payload)
         } catch let error as HTTPClient.ClientError {
             throw mapClientError(error)
-        } catch let error as AuthError {
-            throw error
         } catch {
             throw AuthError.networkUnavailable
         }
@@ -375,6 +392,10 @@ actor MockAuthService: AuthServicing {
 private enum RegistrationRemoteErrorMapper {
     static func map(code: Int, message: String, traceID: String?) -> AuthError {
         switch code {
+        case 40_004:
+            return .phoneAlreadyRegistered
+        case 40_017:
+            return .registrationPasswordFormat
         case 50_002:
             return .otpInvalid
         case 50_003:
@@ -393,39 +414,30 @@ private enum RegistrationRemoteErrorMapper {
 }
 
 private enum RegistrationPayloadValue {
-    static func string(in dictionary: [String: Any], keys: [String]) -> String? {
+    static func int(in responseData: HTTPClient.ResponseData, keys: [String]) -> Int? {
+        guard let dictionary = responseData.objectValue else {
+            return nil
+        }
         for key in keys {
-            if let value = dictionary[key] as? String, !value.isEmpty {
+            if let value = dictionary[key]?.intValue {
+                return value
+            }
+            if let stringValue = dictionary[key]?.stringValue, let value = Int(stringValue) {
                 return value
             }
         }
         return nil
     }
 
-    static func int(in dictionary: [String: Any], keys: [String]) -> Int? {
-        for key in keys {
-            if let value = dictionary[key] as? Int {
-                return value
-            }
-            if let value = dictionary[key] as? NSNumber {
-                return value.intValue
-            }
-            if let stringValue = dictionary[key] as? String, let value = Int(stringValue) {
-                return value
-            }
+    static func double(in responseData: HTTPClient.ResponseData, keys: [String]) -> Double? {
+        guard let dictionary = responseData.objectValue else {
+            return nil
         }
-        return nil
-    }
-
-    static func double(in dictionary: [String: Any], keys: [String]) -> Double? {
         for key in keys {
-            if let value = dictionary[key] as? Double {
+            if let value = dictionary[key]?.doubleValue {
                 return value
             }
-            if let value = dictionary[key] as? NSNumber {
-                return value.doubleValue
-            }
-            if let stringValue = dictionary[key] as? String, let value = Double(stringValue) {
+            if let stringValue = dictionary[key]?.stringValue, let value = Double(stringValue) {
                 return value
             }
         }

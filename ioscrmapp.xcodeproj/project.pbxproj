@@ -41,6 +41,8 @@
 		A1000000000000000000001C /* AuthAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000001C /* AuthAPI.swift */; };
 		A1000000000000000000001D /* HTTPClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000001D /* HTTPClient.swift */; };
 		A1000000000000000000001E /* NetworkContextBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000001E /* NetworkContextBuilder.swift */; };
+		A1000000000000000000001F /* DeviceIdentityProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000001F /* DeviceIdentityProvider.swift */; };
+		A10000000000000000000020 /* RegistrationRequestEncryptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000020 /* RegistrationRequestEncryptor.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -79,6 +81,8 @@
 		A2000000000000000000001C /* AuthAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthAPI.swift; sourceTree = "<group>"; };
 		A2000000000000000000001D /* HTTPClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPClient.swift; sourceTree = "<group>"; };
 		A2000000000000000000001E /* NetworkContextBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkContextBuilder.swift; sourceTree = "<group>"; };
+		A2000000000000000000001F /* DeviceIdentityProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceIdentityProvider.swift; sourceTree = "<group>"; };
+		A20000000000000000000020 /* RegistrationRequestEncryptor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegistrationRequestEncryptor.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -150,6 +154,7 @@
 				A2000000000000000000000D /* AppServices.swift */,
 				A20000000000000000000002 /* AuthService.swift */,
 				A20000000000000000000008 /* MeService.swift */,
+				A20000000000000000000020 /* RegistrationRequestEncryptor.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -351,6 +356,7 @@
 			isa = PBXGroup;
 			children = (
 				A2000000000000000000001C /* AuthAPI.swift */,
+				A2000000000000000000001F /* DeviceIdentityProvider.swift */,
 				A2000000000000000000001D /* HTTPClient.swift */,
 				A2000000000000000000001E /* NetworkContextBuilder.swift */,
 			);
@@ -428,6 +434,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A10000000000000000000020 /* RegistrationRequestEncryptor.swift in Sources */,
+				A1000000000000000000001F /* DeviceIdentityProvider.swift in Sources */,
 				A1000000000000000000001E /* NetworkContextBuilder.swift in Sources */,
 				A1000000000000000000001D /* HTTPClient.swift in Sources */,
 				A1000000000000000000001C /* AuthAPI.swift in Sources */,

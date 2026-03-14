@@ -96,7 +96,7 @@
       "error": {
         "alreadyRegistered": "This mobile number is already registered.",
         "otpInvalid": "The OTP code is incorrect.",
-        "passwordRequirements": "Use at least 8 characters with uppercase, lowercase, number, and special character.",
+        "passwordRequirements": "Use at least 8 characters with uppercase, lowercase, and a number. Do not use 3 repeated characters, 3 increasing digits, or your phone number.",
         "passwordMismatch": "Passwords do not match."
       }
     },
@@ -117,7 +117,7 @@
       "otpCooldown": "Try again in %@s.",
       "accountLocked": "Account locked. Try again later.",
       "featureUnavailable": "This feature is not available yet.",
-      "networkUnavailable": "Mock service is temporarily unavailable. Please try again."
+      "networkUnavailable": "Service is temporarily unavailable. Please try again."
     }
   },
   "home": {

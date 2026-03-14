@@ -71,13 +71,13 @@ enum MeActionID: String, Sendable {
 
 enum MePhoneNumberFormatter {
     static func masked(_ value: String) -> String {
-        let localDigits = AuthValidator.localPhoneDigits(value)
-        guard localDigits.count == AuthValidator.localPhoneLength else {
+        let normalizedPhone = AuthValidator.normalizedPhone(value)
+        guard normalizedPhone.count == AuthValidator.fullPhoneLength else {
             return AuthValidator.formattedPhone(value)
         }
 
-        let prefix = localDigits.prefix(2)
-        let suffix = localDigits.suffix(4)
-        return "+\(AuthValidator.countryCode) \(prefix)***\(suffix)"
+        let prefix = normalizedPhone.prefix(5)
+        let suffix = normalizedPhone.suffix(4)
+        return "\(prefix)***\(suffix)"
     }
 }

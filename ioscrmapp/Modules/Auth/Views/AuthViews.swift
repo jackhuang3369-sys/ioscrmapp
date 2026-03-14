@@ -733,7 +733,7 @@ private struct AuthBannerView: View {
 private struct RegistrationPasswordPreviewHost: View {
     @StateObject private var viewModel = AuthRegistrationViewModel(
         authService: MockAuthService(),
-        initialPhone: "+971 55 123 4567"
+        initialPhone: "971551234567"
     )
 
     var body: some View {
@@ -747,7 +747,7 @@ private struct RegistrationPasswordPreviewHost: View {
         .task {
             viewModel.restorePasswordStep(
                 with: RegistrationVerifiedContext(
-                    phoneNumber: AuthValidator.normalizedPhone("+971 55 123 4567"),
+                    phoneNumber: AuthValidator.normalizedPhone("971551234567"),
                     otpCode: AuthValidator.demoRegistrationOTP
                 )
             )
@@ -758,7 +758,7 @@ private struct RegistrationPasswordPreviewHost: View {
 private struct RegistrationVerifyRegisteredPreviewHost: View {
     @StateObject private var viewModel = AuthRegistrationViewModel(
         authService: MockAuthService(),
-        initialPhone: "+971 55 555 1111"
+        initialPhone: "971555551111"
     )
 
     var body: some View {
