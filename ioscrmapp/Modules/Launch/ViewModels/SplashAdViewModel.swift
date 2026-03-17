@@ -55,9 +55,7 @@ final class SplashAdViewModel: ObservableObject {
 
         timeoutTask = Task { [weak self] in
             try? await Task.sleep(nanoseconds: 3_000_000_000)
-            await MainActor.run {
-                self?.handleLoadFailureIfNeeded()
-            }
+            await self?.handleLoadFailureIfNeeded()
         }
     }
 
@@ -83,7 +81,7 @@ final class SplashAdViewModel: ObservableObject {
 
     private func observe(_ playerItem: AVPlayerItem) {
         itemStatusObservation = playerItem.observe(\.status, options: [.initial, .new]) { [weak self] item, _ in
-            Task { @MainActor in
+            Task { @MainActor [weak self, item] in
                 self?.handleStatusUpdate(for: item)
             }
         }
@@ -93,7 +91,7 @@ final class SplashAdViewModel: ObservableObject {
             object: playerItem,
             queue: .main
         ) { [weak self] _ in
-            Task { @MainActor in
+            Task { @MainActor [weak self] in
                 self?.finish(.playbackCompleted)
             }
         }
@@ -131,7 +129,7 @@ final class SplashAdViewModel: ObservableObject {
             forInterval: CMTime(seconds: 0.1, preferredTimescale: 600),
             queue: .main
         ) { [weak self] time in
-            Task { @MainActor in
+            Task { @MainActor [weak self, time] in
                 self?.handlePlaybackTick(seconds: time.seconds)
             }
         }
@@ -197,9 +195,7 @@ final class SplashAdViewModel: ObservableObject {
         completionTask?.cancel()
         completionTask = Task { [weak self] in
             try? await Task.sleep(nanoseconds: 600_000_000)
-            await MainActor.run {
-                self?.finish(.loadingFailed)
-            }
+            await self?.finish(.loadingFailed)
         }
     }
 
