@@ -15,11 +15,13 @@ struct ioscrmappApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView(
-                sessionStore: sessionStore,
-                authService: services.authService,
-                meService: services.meService
-            )
+            AppLaunchContainerView(splashAdService: services.splashAdService) {
+                ContentView(
+                    sessionStore: sessionStore,
+                    authService: services.authService,
+                    meService: services.meService
+                )
+            }
             .environmentObject(languageStore)
             .environment(\.locale, languageStore.locale)
             .environment(\.layoutDirection, languageStore.layoutDirection)

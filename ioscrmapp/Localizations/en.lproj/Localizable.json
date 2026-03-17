@@ -322,5 +322,21 @@
       "chinese": "Simplified Chinese",
       "arabic": "Arabic"
     }
+  },
+  "splash": {
+    "skip": {
+      "ready": "Skip",
+      "shortCountdown": "%@s",
+      "compactCountdown": "%@ Skip",
+      "countdown": "Skip in %@s",
+      "progress": "Skip %@%%"
+    },
+    "audio": {
+      "mute": "Mute",
+      "unmute": "Sound On"
+    },
+    "loading": {
+      "failed": "Ad unavailable. Opening the app..."
+    }
   }
 }

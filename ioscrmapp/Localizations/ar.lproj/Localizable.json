@@ -322,5 +322,21 @@
       "chinese": "الصينية المبسطة",
       "arabic": "العربية"
     }
+  },
+  "splash": {
+    "skip": {
+      "ready": "تخطي",
+      "shortCountdown": "%@ ث",
+      "compactCountdown": "%@ تخطي",
+      "countdown": "تخطي بعد %@ ث",
+      "progress": "تخطي %@%%"
+    },
+    "audio": {
+      "mute": "كتم الصوت",
+      "unmute": "تشغيل الصوت"
+    },
+    "loading": {
+      "failed": "الإعلان غير متاح الآن. جارٍ فتح التطبيق..."
+    }
   }
 }

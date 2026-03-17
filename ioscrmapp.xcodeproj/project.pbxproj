@@ -43,6 +43,14 @@
 		A1000000000000000000001E /* NetworkContextBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000001E /* NetworkContextBuilder.swift */; };
 		A1000000000000000000001F /* DeviceIdentityProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000001F /* DeviceIdentityProvider.swift */; };
 		A10000000000000000000020 /* RegistrationRequestEncryptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000020 /* RegistrationRequestEncryptor.swift */; };
+		A10000000000000000000021 /* AdvertisementAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000021 /* AdvertisementAPI.swift */; };
+		A10000000000000000000022 /* SplashAdModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000022 /* SplashAdModels.swift */; };
+		A10000000000000000000023 /* SplashAdService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000023 /* SplashAdService.swift */; };
+		A10000000000000000000024 /* DUSplashSkipButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000024 /* DUSplashSkipButton.swift */; };
+		A10000000000000000000025 /* AppLaunchContainerViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000025 /* AppLaunchContainerViewModel.swift */; };
+		A10000000000000000000026 /* SplashAdViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000026 /* SplashAdViewModel.swift */; };
+		A10000000000000000000027 /* AppLaunchContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000027 /* AppLaunchContainerView.swift */; };
+		A10000000000000000000028 /* SplashAdView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000028 /* SplashAdView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -83,6 +91,14 @@
 		A2000000000000000000001E /* NetworkContextBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkContextBuilder.swift; sourceTree = "<group>"; };
 		A2000000000000000000001F /* DeviceIdentityProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceIdentityProvider.swift; sourceTree = "<group>"; };
 		A20000000000000000000020 /* RegistrationRequestEncryptor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegistrationRequestEncryptor.swift; sourceTree = "<group>"; };
+		A20000000000000000000021 /* AdvertisementAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdvertisementAPI.swift; sourceTree = "<group>"; };
+		A20000000000000000000022 /* SplashAdModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashAdModels.swift; sourceTree = "<group>"; };
+		A20000000000000000000023 /* SplashAdService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashAdService.swift; sourceTree = "<group>"; };
+		A20000000000000000000024 /* DUSplashSkipButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DUSplashSkipButton.swift; sourceTree = "<group>"; };
+		A20000000000000000000025 /* AppLaunchContainerViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLaunchContainerViewModel.swift; sourceTree = "<group>"; };
+		A20000000000000000000026 /* SplashAdViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashAdViewModel.swift; sourceTree = "<group>"; };
+		A20000000000000000000027 /* AppLaunchContainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLaunchContainerView.swift; sourceTree = "<group>"; };
+		A20000000000000000000028 /* SplashAdView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashAdView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -154,6 +170,7 @@
 				A2000000000000000000000D /* AppServices.swift */,
 				A20000000000000000000002 /* AuthService.swift */,
 				A20000000000000000000008 /* MeService.swift */,
+				A20000000000000000000023 /* SplashAdService.swift */,
 				A20000000000000000000020 /* RegistrationRequestEncryptor.swift */,
 			);
 			path = Services;
@@ -164,6 +181,7 @@
 			children = (
 				A30000000000000000000006 /* Auth */,
 				A30000000000000000000007 /* Home */,
+				A3000000000000000000001A /* Launch */,
 				A3000000000000000000000C /* Me */,
 			);
 			path = Modules;
@@ -220,6 +238,7 @@
 				A20000000000000000000014 /* DUButton.swift */,
 				A20000000000000000000018 /* DUTextButton.swift */,
 				A20000000000000000000019 /* DUIconButton.swift */,
+				A20000000000000000000024 /* DUSplashSkipButton.swift */,
 			);
 			path = Buttons;
 			sourceTree = "<group>";
@@ -355,12 +374,49 @@
 		A30000000000000000000019 /* Networking */ = {
 			isa = PBXGroup;
 			children = (
+				A20000000000000000000021 /* AdvertisementAPI.swift */,
 				A2000000000000000000001C /* AuthAPI.swift */,
 				A2000000000000000000001F /* DeviceIdentityProvider.swift */,
 				A2000000000000000000001D /* HTTPClient.swift */,
 				A2000000000000000000001E /* NetworkContextBuilder.swift */,
 			);
 			path = Networking;
+			sourceTree = "<group>";
+		};
+		A3000000000000000000001A /* Launch */ = {
+			isa = PBXGroup;
+			children = (
+				A3000000000000000000001B /* Models */,
+				A3000000000000000000001C /* ViewModels */,
+				A3000000000000000000001D /* Views */,
+			);
+			path = Launch;
+			sourceTree = "<group>";
+		};
+		A3000000000000000000001B /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				A20000000000000000000022 /* SplashAdModels.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		A3000000000000000000001C /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				A20000000000000000000025 /* AppLaunchContainerViewModel.swift */,
+				A20000000000000000000026 /* SplashAdViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		A3000000000000000000001D /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				A20000000000000000000027 /* AppLaunchContainerView.swift */,
+				A20000000000000000000028 /* SplashAdView.swift */,
+			);
+			path = Views;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -434,6 +490,14 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A10000000000000000000028 /* SplashAdView.swift in Sources */,
+				A10000000000000000000027 /* AppLaunchContainerView.swift in Sources */,
+				A10000000000000000000026 /* SplashAdViewModel.swift in Sources */,
+				A10000000000000000000025 /* AppLaunchContainerViewModel.swift in Sources */,
+				A10000000000000000000024 /* DUSplashSkipButton.swift in Sources */,
+				A10000000000000000000023 /* SplashAdService.swift in Sources */,
+				A10000000000000000000022 /* SplashAdModels.swift in Sources */,
+				A10000000000000000000021 /* AdvertisementAPI.swift in Sources */,
 				A10000000000000000000020 /* RegistrationRequestEncryptor.swift in Sources */,
 				A1000000000000000000001F /* DeviceIdentityProvider.swift in Sources */,
 				A1000000000000000000001E /* NetworkContextBuilder.swift in Sources */,

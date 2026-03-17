@@ -27,6 +27,9 @@ enum DUTheme {
     static let warningBackground = Color(hex: 0xFFF8E1)
     static let error = Color(hex: 0xD32F2F)
     static let errorBackground = Color(hex: 0xFFEBEE)
+    static let splashChrome = Color.black.opacity(0.52)
+    static let splashChromeDisabled = Color.black.opacity(0.32)
+    static let splashProgressFill = Color(hex: 0xF7B733, opacity: 0.96)
 
     static let brandGradient = LinearGradient(
         gradient: Gradient(colors: [cyan, blue, indigo, magenta]),

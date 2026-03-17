@@ -82,9 +82,15 @@ struct HTTPClient: Sendable {
         case post = "POST"
     }
 
+    enum ParameterEncoding: Sendable {
+        case queryString
+        case jsonBody
+    }
+
     struct Endpoint: Sendable {
         let path: String
         let method: Method
+        let parameterEncoding: ParameterEncoding
         let includeCommonParameters: Bool
         let includeDeviceInfo: Bool
         let requiresAuthorization: Bool
@@ -93,6 +99,7 @@ struct HTTPClient: Sendable {
         init(
             path: String,
             method: Method,
+            parameterEncoding: ParameterEncoding? = nil,
             includeCommonParameters: Bool = true,
             includeDeviceInfo: Bool = false,
             requiresAuthorization: Bool = false,
@@ -100,10 +107,20 @@ struct HTTPClient: Sendable {
         ) {
             self.path = path
             self.method = method
+            self.parameterEncoding = parameterEncoding ?? Endpoint.defaultParameterEncoding(for: method)
             self.includeCommonParameters = includeCommonParameters
             self.includeDeviceInfo = includeDeviceInfo
             self.requiresAuthorization = requiresAuthorization
             self.headers = headers
+        }
+
+        private static func defaultParameterEncoding(for method: Method) -> ParameterEncoding {
+            switch method {
+            case .get:
+                return .queryString
+            case .post:
+                return .jsonBody
+            }
         }
     }
 
@@ -141,14 +158,18 @@ struct HTTPClient: Sendable {
         return try await send(request, endpoint: endpoint)
     }
 
+    func download(_ endpoint: Endpoint, parameters: [String: Any] = [:]) async throws -> URL {
+        let request = try await makeRequest(endpoint: endpoint, parameters: parameters)
+        return try await sendDownload(request, endpoint: endpoint)
+    }
+
     private func makeRequest(endpoint: Endpoint, parameters: [String: Any]) async throws -> URLRequest {
         let mergedParameters = mergeParameters(endpoint: endpoint, parameters: parameters)
         let url = baseURL.appendingPathComponent(endpoint.path)
 
-        var request: URLRequest
+        var requestURL = url
 
-        switch endpoint.method {
-        case .get:
+        if endpoint.parameterEncoding == .queryString {
             guard var components = URLComponents(url: url, resolvingAgainstBaseURL: false) else {
                 throw ClientError.invalidResponse
             }
@@ -159,10 +180,12 @@ struct HTTPClient: Sendable {
             guard let resolvedURL = components.url else {
                 throw ClientError.invalidResponse
             }
-            request = URLRequest(url: resolvedURL)
+            requestURL = resolvedURL
+        }
 
-        case .post:
-            request = URLRequest(url: url)
+        var request = URLRequest(url: requestURL)
+
+        if endpoint.parameterEncoding == .jsonBody {
             request.httpBody = try JSONSerialization.data(withJSONObject: mergedParameters)
         }
 
@@ -171,7 +194,7 @@ struct HTTPClient: Sendable {
         var headers = contextBuilder.headers(requiresAuthorization: endpoint.requiresAuthorization)
         headers.merge(endpoint.headers, uniquingKeysWith: { _, new in new })
 
-        if endpoint.method == .post, headers["Content-Type"] == nil {
+        if endpoint.parameterEncoding == .jsonBody, headers["Content-Type"] == nil {
             headers["Content-Type"] = "application/json"
         }
 
@@ -223,6 +246,50 @@ struct HTTPClient: Sendable {
         }
     }
 
+    private func sendDownload(
+        _ request: URLRequest,
+        endpoint: Endpoint,
+        allowTokenRefresh: Bool = true
+    ) async throws -> URL {
+        do {
+            let (downloadedFileURL, response) = try await session.download(for: request)
+
+            guard let httpResponse = response as? HTTPURLResponse else {
+                throw ClientError.invalidResponse
+            }
+
+            if shouldInspectDownloadedBody(response: httpResponse) {
+                let data = try Data(contentsOf: downloadedFileURL)
+                _ = try parseResponseBody(
+                    data,
+                    httpStatusCode: httpResponse.statusCode,
+                    path: endpoint.path
+                )
+                throw ClientError.invalidResponse
+            }
+
+            guard (200 ... 299).contains(httpResponse.statusCode) else {
+                networkLogger.error(
+                    "HTTP status error path=\(endpoint.path, privacy: .public) status=\(httpResponse.statusCode, privacy: .public)"
+                )
+                throw ClientError.httpStatus(httpResponse.statusCode)
+            }
+
+            return downloadedFileURL
+        } catch let error as ClientError where shouldRefreshToken(for: error, endpoint: endpoint, allowTokenRefresh: allowTokenRefresh) {
+            _ = try await contextBuilder.refreshTokens(baseURL: baseURL, session: session)
+            let retryRequest = try await makeRequest(endpoint: endpoint, parameters: parameters(from: request, endpoint: endpoint))
+            return try await sendDownload(retryRequest, endpoint: endpoint, allowTokenRefresh: false)
+        } catch let error as ClientError {
+            throw error
+        } catch {
+            networkLogger.error(
+                "Download request failed path=\(endpoint.path, privacy: .public) error=\(error.localizedDescription, privacy: .public)"
+            )
+            throw ClientError.networkUnavailable(underlying: error)
+        }
+    }
+
     private func shouldRefreshToken(
         for error: ClientError,
         endpoint: Endpoint,
@@ -241,8 +308,8 @@ struct HTTPClient: Sendable {
     }
 
     private func parameters(from request: URLRequest, endpoint: Endpoint) -> [String: Any] {
-        switch endpoint.method {
-        case .get:
+        switch endpoint.parameterEncoding {
+        case .queryString:
             guard
                 let url = request.url,
                 let components = URLComponents(url: url, resolvingAgainstBaseURL: false)
@@ -253,7 +320,7 @@ struct HTTPClient: Sendable {
             return (components.queryItems ?? []).reduce(into: [String: Any]()) { partialResult, item in
                 partialResult[item.name] = item.value ?? ""
             }
-        case .post:
+        case .jsonBody:
             guard let body = request.httpBody else {
                 return [:]
             }
@@ -340,6 +407,16 @@ struct HTTPClient: Sendable {
         }
 
         return try ResponseData(jsonObject: responseData)
+    }
+
+    private func shouldInspectDownloadedBody(response: HTTPURLResponse) -> Bool {
+        if let mimeType = response.mimeType?.lowercased() {
+            if mimeType.contains("json") || mimeType.hasPrefix("text/") {
+                return true
+            }
+        }
+
+        return !(200 ... 299).contains(response.statusCode)
     }
 
     private func stringifyQueryValue(_ value: Any) -> String {
