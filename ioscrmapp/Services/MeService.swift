@@ -1,8 +1,8 @@
 import Foundation
 
 protocol MeServicing: Sendable {
-    func fetchMeContent(session: UserSession) async throws -> MeContent
-    func validateRevealPassword(_ password: String, session: UserSession) async throws -> Bool
+    func fetchMeContent(session: CustSubInfo) async throws -> MeContent
+    func validateRevealPassword(_ password: String, session: CustSubInfo) async throws -> Bool
 }
 
 enum MeServiceError: Error {
@@ -35,7 +35,7 @@ actor MockMeService: MeServicing {
         self.mode = mode
     }
 
-    func fetchMeContent(session: UserSession) async throws -> MeContent {
+    func fetchMeContent(session: CustSubInfo) async throws -> MeContent {
         switch mode {
         case .loaded:
             return buildContent(session: session, includeContent: true)
@@ -46,7 +46,7 @@ actor MockMeService: MeServicing {
         }
     }
 
-    func validateRevealPassword(_ password: String, session: UserSession) async throws -> Bool {
+    func validateRevealPassword(_ password: String, session: CustSubInfo) async throws -> Bool {
         let normalizedPassword = password.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !normalizedPassword.isEmpty else {
             throw MeServiceError.invalidPassword
@@ -54,7 +54,7 @@ actor MockMeService: MeServicing {
         return normalizedPassword == AuthValidator.demoPassword
     }
 
-    private func buildContent(session: UserSession, includeContent: Bool) -> MeContent {
+    private func buildContent(session: CustSubInfo, includeContent: Bool) -> MeContent {
         let profile = MeProfileSummary(
             displayName: session.displayName,
             maskedPhoneNumber: MePhoneNumberFormatter.masked(session.phoneNumber),
@@ -142,11 +142,11 @@ actor MockMeService: MeServicing {
 struct RemoteMeService: MeServicing {
     let serverURL: URL
 
-    func fetchMeContent(session: UserSession) async throws -> MeContent {
+    func fetchMeContent(session: CustSubInfo) async throws -> MeContent {
         throw MeServiceError.featureUnavailable(message: "Remote profile service is not configured yet.")
     }
 
-    func validateRevealPassword(_ password: String, session: UserSession) async throws -> Bool {
+    func validateRevealPassword(_ password: String, session: CustSubInfo) async throws -> Bool {
         throw MeServiceError.featureUnavailable(message: "Remote password verification is not configured yet.")
     }
 }

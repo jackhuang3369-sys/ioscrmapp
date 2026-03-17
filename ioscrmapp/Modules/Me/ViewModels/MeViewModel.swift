@@ -18,11 +18,11 @@ final class MeViewModel: ObservableObject {
     @Published private(set) var isPhoneNumberRevealed = false
     @Published private(set) var isValidatingPassword = false
 
-    private let session: UserSession
+    private let custSubInfo: CustSubInfo
     private let meService: any MeServicing
 
-    init(session: UserSession, meService: any MeServicing) {
-        self.session = session
+    init(session: CustSubInfo, meService: any MeServicing) {
+        custSubInfo = session
         self.meService = meService
     }
 
@@ -31,8 +31,8 @@ final class MeViewModel: ObservableObject {
         case let .loaded(content):
             return isPhoneNumberRevealed ? content.profile.fullPhoneNumber : content.profile.maskedPhoneNumber
         case .idle, .loading, .failed:
-            let fallbackPhone = AuthValidator.formattedPhone(session.phoneNumber)
-            return isPhoneNumberRevealed ? fallbackPhone : MePhoneNumberFormatter.masked(session.phoneNumber)
+            let fallbackPhone = AuthValidator.formattedPhone(custSubInfo.phoneNumber)
+            return isPhoneNumberRevealed ? fallbackPhone : MePhoneNumberFormatter.masked(custSubInfo.phoneNumber)
         }
     }
 
@@ -47,7 +47,7 @@ final class MeViewModel: ObservableObject {
         screenState = .loading
 
         do {
-            let content = try await meService.fetchMeContent(session: session)
+            let content = try await meService.fetchMeContent(session: custSubInfo)
             screenState = .loaded(content)
         } catch {
             let errorText = (error as? MeServiceError)?.textValue ?? .key("me.error.subtitle")
@@ -85,7 +85,7 @@ final class MeViewModel: ObservableObject {
 
         Task {
             do {
-                let isValid = try await meService.validateRevealPassword(revealPassword, session: session)
+                let isValid = try await meService.validateRevealPassword(revealPassword, session: custSubInfo)
                 await MainActor.run {
                     isValidatingPassword = false
                     if isValid {

@@ -19,7 +19,8 @@ struct ioscrmappApp: App {
                 ContentView(
                     sessionStore: sessionStore,
                     authService: services.authService,
-                    meService: services.meService
+                    meService: services.meService,
+                    authServerURL: services.configuration.mode == .remote ? services.configuration.serverURL : nil
                 )
             }
             .environmentObject(languageStore)

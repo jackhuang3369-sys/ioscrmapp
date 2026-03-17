@@ -7,9 +7,9 @@ private let authLogger = Logger(
 )
 
 protocol AuthServicing: Sendable {
-    func loginWithPassword(phone: String, password: String) async throws -> UserSession
+    func loginWithPassword(phone: String, password: String) async throws -> CustSubInfo
     func sendOTP(to phone: String) async throws -> OTPSendResult
-    func loginWithOTP(phone: String, otp: String) async throws -> UserSession
+    func loginWithOTP(phone: String, otp: String) async throws -> CustSubInfo
     func checkRegistrationEligibility(phone: String) async throws -> RegistrationEligibilityResult
     func sendRegistrationOTP(to phone: String) async throws -> RegistrationOTPSendResult
     func verifyRegistrationOTP(phone: String, code: String) async throws -> RegistrationOTPVerificationResult
@@ -38,8 +38,9 @@ struct RemoteAuthService: AuthServicing {
         loginRequestBuilder = LoginRequestBuilder(contextBuilder: contextBuilder)
     }
 
-    func loginWithPassword(phone: String, password: String) async throws -> UserSession {
+    func loginWithPassword(phone: String, password: String) async throws -> CustSubInfo {
         do {
+            // 密码登录先加密密码，再按后端约定的字段组装 `/api/auth/login` 请求。
             let encryptedPassword = try await registrationRequestEncryptor.encryptPassword(password)
             let responseData = try await client.post(
                 AuthAPI.login,
@@ -52,8 +53,9 @@ struct RemoteAuthService: AuthServicing {
                 from: responseData,
                 fallbackPhone: AuthValidator.normalizedPhone(phone)
             )
+            // 登录成功后立即落库存储 token，后续受保护接口和启动恢复都依赖这份凭证。
             try tokenStore.save(loginResponse.tokens)
-            return loginResponse.session
+            return loginResponse.custSubInfo
         } catch let error as HTTPClient.ClientError {
             throw mapLoginClientError(error)
         } catch let error as KeychainAuthTokenStoreError {
@@ -70,6 +72,7 @@ struct RemoteAuthService: AuthServicing {
         let now = Date()
 
         do {
+            // 发送登录验证码只负责取回冷却和过期信息，页面倒计时统一基于这里的结果驱动。
             let data = try await client.post(
                 AuthAPI.sendLoginOTP,
                 body: loginRequestBuilder.loginOTPSendPayload(phone: phone)
@@ -108,8 +111,9 @@ struct RemoteAuthService: AuthServicing {
         }
     }
 
-    func loginWithOTP(phone: String, otp: String) async throws -> UserSession {
+    func loginWithOTP(phone: String, otp: String) async throws -> CustSubInfo {
         do {
+            // OTP 登录 happy path 直接走 `/api/auth/login`，不再额外调用 verify 接口。
             let responseData = try await client.post(
                 AuthAPI.login,
                 body: loginRequestBuilder.otpLoginPayload(phone: phone, otp: otp)
@@ -119,7 +123,7 @@ struct RemoteAuthService: AuthServicing {
                 fallbackPhone: AuthValidator.normalizedPhone(phone)
             )
             try tokenStore.save(loginResponse.tokens)
-            return loginResponse.session
+            return loginResponse.custSubInfo
         } catch let error as HTTPClient.ClientError {
             throw mapLoginClientError(error)
         } catch let error as KeychainAuthTokenStoreError {
@@ -133,6 +137,7 @@ struct RemoteAuthService: AuthServicing {
     }
 
     func checkRegistrationEligibility(phone: String) async throws -> RegistrationEligibilityResult {
+        // 注册第一步只校验手机号是否可注册，后续流程都复用标准化后的手机号。
         _ = try await postRegistrationRequest(
             AuthAPI.checkRegistrationEligibility,
             payload: ["mobile": AuthValidator.normalizedPhone(phone)]
@@ -142,6 +147,7 @@ struct RemoteAuthService: AuthServicing {
 
     func sendRegistrationOTP(to phone: String) async throws -> RegistrationOTPSendResult {
         let now = Date()
+        // 注册验证码与登录验证码接口不同，但冷却/过期时间的解析策略保持一致。
         let data = try await postRegistrationRequest(
             AuthAPI.sendRegistrationOTP,
             payload: ["mobile": AuthValidator.normalizedPhone(phone)]
@@ -178,6 +184,7 @@ struct RemoteAuthService: AuthServicing {
     }
 
     func verifyRegistrationOTP(phone: String, code: String) async throws -> RegistrationOTPVerificationResult {
+        // 注册流程要求先完成验证码校验，成功后才允许进入最终注册提交。
         let data = try await postRegistrationRequest(
             AuthAPI.verifyRegistrationOTP,
             payload: [
@@ -200,6 +207,7 @@ struct RemoteAuthService: AuthServicing {
 
     func register(input: RegistrationSubmitInput) async throws -> RegistrationCompletionResult {
         do {
+            // 注册提交阶段仍然只上传加密后的密码，避免明文密码进入传输层。
             let encryptedPassword = try await registrationRequestEncryptor.encryptPassword(input.password)
             _ = try await client.post(
                 AuthAPI.register,
@@ -223,6 +231,7 @@ struct RemoteAuthService: AuthServicing {
         payload: [String: Any]
     ) async throws -> HTTPClient.ResponseData {
         do {
+            // 注册相关接口统一复用这一层，保证错误映射和网络异常处理口径一致。
             return try await client.post(endpoint, body: payload)
         } catch let error as HTTPClient.ClientError {
             throw mapClientError(error)
@@ -276,7 +285,7 @@ actor MockAuthService: AuthServicing {
         "971555551111": MockAccount(password: "DuPass1!", displayName: "Mariam Al Suwaidi")
     ]
 
-    func loginWithPassword(phone: String, password: String) async throws -> UserSession {
+    func loginWithPassword(phone: String, password: String) async throws -> CustSubInfo {
         try await Task.sleep(nanoseconds: 700_000_000)
         let normalizedPhone = AuthValidator.normalizedPhone(phone)
         try checkLock(for: normalizedPhone)
@@ -317,7 +326,7 @@ actor MockAuthService: AuthServicing {
         )
     }
 
-    func loginWithOTP(phone: String, otp: String) async throws -> UserSession {
+    func loginWithOTP(phone: String, otp: String) async throws -> CustSubInfo {
         try await Task.sleep(nanoseconds: 700_000_000)
         let normalizedPhone = AuthValidator.normalizedPhone(phone)
         try checkLock(for: normalizedPhone)
@@ -441,8 +450,8 @@ actor MockAuthService: AuthServicing {
         return RegistrationCompletionResult(phoneNumber: normalizedPhone)
     }
 
-    private func demoSession(phone: String, displayName: String) -> UserSession {
-        UserSession(
+    private func demoSession(phone: String, displayName: String) -> CustSubInfo {
+        CustSubInfo(
             displayName: displayName,
             phoneNumber: AuthValidator.formattedPhone(phone),
             greeting: "Good Morning",
@@ -517,6 +526,7 @@ private struct LoginRequestBuilder {
     }
 
     func passwordLoginPayload(phone: String, encryptedPassword: String) -> [String: Any] {
+        // 密码登录使用 `authType = 1`，手机号按后端要求传本地号段。
         var payload: [String: Any] = [
             "authType": "1",
             "serviceNumber": AuthValidator.localPhoneDigits(phone),
@@ -527,6 +537,7 @@ private struct LoginRequestBuilder {
     }
 
     func otpLoginPayload(phone: String, otp: String) -> [String: Any] {
+        // 验证码登录使用 `authType = 2`，字段名保持和现有后端契约一致。
         var payload: [String: Any] = [
             "authType": "2",
             "phonenumber": AuthValidator.localPhoneDigits(phone),
@@ -537,6 +548,7 @@ private struct LoginRequestBuilder {
     }
 
     func loginOTPSendPayload(phone: String) -> [String: Any] {
+        // 发送登录 OTP 只放业务字段，公共环境参数统一由 context builder 注入。
         var payload: [String: Any] = [
             "type": "Mobile",
             "phoneNumber": AuthValidator.localPhoneDigits(phone)
@@ -547,7 +559,7 @@ private struct LoginRequestBuilder {
 }
 
 private struct ParsedLoginResponse {
-    let session: UserSession
+    let custSubInfo: CustSubInfo
     let tokens: AuthSessionTokens
 }
 
@@ -566,9 +578,10 @@ private enum LoginResponseMapper {
             throw HTTPClient.ClientError.invalidResponse
         }
 
+        // 登录接口返回的 `user` 和 `token` 在这里收敛成应用内部统一的会话模型。
         let displayName = ResponseDataValue.string(in: user, keys: ["username"]) ?? fallbackPhone
         let phoneNumber = ResponseDataValue.string(in: user, keys: ["mobile"]) ?? fallbackPhone
-        let session = UserSession(
+        let custSubInfo = CustSubInfo(
             displayName: displayName,
             phoneNumber: AuthValidator.formattedPhone(phoneNumber),
             greeting: "Good Morning",
@@ -576,7 +589,7 @@ private enum LoginResponseMapper {
         )
 
         return ParsedLoginResponse(
-            session: session,
+            custSubInfo: custSubInfo,
             tokens: AuthSessionTokens(
                 accessToken: accessToken,
                 refreshToken: parseToken(tokenDictionary["refreshToken"])
@@ -593,6 +606,7 @@ private enum LoginResponseMapper {
             return nil
         }
 
+        // 续约逻辑依赖 `expTime` 和 `renewal` 来判断 access/refresh token 的有效期。
         let renewal = ResponseDataValue.int(in: dictionary, keys: ["renewal"]).map(Int64.init)
         return AuthToken(
             token: token,

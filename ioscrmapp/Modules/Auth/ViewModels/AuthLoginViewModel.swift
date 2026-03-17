@@ -27,7 +27,8 @@ final class AuthLoginViewModel: ObservableObject {
         selectedMode = sessionStore.preferredLoginMode
         let initialPhone = sessionStore.rememberedPhone.isEmpty ? AuthValidator.demoPhone : sessionStore.rememberedPhone
         phoneNumber = AuthValidator.normalizedPhone(initialPhone)
-        rememberMe = !sessionStore.rememberedPhone.isEmpty
+        password = sessionStore.rememberedPassword
+        rememberMe = sessionStore.hasRememberedCredentials
     }
 
     deinit {
@@ -103,7 +104,7 @@ final class AuthLoginViewModel: ObservableObject {
         isLoading = true
         Task {
             do {
-                let session: UserSession
+                let session: CustSubInfo
                 switch selectedMode {
                 case .password:
                     session = try await authService.loginWithPassword(phone: phoneNumber, password: password)
@@ -113,8 +114,9 @@ final class AuthLoginViewModel: ObservableObject {
 
                 sessionStore.signIn(
                     with: session,
-                    rememberPhone: rememberMe,
+                    rememberCredentials: rememberMe,
                     phone: phoneNumber,
+                    password: selectedMode == .password ? password : nil,
                     loginMode: selectedMode
                 )
             } catch {

@@ -16,7 +16,8 @@ enum LoginMode: String, CaseIterable, Identifiable {
     }
 }
 
-struct UserSession: Equatable {
+/// Minimal customer/subscriber snapshot used by the authenticated shell and persistence layer.
+struct CustSubInfo: Codable, Equatable {
     let displayName: String
     let phoneNumber: String
     let greeting: String
@@ -32,6 +33,116 @@ struct AuthToken: Codable, Equatable, Sendable {
 struct AuthSessionTokens: Codable, Equatable, Sendable {
     let accessToken: AuthToken
     let refreshToken: AuthToken?
+}
+
+enum AuthSessionRenewalTrigger: Sendable {
+    case startupRestore
+    case protectedRequest
+}
+
+extension AuthToken {
+    private static let backendDateFormat = "yyyy-MM-dd HH:mm:ss"
+
+    var expirationDate: Date? {
+        Self.parseExpirationDate(from: expirationTime)
+    }
+
+    func isExpired(now: Date = Date()) -> Bool {
+        guard let expirationDate else {
+            return false
+        }
+        return expirationDate <= now
+    }
+
+    func isValid(now: Date = Date()) -> Bool {
+        !token.isEmpty && !isExpired(now: now)
+    }
+
+    func isExpiringSoon(
+        threshold: TimeInterval = 5 * 60,
+        now: Date = Date()
+    ) -> Bool {
+        guard let expirationDate else {
+            return false
+        }
+        return expirationDate.timeIntervalSince(now) <= threshold
+    }
+
+    private static func parseExpirationDate(from rawValue: String?) -> Date? {
+        guard let rawValue, !rawValue.isEmpty else {
+            return nil
+        }
+
+        if let timestamp = Double(rawValue) {
+            return timestamp > 1_000_000_000_000
+                ? Date(timeIntervalSince1970: timestamp / 1_000)
+                : Date(timeIntervalSince1970: timestamp)
+        }
+
+        let iso8601Formatter = ISO8601DateFormatter()
+        iso8601Formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        if let date = iso8601Formatter.date(from: rawValue) {
+            return date
+        }
+
+        iso8601Formatter.formatOptions = [.withInternetDateTime]
+        if let date = iso8601Formatter.date(from: rawValue) {
+            return date
+        }
+
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.timeZone = TimeZone.current
+        formatter.dateFormat = backendDateFormat
+        return formatter.date(from: rawValue)
+    }
+}
+
+extension AuthSessionTokens {
+    func hasValidAccessToken(now: Date = Date()) -> Bool {
+        accessToken.isValid(now: now)
+    }
+
+    func hasValidRefreshToken(now: Date = Date()) -> Bool {
+        guard let refreshToken else {
+            return false
+        }
+        return refreshToken.isValid(now: now)
+    }
+
+    func hasUsableAuthentication(now: Date = Date()) -> Bool {
+        hasValidAccessToken(now: now) || hasValidRefreshToken(now: now)
+    }
+
+    func shouldRenewAuthentication(
+        for trigger: AuthSessionRenewalTrigger,
+        now: Date = Date(),
+        requestRefreshThreshold: TimeInterval = 5 * 60
+    ) -> Bool {
+        guard hasValidRefreshToken(now: now) else {
+            return false
+        }
+
+        switch trigger {
+        case .startupRestore:
+            return !hasValidAccessToken(now: now)
+        case .protectedRequest:
+            return accessToken.token.isEmpty || accessToken.isExpiringSoon(
+                threshold: requestRefreshThreshold,
+                now: now
+            )
+        }
+    }
+
+    func currentAuthorizationToken(now: Date = Date()) -> String? {
+        hasValidAccessToken(now: now) ? accessToken.token : nil
+    }
+
+    var authenticationExpiryDate: Date? {
+        [accessToken.expirationDate, refreshToken?.expirationDate]
+            .compactMap { $0 }
+            .max()
+    }
 }
 
 struct OTPSendResult: Equatable {

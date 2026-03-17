@@ -50,7 +50,9 @@
 		A10000000000000000000025 /* AppLaunchContainerViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000025 /* AppLaunchContainerViewModel.swift */; };
 		A10000000000000000000026 /* SplashAdViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000026 /* SplashAdViewModel.swift */; };
 		A10000000000000000000027 /* AppLaunchContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000027 /* AppLaunchContainerView.swift */; };
-		A10000000000000000000028 /* SplashAdView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000028 /* SplashAdView.swift */; };
+			A10000000000000000000028 /* SplashAdView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000028 /* SplashAdView.swift */; };
+			A10000000000000000000029 /* SessionKeychainStores.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000029 /* SessionKeychainStores.swift */; };
+			A1000000000000000000002A /* SessionUserDefaultsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000002A /* SessionUserDefaultsStore.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -98,7 +100,9 @@
 		A20000000000000000000025 /* AppLaunchContainerViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLaunchContainerViewModel.swift; sourceTree = "<group>"; };
 		A20000000000000000000026 /* SplashAdViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashAdViewModel.swift; sourceTree = "<group>"; };
 		A20000000000000000000027 /* AppLaunchContainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLaunchContainerView.swift; sourceTree = "<group>"; };
-		A20000000000000000000028 /* SplashAdView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashAdView.swift; sourceTree = "<group>"; };
+			A20000000000000000000028 /* SplashAdView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashAdView.swift; sourceTree = "<group>"; };
+			A20000000000000000000029 /* SessionKeychainStores.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionKeychainStores.swift; sourceTree = "<group>"; };
+			A2000000000000000000002A /* SessionUserDefaultsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionUserDefaultsStore.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -195,12 +199,14 @@
 			path = DesignSystem;
 			sourceTree = "<group>";
 		};
-		A30000000000000000000005 /* Storage */ = {
-			isa = PBXGroup;
-			children = (
-				A20000000000000000000001 /* SessionStore.swift */,
-			);
-			path = Storage;
+			A30000000000000000000005 /* Storage */ = {
+				isa = PBXGroup;
+				children = (
+					A20000000000000000000029 /* SessionKeychainStores.swift */,
+					A2000000000000000000002A /* SessionUserDefaultsStore.swift */,
+					A20000000000000000000001 /* SessionStore.swift */,
+				);
+				path = Storage;
 			sourceTree = "<group>";
 		};
 		A30000000000000000000012 /* Config */ = {
@@ -495,10 +501,12 @@
 				A10000000000000000000026 /* SplashAdViewModel.swift in Sources */,
 				A10000000000000000000025 /* AppLaunchContainerViewModel.swift in Sources */,
 				A10000000000000000000024 /* DUSplashSkipButton.swift in Sources */,
-				A10000000000000000000023 /* SplashAdService.swift in Sources */,
-				A10000000000000000000022 /* SplashAdModels.swift in Sources */,
-				A10000000000000000000021 /* AdvertisementAPI.swift in Sources */,
-				A10000000000000000000020 /* RegistrationRequestEncryptor.swift in Sources */,
+					A10000000000000000000023 /* SplashAdService.swift in Sources */,
+					A10000000000000000000022 /* SplashAdModels.swift in Sources */,
+					A10000000000000000000021 /* AdvertisementAPI.swift in Sources */,
+					A1000000000000000000002A /* SessionUserDefaultsStore.swift in Sources */,
+					A10000000000000000000029 /* SessionKeychainStores.swift in Sources */,
+					A10000000000000000000020 /* RegistrationRequestEncryptor.swift in Sources */,
 				A1000000000000000000001F /* DeviceIdentityProvider.swift in Sources */,
 				A1000000000000000000001E /* NetworkContextBuilder.swift in Sources */,
 				A1000000000000000000001D /* HTTPClient.swift in Sources */,

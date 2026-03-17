@@ -1,123 +1,8 @@
 import Combine
 import Foundation
-import Security
 
-extension Notification.Name {
-    static let authSessionInvalidated = Notification.Name("auth.session.invalidated")
-}
-
-struct KeychainAuthTokenStore: Sendable, Equatable {
-    private static let memoryStorage = InMemoryAuthTokenStorage()
-
-    private let service: String
-    private let account: String
-    private let memoryOnly: Bool
-
-    init(
-        service: String = "com.ioscrmapp.auth",
-        account: String = "session.tokens",
-        memoryOnly: Bool = false
-    ) {
-        self.service = service
-        self.account = account
-        self.memoryOnly = memoryOnly
-    }
-
-    func save(_ tokens: AuthSessionTokens) throws {
-        if memoryOnly {
-            Self.memoryStorage.save(tokens)
-            return
-        }
-
-        let encoder = JSONEncoder()
-        let data = try encoder.encode(tokens)
-
-        var query = keychainQuery
-        query[kSecValueData as String] = data
-
-        SecItemDelete(keychainQuery as CFDictionary)
-
-        let status = SecItemAdd(query as CFDictionary, nil)
-        guard status == errSecSuccess else {
-            throw KeychainAuthTokenStoreError.unexpectedStatus(status)
-        }
-    }
-
-    func loadTokens() -> AuthSessionTokens? {
-        if memoryOnly {
-            return Self.memoryStorage.load()
-        }
-
-        var query = keychainQuery
-        query[kSecReturnData as String] = true
-        query[kSecMatchLimit as String] = kSecMatchLimitOne
-
-        var result: CFTypeRef?
-        let status = SecItemCopyMatching(query as CFDictionary, &result)
-
-        guard status != errSecItemNotFound else {
-            return nil
-        }
-        guard status == errSecSuccess, let data = result as? Data else {
-            return nil
-        }
-
-        return try? JSONDecoder().decode(AuthSessionTokens.self, from: data)
-    }
-
-    func clear() throws {
-        if memoryOnly {
-            Self.memoryStorage.clear()
-            return
-        }
-
-        let status = SecItemDelete(keychainQuery as CFDictionary)
-        guard status == errSecSuccess || status == errSecItemNotFound else {
-            throw KeychainAuthTokenStoreError.unexpectedStatus(status)
-        }
-    }
-
-    private var keychainQuery: [String: Any] {
-        [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrService as String: service,
-            kSecAttrAccount as String: account,
-            kSecAttrAccessible as String: kSecAttrAccessibleWhenUnlockedThisDeviceOnly
-        ]
-    }
-}
-
-enum KeychainAuthTokenStoreError: Error {
-    case unexpectedStatus(OSStatus)
-}
-
-private final class InMemoryAuthTokenStorage: @unchecked Sendable {
-    private let lock = NSLock()
-    private var tokens: AuthSessionTokens?
-
-    func save(_ tokens: AuthSessionTokens) {
-        lock.lock()
-        self.tokens = tokens
-        lock.unlock()
-    }
-
-    func load() -> AuthSessionTokens? {
-        lock.lock()
-        let value = tokens
-        lock.unlock()
-        return value
-    }
-
-    func clear() {
-        lock.lock()
-        tokens = nil
-        lock.unlock()
-    }
-}
-
+/// 多个并发请求共享同一个续约任务，避免 refresh token 轮换时互相覆盖。
 actor AuthRefreshCoordinator {
-    private static let responseWrapperSuccessCodes: Set<Int> = [200, 201, 204, 205, 206, 207, 208, 209, 211, 212, 20_000]
-
     private let tokenStore: KeychainAuthTokenStore
     private var refreshTask: Task<AuthSessionTokens, Error>?
 
@@ -128,34 +13,30 @@ actor AuthRefreshCoordinator {
     func refreshTokens(
         baseURL: URL,
         session: URLSession,
-        timeZoneCode: String
+        contextBuilder: NetworkContextBuilder
     ) async throws -> AuthSessionTokens {
         if let refreshTask {
             return try await refreshTask.value
         }
 
         let task = Task<AuthSessionTokens, Error> {
-            guard let refreshToken = tokenStore.loadTokens()?.refreshToken?.token, !refreshToken.isEmpty else {
+            guard
+                let storedTokens = tokenStore.loadTokens(),
+                let refreshToken = storedTokens.refreshToken,
+                refreshToken.isValid(),
+                !refreshToken.token.isEmpty
+            else {
                 throw HTTPClient.ClientError.invalidResponse
             }
 
-            var request = URLRequest(url: baseURL.appendingPathComponent("/ser-user-auth/api/auth/refresh"))
-            request.httpMethod = "POST"
-            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-            request.setValue(timeZoneCode, forHTTPHeaderField: "timeZoneCode")
-            request.httpBody = try JSONSerialization.data(
-                withJSONObject: ["refreshToken": refreshToken]
+            // 启动恢复和请求失败后的重试都走同一个续约协调器，
+            // 这样 token 轮换、持久化和单飞行为才能保持一致。
+            let client = HTTPClient(
+                baseURL: baseURL,
+                session: session,
+                contextBuilder: contextBuilder
             )
-
-            let (data, response) = try await session.data(for: request)
-            guard let httpResponse = response as? HTTPURLResponse else {
-                throw HTTPClient.ClientError.invalidResponse
-            }
-            guard (200 ... 299).contains(httpResponse.statusCode) else {
-                throw HTTPClient.ClientError.httpStatus(httpResponse.statusCode)
-            }
-
-            let tokens = try Self.parseTokens(from: data)
+            let tokens = try await client.refreshAuthTokens(refreshToken: refreshToken.token)
             try tokenStore.save(tokens)
             return tokens
         }
@@ -171,160 +52,262 @@ actor AuthRefreshCoordinator {
             throw error
         }
     }
-
-    private static func parseTokens(from data: Data) throws -> AuthSessionTokens {
-        let jsonObject = try JSONSerialization.jsonObject(with: data)
-        guard let payload = jsonObject as? [String: Any] else {
-            throw HTTPClient.ClientError.invalidJSON
-        }
-
-        guard let code = payloadInt(in: payload, keys: ["code"]) else {
-            throw HTTPClient.ClientError.invalidResponse
-        }
-
-        let message = payloadString(in: payload, keys: ["msg", "message"]) ?? ""
-        let traceID = payloadString(in: payload, keys: ["traceId"])
-
-        guard responseWrapperSuccessCodes.contains(code) else {
-            throw HTTPClient.ClientError.business(code: code, message: message, traceID: traceID)
-        }
-
-        guard let tokenPayload = payload["data"] as? [String: Any] else {
-            throw HTTPClient.ClientError.invalidResponse
-        }
-        guard let accessToken = parseToken(in: tokenPayload, key: "accessToken") else {
-            throw HTTPClient.ClientError.invalidResponse
-        }
-
-        return AuthSessionTokens(
-            accessToken: accessToken,
-            refreshToken: parseToken(in: tokenPayload, key: "refreshToken")
-        )
-    }
-
-    private static func parseToken(in payload: [String: Any], key: String) -> AuthToken? {
-        guard
-            let tokenPayload = payload[key] as? [String: Any],
-            let token = payloadString(in: tokenPayload, keys: ["token"]),
-            !token.isEmpty
-        else {
-            return nil
-        }
-
-        return AuthToken(
-            token: token,
-            expirationTime: payloadString(in: tokenPayload, keys: ["expTime"]),
-            renewal: payloadInt64(in: tokenPayload, keys: ["renewal"])
-        )
-    }
-
-    private static func payloadString(in payload: [String: Any], keys: [String]) -> String? {
-        for key in keys {
-            if let value = payload[key] as? String, !value.isEmpty {
-                return value
-            }
-        }
-        return nil
-    }
-
-    private static func payloadInt(in payload: [String: Any], keys: [String]) -> Int? {
-        for key in keys {
-            if let value = payload[key] as? Int {
-                return value
-            }
-            if let value = payload[key] as? NSNumber {
-                return value.intValue
-            }
-            if let value = payload[key] as? String, let intValue = Int(value) {
-                return intValue
-            }
-        }
-        return nil
-    }
-
-    private static func payloadInt64(in payload: [String: Any], keys: [String]) -> Int64? {
-        for key in keys {
-            if let value = payload[key] as? Int64 {
-                return value
-            }
-            if let value = payload[key] as? NSNumber {
-                return value.int64Value
-            }
-            if let value = payload[key] as? String, let intValue = Int64(value) {
-                return intValue
-            }
-        }
-        return nil
-    }
 }
 
+/// 在安全存储和普通存储之上协调内存态登录信息，统一管理会话生命周期。
 @MainActor
 final class SessionStore: ObservableObject {
-    @Published var session: UserSession?
+    @Published var custSubInfo: CustSubInfo?
     @Published private(set) var rememberedPhone: String
+    @Published private(set) var rememberedPassword: String
     @Published private(set) var preferredLoginMode: LoginMode
+    @Published private(set) var isRestoringAuthentication = false
 
-    private let defaults: UserDefaults
     private let tokenStore: KeychainAuthTokenStore
+    private let rememberedCredentialsStore: KeychainRememberedCredentialsStore
+    private let defaultsStore: SessionUserDefaultsStore
+    private let contextBuilder: NetworkContextBuilder
     private var cancellables: Set<AnyCancellable> = []
-    private let rememberedPhoneKey = "auth.rememberedPhone"
-    private let preferredModeKey = "auth.preferredMode"
+    private var authExpiryTask: Task<Void, Never>?
 
     init(
         defaults: UserDefaults = .standard,
-        tokenStore: KeychainAuthTokenStore = KeychainAuthTokenStore()
+        tokenStore: KeychainAuthTokenStore = KeychainAuthTokenStore(),
+        rememberedCredentialsStore: KeychainRememberedCredentialsStore = KeychainRememberedCredentialsStore()
     ) {
-        self.defaults = defaults
         self.tokenStore = tokenStore
-        rememberedPhone = defaults.string(forKey: rememberedPhoneKey) ?? ""
-        preferredLoginMode = LoginMode(rawValue: defaults.string(forKey: preferredModeKey) ?? "") ?? .password
+        self.rememberedCredentialsStore = rememberedCredentialsStore
+        defaultsStore = SessionUserDefaultsStore(defaults: defaults)
+        let refreshCoordinator = AuthRefreshCoordinator(tokenStore: tokenStore)
+        contextBuilder = NetworkContextBuilder(
+            tokenStore: tokenStore,
+            refreshCoordinator: refreshCoordinator
+        )
+
+        let rememberedCredentials = SessionStore.loadRememberedCredentials(
+            defaultsStore: defaultsStore,
+            rememberedCredentialsStore: rememberedCredentialsStore
+        )
+        rememberedPhone = rememberedCredentials?.phoneNumber ?? ""
+        rememberedPassword = rememberedCredentials?.password ?? ""
+        preferredLoginMode = defaultsStore.loadPreferredLoginMode()
+        custSubInfo = defaultsStore.loadPersistedCustSubInfo()
 
         NotificationCenter.default.publisher(for: .authSessionInvalidated)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
-                self?.session = nil
+                self?.clearSession(clearTokens: false)
             }
             .store(in: &cancellables)
+
+        NotificationCenter.default.publisher(for: .authTokensDidChange)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.syncSessionFromPersistence(clearExpiredTokens: true)
+            }
+            .store(in: &cancellables)
+
+        syncSessionFromPersistence(clearExpiredTokens: true)
+    }
+
+    deinit {
+        authExpiryTask?.cancel()
     }
 
     var isAuthenticated: Bool {
-        session != nil
+        custSubInfo != nil && (tokenStore.loadTokens()?.hasUsableAuthentication() ?? false)
+    }
+
+    var authenticatedCustSubInfo: CustSubInfo? {
+        isAuthenticated ? custSubInfo : nil
+    }
+
+    var hasRememberedCredentials: Bool {
+        !rememberedPhone.isEmpty || !rememberedPassword.isEmpty
+    }
+
+    var shouldRestoreAuthenticationOnLaunch: Bool {
+        contextBuilder.shouldRenewAuthentication(for: .startupRestore)
     }
 
     func signIn(
-        with session: UserSession,
-        rememberPhone: Bool,
+        with custSubInfo: CustSubInfo,
+        rememberCredentials: Bool,
         phone: String,
+        password: String?,
         loginMode: LoginMode
     ) {
-        self.session = session
+        // 登录成功后，先把内存态与非敏感持久化状态一次性对齐。
+        self.custSubInfo = custSubInfo
+        defaultsStore.savePersistedCustSubInfo(custSubInfo)
         preferredLoginMode = loginMode
-        defaults.set(loginMode.rawValue, forKey: preferredModeKey)
+        defaultsStore.savePreferredLoginMode(loginMode)
 
-        if rememberPhone {
-            rememberedPhone = phone
-            defaults.set(phone, forKey: rememberedPhoneKey)
+        if rememberCredentials {
+            let storedCredentials = RememberedCredentials(
+                phoneNumber: phone,
+                password: loginMode == .password ? (password ?? "") : ""
+            )
+            rememberedPhone = storedCredentials.phoneNumber
+            rememberedPassword = storedCredentials.password
+            try? rememberedCredentialsStore.save(storedCredentials)
         } else {
-            rememberedPhone = ""
-            defaults.removeObject(forKey: rememberedPhoneKey)
+            clearRememberedCredentials()
         }
+
+        syncSessionFromPersistence(clearExpiredTokens: true)
     }
 
     func signOut() {
-        session = nil
+        // 退出登录同时清理展示态和 token，避免后续请求继续带上旧凭证。
+        clearSession(clearTokens: false)
         try? tokenStore.clear()
     }
 
     func updatePreferredLoginMode(_ loginMode: LoginMode) {
         preferredLoginMode = loginMode
-        defaults.set(loginMode.rawValue, forKey: preferredModeKey)
+        defaultsStore.savePreferredLoginMode(loginMode)
+    }
+
+    func restoreAuthenticationIfNeeded(
+        baseURL: URL?,
+        session urlSession: URLSession = .shared
+    ) async {
+        syncSessionFromPersistence(clearExpiredTokens: true)
+
+        guard let baseURL else {
+            return
+        }
+
+        guard contextBuilder.shouldRenewAuthentication(for: .startupRestore) else {
+            return
+        }
+
+        isRestoringAuthentication = true
+        defer {
+            isRestoringAuthentication = false
+            syncSessionFromPersistence(clearExpiredTokens: true)
+        }
+
+        do {
+            // 启动恢复登录态与请求前主动续约共用同一套判断和刷新入口，
+            // 这样两条路径对“何时刷新、如何刷新”的口径始终一致。
+            _ = try await contextBuilder.renewAuthenticationIfNeeded(
+                for: .startupRestore,
+                baseURL: baseURL,
+                session: urlSession
+            )
+        } catch {
+            return
+        }
+    }
+
+    private func syncSessionFromPersistence(clearExpiredTokens: Bool) {
+        authExpiryTask?.cancel()
+
+        let storedTokens = tokenStore.loadTokens()
+        guard storedTokens?.hasUsableAuthentication() == true else {
+            clearSession(clearTokens: clearExpiredTokens && storedTokens != nil)
+            return
+        }
+
+        if custSubInfo == nil {
+            custSubInfo = defaultsStore.loadPersistedCustSubInfo()
+        }
+
+        guard let authExpiryDate = storedTokens?.authenticationExpiryDate else {
+            return
+        }
+
+        let timeInterval = authExpiryDate.timeIntervalSinceNow
+        guard timeInterval > 0 else {
+            clearSession(clearTokens: clearExpiredTokens)
+            return
+        }
+
+        authExpiryTask = Task { [weak self] in
+            // 不做轮询，而是按 token 的最近失效时间安排一次性同步，减少无意义唤醒。
+            let nanoseconds = UInt64(max(0, timeInterval) * 1_000_000_000)
+            do {
+                try await Task.sleep(nanoseconds: nanoseconds)
+            } catch {
+                return
+            }
+
+            await MainActor.run {
+                self?.syncSessionFromPersistence(clearExpiredTokens: true)
+            }
+        }
+    }
+
+    private func clearSession(clearTokens: Bool) {
+        authExpiryTask?.cancel()
+        custSubInfo = nil
+        defaultsStore.clearPersistedCustSubInfo()
+        if clearTokens {
+            try? tokenStore.clear()
+        }
+    }
+
+    private func clearRememberedCredentials() {
+        rememberedPhone = ""
+        rememberedPassword = ""
+        defaultsStore.clearLegacyRememberedPhone()
+        try? rememberedCredentialsStore.clear()
+    }
+
+    private static func loadRememberedCredentials(
+        defaultsStore: SessionUserDefaultsStore,
+        rememberedCredentialsStore: KeychainRememberedCredentialsStore
+    ) -> RememberedCredentials? {
+        if let storedCredentials = rememberedCredentialsStore.loadCredentials() {
+            return storedCredentials
+        }
+
+        guard let legacyPhone = defaultsStore.loadLegacyRememberedPhone(), !legacyPhone.isEmpty else {
+            return nil
+        }
+
+        let migratedCredentials = RememberedCredentials(phoneNumber: legacyPhone, password: "")
+        try? rememberedCredentialsStore.save(migratedCredentials)
+        defaultsStore.clearLegacyRememberedPhone()
+        return migratedCredentials
     }
 }
 
 extension SessionStore {
     static var previewAuthenticated: SessionStore {
-        let store = SessionStore(defaults: UserDefaults(suiteName: "preview.auth") ?? .standard)
-        store.session = UserSession(
+        let defaults = UserDefaults(suiteName: "preview.auth") ?? .standard
+        let tokenStore = KeychainAuthTokenStore(
+            service: "com.ioscrmapp.preview.auth",
+            account: "session.tokens",
+            memoryOnly: true
+        )
+        try? tokenStore.save(
+            AuthSessionTokens(
+                accessToken: AuthToken(
+                    token: "preview-access-token",
+                    expirationTime: "2099-01-01 00:00:00",
+                    renewal: nil
+                ),
+                refreshToken: AuthToken(
+                    token: "preview-refresh-token",
+                    expirationTime: "2099-01-08 00:00:00",
+                    renewal: nil
+                )
+            )
+        )
+
+        let store = SessionStore(
+            defaults: defaults,
+            tokenStore: tokenStore,
+            rememberedCredentialsStore: KeychainRememberedCredentialsStore(
+                service: "com.ioscrmapp.preview.auth",
+                account: "remembered.credentials",
+                memoryOnly: true
+            )
+        )
+        store.custSubInfo = CustSubInfo(
             displayName: "Ahmed Mohammed",
             phoneNumber: AuthValidator.demoPhone,
             greeting: "Good Morning",

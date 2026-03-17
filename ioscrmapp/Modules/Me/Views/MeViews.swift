@@ -6,7 +6,7 @@ struct MeContainerView: View {
 
     private let onSignOut: () -> Void
 
-    init(session: UserSession, meService: any MeServicing, onSignOut: @escaping () -> Void = {}) {
+    init(session: CustSubInfo, meService: any MeServicing, onSignOut: @escaping () -> Void = {}) {
         _viewModel = StateObject(
             wrappedValue: MeViewModel(session: session, meService: meService)
         )
@@ -458,7 +458,7 @@ struct MeContainerView: View {
 }
 
 struct MeContainerView_Previews: PreviewProvider {
-    static var previewSession = UserSession(
+    static var previewSession = CustSubInfo(
         displayName: "Ahmed Mohammed",
         phoneNumber: AuthValidator.demoPhone,
         greeting: "Good Morning",

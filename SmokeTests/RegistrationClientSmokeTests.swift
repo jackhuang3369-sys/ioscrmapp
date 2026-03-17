@@ -75,13 +75,18 @@ struct RegistrationClientSmokeTests {
         )
 
         try await testPasswordLoginEncryptsPasswordAndStoresToken(service: service, session: session)
+        try await testAuthorizedRequestsRefreshExpiringTokenBeforeNetworkCall(session: session)
         try await testConcurrentProtectedRequestsRefreshTokenOnlyOnce(session: session)
+        try await testGateway401RefreshesTokenAndRetriesRequest(session: session)
         try await testLoginOTPHappyPathSkipsVerify(service: service)
         try await testLoginErrorMapping(service: service)
         try await testVerifyResponseParsing(service: service)
         try await testOtpMetadataParsing(service: service)
         try await testRegisterRequestEncryptsPasswordField(service: service)
         try await testRegistrationErrorMapping(service: service)
+        try await testSessionStorePersistsSessionAndRememberedCredentials()
+        try await testSessionStoreRestoresExpiredAccessTokenWithRefreshToken()
+        try await testSessionStoreClearsExpiredSessionOnLaunch()
         try await testResendOTPResetsInputAndKeepsFiveMinuteValidity()
         print("Auth and registration client smoke tests passed")
     }
@@ -207,6 +212,72 @@ struct RegistrationClientSmokeTests {
         try require(loginBody["smsCode"] as? String == "654321", "otp login should keep submitted otp")
     }
 
+    private static func testAuthorizedRequestsRefreshExpiringTokenBeforeNetworkCall(
+        session: URLSession
+    ) async throws {
+        try? tokenStore.clear()
+        try tokenStore.save(
+            AuthSessionTokens(
+                accessToken: AuthToken(
+                    token: "soon-expiring-access-token",
+                    expirationTime: tokenDateString(after: 30),
+                    renewal: nil
+                ),
+                refreshToken: AuthToken(
+                    token: "refresh-login-token",
+                    expirationTime: tokenDateString(after: 24 * 60 * 60),
+                    renewal: nil
+                )
+            )
+        )
+
+        let counter = RequestCounter()
+
+        MockURLProtocol.requestHandler = { request in
+            let response = HTTPURLResponse(
+                url: request.url!,
+                statusCode: 200,
+                httpVersion: nil,
+                headerFields: nil
+            )!
+
+            switch request.url?.path {
+            case "/ser-user-auth/api/auth/refresh":
+                counter.incrementRefreshRequests()
+                return (response, try wrappedResponse(data: refreshedTokenPayload()))
+            case "/protected":
+                try require(
+                    request.value(forHTTPHeaderField: "Authorization") == "Bearer refreshed-access-token",
+                    "protected request should proactively use refreshed token"
+                )
+                counter.incrementProtectedSuccesses()
+                return (response, try wrappedResponse(data: ["ok": true]))
+            default:
+                return (response, try wrappedResponse(data: NSNull()))
+            }
+        }
+
+        let client = HTTPClient(
+            baseURL: URL(string: "https://example.com")!,
+            session: session,
+            contextBuilder: NetworkContextBuilder(tokenStore: tokenStore)
+        )
+
+        _ = try await client.get(
+            HTTPClient.Endpoint(
+                path: "/protected",
+                method: .get,
+                includeCommonParameters: false,
+                includeDeviceInfo: false,
+                requiresAuthorization: true
+            )
+        )
+
+        let snapshot = counter.snapshot()
+        try require(snapshot.refreshRequests == 1, "expiring access token should refresh before the request is sent")
+        try require(snapshot.protectedSuccesses == 1, "protected request should succeed after proactive refresh")
+    }
+
     private static func testConcurrentProtectedRequestsRefreshTokenOnlyOnce(
         session: URLSession
     ) async throws {
@@ -297,6 +368,96 @@ struct RegistrationClientSmokeTests {
             tokenStore.loadTokens()?.accessToken.token == "refreshed-access-token",
             "token store should persist refreshed access token"
         )
+    }
+
+    private static func testGateway401RefreshesTokenAndRetriesRequest(
+        session: URLSession
+    ) async throws {
+        try? tokenStore.clear()
+        try tokenStore.save(
+            AuthSessionTokens(
+                accessToken: AuthToken(
+                    token: "gateway-expired-access-token",
+                    expirationTime: tokenDateString(after: 60 * 60),
+                    renewal: nil
+                ),
+                refreshToken: AuthToken(
+                    token: "refresh-login-token",
+                    expirationTime: tokenDateString(after: 24 * 60 * 60),
+                    renewal: nil
+                )
+            )
+        )
+
+        let counter = RequestCounter()
+
+        MockURLProtocol.requestHandler = { request in
+            let path = request.url?.path ?? ""
+
+            switch path {
+            case "/ser-user-auth/api/auth/refresh":
+                counter.incrementRefreshRequests()
+                let response = HTTPURLResponse(
+                    url: request.url!,
+                    statusCode: 200,
+                    httpVersion: nil,
+                    headerFields: nil
+                )!
+                return (response, try wrappedResponse(data: refreshedTokenPayload()))
+            case "/protected":
+                let authorization = request.value(forHTTPHeaderField: "Authorization")
+                if authorization == "Bearer gateway-expired-access-token" {
+                    let response = HTTPURLResponse(
+                        url: request.url!,
+                        statusCode: 401,
+                        httpVersion: nil,
+                        headerFields: nil
+                    )!
+                    return (response, Data())
+                }
+
+                try require(
+                    authorization == "Bearer refreshed-access-token",
+                    "gateway 401 retry should use refreshed token"
+                )
+                counter.incrementProtectedSuccesses()
+                let response = HTTPURLResponse(
+                    url: request.url!,
+                    statusCode: 200,
+                    httpVersion: nil,
+                    headerFields: nil
+                )!
+                return (response, try wrappedResponse(data: ["ok": true]))
+            default:
+                let response = HTTPURLResponse(
+                    url: request.url!,
+                    statusCode: 200,
+                    httpVersion: nil,
+                    headerFields: nil
+                )!
+                return (response, try wrappedResponse(data: NSNull()))
+            }
+        }
+
+        let client = HTTPClient(
+            baseURL: URL(string: "https://example.com")!,
+            session: session,
+            contextBuilder: NetworkContextBuilder(tokenStore: tokenStore)
+        )
+
+        _ = try await client.get(
+            HTTPClient.Endpoint(
+                path: "/protected",
+                method: .get,
+                includeCommonParameters: false,
+                includeDeviceInfo: false,
+                requiresAuthorization: true
+            )
+        )
+
+        let snapshot = counter.snapshot()
+        try require(snapshot.refreshRequests == 1, "gateway 401 should trigger exactly one refresh")
+        try require(snapshot.protectedSuccesses == 1, "gateway 401 retry should succeed after refresh")
     }
 
     private static func testLoginErrorMapping(service: RemoteAuthService) async throws {
@@ -467,6 +628,204 @@ struct RegistrationClientSmokeTests {
     }
 
     @MainActor
+    private static func testSessionStorePersistsSessionAndRememberedCredentials() async throws {
+        let suiteName = "session.store.persist.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suiteName) ?? .standard
+        defaults.removePersistentDomain(forName: suiteName)
+
+        let localTokenStore = KeychainAuthTokenStore(
+            service: "com.ioscrmapp.tests.persist",
+            account: "session.tokens",
+            memoryOnly: true
+        )
+        let credentialsStore = KeychainRememberedCredentialsStore(
+            service: "com.ioscrmapp.tests.persist",
+            account: "remembered.credentials",
+            memoryOnly: true
+        )
+        try? localTokenStore.clear()
+        try? credentialsStore.clear()
+
+        try localTokenStore.save(
+            AuthSessionTokens(
+                accessToken: AuthToken(
+                    token: "restorable-access-token",
+                    expirationTime: tokenDateString(after: 60 * 60),
+                    renewal: nil
+                ),
+                refreshToken: AuthToken(
+                    token: "restorable-refresh-token",
+                    expirationTime: tokenDateString(after: 7 * 24 * 60 * 60),
+                    renewal: nil
+                )
+            )
+        )
+
+        let persistedSession = CustSubInfo(
+            displayName: "Persisted User",
+            phoneNumber: "971521234567",
+            greeting: "Good Morning",
+            balanceText: "88.00 AED"
+        )
+
+        let store = SessionStore(
+            defaults: defaults,
+            tokenStore: localTokenStore,
+            rememberedCredentialsStore: credentialsStore
+        )
+        store.signIn(
+            with: persistedSession,
+            rememberCredentials: true,
+            phone: persistedSession.phoneNumber,
+            password: "DuPass9A",
+            loginMode: .password
+        )
+
+        let restoredStore = SessionStore(
+            defaults: defaults,
+            tokenStore: localTokenStore,
+            rememberedCredentialsStore: credentialsStore
+        )
+
+        try require(restoredStore.authenticatedCustSubInfo == persistedSession, "session store should restore persisted user session")
+        try require(restoredStore.rememberedPhone == persistedSession.phoneNumber, "remembered phone should come from keychain")
+        try require(restoredStore.rememberedPassword == "DuPass9A", "remembered password should come from keychain")
+        try require(restoredStore.isAuthenticated, "restored session should stay authenticated while tokens are usable")
+    }
+
+    @MainActor
+    private static func testSessionStoreRestoresExpiredAccessTokenWithRefreshToken() async throws {
+        let suiteName = "session.store.restore.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suiteName) ?? .standard
+        defaults.removePersistentDomain(forName: suiteName)
+
+        let localTokenStore = KeychainAuthTokenStore(
+            service: "com.ioscrmapp.tests.restore",
+            account: "session.tokens",
+            memoryOnly: true
+        )
+        let credentialsStore = KeychainRememberedCredentialsStore(
+            service: "com.ioscrmapp.tests.restore",
+            account: "remembered.credentials",
+            memoryOnly: true
+        )
+        try? localTokenStore.clear()
+        try? credentialsStore.clear()
+
+        try localTokenStore.save(
+            AuthSessionTokens(
+                accessToken: AuthToken(
+                    token: "expired-access-token",
+                    expirationTime: tokenDateString(after: -60),
+                    renewal: nil
+                ),
+                refreshToken: AuthToken(
+                    token: "refresh-login-token",
+                    expirationTime: tokenDateString(after: 24 * 60 * 60),
+                    renewal: nil
+                )
+            )
+        )
+
+        let persistedSession = CustSubInfo(
+            displayName: "Refreshable User",
+            phoneNumber: "971522222222",
+            greeting: "Good Morning",
+            balanceText: "66.00 AED"
+        )
+        defaults.set(try JSONEncoder().encode(persistedSession), forKey: "auth.userSession")
+
+        let configuration = URLSessionConfiguration.ephemeral
+        configuration.protocolClasses = [MockURLProtocol.self]
+        let session = URLSession(configuration: configuration)
+
+        MockURLProtocol.requestHandler = { request in
+            let response = HTTPURLResponse(
+                url: request.url!,
+                statusCode: 200,
+                httpVersion: nil,
+                headerFields: nil
+            )!
+
+            switch request.url?.path {
+            case "/ser-user-auth/api/auth/refresh":
+                return (response, try wrappedResponse(data: refreshedTokenPayload()))
+            default:
+                return (response, try wrappedResponse(data: NSNull()))
+            }
+        }
+
+        let store = SessionStore(
+            defaults: defaults,
+            tokenStore: localTokenStore,
+            rememberedCredentialsStore: credentialsStore
+        )
+
+        try require(store.shouldRestoreAuthenticationOnLaunch, "expired access token with valid refresh token should trigger startup restore")
+
+        await store.restoreAuthenticationIfNeeded(
+            baseURL: URL(string: "https://example.com")!,
+            session: session
+        )
+
+        try require(store.authenticatedCustSubInfo == persistedSession, "startup restore should keep the persisted session and go home")
+        try require(localTokenStore.loadTokens()?.accessToken.token == "refreshed-access-token", "startup restore should persist refreshed access token")
+    }
+
+    @MainActor
+    private static func testSessionStoreClearsExpiredSessionOnLaunch() async throws {
+        let suiteName = "session.store.expired.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suiteName) ?? .standard
+        defaults.removePersistentDomain(forName: suiteName)
+
+        let expiredTokenStore = KeychainAuthTokenStore(
+            service: "com.ioscrmapp.tests.expired",
+            account: "session.tokens",
+            memoryOnly: true
+        )
+        let credentialsStore = KeychainRememberedCredentialsStore(
+            service: "com.ioscrmapp.tests.expired",
+            account: "remembered.credentials",
+            memoryOnly: true
+        )
+        try? expiredTokenStore.clear()
+        try? credentialsStore.clear()
+
+        let expiredSession = CustSubInfo(
+            displayName: "Expired User",
+            phoneNumber: "971500000000",
+            greeting: "Good Morning",
+            balanceText: "0.00 AED"
+        )
+        defaults.set(try JSONEncoder().encode(expiredSession), forKey: "auth.userSession")
+
+        try expiredTokenStore.save(
+            AuthSessionTokens(
+                accessToken: AuthToken(
+                    token: "expired-access-token",
+                    expirationTime: tokenDateString(after: -60),
+                    renewal: nil
+                ),
+                refreshToken: AuthToken(
+                    token: "expired-refresh-token",
+                    expirationTime: tokenDateString(after: -30),
+                    renewal: nil
+                )
+            )
+        )
+
+        let store = SessionStore(
+            defaults: defaults,
+            tokenStore: expiredTokenStore,
+            rememberedCredentialsStore: credentialsStore
+        )
+
+        try require(store.authenticatedCustSubInfo == nil, "expired tokens should not restore authenticated session")
+        try require(defaults.data(forKey: "auth.userSession") == nil, "expired launch should clear persisted session from defaults")
+        try require(expiredTokenStore.loadTokens() == nil, "expired launch should clear expired tokens")
+    }
+
+    @MainActor
     private static func testResendOTPResetsInputAndKeepsFiveMinuteValidity() async throws {
         let viewModel = AuthRegistrationViewModel(
             authService: MockAuthService(),
@@ -515,13 +874,13 @@ struct RegistrationClientSmokeTests {
             "token": [
                 "accessToken": [
                     "token": "access-login-token",
-                    "expTime": "2026-03-15T00:00:00Z",
-                    "renewal": 1_710_000_000
+                    "expTime": tokenDateString(after: 30 * 60),
+                    "renewal": 1_800_000
                 ],
                 "refreshToken": [
                     "token": "refresh-login-token",
-                    "expTime": "2026-03-22T00:00:00Z",
-                    "renewal": 1_710_600_000
+                    "expTime": tokenDateString(after: 7 * 24 * 60 * 60),
+                    "renewal": 604_800_000
                 ]
             ],
             "cust": NSNull(),
@@ -533,15 +892,23 @@ struct RegistrationClientSmokeTests {
         [
             "accessToken": [
                 "token": "refreshed-access-token",
-                "expTime": "2026-03-15T01:00:00Z",
-                "renewal": 1_710_003_600
+                "expTime": tokenDateString(after: 60 * 60),
+                "renewal": 3_600_000
             ],
             "refreshToken": [
                 "token": "refresh-login-token-next",
-                "expTime": "2026-03-22T01:00:00Z",
-                "renewal": 1_710_604_000
+                "expTime": tokenDateString(after: 7 * 24 * 60 * 60 + 60 * 60),
+                "renewal": 608_400_000
             ]
         ]
+    }
+
+    private static func tokenDateString(after seconds: TimeInterval) -> String {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.timeZone = TimeZone.current
+        formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+        return formatter.string(from: Date().addingTimeInterval(seconds))
     }
 
     private static func require(_ condition: @autoclosure () -> Bool, _ message: String) throws {

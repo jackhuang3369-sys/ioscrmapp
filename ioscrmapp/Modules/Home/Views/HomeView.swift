@@ -3,7 +3,7 @@ import SwiftUI
 struct HomeView: View {
     @EnvironmentObject private var languageStore: AppLanguageStore
 
-    let session: UserSession
+    let custSubInfo: CustSubInfo
     @ObservedObject var sessionStore: SessionStore
     let meService: any MeServicing
 
@@ -123,7 +123,7 @@ struct HomeView: View {
             .tag(HomeTab.video)
 
             MeContainerView(
-                session: session,
+                session: custSubInfo,
                 meService: meService,
                 onSignOut: {
                     sessionStore.signOut()
@@ -182,7 +182,7 @@ struct HomeView: View {
                             .font(.du(11, weight: .medium))
                             .foregroundColor(.white.opacity(0.8))
 
-                        Text(session.displayName)
+                        Text(custSubInfo.displayName)
                             .font(.du(16, weight: .bold))
                             .foregroundColor(.white)
                     }
@@ -207,7 +207,7 @@ struct HomeView: View {
                             .font(.du(11, weight: .medium))
                             .foregroundColor(.white.opacity(0.8))
 
-                        Text(localized("home.header.balanceAmount", arguments: [session.balanceText.replacingOccurrences(of: " AED", with: "")]))
+                        Text(localized("home.header.balanceAmount", arguments: [custSubInfo.balanceText.replacingOccurrences(of: " AED", with: "")]))
                             .font(.du(26, weight: .bold))
                             .foregroundColor(.white)
                     }
@@ -603,7 +603,7 @@ private struct FeaturePlaceholderView: View {
 struct HomeView_Previews: PreviewProvider {
     static var previews: some View {
         HomeView(
-            session: UserSession(
+            custSubInfo: CustSubInfo(
                 displayName: "Ahmed Mohammed",
                 phoneNumber: AuthValidator.demoPhone,
                 greeting: "Good Morning",

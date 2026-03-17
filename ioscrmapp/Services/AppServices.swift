@@ -14,7 +14,7 @@ struct AppServices {
             splashAdService = MockSplashAdService()
         case .remote:
             authService = RemoteAuthService(serverURL: configuration.serverURL)
-            meService = RemoteMeService(serverURL: configuration.serverURL)
+            meService = MockMeService()
             splashAdService = RemoteSplashAdService(serverURL: configuration.serverURL)
         }
     }

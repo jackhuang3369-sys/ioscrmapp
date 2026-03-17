@@ -76,18 +76,44 @@ struct NetworkContextBuilder: Sendable {
     func headers(requiresAuthorization: Bool) -> [String: String] {
         var headers = ["timeZoneCode": timeZoneCode]
 
-        if requiresAuthorization, let accessToken = tokenStore.loadTokens()?.accessToken.token, !accessToken.isEmpty {
+        if
+            requiresAuthorization,
+            let accessToken = tokenStore.loadTokens()?.currentAuthorizationToken(),
+            !accessToken.isEmpty
+        {
             headers["Authorization"] = "Bearer \(accessToken)"
         }
 
         return headers
     }
 
+    func shouldRenewAuthentication(for trigger: AuthSessionRenewalTrigger) -> Bool {
+        tokenStore.loadTokens()?.shouldRenewAuthentication(for: trigger) ?? false
+    }
+
+    func hasUsableAuthentication() -> Bool {
+        tokenStore.loadTokens()?.hasUsableAuthentication() ?? false
+    }
+
+    func renewAuthenticationIfNeeded(
+        for trigger: AuthSessionRenewalTrigger,
+        baseURL: URL,
+        session: URLSession
+    ) async throws -> Bool {
+        guard shouldRenewAuthentication(for: trigger) else {
+            return false
+        }
+
+        // 启动恢复登录态和请求前主动续约都通过这里复用同一套判断与刷新请求。
+        _ = try await refreshTokens(baseURL: baseURL, session: session)
+        return true
+    }
+
     func refreshTokens(baseURL: URL, session: URLSession) async throws -> AuthSessionTokens {
         try await refreshCoordinator.refreshTokens(
             baseURL: baseURL,
             session: session,
-            timeZoneCode: timeZoneCode
+            contextBuilder: self
         )
     }
 

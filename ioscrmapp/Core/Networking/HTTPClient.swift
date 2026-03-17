@@ -149,18 +149,46 @@ struct HTTPClient: Sendable {
     }
 
     func get(_ endpoint: Endpoint, query: [String: Any] = [:]) async throws -> ResponseData {
+        // 受保护接口在真正出网前先检查一次 token，尽量把已知过期请求拦在客户端。
+        try await refreshTokenIfNeeded(for: endpoint)
         let request = try await makeRequest(endpoint: endpoint, parameters: query)
         return try await send(request, endpoint: endpoint)
     }
 
     func post(_ endpoint: Endpoint, body: [String: Any] = [:]) async throws -> ResponseData {
+        // `POST` 与 `GET` 共用同一套续约前置逻辑，避免不同请求方法产生行为偏差。
+        try await refreshTokenIfNeeded(for: endpoint)
         let request = try await makeRequest(endpoint: endpoint, parameters: body)
         return try await send(request, endpoint: endpoint)
     }
 
     func download(_ endpoint: Endpoint, parameters: [String: Any] = [:]) async throws -> URL {
+        try await refreshTokenIfNeeded(for: endpoint)
         let request = try await makeRequest(endpoint: endpoint, parameters: parameters)
         return try await sendDownload(request, endpoint: endpoint)
+    }
+
+    /// 续约请求复用标准响应包装解析，避免和普通接口走出两套传输行为。
+    func refreshAuthTokens(refreshToken: String) async throws -> AuthSessionTokens {
+        // token 续约也走统一的 HTTPClient 管道，包装解析、错误处理和公共参数行为都保持一致。
+        let responseData = try await post(
+            AuthAPI.refresh,
+            body: ["refreshToken": refreshToken]
+        )
+        return try Self.parseAuthSessionTokens(from: responseData)
+    }
+
+    private func refreshTokenIfNeeded(for endpoint: Endpoint) async throws {
+        guard endpoint.requiresAuthorization else {
+            return
+        }
+
+        // 请求前主动续约与启动恢复登录态共用同一套判断和刷新入口。
+        _ = try await contextBuilder.renewAuthenticationIfNeeded(
+            for: .protectedRequest,
+            baseURL: baseURL,
+            session: session
+        )
     }
 
     private func makeRequest(endpoint: Endpoint, parameters: [String: Any]) async throws -> URLRequest {
@@ -191,6 +219,7 @@ struct HTTPClient: Sendable {
 
         request.httpMethod = endpoint.method.rawValue
 
+        // 头信息统一在这里拼装，登录、注册、续约都共享同一套上下文注入规则。
         var headers = contextBuilder.headers(requiresAuthorization: endpoint.requiresAuthorization)
         headers.merge(endpoint.headers, uniquingKeysWith: { _, new in new })
 
@@ -233,6 +262,8 @@ struct HTTPClient: Sendable {
                 path: endpoint.path
             )
         } catch let error as ClientError where shouldRefreshToken(for: error, endpoint: endpoint, allowTokenRefresh: allowTokenRefresh) {
+            // 这是“请求失败后”的被动续约路径：先刷新一次 token，
+            // 再按原始参数重建请求，并且只重试一次，避免无限循环。
             _ = try await contextBuilder.refreshTokens(baseURL: baseURL, session: session)
             let retryRequest = try await makeRequest(endpoint: endpoint, parameters: parameters(from: request, endpoint: endpoint))
             return try await send(retryRequest, endpoint: endpoint, allowTokenRefresh: false)
@@ -300,6 +331,9 @@ struct HTTPClient: Sendable {
         }
 
         switch error {
+        case .httpStatus(401):
+            // 网关可能在包装体生成前就直接返回 401，这里也要走刷新后重试。
+            return true
         case let .business(code, _, _):
             return code == 40_014 || code == 40_015
         default:
@@ -430,6 +464,57 @@ struct HTTPClient: Sendable {
             return number.stringValue
         }
         return String(describing: value)
+    }
+
+    private static func parseAuthSessionTokens(from responseData: ResponseData) throws -> AuthSessionTokens {
+        guard let payload = responseData.objectValue else {
+            throw ClientError.invalidResponse
+        }
+        guard let accessToken = parseAuthToken(in: payload, key: "accessToken") else {
+            throw ClientError.invalidResponse
+        }
+
+        return AuthSessionTokens(
+            accessToken: accessToken,
+            refreshToken: parseAuthToken(in: payload, key: "refreshToken")
+        )
+    }
+
+    private static func parseAuthToken(in payload: [String: ResponseData], key: String) -> AuthToken? {
+        guard
+            let tokenPayload = payload[key]?.objectValue,
+            let token = payloadString(in: tokenPayload, keys: ["token"]),
+            !token.isEmpty
+        else {
+            return nil
+        }
+
+        return AuthToken(
+            token: token,
+            expirationTime: payloadString(in: tokenPayload, keys: ["expTime"]),
+            renewal: payloadInt64(in: tokenPayload, keys: ["renewal"])
+        )
+    }
+
+    private static func payloadString(in payload: [String: ResponseData], keys: [String]) -> String? {
+        for key in keys {
+            if let value = payload[key]?.stringValue, !value.isEmpty {
+                return value
+            }
+        }
+        return nil
+    }
+
+    private static func payloadInt64(in payload: [String: ResponseData], keys: [String]) -> Int64? {
+        for key in keys {
+            if let value = payload[key]?.intValue {
+                return Int64(value)
+            }
+            if let value = payload[key]?.stringValue, let intValue = Int64(value) {
+                return intValue
+            }
+        }
+        return nil
     }
 }
 
