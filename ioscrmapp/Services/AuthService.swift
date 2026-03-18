@@ -10,6 +10,7 @@ protocol AuthServicing: Sendable {
     func loginWithPassword(phone: String, password: String) async throws -> CustSubInfo
     func sendOTP(to phone: String) async throws -> OTPSendResult
     func loginWithOTP(phone: String, otp: String) async throws -> CustSubInfo
+    func logout(authType: LoginAuthType) async throws
     func checkRegistrationEligibility(phone: String) async throws -> RegistrationEligibilityResult
     func sendRegistrationOTP(to phone: String) async throws -> RegistrationOTPSendResult
     func verifyRegistrationOTP(phone: String, challengeID: String, code: String) async throws -> RegistrationOTPVerificationResult
@@ -21,6 +22,9 @@ protocol AuthServicing: Sendable {
 }
 
 struct RemoteAuthService: AuthServicing {
+    private let serverURL: URL
+    private let session: URLSession
+    private let contextBuilder: NetworkContextBuilder
     private let client: HTTPClient
     private let registrationRequestEncryptor: RegistrationRequestEncryptor
     private let tokenStore: KeychainAuthTokenStore
@@ -32,6 +36,9 @@ struct RemoteAuthService: AuthServicing {
         contextBuilder: NetworkContextBuilder = NetworkContextBuilder(),
         tokenStore: KeychainAuthTokenStore = KeychainAuthTokenStore()
     ) {
+        self.serverURL = serverURL
+        self.session = session
+        self.contextBuilder = contextBuilder
         client = HTTPClient(
             baseURL: serverURL,
             session: session,
@@ -65,6 +72,36 @@ struct RemoteAuthService: AuthServicing {
         } catch let error as KeychainAuthTokenStoreError {
             authLogger.error("Failed to persist login tokens status=\(String(describing: error), privacy: .public)")
             throw AuthError.networkUnavailable
+        } catch let error as AuthError {
+            throw error
+        } catch {
+            throw AuthError.networkUnavailable
+        }
+    }
+
+    func logout(authType: LoginAuthType) async throws {
+        do {
+            if contextBuilder.shouldRenewAuthentication(for: .protectedRequest) {
+                _ = try await contextBuilder.refreshTokens(
+                    baseURL: serverURL,
+                    session: session,
+                    invalidateSessionOnFailure: false
+                )
+            }
+
+            guard
+                let accessToken = tokenStore.loadTokens()?.currentAuthorizationToken(),
+                !accessToken.isEmpty
+            else {
+                throw AuthError.sessionInvalidated
+            }
+
+            _ = try await client.post(
+                AuthAPI.logout(authorizationToken: accessToken),
+                body: loginRequestBuilder.logoutPayload(authType: authType)
+            )
+        } catch let error as HTTPClient.ClientError {
+            throw mapLogoutClientError(error)
         } catch let error as AuthError {
             throw error
         } catch {
@@ -408,6 +445,20 @@ struct RemoteAuthService: AuthServicing {
             return .networkUnavailable
         }
     }
+
+    private func mapLogoutClientError(_ error: HTTPClient.ClientError) -> AuthError {
+        switch error {
+        case .httpStatus(401):
+            return .sessionInvalidated
+        case let .business(code, message, traceID):
+            if code == 40_014 || code == 40_015 {
+                return .sessionInvalidated
+            }
+            return .backend(message: message, traceID: traceID)
+        case .httpStatus, .invalidJSON, .invalidResponse, .networkUnavailable:
+            return .networkUnavailable
+        }
+    }
 }
 
 actor MockAuthService: AuthServicing {
@@ -507,6 +558,11 @@ actor MockAuthService: AuthServicing {
             phone: normalizedPhone,
             displayName: accountsByPhone[normalizedPhone]?.displayName ?? "Ahmed Mohammed"
         )
+    }
+
+    func logout(authType: LoginAuthType) async throws {
+        _ = authType
+        try await Task.sleep(nanoseconds: 300_000_000)
     }
 
     func checkRegistrationEligibility(phone: String) async throws -> RegistrationEligibilityResult {
@@ -845,6 +901,14 @@ private struct LoginRequestBuilder {
             "authType": "2",
             "phonenumber": AuthValidator.localPhoneDigits(phone),
             "smsCode": otp
+        ]
+        payload.merge(contextBuilder.loginParameters(), uniquingKeysWith: { _, new in new })
+        return payload
+    }
+
+    func logoutPayload(authType: LoginAuthType) -> [String: Any] {
+        var payload: [String: Any] = [
+            "authType": authType.rawValue
         ]
         payload.merge(contextBuilder.loginParameters(), uniquingKeysWith: { _, new in new })
         return payload

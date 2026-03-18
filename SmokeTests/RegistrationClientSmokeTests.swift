@@ -87,8 +87,12 @@ struct RegistrationClientSmokeTests {
         try await testForgotPasswordFlowParsesChallengeAndVerificationToken(service: service)
         try await testForgotPasswordErrorMapping(service: service)
         try await testSessionStorePersistsSessionAndRememberedCredentials()
+        try await testSessionStorePersistsExplicitAuthTypeAndDefaultsLegacySession()
         try await testSessionStoreRestoresExpiredAccessTokenWithRefreshToken()
         try await testSessionStoreClearsExpiredSessionOnLaunch()
+        try await testLogoutRefreshesAndSendsPersistedAuthType(service: service)
+        try await testLogoutRefreshFailurePreservesLocalTokens(service: service)
+        try await testLogoutMapsUnauthorizedToSessionInvalidated(service: service)
         try await testResendOTPResetsInputAndKeepsFiveMinuteValidity()
         print("Auth and registration client smoke tests passed")
     }
@@ -801,7 +805,8 @@ struct RegistrationClientSmokeTests {
             rememberCredentials: true,
             phone: persistedSession.phoneNumber,
             password: "DuPass9A",
-            loginMode: .password
+            loginMode: .password,
+            authType: .password
         )
 
         let restoredStore = SessionStore(
@@ -893,6 +898,229 @@ struct RegistrationClientSmokeTests {
 
         try require(store.authenticatedCustSubInfo == persistedSession, "startup restore should keep the persisted session and go home")
         try require(localTokenStore.loadTokens()?.accessToken.token == "refreshed-access-token", "startup restore should persist refreshed access token")
+    }
+
+    @MainActor
+    private static func testSessionStorePersistsExplicitAuthTypeAndDefaultsLegacySession() async throws {
+        let suiteName = "session.store.authType.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suiteName) ?? .standard
+        defaults.removePersistentDomain(forName: suiteName)
+
+        let localTokenStore = KeychainAuthTokenStore(
+            service: "com.ioscrmapp.tests.authType.\(UUID().uuidString)",
+            account: "session.tokens",
+            memoryOnly: true
+        )
+        try localTokenStore.save(
+            AuthSessionTokens(
+                accessToken: AuthToken(
+                    token: "auth-type-access-token",
+                    expirationTime: tokenDateString(after: 30 * 60),
+                    renewal: nil
+                ),
+                refreshToken: AuthToken(
+                    token: "auth-type-refresh-token",
+                    expirationTime: tokenDateString(after: 24 * 60 * 60),
+                    renewal: nil
+                )
+            )
+        )
+
+        let store = SessionStore(
+            defaults: defaults,
+            tokenStore: localTokenStore,
+            rememberedCredentialsStore: KeychainRememberedCredentialsStore(
+                service: "com.ioscrmapp.tests.authType.\(UUID().uuidString)",
+                account: "remembered.credentials",
+                memoryOnly: true
+            )
+        )
+        store.signIn(
+            with: CustSubInfo(
+                displayName: "Ahmed Mohammed",
+                phoneNumber: "971521234567",
+                greeting: "Good Morning",
+                balanceText: "99.00 AED"
+            ),
+            rememberCredentials: false,
+            phone: "971521234567",
+            password: nil,
+            loginMode: .otp,
+            authType: .otp
+        )
+
+        let restoredStore = SessionStore(
+            defaults: defaults,
+            tokenStore: localTokenStore,
+            rememberedCredentialsStore: KeychainRememberedCredentialsStore(
+                service: "com.ioscrmapp.tests.authType.\(UUID().uuidString)",
+                account: "remembered.credentials",
+                memoryOnly: true
+            )
+        )
+        try require(restoredStore.currentAuthType == .otp, "restored session should keep persisted authType")
+
+        defaults.removeObject(forKey: "auth.sessionAuthType")
+
+        let legacyStore = SessionStore(
+            defaults: defaults,
+            tokenStore: localTokenStore,
+            rememberedCredentialsStore: KeychainRememberedCredentialsStore(
+                service: "com.ioscrmapp.tests.authType.\(UUID().uuidString)",
+                account: "remembered.credentials",
+                memoryOnly: true
+            )
+        )
+        try require(legacyStore.currentAuthType == .password, "legacy session without authType should default to password authType")
+    }
+
+    private static func testLogoutRefreshesAndSendsPersistedAuthType(
+        service: RemoteAuthService
+    ) async throws {
+        try? tokenStore.clear()
+        try tokenStore.save(
+            AuthSessionTokens(
+                accessToken: AuthToken(
+                    token: "stale-access-token",
+                    expirationTime: tokenDateString(after: 30),
+                    renewal: nil
+                ),
+                refreshToken: AuthToken(
+                    token: "refresh-before-logout-token",
+                    expirationTime: tokenDateString(after: 24 * 60 * 60),
+                    renewal: nil
+                )
+            )
+        )
+
+        var paths: [String] = []
+        var logoutBody = Data()
+
+        MockURLProtocol.requestHandler = { request in
+            let path = request.url?.path ?? ""
+            paths.append(path)
+
+            let response = HTTPURLResponse(
+                url: request.url!,
+                statusCode: 200,
+                httpVersion: nil,
+                headerFields: nil
+            )!
+
+            switch path {
+            case "/ser-user-auth/api/auth/refresh":
+                return (response, try wrappedResponse(data: refreshedTokenPayload()))
+            case "/ser-user-auth/api/auth/logout":
+                logoutBody = bodyData(from: request)
+                try require(
+                    request.value(forHTTPHeaderField: "Authorization") == "Bearer refreshed-access-token",
+                    "logout should use the refreshed access token"
+                )
+                return (response, try wrappedResponse(data: true))
+            default:
+                return (response, try wrappedResponse(data: NSNull()))
+            }
+        }
+
+        try await service.logout(authType: .otp)
+
+        try require(
+            paths == ["/ser-user-auth/api/auth/refresh", "/ser-user-auth/api/auth/logout"],
+            "logout should refresh first and then call logout"
+        )
+
+        let requestBody = try requireJSONObject(logoutBody)
+        try require(requestBody["authType"] as? String == "2", "logout should send persisted otp authType")
+        try require(requestBody["loginPlatform"] as? String == "iOS", "logout should include login platform")
+        try require((requestBody["deviceId"] as? String)?.isEmpty == false, "logout should include deviceId")
+    }
+
+    private static func testLogoutRefreshFailurePreservesLocalTokens(
+        service: RemoteAuthService
+    ) async throws {
+        try? tokenStore.clear()
+        try tokenStore.save(
+            AuthSessionTokens(
+                accessToken: AuthToken(
+                    token: "expiring-access-token",
+                    expirationTime: tokenDateString(after: 30),
+                    renewal: nil
+                ),
+                refreshToken: AuthToken(
+                    token: "refresh-fails-token",
+                    expirationTime: tokenDateString(after: 24 * 60 * 60),
+                    renewal: nil
+                )
+            )
+        )
+
+        MockURLProtocol.requestHandler = { request in
+            let response = HTTPURLResponse(
+                url: request.url!,
+                statusCode: 500,
+                httpVersion: nil,
+                headerFields: nil
+            )!
+
+            if request.url?.path == "/ser-user-auth/api/auth/refresh" {
+                return (response, Data())
+            }
+
+            return (response, try wrappedResponse(data: NSNull()))
+        }
+
+        do {
+            try await service.logout(authType: .password)
+            try require(false, "logout should fail when refresh fails")
+        } catch let error as AuthError {
+            try require(error == .networkUnavailable, "refresh failure should surface as remote logout failure")
+        }
+
+        let storedTokens = tokenStore.loadTokens()
+        try require(storedTokens?.accessToken.token == "expiring-access-token", "logout refresh failure should not clear local tokens")
+        try require(storedTokens?.refreshToken?.token == "refresh-fails-token", "logout refresh failure should preserve refresh token")
+    }
+
+    private static func testLogoutMapsUnauthorizedToSessionInvalidated(
+        service: RemoteAuthService
+    ) async throws {
+        try? tokenStore.clear()
+        try tokenStore.save(
+            AuthSessionTokens(
+                accessToken: AuthToken(
+                    token: "valid-access-token",
+                    expirationTime: tokenDateString(after: 30 * 60),
+                    renewal: nil
+                ),
+                refreshToken: AuthToken(
+                    token: "valid-refresh-token",
+                    expirationTime: tokenDateString(after: 24 * 60 * 60),
+                    renewal: nil
+                )
+            )
+        )
+
+        MockURLProtocol.requestHandler = { request in
+            let response = HTTPURLResponse(
+                url: request.url!,
+                statusCode: 401,
+                httpVersion: nil,
+                headerFields: nil
+            )!
+
+            if request.url?.path == "/ser-user-auth/api/auth/logout" {
+                return (response, Data())
+            }
+
+            return (response, try wrappedResponse(data: NSNull()))
+        }
+
+        do {
+            try await service.logout(authType: .password)
+            try require(false, "logout should fail when backend returns 401")
+        } catch let error as AuthError {
+            try require(error == .sessionInvalidated, "logout 401 should map to session invalidated")
+        }
     }
 
     @MainActor

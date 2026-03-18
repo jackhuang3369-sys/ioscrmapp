@@ -1,6 +1,7 @@
 {
   "common": {
     "ok": "OK",
+    "cancel": "Cancel",
     "retry": "Retry",
     "reload": "Reload",
     "save": "Save",
@@ -150,6 +151,11 @@
       "deviceNotUnique": "This account is already active on another device.",
       "featureUnavailable": "This feature is not available yet.",
       "networkUnavailable": "Service is temporarily unavailable. Please try again."
+    },
+    "logout": {
+      "error": {
+        "sessionInvalidated": "Your current session is no longer available."
+      }
     }
   },
   "home": {
@@ -338,7 +344,13 @@
       "verifyFailed": "Unable to verify your password."
     },
     "signOut": {
-      "button": "Log Out"
+      "button": "Log Out",
+      "failure": {
+        "title": "Couldn't complete secure logout",
+        "remote": "We couldn't complete server logout. You can retry, or sign out only on this device.",
+        "sessionInvalidated": "Your current session is no longer available. You can retry, or sign out only on this device.",
+        "localOnly": "Sign out only on this device"
+      }
     }
   },
   "language": {

@@ -18,7 +18,12 @@ struct ContentView: View {
             if authServerURL != nil && (sessionStore.isRestoringAuthentication || sessionStore.shouldRestoreAuthenticationOnLaunch) {
                 ProgressView()
             } else if let custSubInfo = sessionStore.authenticatedCustSubInfo {
-                HomeView(custSubInfo: custSubInfo, sessionStore: sessionStore, meService: meService)
+                HomeView(
+                    custSubInfo: custSubInfo,
+                    sessionStore: sessionStore,
+                    authService: authService,
+                    meService: meService
+                )
             } else {
                 AuthLoginContainerView(sessionStore: sessionStore, authService: authService)
             }

@@ -5,17 +5,20 @@ struct SessionUserDefaultsStore {
     private let defaults: UserDefaults
     private let preferredModeKey: String
     private let persistedCustSubInfoKey: String
+    private let persistedAuthTypeKey: String
     private let legacyRememberedPhoneKey: String
 
     init(
         defaults: UserDefaults = .standard,
         preferredModeKey: String = "auth.preferredMode",
         persistedCustSubInfoKey: String = "auth.userSession",
+        persistedAuthTypeKey: String = "auth.sessionAuthType",
         legacyRememberedPhoneKey: String = "auth.rememberedPhone"
     ) {
         self.defaults = defaults
         self.preferredModeKey = preferredModeKey
         self.persistedCustSubInfoKey = persistedCustSubInfoKey
+        self.persistedAuthTypeKey = persistedAuthTypeKey
         self.legacyRememberedPhoneKey = legacyRememberedPhoneKey
     }
 
@@ -43,6 +46,21 @@ struct SessionUserDefaultsStore {
 
     func clearPersistedCustSubInfo() {
         defaults.removeObject(forKey: persistedCustSubInfoKey)
+    }
+
+    func loadPersistedAuthType() -> LoginAuthType? {
+        guard let rawValue = defaults.string(forKey: persistedAuthTypeKey) else {
+            return nil
+        }
+        return LoginAuthType(rawValue: rawValue)
+    }
+
+    func savePersistedAuthType(_ authType: LoginAuthType) {
+        defaults.set(authType.rawValue, forKey: persistedAuthTypeKey)
+    }
+
+    func clearPersistedAuthType() {
+        defaults.removeObject(forKey: persistedAuthTypeKey)
     }
 
     func loadLegacyRememberedPhone() -> String? {
