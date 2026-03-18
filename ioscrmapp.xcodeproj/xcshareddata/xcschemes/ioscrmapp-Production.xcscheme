@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
    LastUpgradeVersion = "2600"
-   version = "1.7">
+   version = "1.3">
    <BuildAction
       parallelizeBuildables = "YES"
       buildImplicitDependencies = "YES">
@@ -15,7 +15,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "04E692C42F5EA2CE0082C59F"
-               BuildableName = "ioscrmapp.app"
+               BuildableName = "Du App.app"
                BlueprintName = "ioscrmapp"
                ReferencedContainer = "container:ioscrmapp.xcodeproj">
             </BuildableReference>
@@ -27,17 +27,17 @@
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "YES">
-      <Testables>
-      </Testables>
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "04E692C42F5EA2CE0082C59F"
-            BuildableName = "ioscrmapp.app"
+            BuildableName = "Du App.app"
             BlueprintName = "ioscrmapp"
             ReferencedContainer = "container:ioscrmapp.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
+      <Testables>
+      </Testables>
    </TestAction>
    <LaunchAction
       buildConfiguration = "Debug"
@@ -54,7 +54,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "04E692C42F5EA2CE0082C59F"
-            BuildableName = "ioscrmapp.app"
+            BuildableName = "Du App.app"
             BlueprintName = "ioscrmapp"
             ReferencedContainer = "container:ioscrmapp.xcodeproj">
          </BuildableReference>
@@ -78,7 +78,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "04E692C42F5EA2CE0082C59F"
-            BuildableName = "ioscrmapp.app"
+            BuildableName = "Du App.app"
             BlueprintName = "ioscrmapp"
             ReferencedContainer = "container:ioscrmapp.xcodeproj">
          </BuildableReference>
