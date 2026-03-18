@@ -4,6 +4,7 @@ struct AuthLoginContainerView: View {
     @EnvironmentObject private var languageStore: AppLanguageStore
     @StateObject private var viewModel: AuthLoginViewModel
     @State private var isShowingRegistration = false
+    @State private var isShowingForgotPassword = false
 
     private let authService: any AuthServicing
 
@@ -52,6 +53,14 @@ struct AuthLoginContainerView: View {
                 initialPhone: registrationInitialPhone
             ) { result in
                 viewModel.applyRegistrationResult(result)
+            }
+        }
+        .fullScreenCover(isPresented: $isShowingForgotPassword) {
+            AuthForgotPasswordContainerView(
+                authService: authService,
+                initialPhone: viewModel.phoneNumber
+            ) { result in
+                viewModel.applyForgotPasswordResult(result)
             }
         }
     }
@@ -177,7 +186,7 @@ struct AuthLoginContainerView: View {
                 fontSize: 13,
                 weight: .medium
             ) {
-                viewModel.showPlaceholderMessage(for: "auth.placeholder.forgotPassword")
+                isShowingForgotPassword = true
             }
         }
     }
@@ -290,6 +299,320 @@ struct AuthLoginContainerView: View {
 private enum AuthRegistrationStep {
     case verify
     case password
+}
+
+private enum AuthForgotPasswordStep {
+    case verify
+    case password
+}
+
+struct AuthForgotPasswordContainerView: View {
+    @Environment(\.dismiss) private var dismiss
+    @StateObject private var viewModel: AuthForgotPasswordViewModel
+    @State private var step: AuthForgotPasswordStep = .verify
+
+    private let onComplete: (ForgotPasswordFlowResult) -> Void
+
+    init(
+        authService: any AuthServicing,
+        initialPhone: String = "",
+        onComplete: @escaping (ForgotPasswordFlowResult) -> Void
+    ) {
+        _viewModel = StateObject(
+            wrappedValue: AuthForgotPasswordViewModel(
+                authService: authService,
+                initialPhone: initialPhone
+            )
+        )
+        self.onComplete = onComplete
+    }
+
+    var body: some View {
+        Group {
+            switch step {
+            case .verify:
+                AuthForgotPasswordVerifyView(
+                    viewModel: viewModel,
+                    closeAction: { dismiss() },
+                    verifyAction: {
+                        viewModel.verifyAndContinue { context in
+                            viewModel.restorePasswordStep(with: context)
+                            withAnimation(.easeInOut(duration: 0.2)) {
+                                step = .password
+                            }
+                        }
+                    },
+                    backToLoginAction: { dismiss() }
+                )
+            case .password:
+                AuthForgotPasswordPasswordView(
+                    viewModel: viewModel,
+                    closeAction: { dismiss() },
+                    backAction: {
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            step = .verify
+                        }
+                    },
+                    submitAction: {
+                        viewModel.resetPassword { result in
+                            finish(with: result)
+                        }
+                    },
+                    backToLoginAction: { dismiss() }
+                )
+            }
+        }
+        .onAppear {
+            viewModel.logFlowOpened()
+        }
+    }
+
+    private func finish(with result: ForgotPasswordFlowResult) {
+        onComplete(result)
+        dismiss()
+    }
+}
+
+private struct AuthForgotPasswordVerifyView: View {
+    @EnvironmentObject private var languageStore: AppLanguageStore
+    @ObservedObject var viewModel: AuthForgotPasswordViewModel
+
+    let closeAction: () -> Void
+    let verifyAction: () -> Void
+    let backToLoginAction: () -> Void
+
+    var body: some View {
+        GeometryReader { proxy in
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: DUSpacing.xxl) {
+                    AuthFlowChrome(closeAction: closeAction)
+                    AuthBrandMark()
+                    header
+                    AuthStepBadge(title: localized("auth.forgot.step.verify"))
+                    if let bannerMessage = viewModel.bannerMessage {
+                        AuthBannerView(message: localized(bannerMessage), tone: viewModel.bannerTone)
+                    }
+                    contentCard
+                    loginFooter
+                }
+                .padding(.horizontal, DUSpacing.xl)
+                .padding(.top, max(proxy.safeAreaInsets.top, DUSpacing.sm))
+                .padding(.bottom, DUSpacing.xxxl)
+            }
+            .background(DUTheme.background.ignoresSafeArea())
+        }
+        .navigationBarBackButtonHidden(true)
+    }
+
+    private var header: some View {
+        VStack(spacing: DUSpacing.sm) {
+            Text(localized("auth.forgot.title"))
+                .font(.du(28, weight: .bold))
+                .foregroundColor(DUTheme.ink)
+                .multilineTextAlignment(.center)
+            Text(localized("auth.forgot.subtitle"))
+                .font(.du(15, weight: .medium))
+                .foregroundColor(DUTheme.inkTertiary)
+                .multilineTextAlignment(.center)
+        }
+    }
+
+    private var contentCard: some View {
+        VStack(spacing: DUSpacing.lg) {
+            DUPhoneField(
+                title: localized("auth.field.phone.title"),
+                countryCode: "+\(AuthValidator.countryCode)",
+                placeholder: localized("auth.field.phone.placeholder"),
+                text: $viewModel.phoneNumber,
+                error: localized(viewModel.phoneError),
+                displayText: AuthValidator.localPhoneDigits,
+                normalizeText: AuthValidator.normalizedPhone
+            )
+
+            VStack(alignment: .leading, spacing: DUSpacing.sm) {
+                Text(localized("auth.field.otp.title"))
+                    .font(.du(14, weight: .semibold))
+                    .foregroundColor(DUTheme.inkSecondary)
+
+                HStack(alignment: .top, spacing: DUSpacing.md) {
+                    DUTextField(
+                        title: nil,
+                        placeholder: localized("auth.field.otp.placeholder"),
+                        text: $viewModel.otp,
+                        error: localized(viewModel.otpError),
+                        keyboardType: .numberPad
+                    )
+
+                    DUButton(
+                        title: localized(viewModel.otpButtonText),
+                        style: .secondary,
+                        isEnabled: viewModel.canSendOTP,
+                        fixedWidth: 114,
+                        fontSize: 14
+                    ) {
+                        viewModel.sendOTP()
+                    }
+                }
+
+                Text(localized(viewModel.otpHelperText))
+                    .font(.du(12, weight: .medium))
+                    .foregroundColor(DUTheme.inkTertiary)
+            }
+
+            DUButton(
+                title: localized("auth.forgot.action.verify"),
+                style: .primary,
+                isLoading: viewModel.isLoading,
+                isEnabled: viewModel.canVerifyOTP,
+                height: 56,
+                cornerRadius: 22,
+                fontSize: 17
+            ) {
+                verifyAction()
+            }
+        }
+        .padding(DUSpacing.xl)
+        .duCardStyle()
+    }
+
+    private var loginFooter: some View {
+        DUTextButton(title: localized("auth.forgot.action.backToLogin")) {
+            backToLoginAction()
+        }
+    }
+
+    private func localized(_ key: String, arguments: [String] = []) -> String {
+        languageStore.string(key, arguments: arguments)
+    }
+
+    private func localized(_ value: LocalizedTextValue) -> String {
+        languageStore.string(value)
+    }
+
+    private func localized(_ value: LocalizedTextValue?) -> String? {
+        guard let value else {
+            return nil
+        }
+        return languageStore.string(value)
+    }
+}
+
+private struct AuthForgotPasswordPasswordView: View {
+    @EnvironmentObject private var languageStore: AppLanguageStore
+    @ObservedObject var viewModel: AuthForgotPasswordViewModel
+
+    let closeAction: () -> Void
+    let backAction: () -> Void
+    let submitAction: () -> Void
+    let backToLoginAction: () -> Void
+
+    var body: some View {
+        GeometryReader { proxy in
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: DUSpacing.xxl) {
+                    AuthFlowChrome(backAction: backAction, closeAction: closeAction)
+                    AuthBrandMark()
+                    header
+                    AuthStepBadge(title: localized("auth.forgot.step.password"))
+                    if let bannerMessage = viewModel.bannerMessage {
+                        AuthBannerView(message: localized(bannerMessage), tone: viewModel.bannerTone)
+                    }
+                    contentCard
+                    loginFooter
+                }
+                .padding(.horizontal, DUSpacing.xl)
+                .padding(.top, max(proxy.safeAreaInsets.top, DUSpacing.sm))
+                .padding(.bottom, DUSpacing.xxxl)
+            }
+            .background(DUTheme.background.ignoresSafeArea())
+        }
+        .navigationBarBackButtonHidden(true)
+    }
+
+    private var header: some View {
+        VStack(spacing: DUSpacing.sm) {
+            Text(localized("auth.forgot.passwordTitle"))
+                .font(.du(28, weight: .bold))
+                .foregroundColor(DUTheme.ink)
+                .multilineTextAlignment(.center)
+            Text(localized("auth.forgot.passwordSubtitle"))
+                .font(.du(15, weight: .medium))
+                .foregroundColor(DUTheme.inkTertiary)
+                .multilineTextAlignment(.center)
+        }
+    }
+
+    private var contentCard: some View {
+        VStack(spacing: DUSpacing.lg) {
+            verifiedPhoneSummary
+
+            DUTextField(
+                title: localized("auth.field.password.title"),
+                placeholder: localized("auth.field.password.placeholder"),
+                text: $viewModel.password,
+                error: localized(viewModel.passwordError),
+                isSecure: true
+            )
+
+            DUTextField(
+                title: localized("auth.registration.field.confirmPassword.title"),
+                placeholder: localized("auth.registration.field.confirmPassword.placeholder"),
+                text: $viewModel.confirmPassword,
+                error: localized(viewModel.confirmPasswordError),
+                isSecure: true
+            )
+
+            DUButton(
+                title: localized("auth.forgot.action.complete"),
+                style: .primary,
+                isLoading: viewModel.isLoading,
+                isEnabled: viewModel.canSubmitPasswordReset,
+                height: 56,
+                cornerRadius: 22,
+                fontSize: 17
+            ) {
+                submitAction()
+            }
+        }
+        .padding(DUSpacing.xl)
+        .duCardStyle()
+    }
+
+    private var verifiedPhoneSummary: some View {
+        VStack(alignment: .leading, spacing: DUSpacing.sm) {
+            Text(localized("auth.forgot.summary.verifiedPhone"))
+                .font(.du(13, weight: .semibold))
+                .foregroundColor(DUTheme.inkTertiary)
+            Text(AuthValidator.formattedPhone(viewModel.verifiedContext?.phoneNumber ?? viewModel.phoneNumber))
+                .font(.du(18, weight: .bold))
+                .foregroundColor(DUTheme.ink)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(DUSpacing.lg)
+        .background(DUTheme.backgroundSecondary)
+        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+    }
+
+    private var loginFooter: some View {
+        DUTextButton(title: localized("auth.forgot.action.backToLogin")) {
+            backToLoginAction()
+        }
+    }
+
+    private func localized(_ key: String, arguments: [String] = []) -> String {
+        languageStore.string(key, arguments: arguments)
+    }
+
+    private func localized(_ value: LocalizedTextValue) -> String {
+        languageStore.string(value)
+    }
+
+    private func localized(_ value: LocalizedTextValue?) -> String? {
+        guard let value else {
+            return nil
+        }
+        return languageStore.string(value)
+    }
 }
 
 struct AuthRegistrationContainerView: View {

@@ -84,6 +84,8 @@ struct RegistrationClientSmokeTests {
         try await testOtpMetadataParsing(service: service)
         try await testRegisterRequestEncryptsPasswordField(service: service)
         try await testRegistrationErrorMapping(service: service)
+        try await testForgotPasswordFlowParsesChallengeAndVerificationToken(service: service)
+        try await testForgotPasswordErrorMapping(service: service)
         try await testSessionStorePersistsSessionAndRememberedCredentials()
         try await testSessionStoreRestoresExpiredAccessTokenWithRefreshToken()
         try await testSessionStoreClearsExpiredSessionOnLaunch()
@@ -526,7 +528,11 @@ struct RegistrationClientSmokeTests {
             return (response, data)
         }
 
-        let result = try await service.verifyRegistrationOTP(phone: "521234567", code: "123456")
+        let result = try await service.verifyRegistrationOTP(
+            phone: "521234567",
+            challengeID: "challenge-001",
+            code: "123456"
+        )
         try require(result.verifiedPhoneNumber == "971521234567", "verify should return normalized phone")
         try require(result.otpCode == "123456", "verify should keep submitted otp code")
     }
@@ -541,6 +547,7 @@ struct RegistrationClientSmokeTests {
             )!
             let data = try wrappedResponse(
                 data: [
+                    "challengeId": "challenge-001",
                     "resendSeconds": 45,
                     "otpValidSeconds": 120
                 ]
@@ -549,10 +556,91 @@ struct RegistrationClientSmokeTests {
         }
 
         let result = try await service.sendRegistrationOTP(to: "521234567")
+        try require(result.challengeID == "challenge-001", "registration otp send should parse challenge id")
         let resendSeconds = Int(result.resendAvailableAt.timeIntervalSinceNow.rounded(.up))
         let expirySeconds = Int(result.expiresAt?.timeIntervalSinceNow.rounded(.up) ?? 0)
         try require((44 ... 45).contains(resendSeconds), "otp resend seconds should come from wrapper data")
         try require((119 ... 120).contains(expirySeconds), "otp expiry seconds should come from wrapper data")
+    }
+
+    private static func testForgotPasswordFlowParsesChallengeAndVerificationToken(
+        service: RemoteAuthService
+    ) async throws {
+        var requestBodies: [String: [String: Any]] = [:]
+
+        MockURLProtocol.requestHandler = { request in
+            let response = HTTPURLResponse(
+                url: request.url!,
+                statusCode: 200,
+                httpVersion: nil,
+                headerFields: nil
+            )!
+            let path = request.url?.path ?? ""
+            requestBodies[path] = try requireJSONObject(bodyData(from: request))
+
+            switch path {
+            case "/ser-user-auth/api/auth/checkUserExist":
+                return (response, try wrappedResponse(data: true))
+            case "/ser-user-auth/api/auth/code":
+                return (response, try wrappedResponse(data: [
+                    "challengeId": "forgot-challenge-001",
+                    "resendSeconds": 30,
+                    "otpValidSeconds": 300
+                ]))
+            case "/ser-user-auth/api/auth/verify":
+                return (response, try wrappedResponse(data: [
+                    "verificationToken": "forgot-token-001"
+                ]))
+            case "/ser-user-auth/api/auth/forgetModifyPass":
+                return (response, try wrappedResponse(data: NSNull()))
+            default:
+                return (response, try wrappedResponse(data: NSNull()))
+            }
+        }
+
+        let checkResult = try await service.checkForgotPasswordUser(phone: "521234567")
+        try require(checkResult.phoneNumber == "971521234567", "forgot password check should normalize phone")
+
+        let sendResult = try await service.sendForgotPasswordOTP(to: "521234567")
+        try require(sendResult.challengeID == "forgot-challenge-001", "forgot password otp send should parse challenge id")
+
+        let verifyResult = try await service.verifyForgotPasswordOTP(
+            phone: "521234567",
+            challengeID: sendResult.challengeID,
+            code: "123456"
+        )
+        try require(verifyResult.verificationToken == "forgot-token-001", "forgot password verify should parse verification token")
+
+        let resetResult = try await service.resetForgotPassword(
+            input: ForgotPasswordResetInput(
+                phoneNumber: "521234567",
+                verificationToken: verifyResult.verificationToken,
+                password: "DuPass9A",
+                confirmPassword: "DuPass9A"
+            )
+        )
+        try require(resetResult.phoneNumber == "971521234567", "forgot password reset should return normalized phone")
+
+        try require(
+            requestBodies["/ser-user-auth/api/auth/checkUserExist"]?["deviceId"] as? String != nil,
+            "forgot password check should include deviceId"
+        )
+        try require(
+            requestBodies["/ser-user-auth/api/auth/checkUserExist"]?["phoneNumber"] as? String == "521234567",
+            "forgot password check should send local phone digits without country code"
+        )
+        try require(
+            requestBodies["/ser-user-auth/api/auth/verify"]?["challengeId"] as? String == "forgot-challenge-001",
+            "forgot password verify should forward challengeId"
+        )
+        try require(
+            requestBodies["/ser-user-auth/api/auth/forgetModifyPass"]?["verificationToken"] as? String == "forgot-token-001",
+            "forgot password reset should forward verification token"
+        )
+        try require(
+            requestBodies["/ser-user-auth/api/auth/forgetModifyPass"]?["confirmPass"] as? String != "DuPass9A",
+            "forgot password reset should encrypt confirm password"
+        )
     }
 
     private static func testRegisterRequestEncryptsPasswordField(service: RemoteAuthService) async throws {
@@ -582,7 +670,7 @@ struct RegistrationClientSmokeTests {
         )
 
         let requestBody = try requireJSONObject(MockURLProtocol.lastRegisterBody)
-        try require(requestBody["mobile"] as? String == "971521234567", "register request should submit normalized phone")
+        try require(requestBody["mobile"] as? String == "521234567", "register request should submit local phone digits")
         try require(requestBody["otpCode"] as? String == "123456", "register request should keep otp code")
 
         guard let encryptedPassword = requestBody["password"] as? String else {
@@ -624,6 +712,41 @@ struct RegistrationClientSmokeTests {
             try require(false, "register should throw when backend returns password-rule error")
         } catch let error as AuthError {
             try require(error == .registrationPasswordFormat, "business code 40017 should map to registration password error")
+        }
+    }
+
+    private static func testForgotPasswordErrorMapping(service: RemoteAuthService) async throws {
+        MockURLProtocol.requestHandler = { request in
+            let response = HTTPURLResponse(
+                url: request.url!,
+                statusCode: 200,
+                httpVersion: nil,
+                headerFields: nil
+            )!
+
+            let data = try JSONSerialization.data(
+                withJSONObject: [
+                    "code": 40_015,
+                    "msg": "Token has expired",
+                    "data": NSNull(),
+                    "traceId": "trace-token-expired"
+                ]
+            )
+            return (response, data)
+        }
+
+        do {
+            _ = try await service.resetForgotPassword(
+                input: ForgotPasswordResetInput(
+                    phoneNumber: "521234567",
+                    verificationToken: "expired-token",
+                    password: "DuPass9A",
+                    confirmPassword: "DuPass9A"
+                )
+            )
+            try require(false, "forgot password reset should throw when token is expired")
+        } catch let error as AuthError {
+            try require(error == .verificationTokenExpired, "business code 40015 should map to verificationTokenExpired")
         }
     }
 
@@ -862,7 +985,7 @@ struct RegistrationClientSmokeTests {
             "user": [
                 "userId": "user-1",
                 "username": "Ahmed Mohammed",
-                "mobile": "971521234567",
+                "mobile": "521234567",
                 "isFirstLogin": "0"
             ],
             "device": [

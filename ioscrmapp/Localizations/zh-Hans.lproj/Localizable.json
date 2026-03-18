@@ -100,6 +100,37 @@
         "passwordMismatch": "两次输入的密码不一致。"
       }
     },
+    "forgot": {
+      "title": "重置登录密码",
+      "subtitle": "先验证手机号与验证码，再设置新密码。",
+      "passwordTitle": "设置新密码",
+      "passwordSubtitle": "新密码将立即替换当前登录密码。",
+      "step": {
+        "verify": "第 1 步，共 2 步",
+        "password": "第 2 步，共 2 步"
+      },
+      "action": {
+        "verify": "验证并继续",
+        "complete": "重置密码",
+        "backToLogin": "返回登录"
+      },
+      "otp": {
+        "expiryFallback": "验证码 5 分钟内有效。",
+        "expiryDynamic": "验证码 %@ 分钟内有效。"
+      },
+      "summary": {
+        "verifiedPhone": "待重置手机号"
+      },
+      "banner": {
+        "otpSent": "验证码发送成功。",
+        "completed": "密码已重置，请使用新密码登录。"
+      },
+      "error": {
+        "notRegistered": "该手机号尚未注册。",
+        "passwordHistoryConflict": "新密码不能与最近使用过的密码相同。",
+        "verificationExpired": "验证码校验已失效，请重新获取验证码。"
+      }
+    },
     "placeholder": {
       "forgotPassword": "忘记密码功能即将上线。",
       "sms": "短信登录功能即将上线。",

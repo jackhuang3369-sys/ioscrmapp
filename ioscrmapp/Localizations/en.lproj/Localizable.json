@@ -100,6 +100,37 @@
         "passwordMismatch": "Passwords do not match."
       }
     },
+    "forgot": {
+      "title": "Reset your password",
+      "subtitle": "Verify your mobile number and OTP, then set a new password.",
+      "passwordTitle": "Create a new password",
+      "passwordSubtitle": "Your new password will replace the current login password immediately.",
+      "step": {
+        "verify": "Step 1 of 2",
+        "password": "Step 2 of 2"
+      },
+      "action": {
+        "verify": "Verify and continue",
+        "complete": "Reset password",
+        "backToLogin": "Back to Login"
+      },
+      "otp": {
+        "expiryFallback": "The OTP remains valid for 5 minutes.",
+        "expiryDynamic": "The OTP remains valid for %@ minutes."
+      },
+      "summary": {
+        "verifiedPhone": "Phone number to reset"
+      },
+      "banner": {
+        "otpSent": "OTP sent successfully.",
+        "completed": "Password reset complete. Sign in with your new password."
+      },
+      "error": {
+        "notRegistered": "This mobile number is not registered.",
+        "passwordHistoryConflict": "The new password cannot match a recently used password.",
+        "verificationExpired": "OTP verification expired. Request a new code and try again."
+      }
+    },
     "placeholder": {
       "forgotPassword": "Forgot password is coming soon.",
       "sms": "SMS login is coming soon.",

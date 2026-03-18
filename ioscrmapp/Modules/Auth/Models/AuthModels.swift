@@ -152,6 +152,7 @@ struct OTPSendResult: Equatable {
 }
 
 struct RegistrationOTPSendResult: Equatable {
+    let challengeID: String
     let resendAvailableAt: Date
     let expiresAt: Date?
     let demoCode: String
@@ -164,6 +165,42 @@ struct RegistrationEligibilityResult: Equatable {
 struct RegistrationOTPVerificationResult: Equatable {
     let verifiedPhoneNumber: String
     let otpCode: String
+}
+
+struct ForgotPasswordUserCheckResult: Equatable {
+    let phoneNumber: String
+}
+
+struct ForgotPasswordOTPSendResult: Equatable {
+    let phoneNumber: String
+    let challengeID: String
+    let resendAvailableAt: Date
+    let expiresAt: Date?
+}
+
+struct ForgotPasswordOTPVerificationResult: Equatable {
+    let verifiedPhoneNumber: String
+    let verificationToken: String
+}
+
+struct ForgotPasswordVerifiedContext: Equatable {
+    let phoneNumber: String
+    let verificationToken: String
+}
+
+struct ForgotPasswordResetInput: Equatable {
+    let phoneNumber: String
+    let verificationToken: String
+    let password: String
+    let confirmPassword: String
+}
+
+struct ForgotPasswordCompletionResult: Equatable {
+    let phoneNumber: String
+}
+
+enum ForgotPasswordFlowResult: Equatable {
+    case completed(phoneNumber: String)
 }
 
 struct RegistrationVerifiedContext: Equatable {
@@ -203,8 +240,11 @@ enum AuthError: Error, Equatable {
     case accountLocked(until: Date)
     case deviceNotUnique
     case phoneAlreadyRegistered
+    case phoneNotRegistered
     case registrationPasswordFormat
     case passwordMismatch
+    case passwordHistoryConflict
+    case verificationTokenExpired
     case backend(message: String, traceID: String?)
     case featureUnavailable(message: String)
     case networkUnavailable
@@ -233,10 +273,16 @@ enum AuthError: Error, Equatable {
             return .key("auth.error.deviceNotUnique")
         case .phoneAlreadyRegistered:
             return .key("auth.registration.error.alreadyRegistered")
+        case .phoneNotRegistered:
+            return .key("auth.forgot.error.notRegistered")
         case .registrationPasswordFormat:
             return .key("auth.registration.error.passwordRequirements")
         case .passwordMismatch:
             return .key("auth.registration.error.passwordMismatch")
+        case .passwordHistoryConflict:
+            return .key("auth.forgot.error.passwordHistoryConflict")
+        case .verificationTokenExpired:
+            return .key("auth.forgot.error.verificationExpired")
         case let .backend(message, _):
             return .literal(message)
         case let .featureUnavailable(message):

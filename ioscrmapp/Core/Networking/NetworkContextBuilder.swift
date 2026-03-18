@@ -73,6 +73,22 @@ struct NetworkContextBuilder: Sendable {
         ]
     }
 
+    func authCommonContext() -> [String: String] {
+        [
+            "platform": "iOS",
+            "osVersion": osVersion,
+            "appVersion": appVersion,
+            "lang": languageCode,
+            "deviceId": DeviceIdentityProvider().deviceID()
+        ]
+    }
+
+    func otpContextIncludingDevice() -> [String: String] {
+        var parameters = otpParameters()
+        parameters["deviceId"] = DeviceIdentityProvider().deviceID()
+        return parameters
+    }
+
     func headers(requiresAuthorization: Bool) -> [String: String] {
         var headers = ["timeZoneCode": timeZoneCode]
 

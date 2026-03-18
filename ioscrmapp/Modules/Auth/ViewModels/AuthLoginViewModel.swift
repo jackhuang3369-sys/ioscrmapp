@@ -152,6 +152,21 @@ final class AuthLoginViewModel: ObservableObject {
         }
     }
 
+    func applyForgotPasswordResult(_ result: ForgotPasswordFlowResult) {
+        clearMessages()
+
+        switch result {
+        case let .completed(phoneNumber):
+            self.phoneNumber = AuthValidator.normalizedPhone(phoneNumber)
+            password = ""
+            otp = ""
+            selectedMode = .password
+            sessionStore.updatePreferredLoginMode(.password)
+            bannerTone = .success
+            bannerMessage = .key("auth.forgot.banner.completed")
+        }
+    }
+
     private func validatePhone() -> Bool {
         guard AuthValidator.isValidPhone(phoneNumber) else {
             phoneError = AuthError.invalidPhone.textValue
@@ -210,7 +225,7 @@ final class AuthLoginViewModel: ObservableObject {
         case .accountLocked:
             passwordError = nil
             otpError = nil
-        case .deviceNotUnique, .featureUnavailable, .networkUnavailable, .phoneAlreadyRegistered, .registrationPasswordFormat, .passwordMismatch, .backend:
+        case .deviceNotUnique, .featureUnavailable, .networkUnavailable, .phoneAlreadyRegistered, .phoneNotRegistered, .registrationPasswordFormat, .passwordMismatch, .passwordHistoryConflict, .verificationTokenExpired, .backend:
             break
         }
     }
@@ -254,6 +269,7 @@ final class AuthRegistrationViewModel: ObservableObject {
     @Published private(set) var verifiedContext: RegistrationVerifiedContext?
 
     private let authService: any AuthServicing
+    private var challengeID: String?
     private var otpExpiresAt: Date?
     private var countdownTask: Task<Void, Never>?
     private var completionTask: Task<Void, Never>?
@@ -278,6 +294,7 @@ final class AuthRegistrationViewModel: ObservableObject {
 
     var canVerifyOTP: Bool {
         !isLoading
+            && challengeID != nil
             && AuthValidator.isValidPhone(phoneNumber)
             && AuthValidator.isValidRegistrationOTP(otp)
     }
@@ -323,6 +340,7 @@ final class AuthRegistrationViewModel: ObservableObject {
         Task {
             do {
                 let result = try await authService.sendRegistrationOTP(to: phoneNumber)
+                challengeID = result.challengeID
                 otpExpiresAt = result.expiresAt ?? Date().addingTimeInterval(Self.otpValiditySeconds)
                 otp = ""
                 otpError = nil
@@ -341,7 +359,7 @@ final class AuthRegistrationViewModel: ObservableObject {
         clearVerificationMessages()
         shouldShowGoToLoginAction = false
 
-        guard validatePhone(), validateRegistrationOTP() else {
+        guard validatePhone(), validateRegistrationOTP(), let challengeID else {
             return
         }
 
@@ -353,6 +371,7 @@ final class AuthRegistrationViewModel: ObservableObject {
                 let eligibility = try await authService.checkRegistrationEligibility(phone: phoneNumber)
                 let verification = try await authService.verifyRegistrationOTP(
                     phone: eligibility.phoneNumber,
+                    challengeID: challengeID,
                     code: otp
                 )
 
@@ -497,7 +516,7 @@ final class AuthRegistrationViewModel: ObservableObject {
             passwordError = authError.textValue
         case .passwordMismatch:
             confirmPasswordError = authError.textValue
-        case .invalidPasswordFormat, .invalidCredentials, .accountLocked, .deviceNotUnique, .backend, .featureUnavailable, .networkUnavailable:
+        case .invalidPasswordFormat, .invalidCredentials, .accountLocked, .deviceNotUnique, .phoneNotRegistered, .passwordHistoryConflict, .verificationTokenExpired, .backend, .featureUnavailable, .networkUnavailable:
             if stage == .register {
                 passwordError = nil
                 confirmPasswordError = nil
@@ -527,4 +546,295 @@ final class AuthRegistrationViewModel: ObservableObject {
 private enum RegistrationStage {
     case verify
     case register
+}
+
+@MainActor
+final class AuthForgotPasswordViewModel: ObservableObject {
+    private static let otpValiditySeconds: TimeInterval = 5 * 60
+
+    @Published var phoneNumber: String
+    @Published var otp = ""
+    @Published var password = ""
+    @Published var confirmPassword = ""
+    @Published var phoneError: LocalizedTextValue?
+    @Published var otpError: LocalizedTextValue?
+    @Published var passwordError: LocalizedTextValue?
+    @Published var confirmPasswordError: LocalizedTextValue?
+    @Published var bannerMessage: LocalizedTextValue?
+    @Published var bannerTone: AuthBannerTone = .info
+    @Published var otpCooldownRemaining = 0
+    @Published private(set) var isLoading = false
+    @Published private(set) var verifiedContext: ForgotPasswordVerifiedContext?
+
+    private let authService: any AuthServicing
+    private var challengeID: String?
+    private var otpExpiresAt: Date?
+    private var countdownTask: Task<Void, Never>?
+    private var completionTask: Task<Void, Never>?
+    private let logger = Logger(
+        subsystem: Bundle.main.bundleIdentifier ?? "ioscrmapp",
+        category: "ForgotPasswordFlow"
+    )
+
+    init(authService: any AuthServicing, initialPhone: String = "") {
+        self.authService = authService
+        phoneNumber = AuthValidator.normalizedPhone(initialPhone)
+    }
+
+    deinit {
+        countdownTask?.cancel()
+        completionTask?.cancel()
+    }
+
+    var canSendOTP: Bool {
+        AuthValidator.isValidPhone(phoneNumber) && otpCooldownRemaining == 0 && !isLoading
+    }
+
+    var canVerifyOTP: Bool {
+        !isLoading
+            && challengeID != nil
+            && AuthValidator.isValidPhone(phoneNumber)
+            && AuthValidator.isValidRegistrationOTP(otp)
+    }
+
+    var canSubmitPasswordReset: Bool {
+        !isLoading
+            && verifiedContext != nil
+            && AuthValidator.isValidRegistrationPassword(password)
+            && !confirmPassword.isEmpty
+            && password == confirmPassword
+    }
+
+    var otpButtonText: LocalizedTextValue {
+        otpCooldownRemaining > 0
+            ? .key("auth.otp.resend", arguments: ["\(otpCooldownRemaining)"])
+            : .key("auth.otp.send")
+    }
+
+    var otpHelperText: LocalizedTextValue {
+        guard let otpExpiresAt else {
+            return .key("auth.forgot.otp.expiryFallback")
+        }
+
+        let remainingSeconds = max(60, Int(otpExpiresAt.timeIntervalSinceNow.rounded(.up)))
+        let remainingMinutes = max(1, Int(ceil(Double(remainingSeconds) / 60)))
+        return .key("auth.forgot.otp.expiryDynamic", arguments: ["\(remainingMinutes)"])
+    }
+
+    func logFlowOpened() {
+        logger.info("Forgot password screen opened")
+    }
+
+    func sendOTP() {
+        clearVerifyMessages()
+
+        guard validatePhone() else {
+            return
+        }
+
+        isLoading = true
+        logger.info("Forgot password otp send requested")
+
+        Task {
+            do {
+                let checkedPhone = try await authService.checkForgotPasswordUser(phone: phoneNumber)
+                let result = try await authService.sendForgotPasswordOTP(to: checkedPhone.phoneNumber)
+                phoneNumber = result.phoneNumber
+                challengeID = result.challengeID
+                otpExpiresAt = result.expiresAt ?? Date().addingTimeInterval(Self.otpValiditySeconds)
+                otp = ""
+                otpError = nil
+                let seconds = max(0, Int(result.resendAvailableAt.timeIntervalSinceNow.rounded(.up)))
+                startCountdown(from: seconds)
+                bannerTone = .success
+                bannerMessage = .key("auth.forgot.banner.otpSent")
+            } catch {
+                apply(error: error, stage: .verify)
+            }
+            isLoading = false
+        }
+    }
+
+    func verifyAndContinue(onSuccess: @escaping (ForgotPasswordVerifiedContext) -> Void) {
+        clearVerifyMessages()
+
+        guard validatePhone(), validateOTP(), let challengeID else {
+            return
+        }
+
+        isLoading = true
+        logger.info("Forgot password otp verify requested")
+
+        Task {
+            do {
+                let checkedPhone = try await authService.checkForgotPasswordUser(phone: phoneNumber)
+                let result = try await authService.verifyForgotPasswordOTP(
+                    phone: checkedPhone.phoneNumber,
+                    challengeID: challengeID,
+                    code: otp
+                )
+
+                let context = ForgotPasswordVerifiedContext(
+                    phoneNumber: result.verifiedPhoneNumber,
+                    verificationToken: result.verificationToken
+                )
+                verifiedContext = context
+                password = ""
+                confirmPassword = ""
+                bannerMessage = nil
+                onSuccess(context)
+            } catch {
+                apply(error: error, stage: .verify)
+            }
+            isLoading = false
+        }
+    }
+
+    func restorePasswordStep(with context: ForgotPasswordVerifiedContext) {
+        verifiedContext = context
+        passwordError = nil
+        confirmPasswordError = nil
+        bannerMessage = nil
+    }
+
+    func resetPassword(onSuccess: @escaping (ForgotPasswordFlowResult) -> Void) {
+        clearPasswordMessages()
+
+        guard let verifiedContext else {
+            return
+        }
+        guard validatePassword(), validateConfirmPassword() else {
+            return
+        }
+
+        isLoading = true
+        logger.info("Forgot password submit requested")
+
+        Task {
+            do {
+                let result = try await authService.resetForgotPassword(
+                    input: ForgotPasswordResetInput(
+                        phoneNumber: verifiedContext.phoneNumber,
+                        verificationToken: verifiedContext.verificationToken,
+                        password: password,
+                        confirmPassword: confirmPassword
+                    )
+                )
+
+                bannerTone = .success
+                bannerMessage = .key("auth.forgot.banner.completed")
+
+                completionTask?.cancel()
+                completionTask = Task { [weak self] in
+                    do {
+                        try await Task.sleep(nanoseconds: 900_000_000)
+                    } catch {
+                        return
+                    }
+                    await MainActor.run {
+                        self?.isLoading = false
+                        onSuccess(.completed(phoneNumber: result.phoneNumber))
+                    }
+                }
+            } catch {
+                apply(error: error, stage: .password)
+                isLoading = false
+            }
+        }
+    }
+
+    private func validatePhone() -> Bool {
+        guard AuthValidator.isValidPhone(phoneNumber) else {
+            phoneError = AuthError.invalidPhone.textValue
+            return false
+        }
+        phoneError = nil
+        return true
+    }
+
+    private func validateOTP() -> Bool {
+        guard AuthValidator.isValidRegistrationOTP(otp) else {
+            otpError = AuthError.invalidOTPFormat.textValue
+            return false
+        }
+        otpError = nil
+        return true
+    }
+
+    private func validatePassword() -> Bool {
+        guard AuthValidator.isValidRegistrationPassword(password) else {
+            passwordError = AuthError.registrationPasswordFormat.textValue
+            return false
+        }
+        passwordError = nil
+        return true
+    }
+
+    private func validateConfirmPassword() -> Bool {
+        guard password == confirmPassword, !confirmPassword.isEmpty else {
+            confirmPasswordError = AuthError.passwordMismatch.textValue
+            return false
+        }
+        confirmPasswordError = nil
+        return true
+    }
+
+    private func clearVerifyMessages() {
+        phoneError = nil
+        otpError = nil
+        bannerMessage = nil
+    }
+
+    private func clearPasswordMessages() {
+        passwordError = nil
+        confirmPasswordError = nil
+        bannerMessage = nil
+    }
+
+    private func apply(error: Error, stage: ForgotPasswordStage) {
+        let authError = (error as? AuthError) ?? .networkUnavailable
+        bannerTone = .error
+        bannerMessage = authError.textValue
+
+        switch authError {
+        case .invalidPhone, .phoneNotRegistered:
+            phoneError = authError.textValue
+        case .invalidOTPFormat, .otpInvalid, .otpExpired, .verificationTokenExpired:
+            otpError = stage == .verify ? authError.textValue : nil
+        case let .otpCooldown(secondsRemaining):
+            otpCooldownRemaining = secondsRemaining
+            startCountdown(from: secondsRemaining)
+        case .registrationPasswordFormat:
+            passwordError = authError.textValue
+        case .passwordMismatch:
+            confirmPasswordError = authError.textValue
+        case .passwordHistoryConflict:
+            passwordError = authError.textValue
+        case .invalidPasswordFormat, .invalidCredentials, .accountLocked, .deviceNotUnique, .phoneAlreadyRegistered, .backend, .featureUnavailable, .networkUnavailable:
+            break
+        }
+    }
+
+    private func startCountdown(from seconds: Int) {
+        countdownTask?.cancel()
+        otpCooldownRemaining = seconds
+
+        countdownTask = Task {
+            while !Task.isCancelled, otpCooldownRemaining > 0 {
+                do {
+                    try await Task.sleep(nanoseconds: 1_000_000_000)
+                } catch {
+                    break
+                }
+                await MainActor.run {
+                    otpCooldownRemaining = max(0, otpCooldownRemaining - 1)
+                }
+            }
+        }
+    }
+}
+
+private enum ForgotPasswordStage {
+    case verify
+    case password
 }
