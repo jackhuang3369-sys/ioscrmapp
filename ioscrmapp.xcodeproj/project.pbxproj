@@ -50,13 +50,13 @@
 		A10000000000000000000025 /* AppLaunchContainerViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000025 /* AppLaunchContainerViewModel.swift */; };
 		A10000000000000000000026 /* SplashAdViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000026 /* SplashAdViewModel.swift */; };
 		A10000000000000000000027 /* AppLaunchContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000027 /* AppLaunchContainerView.swift */; };
-			A10000000000000000000028 /* SplashAdView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000028 /* SplashAdView.swift */; };
-			A10000000000000000000029 /* SessionKeychainStores.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000029 /* SessionKeychainStores.swift */; };
-			A1000000000000000000002A /* SessionUserDefaultsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000002A /* SessionUserDefaultsStore.swift */; };
+		A10000000000000000000028 /* SplashAdView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000028 /* SplashAdView.swift */; };
+		A10000000000000000000029 /* SessionKeychainStores.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000029 /* SessionKeychainStores.swift */; };
+		A1000000000000000000002A /* SessionUserDefaultsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000002A /* SessionUserDefaultsStore.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		04E692C52F5EA2CE0082C59F /* ioscrmapp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ioscrmapp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		04E692C52F5EA2CE0082C59F /* Du App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Du App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		04E692C82F5EA2CE0082C59F /* ioscrmappApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ioscrmappApp.swift; sourceTree = "<group>"; };
 		04E692CA2F5EA2CE0082C59F /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		04E692CC2F5EA2CF0082C59F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -100,9 +100,9 @@
 		A20000000000000000000025 /* AppLaunchContainerViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLaunchContainerViewModel.swift; sourceTree = "<group>"; };
 		A20000000000000000000026 /* SplashAdViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashAdViewModel.swift; sourceTree = "<group>"; };
 		A20000000000000000000027 /* AppLaunchContainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLaunchContainerView.swift; sourceTree = "<group>"; };
-			A20000000000000000000028 /* SplashAdView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashAdView.swift; sourceTree = "<group>"; };
-			A20000000000000000000029 /* SessionKeychainStores.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionKeychainStores.swift; sourceTree = "<group>"; };
-			A2000000000000000000002A /* SessionUserDefaultsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionUserDefaultsStore.swift; sourceTree = "<group>"; };
+		A20000000000000000000028 /* SplashAdView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashAdView.swift; sourceTree = "<group>"; };
+		A20000000000000000000029 /* SessionKeychainStores.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionKeychainStores.swift; sourceTree = "<group>"; };
+		A2000000000000000000002A /* SessionUserDefaultsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionUserDefaultsStore.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -127,7 +127,7 @@
 		04E692C62F5EA2CE0082C59F /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				04E692C52F5EA2CE0082C59F /* ioscrmapp.app */,
+				04E692C52F5EA2CE0082C59F /* Du App.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -199,87 +199,14 @@
 			path = DesignSystem;
 			sourceTree = "<group>";
 		};
-			A30000000000000000000005 /* Storage */ = {
-				isa = PBXGroup;
-				children = (
-					A20000000000000000000029 /* SessionKeychainStores.swift */,
-					A2000000000000000000002A /* SessionUserDefaultsStore.swift */,
-					A20000000000000000000001 /* SessionStore.swift */,
-				);
-				path = Storage;
-			sourceTree = "<group>";
-		};
-		A30000000000000000000012 /* Config */ = {
+		A30000000000000000000005 /* Storage */ = {
 			isa = PBXGroup;
 			children = (
-				A2000000000000000000000E /* AppEnvironment.swift */,
+				A20000000000000000000029 /* SessionKeychainStores.swift */,
+				A2000000000000000000002A /* SessionUserDefaultsStore.swift */,
+				A20000000000000000000001 /* SessionStore.swift */,
 			);
-			path = Config;
-			sourceTree = "<group>";
-		};
-		A30000000000000000000010 /* Common */ = {
-			isa = PBXGroup;
-			children = (
-				A30000000000000000000011 /* Components */,
-			);
-			path = Common;
-			sourceTree = "<group>";
-		};
-		A30000000000000000000011 /* Components */ = {
-			isa = PBXGroup;
-			children = (
-				A30000000000000000000014 /* Buttons */,
-				A30000000000000000000017 /* Containers */,
-				A30000000000000000000015 /* Fields */,
-				A30000000000000000000016 /* Lists */,
-				A30000000000000000000018 /* States */,
-				A2000000000000000000000C /* DUBottomSheet.swift */,
-			);
-			path = Components;
-			sourceTree = "<group>";
-		};
-		A30000000000000000000014 /* Buttons */ = {
-			isa = PBXGroup;
-			children = (
-				A20000000000000000000014 /* DUButton.swift */,
-				A20000000000000000000018 /* DUTextButton.swift */,
-				A20000000000000000000019 /* DUIconButton.swift */,
-				A20000000000000000000024 /* DUSplashSkipButton.swift */,
-			);
-			path = Buttons;
-			sourceTree = "<group>";
-		};
-		A30000000000000000000015 /* Fields */ = {
-			isa = PBXGroup;
-			children = (
-				A20000000000000000000015 /* DUTextField.swift */,
-				A20000000000000000000016 /* DUPhoneField.swift */,
-			);
-			path = Fields;
-			sourceTree = "<group>";
-		};
-		A30000000000000000000016 /* Lists */ = {
-			isa = PBXGroup;
-			children = (
-				A20000000000000000000017 /* DUListItem.swift */,
-			);
-			path = Lists;
-			sourceTree = "<group>";
-		};
-		A30000000000000000000017 /* Containers */ = {
-			isa = PBXGroup;
-			children = (
-				A2000000000000000000001B /* DUSectionCard.swift */,
-			);
-			path = Containers;
-			sourceTree = "<group>";
-		};
-		A30000000000000000000018 /* States */ = {
-			isa = PBXGroup;
-			children = (
-				A2000000000000000000001A /* DUStateView.swift */,
-			);
-			path = States;
+			path = Storage;
 			sourceTree = "<group>";
 		};
 		A30000000000000000000006 /* Auth */ = {
@@ -367,6 +294,35 @@
 			path = Views;
 			sourceTree = "<group>";
 		};
+		A30000000000000000000010 /* Common */ = {
+			isa = PBXGroup;
+			children = (
+				A30000000000000000000011 /* Components */,
+			);
+			path = Common;
+			sourceTree = "<group>";
+		};
+		A30000000000000000000011 /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				A30000000000000000000014 /* Buttons */,
+				A30000000000000000000017 /* Containers */,
+				A30000000000000000000015 /* Fields */,
+				A30000000000000000000016 /* Lists */,
+				A30000000000000000000018 /* States */,
+				A2000000000000000000000C /* DUBottomSheet.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
+		A30000000000000000000012 /* Config */ = {
+			isa = PBXGroup;
+			children = (
+				A2000000000000000000000E /* AppEnvironment.swift */,
+			);
+			path = Config;
+			sourceTree = "<group>";
+		};
 		A30000000000000000000013 /* Localization */ = {
 			isa = PBXGroup;
 			children = (
@@ -375,6 +331,50 @@
 				A20000000000000000000011 /* LocalizedTextValue.swift */,
 			);
 			path = Localization;
+			sourceTree = "<group>";
+		};
+		A30000000000000000000014 /* Buttons */ = {
+			isa = PBXGroup;
+			children = (
+				A20000000000000000000014 /* DUButton.swift */,
+				A20000000000000000000018 /* DUTextButton.swift */,
+				A20000000000000000000019 /* DUIconButton.swift */,
+				A20000000000000000000024 /* DUSplashSkipButton.swift */,
+			);
+			path = Buttons;
+			sourceTree = "<group>";
+		};
+		A30000000000000000000015 /* Fields */ = {
+			isa = PBXGroup;
+			children = (
+				A20000000000000000000015 /* DUTextField.swift */,
+				A20000000000000000000016 /* DUPhoneField.swift */,
+			);
+			path = Fields;
+			sourceTree = "<group>";
+		};
+		A30000000000000000000016 /* Lists */ = {
+			isa = PBXGroup;
+			children = (
+				A20000000000000000000017 /* DUListItem.swift */,
+			);
+			path = Lists;
+			sourceTree = "<group>";
+		};
+		A30000000000000000000017 /* Containers */ = {
+			isa = PBXGroup;
+			children = (
+				A2000000000000000000001B /* DUSectionCard.swift */,
+			);
+			path = Containers;
+			sourceTree = "<group>";
+		};
+		A30000000000000000000018 /* States */ = {
+			isa = PBXGroup;
+			children = (
+				A2000000000000000000001A /* DUStateView.swift */,
+			);
+			path = States;
 			sourceTree = "<group>";
 		};
 		A30000000000000000000019 /* Networking */ = {
@@ -442,7 +442,7 @@
 			);
 			name = ioscrmapp;
 			productName = ioscrmapp;
-			productReference = 04E692C52F5EA2CE0082C59F /* ioscrmapp.app */;
+			productReference = 04E692C52F5EA2CE0082C59F /* Du App.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -501,12 +501,12 @@
 				A10000000000000000000026 /* SplashAdViewModel.swift in Sources */,
 				A10000000000000000000025 /* AppLaunchContainerViewModel.swift in Sources */,
 				A10000000000000000000024 /* DUSplashSkipButton.swift in Sources */,
-					A10000000000000000000023 /* SplashAdService.swift in Sources */,
-					A10000000000000000000022 /* SplashAdModels.swift in Sources */,
-					A10000000000000000000021 /* AdvertisementAPI.swift in Sources */,
-					A1000000000000000000002A /* SessionUserDefaultsStore.swift in Sources */,
-					A10000000000000000000029 /* SessionKeychainStores.swift in Sources */,
-					A10000000000000000000020 /* RegistrationRequestEncryptor.swift in Sources */,
+				A10000000000000000000023 /* SplashAdService.swift in Sources */,
+				A10000000000000000000022 /* SplashAdModels.swift in Sources */,
+				A10000000000000000000021 /* AdvertisementAPI.swift in Sources */,
+				A1000000000000000000002A /* SessionUserDefaultsStore.swift in Sources */,
+				A10000000000000000000029 /* SessionKeychainStores.swift in Sources */,
+				A10000000000000000000020 /* RegistrationRequestEncryptor.swift in Sources */,
 				A1000000000000000000001F /* DeviceIdentityProvider.swift in Sources */,
 				A1000000000000000000001E /* NetworkContextBuilder.swift in Sources */,
 				A1000000000000000000001D /* HTTPClient.swift in Sources */,
@@ -656,6 +656,66 @@
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		04E692D42F5EA2CF0082C59F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"ioscrmapp/Preview Content\"";
+				DEVELOPMENT_TEAM = VCCNS5F3U6;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.inspur.ioscrmapp;
+				PRODUCT_NAME = "Du App";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		04E692D52F5EA2CF0082C59F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"ioscrmapp/Preview Content\"";
+				DEVELOPMENT_TEAM = VCCNS5F3U6;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.inspur.ioscrmapp;
+				PRODUCT_NAME = "Du App";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
 		};
@@ -824,66 +884,6 @@
 			};
 			name = Production;
 		};
-		04E692D42F5EA2CF0082C59F /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"ioscrmapp/Preview Content\"";
-				DEVELOPMENT_TEAM = VCCNS5F3U6;
-				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
-				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-				);
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.inspur.ioscrmapp;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Debug;
-		};
-		04E692D52F5EA2CF0082C59F /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"ioscrmapp/Preview Content\"";
-				DEVELOPMENT_TEAM = VCCNS5F3U6;
-				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
-				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-				);
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.inspur.ioscrmapp;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Release;
-		};
 		A40000000000000000000004 /* Develop */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -907,7 +907,7 @@
 				);
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.inspur.ioscrmapp;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = "Du App";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = APP_PACKAGE_DEVELOP;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -938,7 +938,7 @@
 				);
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.inspur.ioscrmapp;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = "Du App";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = APP_PACKAGE_TEST;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -969,7 +969,7 @@
 				);
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.inspur.ioscrmapp;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = "Du App";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = APP_PACKAGE_PRODUCTION;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
