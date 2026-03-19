@@ -16,6 +16,21 @@ enum LoginMode: String, CaseIterable, Identifiable {
     }
 }
 
+enum LoginAuthType: String, Codable, Equatable, Sendable {
+    case password = "1"
+    case otp = "2"
+    case biometric = "3"
+
+    init(loginMode: LoginMode) {
+        switch loginMode {
+        case .password:
+            self = .password
+        case .otp:
+            self = .otp
+        }
+    }
+}
+
 /// Minimal customer/subscriber snapshot used by the authenticated shell and persistence layer.
 struct CustSubInfo: Codable, Equatable {
     let displayName: String
@@ -282,6 +297,7 @@ enum AuthError: Error, Equatable {
     case passwordMismatch
     case passwordHistoryConflict
     case verificationTokenExpired
+    case sessionInvalidated
     case backend(message: String, traceID: String?)
     case featureUnavailable(message: String)
     case networkUnavailable
@@ -320,6 +336,8 @@ enum AuthError: Error, Equatable {
             return .key("auth.forgot.error.passwordHistoryConflict")
         case .verificationTokenExpired:
             return .key("auth.forgot.error.verificationExpired")
+        case .sessionInvalidated:
+            return .key("auth.logout.error.sessionInvalidated")
         case let .backend(message, _):
             return .literal(message)
         case let .featureUnavailable(message):

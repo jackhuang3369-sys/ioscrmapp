@@ -88,4 +88,15 @@ enum AuthAPI {
         includeDeviceInfo: false,
         requiresAuthorization: false
     )
+
+    static func logout(authorizationToken: String) -> HTTPClient.Endpoint {
+        HTTPClient.Endpoint(
+            path: "/ser-user-auth/api/auth/logout",
+            method: .post,
+            includeCommonParameters: false,
+            includeDeviceInfo: false,
+            requiresAuthorization: false,
+            headers: ["Authorization": "Bearer \(authorizationToken)"]
+        )
+    }
 }

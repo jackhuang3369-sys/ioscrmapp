@@ -13,7 +13,8 @@ actor AuthRefreshCoordinator {
     func refreshTokens(
         baseURL: URL,
         session: URLSession,
-        contextBuilder: NetworkContextBuilder
+        contextBuilder: NetworkContextBuilder,
+        invalidateSessionOnFailure: Bool = true
     ) async throws -> AuthSessionTokens {
         if let refreshTask {
             return try await refreshTask.value
@@ -47,8 +48,10 @@ actor AuthRefreshCoordinator {
         do {
             return try await task.value
         } catch {
-            try? tokenStore.clear()
-            NotificationCenter.default.post(name: .authSessionInvalidated, object: nil)
+            if invalidateSessionOnFailure {
+                try? tokenStore.clear()
+                NotificationCenter.default.post(name: .authSessionInvalidated, object: nil)
+            }
             throw error
         }
     }
@@ -61,6 +64,7 @@ final class SessionStore: ObservableObject {
     @Published private(set) var rememberedPhone: String
     @Published private(set) var rememberedPassword: String
     @Published private(set) var preferredLoginMode: LoginMode
+    @Published private(set) var currentAuthType: LoginAuthType
     @Published private(set) var isRestoringAuthentication = false
 
     private let tokenStore: KeychainAuthTokenStore
@@ -91,6 +95,7 @@ final class SessionStore: ObservableObject {
         rememberedPhone = rememberedCredentials?.phoneNumber ?? ""
         rememberedPassword = rememberedCredentials?.password ?? ""
         preferredLoginMode = defaultsStore.loadPreferredLoginMode()
+        currentAuthType = defaultsStore.loadPersistedAuthType() ?? .password
         custSubInfo = defaultsStore.loadPersistedCustSubInfo()
 
         NotificationCenter.default.publisher(for: .authSessionInvalidated)
@@ -135,13 +140,16 @@ final class SessionStore: ObservableObject {
         rememberCredentials: Bool,
         phone: String,
         password: String?,
-        loginMode: LoginMode
+        loginMode: LoginMode,
+        authType: LoginAuthType
     ) {
         // 登录成功后，先把内存态与非敏感持久化状态一次性对齐。
         self.custSubInfo = custSubInfo
         defaultsStore.savePersistedCustSubInfo(custSubInfo)
         preferredLoginMode = loginMode
         defaultsStore.savePreferredLoginMode(loginMode)
+        currentAuthType = authType
+        defaultsStore.savePersistedAuthType(authType)
 
         if rememberCredentials {
             let storedCredentials = RememberedCredentials(
@@ -243,7 +251,9 @@ final class SessionStore: ObservableObject {
     private func clearSession(clearTokens: Bool) {
         authExpiryTask?.cancel()
         custSubInfo = nil
+        currentAuthType = .password
         defaultsStore.clearPersistedCustSubInfo()
+        defaultsStore.clearPersistedAuthType()
         if clearTokens {
             try? tokenStore.clear()
         }
@@ -315,6 +325,7 @@ extension SessionStore {
             userID: "preview-user",
             serviceNumber: AuthValidator.demoPhone
         )
+        store.currentAuthType = .password
         return store
     }
 }

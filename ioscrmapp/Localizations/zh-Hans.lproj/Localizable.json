@@ -1,6 +1,7 @@
 {
   "common": {
     "ok": "确定",
+    "cancel": "取消",
     "retry": "重试",
     "reload": "重新加载",
     "save": "保存",
@@ -150,6 +151,11 @@
       "deviceNotUnique": "该账号已在另一台设备上登录。",
       "featureUnavailable": "该功能暂未开放。",
       "networkUnavailable": "服务暂时不可用，请稍后重试。"
+    },
+    "logout": {
+      "error": {
+        "sessionInvalidated": "当前会话已不可用。"
+      }
     }
   },
   "home": {
@@ -390,7 +396,13 @@
       "verifyFailed": "当前无法校验密码。"
     },
     "signOut": {
-      "button": "退出登录"
+      "button": "退出登录",
+      "failure": {
+        "title": "无法完成安全登出",
+        "remote": "当前无法完成服务端登出。你可以重试，或仅退出本机。",
+        "sessionInvalidated": "当前会话已不可用。你可以重试，或仅退出本机。",
+        "localOnly": "仅退出本机"
+      }
     }
   },
   "language": {

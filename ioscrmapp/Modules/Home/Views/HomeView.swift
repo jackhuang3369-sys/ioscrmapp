@@ -5,6 +5,7 @@ struct HomeView: View {
 
     let custSubInfo: CustSubInfo
     @ObservedObject var sessionStore: SessionStore
+    let authService: any AuthServicing
     let meService: any MeServicing
     let notificationService: any NotificationServicing
 
@@ -12,6 +13,8 @@ struct HomeView: View {
     @State private var selectedTab: HomeTab = .home
     @State private var selectedBannerIndex = 0
     @State private var isMessageCenterPresented = false
+    @State private var isSigningOut = false
+    @State private var signOutFailureMessageKey: String?
 
     private let pageHorizontalPadding: CGFloat = DUSpacing.md
     private let bannerTimer = Timer.publish(every: 4, on: .main, in: .common).autoconnect()
@@ -127,8 +130,9 @@ struct HomeView: View {
             MeContainerView(
                 session: custSubInfo,
                 meService: meService,
+                isSigningOut: isSigningOut,
                 onSignOut: {
-                    sessionStore.signOut()
+                    startSignOut()
                 }
             )
             .tabItem {
@@ -153,6 +157,23 @@ struct HomeView: View {
                 session: custSubInfo,
                 notificationService: notificationService
             )
+        }
+        .confirmationDialog(
+            localized("me.signOut.failure.title"),
+            isPresented: signOutFailureDialogPresented,
+            titleVisibility: .visible
+        ) {
+            Button(localized("common.retry")) {
+                startSignOut()
+            }
+            Button(localized("me.signOut.failure.localOnly"), role: .destructive) {
+                sessionStore.signOut()
+            }
+            Button(localized("common.cancel"), role: .cancel) {
+                signOutFailureMessageKey = nil
+            }
+        } message: {
+            Text(localized(signOutFailureMessageKey))
         }
     }
 
@@ -480,6 +501,54 @@ struct HomeView: View {
     private func localized(_ value: LocalizedTextValue?) -> String {
         languageStore.string(value)
     }
+
+    private func localized(_ key: String?) -> String {
+        guard let key else {
+            return ""
+        }
+        return languageStore.string(key)
+    }
+
+    private var signOutFailureDialogPresented: Binding<Bool> {
+        Binding(
+            get: { signOutFailureMessageKey != nil },
+            set: { isPresented in
+                if !isPresented {
+                    signOutFailureMessageKey = nil
+                }
+            }
+        )
+    }
+
+    private func startSignOut() {
+        guard !isSigningOut else {
+            return
+        }
+
+        signOutFailureMessageKey = nil
+        isSigningOut = true
+
+        Task {
+            do {
+                try await authService.logout(authType: sessionStore.currentAuthType)
+                await MainActor.run {
+                    isSigningOut = false
+                    sessionStore.signOut()
+                }
+            } catch {
+                await MainActor.run {
+                    isSigningOut = false
+                    let authError = (error as? AuthError) ?? .networkUnavailable
+                    switch authError {
+                    case .sessionInvalidated:
+                        signOutFailureMessageKey = "me.signOut.failure.sessionInvalidated"
+                    default:
+                        signOutFailureMessageKey = "me.signOut.failure.remote"
+                    }
+                }
+            }
+        }
+    }
 }
 
 private enum HomeTab: Hashable {
@@ -620,6 +689,7 @@ struct HomeView_Previews: PreviewProvider {
                 serviceNumber: AuthValidator.demoPhone
             ),
             sessionStore: SessionStore.previewAuthenticated,
+            authService: MockAuthService(),
             meService: MockMeService(),
             notificationService: MockNotificationService()
         )

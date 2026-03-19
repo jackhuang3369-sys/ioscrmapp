@@ -22,6 +22,7 @@ struct ContentView: View {
                 HomeView(
                     custSubInfo: custSubInfo,
                     sessionStore: sessionStore,
+                    authService: authService,
                     meService: meService,
                     notificationService: notificationService
                 )

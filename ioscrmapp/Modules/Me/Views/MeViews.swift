@@ -4,12 +4,19 @@ struct MeContainerView: View {
     @EnvironmentObject private var languageStore: AppLanguageStore
     @StateObject private var viewModel: MeViewModel
 
+    private let isSigningOut: Bool
     private let onSignOut: () -> Void
 
-    init(session: CustSubInfo, meService: any MeServicing, onSignOut: @escaping () -> Void = {}) {
+    init(
+        session: CustSubInfo,
+        meService: any MeServicing,
+        isSigningOut: Bool = false,
+        onSignOut: @escaping () -> Void = {}
+    ) {
         _viewModel = StateObject(
             wrappedValue: MeViewModel(session: session, meService: meService)
         )
+        self.isSigningOut = isSigningOut
         self.onSignOut = onSignOut
     }
 
@@ -431,10 +438,12 @@ struct MeContainerView: View {
     private var signOutButton: some View {
         DUButton(
             title: localized("me.signOut.button"),
-            style: .danger
+            style: .danger,
+            isLoading: isSigningOut
         ) {
             onSignOut()
         }
+        .disabled(isSigningOut)
     }
 
     private var placeholderAlertIsPresented: Binding<Bool> {

@@ -126,10 +126,19 @@ struct NetworkContextBuilder: Sendable {
     }
 
     func refreshTokens(baseURL: URL, session: URLSession) async throws -> AuthSessionTokens {
+        try await refreshTokens(baseURL: baseURL, session: session, invalidateSessionOnFailure: true)
+    }
+
+    func refreshTokens(
+        baseURL: URL,
+        session: URLSession,
+        invalidateSessionOnFailure: Bool
+    ) async throws -> AuthSessionTokens {
         try await refreshCoordinator.refreshTokens(
             baseURL: baseURL,
             session: session,
-            contextBuilder: self
+            contextBuilder: self,
+            invalidateSessionOnFailure: invalidateSessionOnFailure
         )
     }
 
