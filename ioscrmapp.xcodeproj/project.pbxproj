@@ -53,6 +53,12 @@
 		A10000000000000000000028 /* SplashAdView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000028 /* SplashAdView.swift */; };
 		A10000000000000000000029 /* SessionKeychainStores.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000029 /* SessionKeychainStores.swift */; };
 		A1000000000000000000002A /* SessionUserDefaultsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000002A /* SessionUserDefaultsStore.swift */; };
+		A1000000000000000000002B /* NotificationAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000002B /* NotificationAPI.swift */; };
+		A1000000000000000000002C /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000002C /* NotificationService.swift */; };
+		A1000000000000000000002D /* MessageCenterModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000002D /* MessageCenterModels.swift */; };
+		A1000000000000000000002E /* MessageCenterViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000002E /* MessageCenterViewModel.swift */; };
+		A1000000000000000000002F /* MessageCenterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000002F /* MessageCenterView.swift */; };
+		A10000000000000000000030 /* MessageDetailContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000030 /* MessageDetailContentView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -103,6 +109,12 @@
 		A20000000000000000000028 /* SplashAdView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashAdView.swift; sourceTree = "<group>"; };
 		A20000000000000000000029 /* SessionKeychainStores.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionKeychainStores.swift; sourceTree = "<group>"; };
 		A2000000000000000000002A /* SessionUserDefaultsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionUserDefaultsStore.swift; sourceTree = "<group>"; };
+		A2000000000000000000002B /* NotificationAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationAPI.swift; sourceTree = "<group>"; };
+		A2000000000000000000002C /* NotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationService.swift; sourceTree = "<group>"; };
+		A2000000000000000000002D /* MessageCenterModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageCenterModels.swift; sourceTree = "<group>"; };
+		A2000000000000000000002E /* MessageCenterViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageCenterViewModel.swift; sourceTree = "<group>"; };
+		A2000000000000000000002F /* MessageCenterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageCenterView.swift; sourceTree = "<group>"; };
+		A20000000000000000000030 /* MessageDetailContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageDetailContentView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -174,6 +186,7 @@
 				A2000000000000000000000D /* AppServices.swift */,
 				A20000000000000000000002 /* AuthService.swift */,
 				A20000000000000000000008 /* MeService.swift */,
+				A2000000000000000000002C /* NotificationService.swift */,
 				A20000000000000000000023 /* SplashAdService.swift */,
 				A20000000000000000000020 /* RegistrationRequestEncryptor.swift */,
 			);
@@ -185,6 +198,7 @@
 			children = (
 				A30000000000000000000006 /* Auth */,
 				A30000000000000000000007 /* Home */,
+				A3000000000000000000002B /* MessageCenter */,
 				A3000000000000000000001A /* Launch */,
 				A3000000000000000000000C /* Me */,
 			);
@@ -385,6 +399,7 @@
 				A2000000000000000000001F /* DeviceIdentityProvider.swift */,
 				A2000000000000000000001D /* HTTPClient.swift */,
 				A2000000000000000000001E /* NetworkContextBuilder.swift */,
+				A2000000000000000000002B /* NotificationAPI.swift */,
 			);
 			path = Networking;
 			sourceTree = "<group>";
@@ -421,6 +436,41 @@
 			children = (
 				A20000000000000000000027 /* AppLaunchContainerView.swift */,
 				A20000000000000000000028 /* SplashAdView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		A3000000000000000000002B /* MessageCenter */ = {
+			isa = PBXGroup;
+			children = (
+				A3000000000000000000002C /* Models */,
+				A3000000000000000000002D /* ViewModels */,
+				A3000000000000000000002E /* Views */,
+			);
+			path = MessageCenter;
+			sourceTree = "<group>";
+		};
+		A3000000000000000000002C /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				A2000000000000000000002D /* MessageCenterModels.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		A3000000000000000000002D /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				A2000000000000000000002E /* MessageCenterViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		A3000000000000000000002E /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				A2000000000000000000002F /* MessageCenterView.swift */,
+				A20000000000000000000030 /* MessageDetailContentView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -506,11 +556,16 @@
 				A10000000000000000000021 /* AdvertisementAPI.swift in Sources */,
 				A1000000000000000000002A /* SessionUserDefaultsStore.swift in Sources */,
 				A10000000000000000000029 /* SessionKeychainStores.swift in Sources */,
+				A10000000000000000000030 /* MessageDetailContentView.swift in Sources */,
+				A1000000000000000000002F /* MessageCenterView.swift in Sources */,
+				A1000000000000000000002E /* MessageCenterViewModel.swift in Sources */,
+				A1000000000000000000002D /* MessageCenterModels.swift in Sources */,
 				A10000000000000000000020 /* RegistrationRequestEncryptor.swift in Sources */,
 				A1000000000000000000001F /* DeviceIdentityProvider.swift in Sources */,
 				A1000000000000000000001E /* NetworkContextBuilder.swift in Sources */,
 				A1000000000000000000001D /* HTTPClient.swift in Sources */,
 				A1000000000000000000001C /* AuthAPI.swift in Sources */,
+				A1000000000000000000002B /* NotificationAPI.swift in Sources */,
 				A1000000000000000000001B /* DUSectionCard.swift in Sources */,
 				A1000000000000000000001A /* DUStateView.swift in Sources */,
 				A10000000000000000000019 /* DUIconButton.swift in Sources */,
@@ -536,6 +591,7 @@
 				A10000000000000000000006 /* HomeView.swift in Sources */,
 				A10000000000000000000002 /* AuthService.swift in Sources */,
 				A10000000000000000000008 /* MeService.swift in Sources */,
+				A1000000000000000000002C /* NotificationService.swift in Sources */,
 				A10000000000000000000001 /* SessionStore.swift in Sources */,
 				04E692CB2F5EA2CE0082C59F /* ContentView.swift in Sources */,
 				04E692C92F5EA2CE0082C59F /* ioscrmappApp.swift in Sources */,

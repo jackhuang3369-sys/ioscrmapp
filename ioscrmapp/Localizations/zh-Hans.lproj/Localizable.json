@@ -248,6 +248,58 @@
       }
     }
   },
+  "messageCenter": {
+    "title": "消息中心",
+    "subtitle": "集中查看账户提醒、活动优惠和服务更新。",
+    "loading": "正在加载消息...",
+    "selection": {
+      "count": "已选择 %@ 条"
+    },
+    "empty": {
+      "title": "暂时没有消息",
+      "subtitle": "当账户提醒、优惠活动或服务更新可用时，会显示在这里。"
+    },
+    "error": {
+      "title": "消息加载失败",
+      "subtitle": "当前无法连接消息中心。",
+      "missingIdentity": "请重新登录后查看消息。"
+    },
+    "detail": {
+      "title": "消息详情"
+    },
+    "action": {
+      "back": "返回",
+      "retry": "重试",
+      "selectAll": "全选",
+      "deselectAll": "清空选择",
+      "markRead": "标记已读",
+      "delete": "删除",
+      "cancel": "取消"
+    },
+    "confirm": {
+      "markRead": {
+        "title": "确认将所选消息标记为已读？",
+        "message": "系统会处理 %@ 条已选消息，失败的消息会保留以便重试。"
+      },
+      "delete": {
+        "title": "确认删除所选消息？",
+        "message": "系统会删除 %@ 条已选消息，失败的消息会继续保留在列表中。"
+      }
+    },
+    "banner": {
+      "readSyncFailed": "已读状态同步失败，请下拉刷新后重试。",
+      "deleteSingleFailed": "删除消息失败，请稍后重试。",
+      "batchReadFailed": "批量已读失败，请稍后重试。",
+      "batchDeleteFailed": "批量删除失败，请稍后重试。",
+      "batchReadPartial": "成功标记 %@ 条，仍有 %@ 条失败，请重试。",
+      "batchDeletePartial": "成功删除 %@ 条，仍有 %@ 条失败，请重试。"
+    },
+    "category": {
+      "system": "系统通知",
+      "promotion": "活动优惠",
+      "other": "其他消息"
+    }
+  },
   "me": {
     "empty": {
       "title": "个人中心即将就绪",

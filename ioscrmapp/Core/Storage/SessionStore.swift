@@ -311,7 +311,9 @@ extension SessionStore {
             displayName: "Ahmed Mohammed",
             phoneNumber: AuthValidator.demoPhone,
             greeting: "Good Morning",
-            balanceText: "128.50 AED"
+            balanceText: "128.50 AED",
+            userID: "preview-user",
+            serviceNumber: AuthValidator.demoPhone
         )
         return store
     }

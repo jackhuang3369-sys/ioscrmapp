@@ -6,10 +6,12 @@ struct HomeView: View {
     let custSubInfo: CustSubInfo
     @ObservedObject var sessionStore: SessionStore
     let meService: any MeServicing
+    let notificationService: any NotificationServicing
 
     @State private var placeholderMessage: LocalizedTextValue?
     @State private var selectedTab: HomeTab = .home
     @State private var selectedBannerIndex = 0
+    @State private var isMessageCenterPresented = false
 
     private let pageHorizontalPadding: CGFloat = DUSpacing.md
     private let bannerTimer = Timer.publish(every: 4, on: .main, in: .common).autoconnect()
@@ -146,6 +148,12 @@ struct HomeView: View {
                 }
             )
         }
+        .fullScreenCover(isPresented: $isMessageCenterPresented) {
+            MessageCenterView(
+                session: custSubInfo,
+                notificationService: notificationService
+            )
+        }
     }
 
     private var homeDashboard: some View {
@@ -195,7 +203,7 @@ struct HomeView: View {
                         placeholderMessage = .key("home.placeholder.search")
                     }
                     CircleAction(symbol: "bell.fill") {
-                        placeholderMessage = .key("home.placeholder.notifications")
+                        isMessageCenterPresented = true
                     }
                 }
             }
@@ -607,10 +615,13 @@ struct HomeView_Previews: PreviewProvider {
                 displayName: "Ahmed Mohammed",
                 phoneNumber: AuthValidator.demoPhone,
                 greeting: "Good Morning",
-                balanceText: "128.50 AED"
+                balanceText: "128.50 AED",
+                userID: "preview-user",
+                serviceNumber: AuthValidator.demoPhone
             ),
             sessionStore: SessionStore.previewAuthenticated,
-            meService: MockMeService()
+            meService: MockMeService(),
+            notificationService: MockNotificationService()
         )
         .environmentObject(AppLanguageStore(initialLanguage: .english))
     }

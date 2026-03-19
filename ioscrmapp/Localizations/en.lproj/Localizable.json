@@ -248,6 +248,58 @@
       }
     }
   },
+  "messageCenter": {
+    "title": "Message Center",
+    "subtitle": "Track account alerts, offers, and service updates in one place.",
+    "loading": "Loading messages...",
+    "selection": {
+      "count": "%@ selected"
+    },
+    "empty": {
+      "title": "No messages yet",
+      "subtitle": "Account alerts, offers, and updates will appear here when they are available."
+    },
+    "error": {
+      "title": "Couldn't load messages",
+      "subtitle": "We couldn't reach the message center right now.",
+      "missingIdentity": "Please sign in again to view your messages."
+    },
+    "detail": {
+      "title": "Message"
+    },
+    "action": {
+      "back": "Back",
+      "retry": "Retry",
+      "selectAll": "Select All",
+      "deselectAll": "Clear All",
+      "markRead": "Mark as Read",
+      "delete": "Delete",
+      "cancel": "Cancel"
+    },
+    "confirm": {
+      "markRead": {
+        "title": "Mark selected messages as read?",
+        "message": "We'll update %@ selected messages and keep failed ones for retry."
+      },
+      "delete": {
+        "title": "Delete selected messages?",
+        "message": "We'll remove %@ selected messages and keep any failed items in the list."
+      }
+    },
+    "banner": {
+      "readSyncFailed": "Couldn't sync the read state. Pull to refresh to try again.",
+      "deleteSingleFailed": "Couldn't delete this message. Please try again.",
+      "batchReadFailed": "Couldn't mark the selected messages as read. Please try again.",
+      "batchDeleteFailed": "Couldn't delete the selected messages. Please try again.",
+      "batchReadPartial": "%@ messages marked as read, %@ failed. Please try again.",
+      "batchDeletePartial": "%@ messages deleted, %@ failed. Please try again."
+    },
+    "category": {
+      "system": "System Notice",
+      "promotion": "Promotion",
+      "other": "Other"
+    }
+  },
   "me": {
     "empty": {
       "title": "Your personal center is almost ready",

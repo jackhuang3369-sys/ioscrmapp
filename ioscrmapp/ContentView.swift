@@ -11,6 +11,7 @@ struct ContentView: View {
     @ObservedObject var sessionStore: SessionStore
     let authService: any AuthServicing
     let meService: any MeServicing
+    let notificationService: any NotificationServicing
     let authServerURL: URL?
 
     var body: some View {
@@ -18,7 +19,12 @@ struct ContentView: View {
             if authServerURL != nil && (sessionStore.isRestoringAuthentication || sessionStore.shouldRestoreAuthenticationOnLaunch) {
                 ProgressView()
             } else if let custSubInfo = sessionStore.authenticatedCustSubInfo {
-                HomeView(custSubInfo: custSubInfo, sessionStore: sessionStore, meService: meService)
+                HomeView(
+                    custSubInfo: custSubInfo,
+                    sessionStore: sessionStore,
+                    meService: meService,
+                    notificationService: notificationService
+                )
             } else {
                 AuthLoginContainerView(sessionStore: sessionStore, authService: authService)
             }
@@ -41,6 +47,7 @@ struct ContentView_Previews: PreviewProvider {
                 sessionStore: SessionStore(),
                 authService: previewServices.authService,
                 meService: previewServices.meService,
+                notificationService: previewServices.notificationService,
                 authServerURL: previewServices.configuration.mode == .remote ? previewServices.configuration.serverURL : nil
             )
             .environmentObject(languageStore)
@@ -50,6 +57,7 @@ struct ContentView_Previews: PreviewProvider {
                 sessionStore: SessionStore.previewAuthenticated,
                 authService: previewServices.authService,
                 meService: previewServices.meService,
+                notificationService: previewServices.notificationService,
                 authServerURL: previewServices.configuration.mode == .remote ? previewServices.configuration.serverURL : nil
             )
             .environmentObject(languageStore)

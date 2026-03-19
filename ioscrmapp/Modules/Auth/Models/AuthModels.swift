@@ -22,6 +22,43 @@ struct CustSubInfo: Codable, Equatable {
     let phoneNumber: String
     let greeting: String
     let balanceText: String
+    let userID: String?
+    let serviceNumber: String?
+
+    init(
+        displayName: String,
+        phoneNumber: String,
+        greeting: String,
+        balanceText: String,
+        userID: String? = nil,
+        serviceNumber: String? = nil
+    ) {
+        self.displayName = displayName
+        self.phoneNumber = phoneNumber
+        self.greeting = greeting
+        self.balanceText = balanceText
+        self.userID = userID
+        self.serviceNumber = serviceNumber
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case displayName
+        case phoneNumber
+        case greeting
+        case balanceText
+        case userID
+        case serviceNumber
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        displayName = try container.decode(String.self, forKey: .displayName)
+        phoneNumber = try container.decode(String.self, forKey: .phoneNumber)
+        greeting = try container.decode(String.self, forKey: .greeting)
+        balanceText = try container.decode(String.self, forKey: .balanceText)
+        userID = try container.decodeIfPresent(String.self, forKey: .userID)
+        serviceNumber = try container.decodeIfPresent(String.self, forKey: .serviceNumber)
+    }
 }
 
 struct AuthToken: Codable, Equatable, Sendable {

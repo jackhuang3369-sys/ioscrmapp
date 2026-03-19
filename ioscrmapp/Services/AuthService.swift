@@ -725,7 +725,9 @@ actor MockAuthService: AuthServicing {
             displayName: displayName,
             phoneNumber: AuthValidator.formattedPhone(phone),
             greeting: "Good Morning",
-            balanceText: "128.50 AED"
+            balanceText: "128.50 AED",
+            userID: "mock-\(phone)",
+            serviceNumber: AuthValidator.normalizedPhone(phone)
         )
     }
 
@@ -938,7 +940,9 @@ private enum LoginResponseMapper {
             displayName: displayName,
             phoneNumber: AuthValidator.formattedPhone(phoneNumber),
             greeting: "Good Morning",
-            balanceText: "0.00 AED"
+            balanceText: "0.00 AED",
+            userID: ResponseDataValue.string(in: user, keys: ["userId"]),
+            serviceNumber: AuthValidator.normalizedPhone(phoneNumber)
         )
 
         return ParsedLoginResponse(
