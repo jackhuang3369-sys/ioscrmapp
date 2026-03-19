@@ -183,6 +183,13 @@
     "header": {
       "balanceTitle": "الرصيد الحالي",
       "balanceAmount": "%@ درهم",
+      "accountBalanceTitle": "رصيد الحساب",
+      "currentBillTitle": "الفاتورة الحالية",
+      "dueDateTitle": "تاريخ الاستحقاق",
+      "creditLimitTitle": "الحد الائتماني",
+      "creditTotalTitle": "الإجمالي",
+      "creditUsedTitle": "المستخدم",
+      "creditRemainingTitle": "المتبقي",
       "recharge": "إعادة شحن"
     },
     "placeholder": {
@@ -252,6 +259,22 @@
         "title": "الرسائل",
         "value": "45 / 50"
       }
+    },
+    "network": {
+      "4g": "4G",
+      "5g": "5G",
+      "wifi": "Wi-Fi"
+    },
+    "value": {
+      "unlimited": "غير محدود"
+    },
+    "state": {
+      "loadingTitle": "جارٍ تحميل بيانات الصفحة الرئيسية...",
+      "errorTitle": "تعذر تحميل لوحة الصفحة الرئيسية",
+      "errorSubtitle": "يتعذر الوصول إلى ملخص الحساب الآن.",
+      "refreshFailed": "تعذر تحديث كل البيانات. نعرض آخر نسخة متاحة.",
+      "billingPartial": "بعض تفاصيل الفوترة غير متاحة مؤقتًا.",
+      "usagePartial": "بعض تفاصيل الاستهلاك غير متاحة مؤقتًا."
     }
   },
   "messageCenter": {

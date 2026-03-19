@@ -9,6 +9,7 @@ struct HomeView: View {
     let meService: any MeServicing
     let notificationService: any NotificationServicing
 
+    @StateObject private var viewModel: HomeViewModel
     @State private var placeholderMessage: LocalizedTextValue?
     @State private var selectedTab: HomeTab = .home
     @State private var selectedBannerIndex = 0
@@ -22,7 +23,7 @@ struct HomeView: View {
         .init(title: .key("home.quick.recharge"), assetName: "QuickRechargeIcon"),
         .init(title: .key("home.quick.plans"), assetName: "QuickPlansIcon"),
         .init(title: .key("home.quick.offers"), assetName: "QuickOffersIcon"),
-        .init(title: .key("home.quick.mall"), assetName: "QuickMallIcon")
+        .init(title: .key("home.quick.mall"), assetName: "QuickMallIcon"),
     ]
 
     private let services: [HomeItem] = [
@@ -33,7 +34,7 @@ struct HomeView: View {
         .init(title: .key("home.service.bills"), assetName: "ServiceBillsIcon"),
         .init(title: .key("home.service.points"), assetName: "ServicePointsIcon"),
         .init(title: .key("home.service.mail"), assetName: "ServiceMailIcon"),
-        .init(title: .key("home.service.support"), assetName: "ServiceSupportIcon")
+        .init(title: .key("home.service.support"), assetName: "ServiceSupportIcon"),
     ]
 
     private let products: [HomeProduct] = [
@@ -54,13 +55,7 @@ struct HomeView: View {
             price: .key("home.product.watch.price"),
             oldPrice: nil,
             assetName: "ProductWatchImage"
-        )
-    ]
-
-    private let usageItems: [UsageItem] = [
-        .init(title: .key("home.usage.data.title"), value: .key("home.usage.data.value"), progress: 0.85),
-        .init(title: .key("home.usage.voice.title"), value: .key("home.usage.voice.value"), progress: 0.78),
-        .init(title: .key("home.usage.sms.title"), value: .key("home.usage.sms.value"), progress: 0.90)
+        ),
     ]
 
     private let banners: [HomeBanner] = [
@@ -78,8 +73,29 @@ struct HomeView: View {
             title: .key("home.banner.mallFlash.title"),
             subtitle: .key("home.banner.mallFlash.subtitle"),
             colors: [DUTheme.indigo, DUTheme.magenta]
-        )
+        ),
     ]
+
+    init(
+        custSubInfo: CustSubInfo,
+        sessionStore: SessionStore,
+        authService: any AuthServicing,
+        homeService: any HomeServicing,
+        meService: any MeServicing,
+        notificationService: any NotificationServicing
+    ) {
+        self.custSubInfo = custSubInfo
+        self.sessionStore = sessionStore
+        self.authService = authService
+        self.meService = meService
+        self.notificationService = notificationService
+        _viewModel = StateObject(
+            wrappedValue: HomeViewModel(
+                session: custSubInfo,
+                homeService: homeService
+            )
+        )
+    }
 
     var body: some View {
         TabView(selection: $selectedTab) {
@@ -142,6 +158,9 @@ struct HomeView: View {
             }
             .tag(HomeTab.me)
         }
+        .task {
+            await viewModel.loadIfNeeded()
+        }
         .background(DUTheme.background.ignoresSafeArea())
         .alert(isPresented: placeholderAlertIsPresented) {
             Alert(
@@ -177,26 +196,75 @@ struct HomeView: View {
         }
     }
 
+    @ViewBuilder
     private var homeDashboard: some View {
-        GeometryReader { proxy in
-            ScrollView(showsIndicators: false) {
-                VStack(spacing: DUSpacing.md) {
-                    header(topInset: proxy.safeAreaInsets.top)
-                    quickActionsSection
-                    bannerCarousel
-                    servicesSection
-                    productsSection
+        if let dashboard = viewModel.dashboard {
+            GeometryReader { proxy in
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: DUSpacing.md) {
+                        header(
+                            topInset: proxy.safeAreaInsets.top,
+                            dashboard: dashboard
+                        )
+
+                        if let bannerMessage = viewModel.bannerMessage {
+                            inlineBanner(bannerMessage)
+                        }
+
+                        quickActionsSection
+                        bannerCarousel
+                        servicesSection
+                        productsSection
+                    }
+                    .padding(.bottom, DUSpacing.xl)
                 }
-                .padding(.bottom, DUSpacing.xl)
+                .refreshable {
+                    await viewModel.refresh()
+                }
+                .ignoresSafeArea(edges: .top)
+                .background(DUTheme.background.ignoresSafeArea())
             }
-            .ignoresSafeArea(edges: .top)
+        } else {
+            homeLoadingState
+        }
+    }
+
+    @ViewBuilder
+    private var homeLoadingState: some View {
+        switch viewModel.screenState {
+        case let .failed(message):
+            DUStateView(
+                systemImage: "wifi.exclamationmark",
+                iconColor: DUTheme.magenta,
+                title: localized("home.state.errorTitle"),
+                subtitle: localized(message),
+                actionTitle: localized("common.reload"),
+                footer: nil
+            ) {
+                Task {
+                    await viewModel.reload()
+                }
+            }
+            .background(DUTheme.background.ignoresSafeArea())
+        case .idle, .loading, .loaded:
+            VStack(spacing: DUSpacing.lg) {
+                ProgressView()
+                    .progressViewStyle(.circular)
+                Text(localized("home.state.loadingTitle"))
+                    .font(.du(15, weight: .semibold))
+                    .foregroundColor(DUTheme.inkSecondary)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(DUTheme.background.ignoresSafeArea())
         }
     }
 
-    private func header(topInset: CGFloat) -> some View {
+    private func header(
+        topInset: CGFloat,
+        dashboard: HomeDashboardSnapshot
+    ) -> some View {
         VStack(spacing: DUSpacing.lg) {
-            HStack {
+            HStack(alignment: .top) {
                 HStack(spacing: DUSpacing.md) {
                     Circle()
                         .fill(.white.opacity(0.2))
@@ -211,9 +279,19 @@ struct HomeView: View {
                             .font(.du(11, weight: .medium))
                             .foregroundColor(.white.opacity(0.8))
 
-                        Text(custSubInfo.displayName)
-                            .font(.du(16, weight: .bold))
+                        Text(dashboard.profile.displayName)
+                            .font(.du(18, weight: .bold))
                             .foregroundColor(.white)
+
+                        if let packageName = localizedPackageName(for: dashboard.profile.packageName) {
+                            Text(packageName)
+                                .font(.du(12, weight: .medium))
+                                .foregroundColor(.white.opacity(0.92))
+                        }
+
+                        Text(profileMetadata(for: dashboard.profile))
+                            .font(.du(11, weight: .medium))
+                            .foregroundColor(.white.opacity(0.78))
                     }
                 }
 
@@ -229,57 +307,236 @@ struct HomeView: View {
                 }
             }
 
-            VStack(spacing: DUSpacing.md) {
-                HStack {
-                    VStack(alignment: .leading, spacing: DUSpacing.xs) {
-                        Text(localized("home.header.balanceTitle"))
-                            .font(.du(11, weight: .medium))
-                            .foregroundColor(.white.opacity(0.8))
-
-                        Text(localized("home.header.balanceAmount", arguments: [custSubInfo.balanceText.replacingOccurrences(of: " AED", with: "")]))
-                            .font(.du(26, weight: .bold))
-                            .foregroundColor(.white)
-                    }
-
-                    Spacer()
-
-                    Button(localized("home.header.recharge")) {
-                        showComingSoon(for: .key("home.quick.recharge"))
-                    }
-                    .font(.du(13, weight: .semibold))
-                    .foregroundColor(DUTheme.ink)
-                    .padding(.horizontal, DUSpacing.lg)
-                    .frame(height: 36)
-                    .background(Color.white.opacity(0.95))
-                    .clipShape(Capsule())
-                }
-
-                HStack(spacing: DUSpacing.lg) {
-                    ForEach(usageItems) { item in
-                        VStack(alignment: .leading, spacing: DUSpacing.xs) {
-                            Text(localized(item.title))
-                                .font(.du(10, weight: .medium))
-                                .foregroundColor(.white.opacity(0.7))
-
-                            Text(localized(item.value))
-                                .font(.du(13, weight: .semibold))
-                                .foregroundColor(.white)
-
-                            ProgressView(value: item.progress)
-                                .tint(.white)
-                        }
-                    }
-                }
-            }
-            .padding(DUSpacing.lg)
-            .background(Color.white.opacity(0.14))
-            .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+            dashboardCard(
+                summary: dashboard.summary,
+                usage: dashboard.usage
+            )
         }
         .padding(.horizontal, DUSpacing.lg)
         .padding(.top, max(topInset, DUSpacing.xl) + DUSpacing.md)
         .padding(.bottom, DUSpacing.xxl)
         .background(DUTheme.brandGradient)
         .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
+    }
+
+    private func dashboardCard(
+        summary: HomeSummarySection,
+        usage: HomeUsageSection
+    ) -> some View {
+        VStack(alignment: .leading, spacing: DUSpacing.md) {
+            HStack(alignment: .top, spacing: DUSpacing.md) {
+                VStack(alignment: .leading, spacing: DUSpacing.xs) {
+                    Text(localized(summary.primaryTitleKey))
+                        .font(.du(11, weight: .medium))
+                        .foregroundColor(.white.opacity(0.8))
+
+                    metricValueText(
+                        summary.primaryValue,
+                        amountFontSize: 28,
+                        amountWeight: .bold,
+                        amountColor: .white,
+                        currencyFontSize: 17,
+                        currencyWeight: .semibold,
+                        currencyColor: .white.opacity(0.72)
+                    )
+                }
+
+                Spacer()
+
+                Button(localized("home.header.recharge")) {
+                    showComingSoon(for: .key("home.quick.recharge"))
+                }
+                .font(.du(13, weight: .semibold))
+                .foregroundColor(DUTheme.ink)
+                .padding(.horizontal, DUSpacing.lg)
+                .frame(height: 36)
+                .background(Color.white.opacity(0.95))
+                .clipShape(Capsule())
+            }
+
+            summarySecondaryDetails(summary)
+
+            if let creditLimit = summary.creditLimit {
+                creditLimitSection(creditLimit)
+            }
+
+            if let inlineMessage = summary.inlineMessage {
+                inlineMessageText(inlineMessage)
+            }
+
+            Divider()
+                .overlay(.white.opacity(0.12))
+                .padding(.top, 2)
+                .padding(.bottom, 2)
+
+            VStack(alignment: .leading, spacing: DUSpacing.md) {
+                HStack(spacing: DUSpacing.lg) {
+                    ForEach(usage.cards) { card in
+                        usageMetric(card)
+                    }
+                }
+
+                if let inlineMessage = usage.inlineMessage {
+                    inlineMessageText(inlineMessage)
+                }
+            }
+            .padding(.top, -DUSpacing.xs)
+        }
+        .padding(DUSpacing.lg)
+        .background(Color.white.opacity(0.14))
+        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+    }
+
+    @ViewBuilder
+    private func summarySecondaryDetails(
+        _ summary: HomeSummarySection
+    ) -> some View {
+        switch summary.paymentType {
+        case .prepaid, .unknown:
+            EmptyView()
+        case .postpaid:
+            HStack(spacing: DUSpacing.lg) {
+                summaryMetric(
+                    titleKey: "home.header.dueDateTitle",
+                    value: summary.dueDateValue
+                )
+            }
+        case .hybrid:
+            HStack(spacing: DUSpacing.lg) {
+                summaryMetric(
+                    titleKey: "home.header.currentBillTitle",
+                    value: summary.currentBillValue
+                )
+                summaryMetric(
+                    titleKey: "home.header.dueDateTitle",
+                    value: summary.dueDateValue
+                )
+            }
+        }
+    }
+
+    private func summaryMetric(
+        titleKey: String,
+        value: LocalizedTextValue
+    ) -> some View {
+        VStack(alignment: .leading, spacing: DUSpacing.xs) {
+            Text(localized(titleKey))
+                .font(.du(10, weight: .medium))
+                .foregroundColor(.white.opacity(0.7))
+
+            metricValueText(
+                value,
+                amountFontSize: 13,
+                amountWeight: .semibold,
+                amountColor: .white,
+                currencyFontSize: 11,
+                currencyWeight: .medium,
+                currencyColor: .white.opacity(0.72)
+            )
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private func creditLimitSection(
+        _ creditLimit: HomeCreditLimitSection
+    ) -> some View {
+        VStack(alignment: .leading, spacing: DUSpacing.sm) {
+            Text(localized("home.header.creditLimitTitle"))
+                .font(.du(11, weight: .medium))
+                .foregroundColor(.white.opacity(0.78))
+
+            HStack(spacing: DUSpacing.md) {
+                creditLimitMetric(
+                    titleKey: "home.header.creditTotalTitle",
+                    value: creditLimit.totalValue
+                )
+                creditLimitMetric(
+                    titleKey: "home.header.creditUsedTitle",
+                    value: creditLimit.usedValue
+                )
+                creditLimitMetric(
+                    titleKey: "home.header.creditRemainingTitle",
+                    value: creditLimit.remainingValue
+                )
+            }
+        }
+    }
+
+    private func creditLimitMetric(
+        titleKey: String,
+        value: LocalizedTextValue
+    ) -> some View {
+        VStack(alignment: .leading, spacing: DUSpacing.xs) {
+            Text(localized(titleKey))
+                .font(.du(10, weight: .medium))
+                .foregroundColor(.white.opacity(0.7))
+
+            metricValueText(
+                value,
+                amountFontSize: 13,
+                amountWeight: .semibold,
+                amountColor: .white,
+                currencyFontSize: 11,
+                currencyWeight: .medium,
+                currencyColor: .white.opacity(0.68)
+            )
+            .lineLimit(1)
+            .minimumScaleFactor(0.8)
+        }
+        .padding(DUSpacing.md)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.white.opacity(0.08))
+        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+    }
+
+    private func usageMetric(_ card: HomeUsageCard) -> some View {
+        VStack(alignment: .leading, spacing: DUSpacing.xs) {
+            Text(localized(card.title))
+                .font(.du(10, weight: .medium))
+                .foregroundColor(.white.opacity(0.7))
+
+            Text(localized(card.value))
+                .font(.du(13, weight: .semibold))
+                .foregroundColor(.white)
+                .lineLimit(2)
+
+            ProgressView(value: card.progress)
+                .tint(.white)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private func inlineMessageText(
+        _ value: LocalizedTextValue
+    ) -> some View {
+        Text(localized(value))
+            .font(.du(11, weight: .medium))
+            .foregroundColor(.white.opacity(0.82))
+    }
+
+    private func inlineBanner(
+        _ message: LocalizedTextValue
+    ) -> some View {
+        HStack(spacing: DUSpacing.sm) {
+            Image(systemName: "arrow.triangle.2.circlepath")
+                .font(.du(13, weight: .semibold))
+                .foregroundColor(DUTheme.cyan)
+
+            Text(localized(message))
+                .font(.du(12, weight: .medium))
+                .foregroundColor(DUTheme.inkSecondary)
+
+            Spacer()
+        }
+        .padding(.horizontal, DUSpacing.lg)
+        .padding(.vertical, DUSpacing.md)
+        .background(DUTheme.panel)
+        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .stroke(DUTheme.lineLight, lineWidth: 1)
+        )
+        .padding(.horizontal, pageHorizontalPadding)
     }
 
     private var quickActionsSection: some View {
@@ -490,6 +747,24 @@ struct HomeView: View {
         )
     }
 
+    private func localizedPackageName(
+        for packageName: HomePackageName?
+    ) -> String? {
+        guard let packageName else {
+            return nil
+        }
+
+        let resolved = packageName.localizedName(for: languageStore.currentLanguage)
+        return resolved.isEmpty ? nil : resolved
+    }
+
+    private func profileMetadata(
+        for profile: HomeProfileSection
+    ) -> String {
+        let networkValue = localized(profile.networkStatus?.textValue ?? HomeDisplayValue.unavailable)
+        return "\(profile.serviceNumber)  •  \(networkValue)"
+    }
+
     private func showComingSoon(for title: LocalizedTextValue) {
         placeholderMessage = .key("common.placeholder.feature", arguments: [localized(title)])
     }
@@ -500,6 +775,63 @@ struct HomeView: View {
 
     private func localized(_ value: LocalizedTextValue?) -> String {
         languageStore.string(value)
+    }
+
+    @ViewBuilder
+    private func metricValueText(
+        _ value: LocalizedTextValue,
+        amountFontSize: CGFloat,
+        amountWeight: Font.Weight,
+        amountColor: Color,
+        currencyFontSize: CGFloat,
+        currencyWeight: Font.Weight,
+        currencyColor: Color
+    ) -> some View {
+        let resolvedValue = normalizedMetricValue(localized(value))
+
+        if let moneyParts = splitMoneyValue(resolvedValue) {
+            HStack(alignment: .firstTextBaseline, spacing: 4) {
+                Text(moneyParts.amount)
+                    .font(.du(amountFontSize, weight: amountWeight))
+                    .foregroundColor(amountColor)
+
+                Text(moneyParts.currency)
+                    .font(.du(currencyFontSize, weight: currencyWeight))
+                    .foregroundColor(currencyColor)
+            }
+            .environment(\.layoutDirection, .leftToRight)
+        } else {
+            Text(resolvedValue)
+                .font(.du(amountFontSize, weight: amountWeight))
+                .foregroundColor(amountColor)
+        }
+    }
+
+    private func normalizedMetricValue(_ value: String) -> String {
+        value
+            .replacingOccurrences(of: "\u{2066}", with: "")
+            .replacingOccurrences(of: "\u{2069}", with: "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    private func splitMoneyValue(_ value: String) -> (amount: String, currency: String)? {
+        let components = value.split(separator: " ")
+        guard
+            components.count >= 2,
+            let lastComponent = components.last,
+            lastComponent.allSatisfy({ $0.isLetter }),
+            lastComponent.count <= 5
+        else {
+            return nil
+        }
+
+        let currency = String(lastComponent)
+        let amount = components.dropLast().joined(separator: " ")
+        guard !amount.isEmpty else {
+            return nil
+        }
+
+        return (amount, currency)
     }
 
     private func localized(_ key: String?) -> String {
@@ -624,13 +956,6 @@ private struct HomeBanner {
     let colors: [Color]
 }
 
-private struct UsageItem: Identifiable {
-    let id = UUID()
-    let title: LocalizedTextValue
-    let value: LocalizedTextValue
-    let progress: Double
-}
-
 private struct CircleAction: View {
     let symbol: String
     let action: () -> Void
@@ -690,6 +1015,7 @@ struct HomeView_Previews: PreviewProvider {
             ),
             sessionStore: SessionStore.previewAuthenticated,
             authService: MockAuthService(),
+            homeService: MockHomeService(),
             meService: MockMeService(),
             notificationService: MockNotificationService()
         )

@@ -183,6 +183,13 @@
     "header": {
       "balanceTitle": "Current Balance",
       "balanceAmount": "%@ AED",
+      "accountBalanceTitle": "Account Balance",
+      "currentBillTitle": "Current Bill",
+      "dueDateTitle": "Due Date",
+      "creditLimitTitle": "Credit Limit",
+      "creditTotalTitle": "Total",
+      "creditUsedTitle": "Used",
+      "creditRemainingTitle": "Remaining",
       "recharge": "Recharge"
     },
     "placeholder": {
@@ -252,6 +259,22 @@
         "title": "SMS",
         "value": "45 / 50"
       }
+    },
+    "network": {
+      "4g": "4G",
+      "5g": "5G",
+      "wifi": "Wi-Fi"
+    },
+    "value": {
+      "unlimited": "Unlimited"
+    },
+    "state": {
+      "loadingTitle": "Loading home data...",
+      "errorTitle": "Couldn't load your home dashboard",
+      "errorSubtitle": "We couldn't reach your account summary right now.",
+      "refreshFailed": "Couldn't refresh all data. Showing your latest snapshot.",
+      "billingPartial": "Some billing details are temporarily unavailable.",
+      "usagePartial": "Some usage details are temporarily unavailable."
     }
   },
   "messageCenter": {

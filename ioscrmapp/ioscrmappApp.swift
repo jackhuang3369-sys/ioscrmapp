@@ -19,6 +19,7 @@ struct ioscrmappApp: App {
                 ContentView(
                     sessionStore: sessionStore,
                     authService: services.authService,
+                    homeService: services.homeService,
                     meService: services.meService,
                     notificationService: services.notificationService,
                     authServerURL: services.configuration.mode == .remote ? services.configuration.serverURL : nil

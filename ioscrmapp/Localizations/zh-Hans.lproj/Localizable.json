@@ -183,6 +183,13 @@
     "header": {
       "balanceTitle": "当前余额",
       "balanceAmount": "%@ 阿联酋迪拉姆",
+      "accountBalanceTitle": "账户余额",
+      "currentBillTitle": "当前账单",
+      "dueDateTitle": "到期日",
+      "creditLimitTitle": "信用额度",
+      "creditTotalTitle": "总额度",
+      "creditUsedTitle": "已使用",
+      "creditRemainingTitle": "剩余额度",
       "recharge": "充值"
     },
     "placeholder": {
@@ -252,6 +259,22 @@
         "title": "短信",
         "value": "45 / 50"
       }
+    },
+    "network": {
+      "4g": "4G",
+      "5g": "5G",
+      "wifi": "Wi-Fi"
+    },
+    "value": {
+      "unlimited": "无限额"
+    },
+    "state": {
+      "loadingTitle": "正在加载首页数据...",
+      "errorTitle": "首页数据加载失败",
+      "errorSubtitle": "当前无法获取账户摘要。",
+      "refreshFailed": "未能刷新全部数据，已展示最近一次结果。",
+      "billingPartial": "部分账务信息暂时不可用。",
+      "usagePartial": "部分用量信息暂时不可用。"
     }
   },
   "messageCenter": {
