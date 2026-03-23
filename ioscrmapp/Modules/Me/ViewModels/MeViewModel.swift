@@ -13,6 +13,7 @@ final class MeViewModel: ObservableObject {
     @Published var placeholderMessage: LocalizedTextValue?
     @Published var isRevealSheetPresented = false
     @Published var isLanguageSettingsPresented = false
+    @Published var isBillingPresented = false
     @Published var revealPassword = ""
     @Published var revealErrorMessage: LocalizedTextValue?
     @Published private(set) var isPhoneNumberRevealed = false
@@ -57,6 +58,8 @@ final class MeViewModel: ObservableObject {
 
     func handleAction(_ actionID: MeActionID, localizedTitle: String) {
         switch actionID {
+        case .billing:
+            isBillingPresented = true
         case .changeLanguage:
             isLanguageSettingsPresented = true
         default:

@@ -4,15 +4,20 @@ struct MeContainerView: View {
     @EnvironmentObject private var languageStore: AppLanguageStore
     @StateObject private var viewModel: MeViewModel
 
+    private let session: CustSubInfo
+    private let billingService: any BillingServicing
     private let isSigningOut: Bool
     private let onSignOut: () -> Void
 
     init(
         session: CustSubInfo,
+        billingService: any BillingServicing,
         meService: any MeServicing,
         isSigningOut: Bool = false,
         onSignOut: @escaping () -> Void = {}
     ) {
+        self.session = session
+        self.billingService = billingService
         _viewModel = StateObject(
             wrappedValue: MeViewModel(session: session, meService: meService)
         )
@@ -53,6 +58,9 @@ struct MeContainerView: View {
                     viewModel.placeholderMessage = nil
                 }
             )
+        }
+        .fullScreenCover(isPresented: $viewModel.isBillingPresented) {
+            BillingContainerView(session: session, billingService: billingService)
         }
     }
 
@@ -476,13 +484,13 @@ struct MeContainerView_Previews: PreviewProvider {
 
     static var previews: some View {
         Group {
-            MeContainerView(session: previewSession, meService: MockMeService())
+            MeContainerView(session: previewSession, billingService: MockBillingService(), meService: MockMeService())
                 .previewDisplayName("Loaded")
 
-            MeContainerView(session: previewSession, meService: MockMeService(mode: .empty))
+            MeContainerView(session: previewSession, billingService: MockBillingService(), meService: MockMeService(mode: .empty))
                 .previewDisplayName("Empty")
 
-            MeContainerView(session: previewSession, meService: MockMeService(mode: .failed))
+            MeContainerView(session: previewSession, billingService: MockBillingService(), meService: MockMeService(mode: .failed))
                 .previewDisplayName("Error")
         }
         .environmentObject(AppLanguageStore(initialLanguage: .english))

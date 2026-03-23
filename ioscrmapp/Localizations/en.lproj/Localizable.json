@@ -190,7 +190,8 @@
       "creditTotalTitle": "Total",
       "creditUsedTitle": "Used",
       "creditRemainingTitle": "Remaining",
-      "recharge": "Recharge"
+      "recharge": "Recharge",
+      "payBill": "Pay Bill"
     },
     "placeholder": {
       "search": "Search is coming soon.",
@@ -198,6 +199,7 @@
     },
     "quick": {
       "recharge": "Recharge",
+      "payBill": "Pay Bill",
       "plans": "Plans",
       "offers": "Offers",
       "mall": "Mall"
@@ -439,6 +441,91 @@
       "english": "English",
       "chinese": "Simplified Chinese",
       "arabic": "Arabic"
+    }
+  },
+  "billing": {
+    "title": "Billing",
+    "tab": {
+      "summary": "Pay Bill",
+      "list": "Bill List"
+    },
+    "summary": {
+      "outstanding": "Outstanding Amount",
+      "dueDate": "Due Date",
+      "account": "Account",
+      "unbilled": "Current Unbilled",
+      "remainingCredit": "Available Credit",
+      "totalUsage": "Total Usage"
+    },
+    "amount": {
+      "title": "Payment Amount"
+    },
+    "payment": {
+      "title": "Payment Method",
+      "otp": {
+        "title": "Payment OTP",
+        "subtitle": "Enter the Mobile Money OTP before submitting the payment.",
+        "placeholder": "Enter OTP",
+        "required": "Enter the Mobile Money OTP to continue."
+      },
+      "method": {
+        "creditCard": "Credit / Debit Card",
+        "applePay": "Apple Pay",
+        "samsungPay": "Samsung Pay"
+      },
+      "amountInvalid": "Enter a valid payment amount."
+    },
+    "outstanding": {
+      "listTitle": "Outstanding Bills"
+    },
+    "invoice": {
+      "cycle": "Bill Cycle",
+      "invoiceDate": "Invoice Date",
+      "totalAmount": "Total Amount",
+      "openAmount": "Open Amount",
+      "taxAmount": "Tax Amount",
+      "viewDetail": "View Detail",
+      "previewPdf": "Preview PDF",
+      "pay": "Pay Bill"
+    },
+    "detail": {
+      "title": "Bill Detail",
+      "visualBill": "Visual Bill",
+      "facts": "Bill Facts"
+    },
+    "visual": {
+      "monthlyFee": "Monthly Fee",
+      "otherCharges": "Other Charges"
+    },
+    "pdf": {
+      "title": "Bill PDF",
+      "error": "Unable to preview bill PDF. Please try again later."
+    },
+    "pay": {
+      "button": "Pay Bill",
+      "submitting": "Submitting..."
+    },
+    "submission": {
+      "subtitle": "Your payment has been submitted. The bill list updates after CBS refreshes the latest bill facts.",
+      "continue": "Back to Billing"
+    },
+    "toast": {
+      "title": "Billing"
+    },
+    "status": {
+      "outstanding": "Outstanding",
+      "completed": "Completed",
+      "unknown": "Unknown"
+    },
+    "statusLabel": "Status",
+    "empty": {
+      "title": "No bills available",
+      "subtitle": "There are no bill records to show right now."
+    },
+    "state": {
+      "loadingTitle": "Loading billing details...",
+      "errorTitle": "Billing unavailable",
+      "errorSubtitle": "Billing information is temporarily unavailable. Please try again."
     }
   },
   "splash": {

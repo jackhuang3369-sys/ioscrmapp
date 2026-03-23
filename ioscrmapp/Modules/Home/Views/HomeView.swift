@@ -6,6 +6,7 @@ struct HomeView: View {
     let custSubInfo: CustSubInfo
     @ObservedObject var sessionStore: SessionStore
     let authService: any AuthServicing
+    let billingService: any BillingServicing
     let meService: any MeServicing
     let notificationService: any NotificationServicing
 
@@ -14,6 +15,7 @@ struct HomeView: View {
     @State private var selectedTab: HomeTab = .home
     @State private var selectedBannerIndex = 0
     @State private var isMessageCenterPresented = false
+    @State private var isBillingPresented = false
     @State private var isSigningOut = false
     @State private var signOutFailureMessageKey: String?
 
@@ -21,7 +23,7 @@ struct HomeView: View {
     private let bannerTimer = Timer.publish(every: 4, on: .main, in: .common).autoconnect()
     private let quickActions: [HomeItem] = [
         .init(title: .key("home.quick.recharge"), assetName: "QuickRechargeIcon"),
-        .init(title: .key("home.quick.plans"), assetName: "QuickPlansIcon"),
+        .init(title: .key("home.quick.payBill"), assetName: "ServiceBillsIcon", action: .billing),
         .init(title: .key("home.quick.offers"), assetName: "QuickOffersIcon"),
         .init(title: .key("home.quick.mall"), assetName: "QuickMallIcon"),
     ]
@@ -31,7 +33,7 @@ struct HomeView: View {
         .init(title: .key("home.service.voicePack"), assetName: "ServiceVoicePackIcon"),
         .init(title: .key("home.service.roaming"), assetName: "ServiceRoamingIcon"),
         .init(title: .key("home.service.tickets"), assetName: "ServiceTicketsIcon"),
-        .init(title: .key("home.service.bills"), assetName: "ServiceBillsIcon"),
+        .init(title: .key("home.service.bills"), assetName: "ServiceBillsIcon", action: .billing),
         .init(title: .key("home.service.points"), assetName: "ServicePointsIcon"),
         .init(title: .key("home.service.mail"), assetName: "ServiceMailIcon"),
         .init(title: .key("home.service.support"), assetName: "ServiceSupportIcon"),
@@ -81,12 +83,14 @@ struct HomeView: View {
         sessionStore: SessionStore,
         authService: any AuthServicing,
         homeService: any HomeServicing,
+        billingService: any BillingServicing,
         meService: any MeServicing,
         notificationService: any NotificationServicing
     ) {
         self.custSubInfo = custSubInfo
         self.sessionStore = sessionStore
         self.authService = authService
+        self.billingService = billingService
         self.meService = meService
         self.notificationService = notificationService
         _viewModel = StateObject(
@@ -100,11 +104,11 @@ struct HomeView: View {
     var body: some View {
         TabView(selection: $selectedTab) {
             homeDashboard
-                .tabItem {
-                    Image(HomeTab.home.assetName)
-                        .renderingMode(.original)
-                    Text(localized(HomeTab.home.title))
-                }
+            .tabItem {
+                Image(HomeTab.home.assetName)
+                    .renderingMode(.original)
+                Text(localized(HomeTab.home.title))
+            }
                 .tag(HomeTab.home)
 
             FeaturePlaceholderView(
@@ -145,6 +149,7 @@ struct HomeView: View {
 
             MeContainerView(
                 session: custSubInfo,
+                billingService: billingService,
                 meService: meService,
                 isSigningOut: isSigningOut,
                 onSignOut: {
@@ -176,6 +181,9 @@ struct HomeView: View {
                 session: custSubInfo,
                 notificationService: notificationService
             )
+        }
+        .fullScreenCover(isPresented: $isBillingPresented) {
+            BillingContainerView(session: custSubInfo, billingService: billingService)
         }
         .confirmationDialog(
             localized("me.signOut.failure.title"),
@@ -343,15 +351,7 @@ struct HomeView: View {
 
                 Spacer()
 
-                Button(localized("home.header.recharge")) {
-                    showComingSoon(for: .key("home.quick.recharge"))
-                }
-                .font(.du(13, weight: .semibold))
-                .foregroundColor(DUTheme.ink)
-                .padding(.horizontal, DUSpacing.lg)
-                .frame(height: 36)
-                .background(Color.white.opacity(0.95))
-                .clipShape(Capsule())
+                dashboardActions(for: summary)
             }
 
             summarySecondaryDetails(summary)
@@ -547,7 +547,7 @@ struct HomeView: View {
             ) {
                 ForEach(quickActions) { item in
                     Button {
-                        showComingSoon(for: item.title)
+                        handleAction(item)
                     } label: {
                         VStack(spacing: DUSpacing.sm) {
                             ZStack {
@@ -644,7 +644,7 @@ struct HomeView: View {
             ) {
                 ForEach(services) { item in
                     Button {
-                        showComingSoon(for: item.title)
+                        handleAction(item)
                     } label: {
                         VStack(spacing: DUSpacing.sm) {
                             RoundedRectangle(cornerRadius: 18, style: .continuous)
@@ -767,6 +767,44 @@ struct HomeView: View {
 
     private func showComingSoon(for title: LocalizedTextValue) {
         placeholderMessage = .key("common.placeholder.feature", arguments: [localized(title)])
+    }
+
+    @ViewBuilder
+    private func dashboardActions(for summary: HomeSummarySection) -> some View {
+        HStack(spacing: DUSpacing.sm) {
+            if summary.paymentType != .postpaid {
+                Button(localized("home.header.recharge")) {
+                    showComingSoon(for: .key("home.quick.recharge"))
+                }
+                .font(.du(13, weight: .semibold))
+                .foregroundColor(DUTheme.ink)
+                .padding(.horizontal, DUSpacing.lg)
+                .frame(height: 36)
+                .background(Color.white.opacity(0.95))
+                .clipShape(Capsule())
+            }
+
+            if summary.paymentType == .postpaid {
+                Button(localized("home.header.payBill")) {
+                    isBillingPresented = true
+                }
+                .font(.du(13, weight: .semibold))
+                .foregroundColor(DUTheme.cyan)
+                .padding(.horizontal, DUSpacing.lg)
+                .frame(height: 36)
+                .background(Color.white)
+                .clipShape(Capsule())
+            }
+        }
+    }
+
+    private func handleAction(_ item: HomeItem) {
+        switch item.action {
+        case .placeholder:
+            showComingSoon(for: item.title)
+        case .billing:
+            isBillingPresented = true
+        }
     }
 
     private func localized(_ key: String, arguments: [String] = []) -> String {
@@ -937,9 +975,21 @@ private enum HomeTab: Hashable {
 }
 
 private struct HomeItem: Identifiable {
+    enum Action {
+        case placeholder
+        case billing
+    }
+
     let id = UUID()
     let title: LocalizedTextValue
     let assetName: String
+    let action: Action
+
+    init(title: LocalizedTextValue, assetName: String, action: Action = .placeholder) {
+        self.title = title
+        self.assetName = assetName
+        self.action = action
+    }
 }
 
 private struct HomeProduct: Identifiable {
@@ -1016,6 +1066,7 @@ struct HomeView_Previews: PreviewProvider {
             sessionStore: SessionStore.previewAuthenticated,
             authService: MockAuthService(),
             homeService: MockHomeService(),
+            billingService: MockBillingService(),
             meService: MockMeService(),
             notificationService: MockNotificationService()
         )
