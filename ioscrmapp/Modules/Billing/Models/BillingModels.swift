@@ -71,6 +71,7 @@ struct BillingSummary: Equatable, Sendable {
     let totalDueAmountRaw: String
     let totalDueAmountText: String
     let dueDateText: String
+    let unbilledAmountRaw: String
     let unbilledAmountText: String
     let remainingCreditText: String
     let totalUsageText: String
@@ -143,4 +144,27 @@ struct BillingPreviewDocument: Identifiable {
 struct BillingVisualBreakdown: Equatable, Sendable {
     let monthlyFeeText: String
     let otherChargesText: String
+}
+
+struct BillingUnbilledEstimate: Identifiable, Equatable, Sendable {
+    let id: String
+    let estimatedAmountText: String
+    let expectedBillDateText: String
+    let currentCycleText: String
+    let lastUpdatedText: String
+    let chargeItems: [BillingUnbilledChargeItem]
+    let usageItems: [BillingUnbilledUsageItem]
+}
+
+struct BillingUnbilledChargeItem: Identifiable, Equatable, Sendable {
+    let id: String
+    let titleKey: String
+    let amountText: String
+}
+
+struct BillingUnbilledUsageItem: Identifiable, Equatable, Sendable {
+    let id: String
+    let titleKey: String
+    let valueText: String
+    let progress: Double
 }

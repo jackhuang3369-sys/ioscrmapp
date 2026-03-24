@@ -34,7 +34,7 @@ struct BillingContainerView: View {
                 }
                 .background(DUTheme.background.ignoresSafeArea())
             }
-            .background(invoiceNavigationLink)
+            .background(navigationLinks)
             .navigationTitle(localized("billing.title"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -83,6 +83,13 @@ struct BillingContainerView: View {
         }
     }
 
+    private var navigationLinks: some View {
+        Group {
+            invoiceNavigationLink
+            unbilledNavigationLink
+        }
+    }
+
     private var invoiceNavigationLink: some View {
         NavigationLink(
             destination: presentedInvoiceDestination,
@@ -100,10 +107,36 @@ struct BillingContainerView: View {
         .hidden()
     }
 
+    private var unbilledNavigationLink: some View {
+        NavigationLink(
+            destination: presentedUnbilledDestination,
+            isActive: Binding(
+                get: { viewModel.presentedUnbilledEstimate != nil },
+                set: { isActive in
+                    if !isActive {
+                        viewModel.presentedUnbilledEstimate = nil
+                    }
+                }
+            )
+        ) {
+            EmptyView()
+        }
+        .hidden()
+    }
+
     @ViewBuilder
     private var presentedInvoiceDestination: some View {
         if let invoice = viewModel.presentedInvoice {
             BillingDetailView(viewModel: viewModel, invoice: invoice)
+        } else {
+            EmptyView()
+        }
+    }
+
+    @ViewBuilder
+    private var presentedUnbilledDestination: some View {
+        if let estimate = viewModel.presentedUnbilledEstimate {
+            BillingUnbilledDetailView(estimate: estimate)
         } else {
             EmptyView()
         }
@@ -214,11 +247,13 @@ struct BillingContainerView: View {
 
             HStack(spacing: DUSpacing.md) {
                 summaryMetric(titleKey: "billing.summary.dueDate", value: summary.dueDateText)
-                supportMetricCard(
+                supportMetricActionCard(
                     title: localized("billing.summary.unbilled"),
                     value: summary.unbilledAmountText,
                     heroStyle: true
-                )
+                ) {
+                    viewModel.openUnbilledEstimate()
+                }
             }
 
             HStack(spacing: DUSpacing.md) {
@@ -271,6 +306,42 @@ struct BillingContainerView: View {
         .padding(DUSpacing.md)
         .background(heroStyle ? Color.white.opacity(0.12) : DUTheme.panel)
         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+    }
+
+    private func supportMetricActionCard(
+        title: String,
+        value: String,
+        heroStyle: Bool,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
+            HStack(alignment: .top, spacing: DUSpacing.sm) {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(title)
+                        .font(.du(11, weight: .medium))
+                        .foregroundColor(heroStyle ? .white.opacity(0.72) : DUTheme.inkTertiary)
+                    HStack(alignment: .center, spacing: DUSpacing.sm) {
+                        Text(value)
+                            .font(.du(13, weight: .bold))
+                            .foregroundColor(heroStyle ? .white : DUTheme.ink)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.75)
+
+                        Spacer(minLength: 0)
+
+                        Image(systemName: "chevron.right")
+                            .font(.du(12, weight: .bold))
+                            .foregroundColor(heroStyle ? .white.opacity(0.76) : DUTheme.inkTertiary)
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(DUSpacing.md)
+                .background(heroStyle ? Color.white.opacity(0.12) : DUTheme.panel)
+                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+            }
+        }
+        .buttonStyle(.plain)
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private func amountSection(
@@ -880,6 +951,131 @@ private struct BillingDetailView: View {
         }
     }
 
+    private func localized(_ key: String, arguments: [String] = []) -> String {
+        languageStore.string(key, arguments: arguments)
+    }
+}
+
+private struct BillingUnbilledDetailView: View {
+    @EnvironmentObject private var languageStore: AppLanguageStore
+
+    let estimate: BillingUnbilledEstimate
+
+    var body: some View {
+        ScrollView(showsIndicators: false) {
+            VStack(spacing: DUSpacing.lg) {
+                pageHeader
+                heroCard
+                chargeSection
+                usageSection
+            }
+            .padding(DUSpacing.lg)
+            .padding(.bottom, DUSpacing.xxxl)
+        }
+        .background(DUTheme.background.ignoresSafeArea())
+        .navigationTitle(localized("billing.unbilledDetail.title"))
+        .navigationBarTitleDisplayMode(.inline)
+    }
+
+    private var pageHeader: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(localized("billing.unbilledDetail.title"))
+                .font(.du(24, weight: .bold))
+                .foregroundColor(DUTheme.ink)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private var heroCard: some View {
+        VStack(alignment: .leading, spacing: DUSpacing.lg) {
+            Text(localized("billing.unbilledDetail.estimatedAmount"))
+                .font(.du(12, weight: .semibold))
+                .foregroundColor(.white.opacity(0.78))
+
+            Text(estimate.estimatedAmountText)
+                .font(.du(32, weight: .bold))
+                .foregroundColor(.white)
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
+
+            LazyVGrid(
+                columns: Array(repeating: GridItem(.flexible(), spacing: DUSpacing.md), count: 2),
+                spacing: DUSpacing.md
+            ) {
+                heroMetric(
+                    title: localized("billing.unbilledDetail.expectedBillDate"),
+                    value: estimate.expectedBillDateText
+                )
+                heroMetric(
+                    title: localized("billing.unbilledDetail.currentCycle"),
+                    value: estimate.currentCycleText
+                )
+                heroMetric(
+                    title: localized("billing.unbilledDetail.lastUpdated"),
+                    value: estimate.lastUpdatedText
+                )
+            }
+        }
+        .padding(DUSpacing.xl)
+        .background(DUTheme.brandGradient)
+        .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+    }
+
+    private func heroMetric(title: String, value: String) -> some View {
+        VStack(alignment: .leading, spacing: DUSpacing.xs) {
+            Text(title)
+                .font(.du(11, weight: .medium))
+                .foregroundColor(.white.opacity(0.72))
+            Text(value)
+                .font(.du(14, weight: .semibold))
+                .foregroundColor(.white)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(DUSpacing.md)
+        .background(Color.white.opacity(0.12))
+        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+    }
+
+    private var chargeSection: some View {
+        DUSectionCard(title: localized("billing.unbilledDetail.charge.title"), spacing: DUSpacing.md) {
+            VStack(spacing: DUSpacing.md) {
+                ForEach(estimate.chargeItems) { item in
+                    HStack {
+                        Text(localized(item.titleKey))
+                            .font(.du(13, weight: .medium))
+                            .foregroundColor(DUTheme.inkSecondary)
+                        Spacer()
+                        Text(item.amountText)
+                            .font(.du(14, weight: .bold))
+                            .foregroundColor(DUTheme.ink)
+                    }
+                }
+            }
+        }
+    }
+
+    private var usageSection: some View {
+        DUSectionCard(title: localized("billing.unbilledDetail.usage.title"), spacing: DUSpacing.md) {
+            VStack(spacing: DUSpacing.md) {
+                ForEach(estimate.usageItems) { item in
+                    VStack(alignment: .leading, spacing: DUSpacing.xs) {
+                        HStack {
+                            Text(localized(item.titleKey))
+                                .font(.du(13, weight: .semibold))
+                                .foregroundColor(DUTheme.ink)
+                            Spacer()
+                            Text(item.valueText)
+                                .font(.du(12, weight: .medium))
+                                .foregroundColor(DUTheme.inkSecondary)
+                        }
+
+                        ProgressView(value: item.progress)
+                            .tint(DUTheme.cyan)
+                    }
+                }
+            }
+        }
+    }
     private func localized(_ key: String, arguments: [String] = []) -> String {
         languageStore.string(key, arguments: arguments)
     }

@@ -23,6 +23,7 @@ final class BillingViewModel: ObservableObject {
     @Published var previewDocument: BillingPreviewDocument?
     @Published var submissionFeedback: BillingPaymentSubmission?
     @Published var presentedInvoice: BillingInvoice?
+    @Published var presentedUnbilledEstimate: BillingUnbilledEstimate?
     @Published var toastMessage: LocalizedTextValue?
 
     private let session: CustSubInfo
@@ -169,6 +170,13 @@ final class BillingViewModel: ObservableObject {
         presentedInvoice = invoice
     }
 
+    func openUnbilledEstimate() {
+        guard let summary = summarySnapshot?.summary else {
+            return
+        }
+        presentedUnbilledEstimate = makeUnbilledEstimate(from: summary)
+    }
+
     func previewPDF(for invoice: BillingInvoice) async {
         do {
             let fileURL = try await billingService.downloadInvoicePDF(for: invoice, session: session)
@@ -302,6 +310,97 @@ final class BillingViewModel: ObservableObject {
                 return lhsDate < rhsDate
             }
             .first
+    }
+
+    private func makeUnbilledEstimate(from summary: BillingSummary) -> BillingUnbilledEstimate {
+        let total = BillingNumberParser.decimal(summary.unbilledAmountRaw) ?? 0
+        let monthlyFee = roundedCurrency(total * Decimal(0.52))
+        let addOnPackage = roundedCurrency(total * Decimal(0.20))
+        let roaming = roundedCurrency(total * Decimal(0.16))
+        let outOfBundle = max(Decimal.zero, total - monthlyFee - addOnPackage - roaming)
+
+        return BillingUnbilledEstimate(
+            id: "unbilled-\(summary.accountCode)",
+            estimatedAmountText: summary.unbilledAmountText,
+            expectedBillDateText: nextBillEstimateDateText(),
+            currentCycleText: currentCycleText(),
+            lastUpdatedText: lastUpdatedText(),
+            chargeItems: [
+                BillingUnbilledChargeItem(
+                    id: "monthly-fee",
+                    titleKey: "billing.unbilledDetail.charge.monthlyFee",
+                    amountText: BillingNumberParser.displayMoney(BillingNumberParser.string(monthlyFee))
+                ),
+                BillingUnbilledChargeItem(
+                    id: "add-on-package",
+                    titleKey: "billing.unbilledDetail.charge.addOnPackage",
+                    amountText: BillingNumberParser.displayMoney(BillingNumberParser.string(addOnPackage))
+                ),
+                BillingUnbilledChargeItem(
+                    id: "international-roaming",
+                    titleKey: "billing.unbilledDetail.charge.internationalRoaming",
+                    amountText: BillingNumberParser.displayMoney(BillingNumberParser.string(roaming))
+                ),
+                BillingUnbilledChargeItem(
+                    id: "out-of-bundle",
+                    titleKey: "billing.unbilledDetail.charge.outOfBundle",
+                    amountText: BillingNumberParser.displayMoney(BillingNumberParser.string(outOfBundle))
+                )
+            ],
+            usageItems: [
+                BillingUnbilledUsageItem(
+                    id: "local-data",
+                    titleKey: "billing.unbilledDetail.usage.localData",
+                    valueText: "6.2 GB / 10 GB",
+                    progress: 0.62
+                ),
+                BillingUnbilledUsageItem(
+                    id: "local-voice",
+                    titleKey: "billing.unbilledDetail.usage.localVoice",
+                    valueText: "124 min / 200 min",
+                    progress: 0.62
+                ),
+                BillingUnbilledUsageItem(
+                    id: "sms",
+                    titleKey: "billing.unbilledDetail.usage.sms",
+                    valueText: "38 / 100 SMS",
+                    progress: 0.38
+                )
+            ]
+        )
+    }
+
+    private func roundedCurrency(_ value: Decimal) -> Decimal {
+        var value = value
+        var rounded = Decimal.zero
+        NSDecimalRound(&rounded, &value, 2, .bankers)
+        return rounded
+    }
+
+    private func currentCycleText() -> String {
+        let formatter = DateFormatter()
+        formatter.locale = Locale.autoupdatingCurrent
+        formatter.dateFormat = "LLLL yyyy"
+        return formatter.string(from: Date())
+    }
+
+    private func nextBillEstimateDateText() -> String {
+        let calendar = Calendar(identifier: .gregorian)
+        let startOfCurrentMonth = calendar.date(
+            from: calendar.dateComponents([.year, .month], from: Date())
+        ) ?? Date()
+        let nextMonthStart = calendar.date(byAdding: .month, value: 1, to: startOfCurrentMonth) ?? Date()
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.dateFormat = "yyyy-MM-dd"
+        return formatter.string(from: nextMonthStart)
+    }
+
+    private func lastUpdatedText() -> String {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.dateFormat = "yyyy-MM-dd HH:mm"
+        return formatter.string(from: Date())
     }
 
     private func normalizedAmount(_ rawValue: String) -> String? {

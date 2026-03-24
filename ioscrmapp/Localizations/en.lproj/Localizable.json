@@ -457,6 +457,31 @@
       "remainingCredit": "Available Credit",
       "totalUsage": "Total Usage"
     },
+    "unbilledDetail": {
+      "title": "Current Unbilled",
+      "subtitle": "Static estimate for the current cycle before invoice generation.",
+      "estimatedAmount": "Estimated Amount",
+      "expectedBillDate": "Expected Bill Date",
+      "currentCycle": "Current Cycle",
+      "lastUpdated": "Last Updated",
+      "charge": {
+        "title": "Estimated Charges",
+        "monthlyFee": "Monthly Fee",
+        "addOnPackage": "Add-on Package",
+        "internationalRoaming": "International Roaming",
+        "outOfBundle": "Out-of-Bundle Usage"
+      },
+      "usage": {
+        "title": "Current Usage",
+        "localData": "Local Data",
+        "localVoice": "Local Voice",
+        "sms": "SMS"
+      },
+      "notice": {
+        "title": "Estimate Notice",
+        "body": "This page is a static estimated bill preview. Amounts may change before the official invoice is generated."
+      }
+    },
     "amount": {
       "title": "Payment Amount"
     },

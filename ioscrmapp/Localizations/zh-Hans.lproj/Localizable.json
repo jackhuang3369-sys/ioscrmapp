@@ -457,6 +457,31 @@
       "remainingCredit": "可用信用额度",
       "totalUsage": "累计使用"
     },
+    "unbilledDetail": {
+      "title": "当前未出账",
+      "subtitle": "账单正式出账前的本周期静态预估页面。",
+      "estimatedAmount": "预估金额",
+      "expectedBillDate": "预估出账时间",
+      "currentCycle": "当前周期",
+      "lastUpdated": "最近更新",
+      "charge": {
+        "title": "预估费用明细",
+        "monthlyFee": "月租费",
+        "addOnPackage": "加装包费用",
+        "internationalRoaming": "国际漫游费",
+        "outOfBundle": "超量使用费"
+      },
+      "usage": {
+        "title": "当月消费明细",
+        "localData": "本地流量",
+        "localVoice": "本地主叫时长",
+        "sms": "短信"
+      },
+      "notice": {
+        "title": "预估说明",
+        "body": "当前页面为静态预估账单展示，正式出账前金额与明细可能继续变化。"
+      }
+    },
     "amount": {
       "title": "支付金额"
     },
