@@ -59,6 +59,16 @@
 		A1000000000000000000002E /* MessageCenterViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000002E /* MessageCenterViewModel.swift */; };
 		A1000000000000000000002F /* MessageCenterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000002F /* MessageCenterView.swift */; };
 		A10000000000000000000030 /* MessageDetailContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000030 /* MessageDetailContentView.swift */; };
+		A10000000000000000000031 /* HomeAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000031 /* HomeAPI.swift */; };
+		A10000000000000000000032 /* HomeService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000032 /* HomeService.swift */; };
+		A10000000000000000000033 /* HomeModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000033 /* HomeModels.swift */; };
+		A10000000000000000000034 /* HomeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000034 /* HomeViewModel.swift */; };
+		B10000000000000000000001 /* BillingAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000001 /* BillingAPI.swift */; };
+		B10000000000000000000002 /* BillingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000002 /* BillingService.swift */; };
+		B10000000000000000000003 /* BillingModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000003 /* BillingModels.swift */; };
+		B10000000000000000000004 /* BillingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000004 /* BillingViewModel.swift */; };
+		B10000000000000000000005 /* BillingViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000005 /* BillingViews.swift */; };
+		B10000000000000000000006 /* RechargeViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000006 /* RechargeViews.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -115,6 +125,16 @@
 		A2000000000000000000002E /* MessageCenterViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageCenterViewModel.swift; sourceTree = "<group>"; };
 		A2000000000000000000002F /* MessageCenterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageCenterView.swift; sourceTree = "<group>"; };
 		A20000000000000000000030 /* MessageDetailContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageDetailContentView.swift; sourceTree = "<group>"; };
+		A20000000000000000000031 /* HomeAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeAPI.swift; sourceTree = "<group>"; };
+		A20000000000000000000032 /* HomeService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeService.swift; sourceTree = "<group>"; };
+		A20000000000000000000033 /* HomeModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeModels.swift; sourceTree = "<group>"; };
+		A20000000000000000000034 /* HomeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewModel.swift; sourceTree = "<group>"; };
+		B20000000000000000000001 /* BillingAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BillingAPI.swift; sourceTree = "<group>"; };
+		B20000000000000000000002 /* BillingService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BillingService.swift; sourceTree = "<group>"; };
+		B20000000000000000000003 /* BillingModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BillingModels.swift; sourceTree = "<group>"; };
+		B20000000000000000000004 /* BillingViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BillingViewModel.swift; sourceTree = "<group>"; };
+		B20000000000000000000005 /* BillingViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BillingViews.swift; sourceTree = "<group>"; };
+		B20000000000000000000006 /* RechargeViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RechargeViews.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -185,6 +205,8 @@
 			children = (
 				A2000000000000000000000D /* AppServices.swift */,
 				A20000000000000000000002 /* AuthService.swift */,
+				B20000000000000000000002 /* BillingService.swift */,
+				A20000000000000000000032 /* HomeService.swift */,
 				A20000000000000000000008 /* MeService.swift */,
 				A2000000000000000000002C /* NotificationService.swift */,
 				A20000000000000000000023 /* SplashAdService.swift */,
@@ -197,6 +219,7 @@
 			isa = PBXGroup;
 			children = (
 				A30000000000000000000006 /* Auth */,
+				B30000000000000000000001 /* Billing */,
 				A30000000000000000000007 /* Home */,
 				A3000000000000000000002B /* MessageCenter */,
 				A3000000000000000000001A /* Launch */,
@@ -236,6 +259,8 @@
 		A30000000000000000000007 /* Home */ = {
 			isa = PBXGroup;
 			children = (
+				A30000000000000000000031 /* Models */,
+				A30000000000000000000032 /* ViewModels */,
 				A3000000000000000000000B /* Views */,
 			);
 			path = Home;
@@ -396,7 +421,9 @@
 			children = (
 				A20000000000000000000021 /* AdvertisementAPI.swift */,
 				A2000000000000000000001C /* AuthAPI.swift */,
+				B20000000000000000000001 /* BillingAPI.swift */,
 				A2000000000000000000001F /* DeviceIdentityProvider.swift */,
+				A20000000000000000000031 /* HomeAPI.swift */,
 				A2000000000000000000001D /* HTTPClient.swift */,
 				A2000000000000000000001E /* NetworkContextBuilder.swift */,
 				A2000000000000000000002B /* NotificationAPI.swift */,
@@ -471,6 +498,57 @@
 			children = (
 				A2000000000000000000002F /* MessageCenterView.swift */,
 				A20000000000000000000030 /* MessageDetailContentView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		A30000000000000000000031 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				A20000000000000000000033 /* HomeModels.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		A30000000000000000000032 /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				A20000000000000000000034 /* HomeViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		B30000000000000000000001 /* Billing */ = {
+			isa = PBXGroup;
+			children = (
+				B30000000000000000000002 /* Models */,
+				B30000000000000000000003 /* ViewModels */,
+				B30000000000000000000004 /* Views */,
+			);
+			path = Billing;
+			sourceTree = "<group>";
+		};
+		B30000000000000000000002 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				B20000000000000000000003 /* BillingModels.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		B30000000000000000000003 /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				B20000000000000000000004 /* BillingViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		B30000000000000000000004 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				B20000000000000000000005 /* BillingViews.swift */,
+				B20000000000000000000006 /* RechargeViews.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -560,11 +638,19 @@
 				A1000000000000000000002F /* MessageCenterView.swift in Sources */,
 				A1000000000000000000002E /* MessageCenterViewModel.swift in Sources */,
 				A1000000000000000000002D /* MessageCenterModels.swift in Sources */,
+				A10000000000000000000034 /* HomeViewModel.swift in Sources */,
+				A10000000000000000000033 /* HomeModels.swift in Sources */,
+				B10000000000000000000005 /* BillingViews.swift in Sources */,
+				B10000000000000000000006 /* RechargeViews.swift in Sources */,
+				B10000000000000000000004 /* BillingViewModel.swift in Sources */,
+				B10000000000000000000003 /* BillingModels.swift in Sources */,
 				A10000000000000000000020 /* RegistrationRequestEncryptor.swift in Sources */,
 				A1000000000000000000001F /* DeviceIdentityProvider.swift in Sources */,
 				A1000000000000000000001E /* NetworkContextBuilder.swift in Sources */,
 				A1000000000000000000001D /* HTTPClient.swift in Sources */,
 				A1000000000000000000001C /* AuthAPI.swift in Sources */,
+				B10000000000000000000001 /* BillingAPI.swift in Sources */,
+				A10000000000000000000031 /* HomeAPI.swift in Sources */,
 				A1000000000000000000002B /* NotificationAPI.swift in Sources */,
 				A1000000000000000000001B /* DUSectionCard.swift in Sources */,
 				A1000000000000000000001A /* DUStateView.swift in Sources */,
@@ -580,6 +666,7 @@
 				A1000000000000000000000F /* AppLanguage.swift in Sources */,
 				A1000000000000000000000E /* AppEnvironment.swift in Sources */,
 				A1000000000000000000000D /* AppServices.swift in Sources */,
+				B10000000000000000000002 /* BillingService.swift in Sources */,
 				A1000000000000000000000C /* DUBottomSheet.swift in Sources */,
 				A1000000000000000000000B /* MeViews.swift in Sources */,
 				A1000000000000000000000A /* MeViewModel.swift in Sources */,
@@ -589,6 +676,7 @@
 				A10000000000000000000007 /* DesignSystem.swift in Sources */,
 				A10000000000000000000009 /* MeModels.swift in Sources */,
 				A10000000000000000000006 /* HomeView.swift in Sources */,
+				A10000000000000000000032 /* HomeService.swift in Sources */,
 				A10000000000000000000002 /* AuthService.swift in Sources */,
 				A10000000000000000000008 /* MeService.swift in Sources */,
 				A1000000000000000000002C /* NotificationService.swift in Sources */,

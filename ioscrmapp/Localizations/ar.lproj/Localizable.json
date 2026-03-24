@@ -553,6 +553,123 @@
       "errorSubtitle": "معلومات الفواتير غير متاحة مؤقتًا. يرجى المحاولة مرة أخرى."
     }
   },
+  "recharge": {
+    "title": "إعادة الشحن",
+    "subtitle": {
+      "recharge": "للرقم مسبق الدفع الحالي",
+      "orders": "تعتمد الحالة فقط على حقل status"
+    },
+    "tab": {
+      "recharge": "إعادة الشحن",
+      "orders": "الطلبات"
+    },
+    "meEntry": {
+      "subtitle": "اشحن الرقم الحالي وراجع سجلات إعادة الشحن."
+    },
+    "hero": {
+      "serviceNumber": "رقم الخدمة",
+      "source": "المصدر",
+      "queryBalance": "queryBalance",
+      "prepaid": "مسبق الدفع",
+      "noSwitching": "لا يمكن تبديل الرقم"
+    },
+    "balance": {
+      "title": "الرصيد الحالي"
+    },
+    "number": {
+      "title": "الرقم الحالي",
+      "viewOrders": "عرض الطلبات",
+      "fixed": "مرتبط بالحساب المسجل حاليًا"
+    },
+    "amount": {
+      "title": "مبلغ إعادة الشحن",
+      "placeholder": "0.00",
+      "minimum": "الحد الأدنى: %@",
+      "decimals": "منزلتان عشريتان",
+      "helper": "يأتي الحد الأدنى من RECHARGE_LIMIT_VALUE.min، ولا يوجد تحقق للحد الأقصى في الواجهة ضمن الإصدار الأول."
+    },
+    "quick": {
+      "title": "المبالغ السريعة"
+    },
+    "primary": "متابعة",
+    "method": {
+      "title": "طريقة الدفع",
+      "creditCard": "بطاقة ائتمان / خصم",
+      "applePay": "Apple Pay",
+      "bankTransfer": "تحويل بنكي",
+      "mobileMoneyRoute": "يظهر في الواجهة فقط، والتنفيذ الحقيقي يتم عبر MobileMoney.",
+      "displayOnly": "للعرض فقط",
+      "creditCardDesc": "يعرض إيصال النجاح قيمة chargeMethod المختارة.",
+      "applePayDesc": "يبقى ظاهرًا في الواجهة، لكن التنفيذ الفعلي يستمر عبر MobileMoney.",
+      "bankTransferDesc": "موجود للحفاظ على اتساق تصميم كتالوج دفع DU.",
+      "routeNote": "تحتفظ الواجهة بقيمة chargeMethod المختارة، بينما يبقى التنفيذ الحقيقي MobileMoney -> paybill."
+    },
+    "status": {
+      "processing": "قيد المعالجة",
+      "success": "ناجح",
+      "failed": "فشل"
+    },
+    "receipt": {
+      "orderId": "رقم الطلب",
+      "chargeMethod": "طريقة الدفع"
+    },
+    "orders": {
+      "defaultNote": "الافتراضي: بدون تصفية زمنية",
+      "loadingMore": "جارٍ تحميل المزيد من الطلبات...",
+      "listTitle": "قائمة الطلبات",
+      "methodSource": "chargeMethod من الخلفية",
+      "page": "بدون حد زمني، الصفحة %@ من %@",
+      "filter": {
+        "title": "تصفية الطلبات",
+        "date": "التاريخ",
+        "start": "تاريخ البدء",
+        "end": "تاريخ الانتهاء",
+        "all": "الكل",
+        "apply": "تطبيق",
+        "clear": "مسح",
+        "statusTitle": "الحالة"
+      },
+      "failure": {
+        "async": "تم قبول طلب إعادة الشحن ثم تم تحديثه لاحقًا إلى فشل. أعد المحاولة من طلب جديد."
+      },
+      "empty": {
+        "title": "لا توجد سجلات إعادة شحن",
+        "subtitle": "ستظهر السجلات هنا بعد أول طلب مقبول."
+      },
+      "detail": {
+        "title": "تفاصيل الطلب",
+        "subtitle": "راجع حقول الإيصال المقبول وآخر حالة غير متزامنة.",
+        "status": "الحالة",
+        "created": "وقت الإنشاء",
+        "number": "الرقم الحالي",
+        "amount": "مبلغ إعادة الشحن",
+        "statusCode": "رمز الحالة",
+        "balanceTitle": "لقطة الرصيد",
+        "balanceBefore": "الرصيد قبل العملية",
+        "balanceAfter": "الرصيد بعد العملية",
+        "failure": "تفاصيل الفشل",
+        "failureHint": "تظهر حالات الفشل غير المتزامنة فقط في الطلبات والتفاصيل بعد قبول الطلب.",
+        "noBalanceChange": "لا توجد لقطة رصيد"
+      }
+    },
+    "success": {
+      "title": "إيصال إعادة الشحن"
+    },
+    "confirm": {
+      "otpRequired": "أدخل رمز OTP قبل إرسال طلب إعادة الشحن."
+    },
+    "toast": {
+      "title": "إعادة الشحن"
+    },
+    "error": {
+      "generic": "إعادة الشحن غير متاحة مؤقتًا. حاول مرة أخرى.",
+      "invalidAmount": "أدخل مبلغ إعادة شحن صالح."
+    },
+    "state": {
+      "loading": "جارٍ تحميل تفاصيل إعادة الشحن...",
+      "errorTitle": "إعادة الشحن غير متاحة"
+    }
+  },
   "splash": {
     "skip": {
       "ready": "تخطي",

@@ -415,3 +415,299 @@ final class BillingViewModel: ObservableObject {
         return normalized
     }
 }
+
+@MainActor
+final class RechargeViewModel: ObservableObject {
+    enum ScreenState {
+        case idle
+        case loading
+        case loaded
+        case failed(LocalizedTextValue)
+    }
+
+    @Published private(set) var entryState: ScreenState = .idle
+    @Published private(set) var ordersState: ScreenState = .idle
+    @Published private(set) var entrySnapshot: RechargeEntrySnapshot?
+    @Published private(set) var ordersSnapshot: RechargeOrderPageSnapshot?
+    @Published var selectedTab: RechargeTab = .recharge
+    @Published var amountText = ""
+    @Published var selectedPaymentMethod: RechargePaymentMethod = .creditCard
+    @Published var orderFilter: RechargeOrderFilter = .empty
+    @Published var isConfirmPresented = false
+    @Published private(set) var isSubmitting = false
+    @Published private(set) var isLoadingMoreOrders = false
+    @Published var acceptedReceipt: RechargeAcceptedReceipt?
+    @Published var failureFeedback: RechargeFailureFeedback?
+    @Published var selectedOrder: RechargeOrderRecord?
+    @Published var toastMessage: LocalizedTextValue?
+    private var acceptedReceiptPresentationTask: Task<Void, Never>?
+
+    private let session: CustSubInfo
+    private let rechargeService: any RechargeServicing
+    private let ordersPageSize = 20
+
+    init(session: CustSubInfo, rechargeService: any RechargeServicing) {
+        self.session = session
+        self.rechargeService = rechargeService
+    }
+
+    var quickAmounts: [Decimal] {
+        entrySnapshot?.quickAmounts ?? [10, 20, 50, 100]
+    }
+
+    var balanceText: String {
+        entrySnapshot?.balanceText ?? BillingNumberParser.displayMoney(session.balanceText)
+    }
+
+    var serviceNumberText: String {
+        AuthValidator.localPhoneDigits(entrySnapshot?.serviceNumber ?? session.serviceNumber ?? session.phoneNumber)
+    }
+
+    var amountError: String? {
+        guard !amountText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            return nil
+        }
+        guard let amount = parsedAmount else {
+            return "Enter a valid amount with up to 2 decimals."
+        }
+        if amount < minimumAmount {
+            return "Minimum recharge amount is \(minimumAmountDisplayText)."
+        }
+        return nil
+    }
+
+    var isContinueDisabled: Bool {
+        parsedAmount == nil || amountError != nil || entrySnapshot == nil
+    }
+
+    var minimumAmountDisplayText: String {
+        BillingNumberParser.displayMoney(NSDecimalNumber(decimal: minimumAmount).stringValue)
+    }
+
+    private var minimumAmount: Decimal {
+        entrySnapshot?.minAmount ?? 10
+    }
+
+    private var parsedAmount: Decimal? {
+        Self.parseAmount(from: amountText)
+    }
+
+    func loadIfNeeded() async {
+        guard case .idle = entryState else {
+            return
+        }
+        await refreshEntry()
+    }
+
+    func loadOrdersIfNeeded() async {
+        guard case .idle = ordersState else {
+            return
+        }
+        await refreshOrders()
+    }
+
+    func refreshEntry() async {
+        entryState = .loading
+
+        do {
+            let snapshot = try await rechargeService.fetchEntrySnapshot(session: session)
+            entrySnapshot = snapshot
+            entryState = .loaded
+        } catch {
+            if let rechargeError = error as? RechargeServiceError, case .requestCancelled = rechargeError {
+                return
+            }
+            entryState = .failed((error as? RechargeServiceError)?.textValue ?? .key("recharge.error.generic"))
+        }
+    }
+
+    func refreshOrders() async {
+        ordersState = .loading
+
+        do {
+            ordersSnapshot = try await rechargeService.fetchOrders(
+                session: session,
+                filter: orderFilter,
+                pageIndex: 1,
+                pageSize: ordersPageSize
+            )
+            ordersState = .loaded
+        } catch {
+            if let rechargeError = error as? RechargeServiceError, case .requestCancelled = rechargeError {
+                return
+            }
+            ordersState = .failed((error as? RechargeServiceError)?.textValue ?? .key("recharge.error.generic"))
+        }
+    }
+
+    func loadMoreOrdersIfNeeded(currentRecord: RechargeOrderRecord) async {
+        guard let snapshot = ordersSnapshot,
+              snapshot.pageIndex < snapshot.totalPages,
+              !isLoadingMoreOrders,
+              !snapshot.records.isEmpty,
+              snapshot.records.last?.id == currentRecord.id else {
+            return
+        }
+
+        isLoadingMoreOrders = true
+        do {
+            let nextPage = snapshot.pageIndex + 1
+            let nextSnapshot = try await rechargeService.fetchOrders(
+                session: session,
+                filter: orderFilter,
+                pageIndex: nextPage,
+                pageSize: ordersPageSize
+            )
+
+            ordersSnapshot = RechargeOrderPageSnapshot(
+                records: snapshot.records + nextSnapshot.records,
+                pageIndex: nextSnapshot.pageIndex,
+                pageSize: nextSnapshot.pageSize,
+                totalCount: nextSnapshot.totalCount,
+                totalPages: nextSnapshot.totalPages
+            )
+            isLoadingMoreOrders = false
+        } catch {
+            if let rechargeError = error as? RechargeServiceError, case .requestCancelled = rechargeError {
+                isLoadingMoreOrders = false
+                return
+            }
+            isLoadingMoreOrders = false
+            toastMessage = (error as? RechargeServiceError)?.textValue ?? .key("recharge.error.generic")
+        }
+    }
+
+    func sanitizeAmountInput() {
+        amountText = Self.sanitizedAmountInput(amountText)
+    }
+
+    func applyQuickAmount(_ value: Decimal) {
+        amountText = BillingNumberParser.string(value)
+    }
+
+    func openConfirm() {
+        guard !isContinueDisabled else {
+            return
+        }
+        isConfirmPresented = true
+    }
+
+    func submitRecharge() async {
+        guard !isSubmitting else {
+            return
+        }
+        guard let amount = parsedAmount else {
+            toastMessage = .key("recharge.error.invalidAmount")
+            return
+        }
+
+        isSubmitting = true
+        do {
+            let receipt = try await rechargeService.submitRecharge(
+                RechargeSubmissionRequest(
+                    amountText: NSDecimalNumber(decimal: amount).stringValue,
+                    paymentMethod: selectedPaymentMethod,
+                    otpCode: "111111"
+                ),
+                session: session
+            )
+            isSubmitting = false
+            isConfirmPresented = false
+            acceptedReceiptPresentationTask?.cancel()
+            acceptedReceiptPresentationTask = Task { @MainActor [weak self] in
+                try? await Task.sleep(nanoseconds: 350_000_000)
+                guard let self, !Task.isCancelled else { return }
+                self.acceptedReceipt = receipt
+                self.acceptedReceiptPresentationTask = nil
+            }
+        } catch {
+            isSubmitting = false
+            isConfirmPresented = false
+            acceptedReceiptPresentationTask?.cancel()
+            acceptedReceiptPresentationTask = nil
+            if let rechargeError = error as? RechargeServiceError, case .requestCancelled = rechargeError {
+                return
+            }
+            failureFeedback = RechargeFailureFeedback(
+                titleKey: "recharge.failure.title",
+                message: (error as? RechargeServiceError)?.textValue.literalValue ?? "Recharge submission failed."
+            )
+        }
+    }
+
+    func dismissAcceptedReceipt() {
+        acceptedReceiptPresentationTask?.cancel()
+        acceptedReceiptPresentationTask = nil
+        acceptedReceipt = nil
+        selectedTab = .orders
+        Task {
+            await refreshOrders()
+        }
+    }
+
+    func retrySubmission() {
+        failureFeedback = nil
+        isConfirmPresented = true
+    }
+
+    func dismissFailure() {
+        acceptedReceiptPresentationTask?.cancel()
+        acceptedReceiptPresentationTask = nil
+        failureFeedback = nil
+    }
+
+    func openOrderDetail(_ record: RechargeOrderRecord) {
+        selectedOrder = record
+    }
+
+    func dismissOrderDetail() {
+        selectedOrder = nil
+    }
+
+    func clearFilters() {
+        orderFilter = .empty
+    }
+
+    func dismissToast() {
+        toastMessage = nil
+    }
+
+    private static func parseAmount(from rawValue: String) -> Decimal? {
+        let normalized = rawValue
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .replacingOccurrences(of: ",", with: "")
+
+        guard !normalized.isEmpty else {
+            return nil
+        }
+        guard let decimal = Decimal(string: normalized), decimal > 0 else {
+            return nil
+        }
+
+        var value = decimal
+        var rounded = Decimal.zero
+        NSDecimalRound(&rounded, &value, 2, .bankers)
+        return rounded == decimal ? decimal : nil
+    }
+
+    private static func sanitizedAmountInput(_ rawValue: String) -> String {
+        let filtered = rawValue.filter { $0.isNumber || $0 == "." }
+        let parts = filtered.split(separator: ".", omittingEmptySubsequences: false)
+        guard parts.count > 1 else {
+            return String(filtered.prefix(9))
+        }
+
+        let integerPart = String(parts[0].prefix(9))
+        let decimalPart = String(parts[1].prefix(2))
+        return integerPart + "." + decimalPart
+    }
+}
+
+private extension LocalizedTextValue {
+    var literalValue: String? {
+        if case let .literal(value) = self {
+            return value
+        }
+        return nil
+    }
+}

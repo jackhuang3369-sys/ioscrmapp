@@ -7,6 +7,7 @@ struct HomeView: View {
     @ObservedObject var sessionStore: SessionStore
     let authService: any AuthServicing
     let billingService: any BillingServicing
+    let rechargeService: any RechargeServicing
     let meService: any MeServicing
     let notificationService: any NotificationServicing
 
@@ -16,13 +17,14 @@ struct HomeView: View {
     @State private var selectedBannerIndex = 0
     @State private var isMessageCenterPresented = false
     @State private var isBillingPresented = false
+    @State private var isRechargePresented = false
     @State private var isSigningOut = false
     @State private var signOutFailureMessageKey: String?
 
     private let pageHorizontalPadding: CGFloat = DUSpacing.md
     private let bannerTimer = Timer.publish(every: 4, on: .main, in: .common).autoconnect()
     private let quickActions: [HomeItem] = [
-        .init(title: .key("home.quick.recharge"), assetName: "QuickRechargeIcon"),
+        .init(title: .key("home.quick.recharge"), assetName: "QuickRechargeIcon", action: .recharge),
         .init(title: .key("home.quick.payBill"), assetName: "ServiceBillsIcon", action: .billing),
         .init(title: .key("home.quick.offers"), assetName: "QuickOffersIcon"),
         .init(title: .key("home.quick.mall"), assetName: "QuickMallIcon"),
@@ -84,6 +86,7 @@ struct HomeView: View {
         authService: any AuthServicing,
         homeService: any HomeServicing,
         billingService: any BillingServicing,
+        rechargeService: any RechargeServicing,
         meService: any MeServicing,
         notificationService: any NotificationServicing
     ) {
@@ -91,6 +94,7 @@ struct HomeView: View {
         self.sessionStore = sessionStore
         self.authService = authService
         self.billingService = billingService
+        self.rechargeService = rechargeService
         self.meService = meService
         self.notificationService = notificationService
         _viewModel = StateObject(
@@ -150,7 +154,9 @@ struct HomeView: View {
             MeContainerView(
                 session: custSubInfo,
                 billingService: billingService,
+                rechargeService: rechargeService,
                 meService: meService,
+                showRechargeEntry: showsRechargeEntryInMe,
                 isSigningOut: isSigningOut,
                 onSignOut: {
                     startSignOut()
@@ -184,6 +190,9 @@ struct HomeView: View {
         }
         .fullScreenCover(isPresented: $isBillingPresented) {
             BillingContainerView(session: custSubInfo, billingService: billingService)
+        }
+        .fullScreenCover(isPresented: $isRechargePresented) {
+            RechargeContainerView(session: custSubInfo, rechargeService: rechargeService)
         }
         .confirmationDialog(
             localized("me.signOut.failure.title"),
@@ -545,7 +554,7 @@ struct HomeView: View {
                 columns: Array(repeating: GridItem(.flexible(), spacing: DUSpacing.md), count: 4),
                 spacing: DUSpacing.md
             ) {
-                ForEach(quickActions) { item in
+                ForEach(filteredQuickActions) { item in
                     Button {
                         handleAction(item)
                     } label: {
@@ -772,9 +781,9 @@ struct HomeView: View {
     @ViewBuilder
     private func dashboardActions(for summary: HomeSummarySection) -> some View {
         HStack(spacing: DUSpacing.sm) {
-            if summary.paymentType != .postpaid {
+            if summary.paymentType == .prepaid {
                 Button(localized("home.header.recharge")) {
-                    showComingSoon(for: .key("home.quick.recharge"))
+                    isRechargePresented = true
                 }
                 .font(.du(13, weight: .semibold))
                 .foregroundColor(DUTheme.ink)
@@ -784,7 +793,7 @@ struct HomeView: View {
                 .clipShape(Capsule())
             }
 
-            if summary.paymentType == .postpaid {
+            if summary.paymentType == .postpaid || summary.paymentType == .hybrid {
                 Button(localized("home.header.payBill")) {
                     isBillingPresented = true
                 }
@@ -804,7 +813,31 @@ struct HomeView: View {
             showComingSoon(for: item.title)
         case .billing:
             isBillingPresented = true
+        case .recharge:
+            isRechargePresented = true
         }
+    }
+
+    private var filteredQuickActions: [HomeItem] {
+        guard let paymentType = viewModel.dashboard?.summary.paymentType else {
+            return quickActions
+        }
+
+        switch paymentType {
+        case .prepaid:
+            return quickActions.filter { $0.action != .billing }
+        case .postpaid:
+            return quickActions.filter { $0.action != .recharge }
+        case .hybrid, .unknown:
+            return quickActions
+        }
+    }
+
+    private var showsRechargeEntryInMe: Bool {
+        guard let paymentType = viewModel.dashboard?.summary.paymentType else {
+            return false
+        }
+        return paymentType != .postpaid
     }
 
     private func localized(_ key: String, arguments: [String] = []) -> String {
@@ -978,6 +1011,7 @@ private struct HomeItem: Identifiable {
     enum Action {
         case placeholder
         case billing
+        case recharge
     }
 
     let id = UUID()
@@ -1067,6 +1101,7 @@ struct HomeView_Previews: PreviewProvider {
             authService: MockAuthService(),
             homeService: MockHomeService(),
             billingService: MockBillingService(),
+            rechargeService: MockRechargeService(),
             meService: MockMeService(),
             notificationService: MockNotificationService()
         )

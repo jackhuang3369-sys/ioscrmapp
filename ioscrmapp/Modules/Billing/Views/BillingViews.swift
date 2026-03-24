@@ -1255,7 +1255,7 @@ private struct QuickLookPreview: UIViewControllerRepresentable {
 #endif
 
 #if canImport(UIKit)
-private struct BillingExportController: UIViewControllerRepresentable {
+struct BillingExportController: UIViewControllerRepresentable {
     let items: [Any]
 
     func makeUIViewController(context: Context) -> UIActivityViewController {

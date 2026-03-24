@@ -755,3 +755,659 @@ private extension CustSubInfo {
         )
     }
 }
+
+protocol RechargeServicing: Sendable {
+    func fetchEntrySnapshot(session: CustSubInfo) async throws -> RechargeEntrySnapshot
+    func fetchOrders(
+        session: CustSubInfo,
+        filter: RechargeOrderFilter,
+        pageIndex: Int,
+        pageSize: Int
+    ) async throws -> RechargeOrderPageSnapshot
+    func submitRecharge(
+        _ request: RechargeSubmissionRequest,
+        session: CustSubInfo
+    ) async throws -> RechargeAcceptedReceipt
+}
+
+enum RechargeServiceError: Error {
+    case missingIdentity
+    case invalidAmount
+    case featureUnavailable(message: String)
+    case networkUnavailable
+    case requestCancelled
+
+    var textValue: LocalizedTextValue {
+        switch self {
+        case .missingIdentity, .invalidAmount, .networkUnavailable:
+            return .key("recharge.error.generic")
+        case .requestCancelled:
+            return .literal("")
+        case let .featureUnavailable(message):
+            return .literal(message)
+        }
+    }
+}
+
+enum RechargeTab: String, CaseIterable, Identifiable {
+    case recharge
+    case orders
+
+    var id: String { rawValue }
+
+    var titleKey: String {
+        switch self {
+        case .recharge:
+            return "recharge.tab.recharge"
+        case .orders:
+            return "recharge.tab.orders"
+        }
+    }
+}
+
+enum RechargePaymentMethod: String, CaseIterable, Identifiable, Sendable {
+    case creditCard
+    case applePay
+    case bankTransfer
+
+    var id: String { rawValue }
+
+    var titleKey: String {
+        switch self {
+        case .creditCard:
+            return "recharge.method.creditCard"
+        case .applePay:
+            return "recharge.method.applePay"
+        case .bankTransfer:
+            return "recharge.method.bankTransfer"
+        }
+    }
+
+    var requestValue: String {
+        switch self {
+        case .creditCard:
+            return "Credit / Debit Card"
+        case .applePay:
+            return "Apple Pay"
+        case .bankTransfer:
+            return "Bank Transfer"
+        }
+    }
+
+    var backendExecutionValue: String {
+        "MobileMoney"
+    }
+}
+
+enum RechargeOrderStatus: Hashable, CaseIterable, Identifiable, Sendable {
+    case processing
+    case success
+    case failed
+
+    var id: String { backendValue }
+
+    init?(backendCode: String) {
+        switch backendCode.trimmingCharacters(in: .whitespacesAndNewlines) {
+        case "0":
+            self = .processing
+        case "1":
+            self = .success
+        case "2":
+            self = .failed
+        default:
+            return nil
+        }
+    }
+
+    var backendValue: String {
+        switch self {
+        case .processing:
+            return "0"
+        case .success:
+            return "1"
+        case .failed:
+            return "2"
+        }
+    }
+
+    var titleKey: String {
+        switch self {
+        case .processing:
+            return "recharge.status.processing"
+        case .success:
+            return "recharge.status.success"
+        case .failed:
+            return "recharge.status.failed"
+        }
+    }
+}
+
+struct RechargeEntrySnapshot: Equatable, Sendable {
+    let serviceNumber: String
+    let balanceText: String
+    let minAmount: Decimal
+    let quickAmounts: [Decimal]
+}
+
+struct RechargeOrderPageSnapshot: Equatable, Sendable {
+    let records: [RechargeOrderRecord]
+    let pageIndex: Int
+    let pageSize: Int
+    let totalCount: Int
+    let totalPages: Int
+}
+
+struct RechargeOrderRecord: Identifiable, Equatable, Sendable {
+    let id: String
+    let orderId: String
+    let amountRaw: String
+    let amountText: String
+    let chargeMethod: String
+    let createdTimeText: String
+    let status: RechargeOrderStatus
+    let statusCode: String
+    let serviceNumber: String
+    let oldBalanceText: String?
+    let newBalanceText: String?
+
+    var failureMessageKey: String? {
+        status == .failed ? "recharge.orders.failure.async" : nil
+    }
+}
+
+struct RechargeOrderFilter: Equatable, Sendable {
+    var startDate: Date?
+    var endDate: Date?
+    var status: RechargeOrderStatus?
+
+    static let empty = RechargeOrderFilter(startDate: nil, endDate: nil, status: nil)
+}
+
+struct RechargeSubmissionRequest: Sendable {
+    let amountText: String
+    let paymentMethod: RechargePaymentMethod
+    let otpCode: String
+}
+
+struct RechargeAcceptedReceipt: Identifiable, Equatable, Sendable {
+    let id = UUID()
+    let orderId: String
+    let taskId: String
+    let amountText: String
+    let requestChargeMethod: String
+    let submissionStatusText: String
+}
+
+struct RechargeFailureFeedback: Identifiable, Equatable, Sendable {
+    let id = UUID()
+    let titleKey: String
+    let message: String
+}
+
+private struct RechargeUserInfoPayload: Sendable {
+    let subscriberKey: String
+    let paymentTypeCode: String
+    let serviceNumber: String
+}
+
+private struct RechargeMoneyPayload: Sendable {
+    let amount: String?
+    let currencyID: String?
+}
+
+private struct RechargeBalancePayload: Sendable {
+    let balance: RechargeMoneyPayload?
+    let outstandingAmount: String?
+    let totalCreditAmount: String?
+    let totalUsageAmount: String?
+    let totalRemainAmount: String?
+}
+
+actor MockRechargeService: RechargeServicing {
+    func fetchEntrySnapshot(session: CustSubInfo) async throws -> RechargeEntrySnapshot {
+        RechargeEntrySnapshot(
+            serviceNumber: AuthValidator.localPhoneDigits(session.serviceNumber ?? session.phoneNumber),
+            balanceText: billingDisplayMoney("128.50 AED"),
+            minAmount: 10,
+            quickAmounts: [10, 20, 50, 100]
+        )
+    }
+
+    func fetchOrders(
+        session: CustSubInfo,
+        filter: RechargeOrderFilter,
+        pageIndex: Int,
+        pageSize: Int
+    ) async throws -> RechargeOrderPageSnapshot {
+        let allRecords = [
+            RechargeOrderRecord(
+                id: "recharge-order-1",
+                orderId: "RCH-20260324001",
+                amountRaw: "50.00",
+                amountText: billingDisplayMoney("50.00 AED"),
+                chargeMethod: "Credit / Debit Card",
+                createdTimeText: "2026-03-24 10:32:15",
+                status: .processing,
+                statusCode: "0",
+                serviceNumber: AuthValidator.localPhoneDigits(session.serviceNumber ?? session.phoneNumber),
+                oldBalanceText: nil,
+                newBalanceText: nil
+            ),
+            RechargeOrderRecord(
+                id: "recharge-order-2",
+                orderId: "RCH-20260323017",
+                amountRaw: "20.00",
+                amountText: billingDisplayMoney("20.00 AED"),
+                chargeMethod: "Apple Pay",
+                createdTimeText: "2026-03-23 18:08:43",
+                status: .success,
+                statusCode: "1",
+                serviceNumber: AuthValidator.localPhoneDigits(session.serviceNumber ?? session.phoneNumber),
+                oldBalanceText: billingDisplayMoney("88.50 AED"),
+                newBalanceText: billingDisplayMoney("108.50 AED")
+            ),
+            RechargeOrderRecord(
+                id: "recharge-order-3",
+                orderId: "RCH-20260322005",
+                amountRaw: "10.00",
+                amountText: billingDisplayMoney("10.00 AED"),
+                chargeMethod: "Bank Transfer",
+                createdTimeText: "2026-03-22 09:16:09",
+                status: .failed,
+                statusCode: "2",
+                serviceNumber: AuthValidator.localPhoneDigits(session.serviceNumber ?? session.phoneNumber),
+                oldBalanceText: nil,
+                newBalanceText: nil
+            )
+        ]
+
+        let filtered = allRecords.filter { record in
+            let statusMatches = filter.status == nil || filter.status == record.status
+            return statusMatches
+        }
+
+        return RechargeOrderPageSnapshot(
+            records: filtered,
+            pageIndex: pageIndex,
+            pageSize: pageSize,
+            totalCount: filtered.count,
+            totalPages: 1
+        )
+    }
+
+    func submitRecharge(
+        _ request: RechargeSubmissionRequest,
+        session: CustSubInfo
+    ) async throws -> RechargeAcceptedReceipt {
+        RechargeAcceptedReceipt(
+            orderId: UUID().uuidString,
+            taskId: UUID().uuidString,
+            amountText: BillingNumberParser.displayMoney(request.amountText),
+            requestChargeMethod: request.paymentMethod.requestValue,
+            submissionStatusText: "Accepted"
+        )
+    }
+}
+
+struct RemoteRechargeService: RechargeServicing {
+    private let client: HTTPClient
+
+    init(
+        serverURL: URL,
+        session: URLSession = .shared,
+        contextBuilder: NetworkContextBuilder = NetworkContextBuilder()
+    ) {
+        client = HTTPClient(
+            baseURL: serverURL,
+            session: session,
+            contextBuilder: contextBuilder
+        )
+    }
+
+    func fetchEntrySnapshot(session: CustSubInfo) async throws -> RechargeEntrySnapshot {
+        let identity = try session.billingIdentity()
+        let userInfo = try await fetchUserInfo(identity: identity)
+        let balance = try await fetchBalance(
+            subscriberKey: userInfo.subscriberKey,
+            paymentType: userInfo.paymentTypeCode
+        )
+        let minimumAmount = try await fetchMinimumAmount()
+
+        return RechargeEntrySnapshot(
+            serviceNumber: AuthValidator.localPhoneDigits(identity.serviceNumber),
+            balanceText: BillingNumberParser.displayMoney(balance.balance?.amount),
+            minAmount: minimumAmount,
+            quickAmounts: [10, 20, 50, 100]
+        )
+    }
+
+    func fetchOrders(
+        session: CustSubInfo,
+        filter: RechargeOrderFilter,
+        pageIndex: Int,
+        pageSize: Int
+    ) async throws -> RechargeOrderPageSnapshot {
+        let identity = try session.billingIdentity()
+        let userInfo = try await fetchUserInfo(identity: identity)
+
+        var body: [String: Any] = [
+            "userId": identity.userId,
+            "serviceNumber": identity.serviceNumber,
+            "subscriberKey": userInfo.subscriberKey,
+            "pageIndex": pageIndex,
+            "pageSize": pageSize
+        ]
+
+        if let status = filter.status {
+            body["status"] = status.backendValue
+        }
+        if let startDate = filter.startDate {
+            body["startTime"] = Self.queryDateFormatter.string(from: Self.startOfDay(for: startDate))
+        }
+        if let endDate = filter.endDate {
+            body["endTime"] = Self.queryDateFormatter.string(from: Self.endOfDay(for: endDate))
+        }
+
+        do {
+            let responseData = try await client.post(RechargeAPI.queryOrderPage, body: body)
+            return try mapOrderPage(from: responseData)
+        } catch let error as HTTPClient.ClientError {
+            billingLogger.error("Fetch recharge orders failed: \(String(describing: error), privacy: .public)")
+            throw mapClientError(error)
+        } catch let error as RechargeServiceError {
+            throw error
+        } catch {
+            throw RechargeServiceError.networkUnavailable
+        }
+    }
+
+    func submitRecharge(
+        _ request: RechargeSubmissionRequest,
+        session: CustSubInfo
+    ) async throws -> RechargeAcceptedReceipt {
+        let identity = try session.billingIdentity()
+        let userInfo = try await fetchUserInfo(identity: identity)
+        guard let amount = normalizedAmount(request.amountText) else {
+            throw RechargeServiceError.invalidAmount
+        }
+
+        do {
+            let mobileMoneyData = try await client.post(
+                RechargeAPI.mobileMoneyPay,
+                body: [
+                    "serviceNumber": identity.serviceNumber,
+                    "otpCode": request.otpCode,
+                    "amount": amount,
+                    "currency": "SDG",
+                    "paymentType": "recharge",
+                    "deviceModel": BillingDeviceContext.currentDeviceModel,
+                    "deviceBrand": BillingDeviceContext.currentDeviceBrand,
+                    "subscriberKey": userInfo.subscriberKey,
+                    "chargeMethod": request.paymentMethod.requestValue,
+                    "paymentMethod": request.paymentMethod.backendExecutionValue,
+                    "rechargeType": 1,
+                    "receiveServiceNumber": identity.serviceNumber
+                ]
+            )
+
+            let isSuccess = BillingResponseDataValue.bool(in: mobileMoneyData, keys: ["success", "isSuccess"]) ?? false
+            guard isSuccess else {
+                let errorMessage = BillingResponseDataValue.string(in: mobileMoneyData, keys: ["mmDesc"])
+                    ?? "Mobile Money verification failed."
+                throw RechargeServiceError.featureUnavailable(message: errorMessage)
+            }
+
+            guard let transactionId = BillingResponseDataValue.string(in: mobileMoneyData, keys: ["transactionId"]),
+                  !transactionId.isEmpty else {
+                throw RechargeServiceError.featureUnavailable(message: "Missing Mobile Money transaction ID.")
+            }
+
+            let responseData = try await client.post(
+                RechargeAPI.submitRecharge,
+                body: [
+                    "userId": identity.userId,
+                    "serviceNumber": identity.serviceNumber,
+                    "receiveServiceNumber": identity.serviceNumber,
+                    "subscriberKey": userInfo.subscriberKey,
+                    "rechargeAmount": amount,
+                    "transactionId": transactionId,
+                    "rechargeType": 1,
+                    "chargeMethod": request.paymentMethod.requestValue,
+                    "deviceModel": BillingDeviceContext.currentDeviceModel,
+                    "deviceBrand": BillingDeviceContext.currentDeviceBrand
+                ]
+            )
+
+            return RechargeAcceptedReceipt(
+                orderId: BillingResponseDataValue.string(in: responseData, keys: ["orderId"]) ?? transactionId,
+                taskId: BillingResponseDataValue.string(in: responseData, keys: ["taskId"]) ?? "",
+                amountText: BillingNumberParser.displayMoney(amount),
+                requestChargeMethod: request.paymentMethod.requestValue,
+                submissionStatusText: BillingResponseDataValue.string(in: responseData, keys: ["submissionStatus"]) ?? "Accepted"
+            )
+        } catch let error as HTTPClient.ClientError {
+            billingLogger.error("Submit recharge failed: \(String(describing: error), privacy: .public)")
+            throw mapClientError(error)
+        } catch let error as RechargeServiceError {
+            throw error
+        } catch {
+            throw RechargeServiceError.networkUnavailable
+        }
+    }
+
+    private func fetchUserInfo(identity: BillingIdentity) async throws -> RechargeUserInfoPayload {
+        do {
+            let responseData = try await client.post(
+                HomeAPI.userInfo,
+                body: [
+                    "serviceNumber": AuthValidator.localPhoneDigits(identity.serviceNumber),
+                    "language": BillingRequestLanguage.currentCode()
+                ]
+            )
+
+            guard let object = responseData.objectValue else {
+                throw RechargeServiceError.networkUnavailable
+            }
+
+            let subscriberKey = BillingResponseDataValue.string(in: object, keys: ["subscriberKey"]) ?? ""
+            guard !subscriberKey.isEmpty else {
+                throw RechargeServiceError.missingIdentity
+            }
+
+            return RechargeUserInfoPayload(
+                subscriberKey: subscriberKey,
+                paymentTypeCode: BillingResponseDataValue.string(in: object, keys: ["paymentType"]) ?? "0",
+                serviceNumber: AuthValidator.localPhoneDigits(
+                    BillingResponseDataValue.string(in: object, keys: ["serviceNumber"]) ?? identity.serviceNumber
+                )
+            )
+        } catch let error as HTTPClient.ClientError {
+            billingLogger.error("Fetch recharge user info failed: \(String(describing: error), privacy: .public)")
+            throw mapClientError(error)
+        } catch let error as RechargeServiceError {
+            throw error
+        } catch {
+            throw RechargeServiceError.networkUnavailable
+        }
+    }
+
+    private func fetchBalance(
+        subscriberKey: String,
+        paymentType: String
+    ) async throws -> RechargeBalancePayload {
+        do {
+            let responseData = try await client.post(
+                HomeAPI.queryBalance,
+                body: [
+                    "subscriberKey": subscriberKey,
+                    "paymentType": paymentType
+                ]
+            )
+
+            guard let object = responseData.objectValue else {
+                throw RechargeServiceError.networkUnavailable
+            }
+
+            let balanceObject = object["balanceDto"]?.objectValue
+            let outstandingObject = object["outStandingDto"]?.objectValue
+            let creditLimitObject = object["creditLimitDto"]?.objectValue
+
+            return RechargeBalancePayload(
+                balance: balanceObject.map {
+                    RechargeMoneyPayload(
+                        amount: BillingResponseDataValue.string(in: $0, keys: ["balanceAmount"]),
+                        currencyID: BillingResponseDataValue.string(in: $0, keys: ["currencyId"])
+                    )
+                },
+                outstandingAmount: BillingResponseDataValue.string(in: outstandingObject ?? [:], keys: ["outstandingAmount"]),
+                totalCreditAmount: BillingResponseDataValue.string(in: creditLimitObject ?? [:], keys: ["taotalCreditAmount"]),
+                totalUsageAmount: BillingResponseDataValue.string(in: creditLimitObject ?? [:], keys: ["totalUsageAmount"]),
+                totalRemainAmount: BillingResponseDataValue.string(in: creditLimitObject ?? [:], keys: ["totalRemainAmount"])
+            )
+        } catch let error as HTTPClient.ClientError {
+            billingLogger.error("Fetch recharge balance failed: \(String(describing: error), privacy: .public)")
+            throw mapClientError(error)
+        } catch let error as RechargeServiceError {
+            throw error
+        } catch {
+            throw RechargeServiceError.networkUnavailable
+        }
+    }
+
+    private func fetchMinimumAmount() async throws -> Decimal {
+        do {
+            let responseData = try await client.post(
+                RechargeAPI.queryConfig,
+                body: ["paramCode": "RECHARGE_LIMIT_VALUE"]
+            )
+
+            guard let object = responseData.objectValue else {
+                return 10
+            }
+
+            guard let rawConfig = BillingResponseDataValue.string(in: object, keys: ["paramValue"]),
+                  let configData = rawConfig.data(using: .utf8),
+                  let jsonObject = try? JSONSerialization.jsonObject(with: configData) as? [String: Any]
+            else {
+                return 10
+            }
+
+            if let minValue = jsonObject["min"] as? NSNumber {
+                let decimal = Decimal(string: minValue.stringValue) ?? 10
+                return decimal < 10 ? 10 : decimal
+            }
+            if let minValue = jsonObject["min"] as? String,
+               let decimal = Decimal(string: minValue) {
+                return decimal < 10 ? 10 : decimal
+            }
+            return 10
+        } catch let error as HTTPClient.ClientError {
+            billingLogger.error("Fetch recharge config failed: \(String(describing: error), privacy: .public)")
+            throw mapClientError(error)
+        } catch {
+            throw RechargeServiceError.networkUnavailable
+        }
+    }
+
+    private func mapOrderPage(from responseData: HTTPClient.ResponseData) throws -> RechargeOrderPageSnapshot {
+        guard let object = responseData.objectValue else {
+            throw RechargeServiceError.networkUnavailable
+        }
+
+        let records = object["records"]?.arrayValue ?? []
+        let mappedRecords = records.compactMap(mapOrderRecord)
+        return RechargeOrderPageSnapshot(
+            records: mappedRecords,
+            pageIndex: BillingResponseDataValue.string(in: object, keys: ["current"]).flatMap(Int.init) ?? 1,
+            pageSize: BillingResponseDataValue.string(in: object, keys: ["size"]).flatMap(Int.init) ?? 20,
+            totalCount: BillingResponseDataValue.string(in: object, keys: ["total"]).flatMap(Int.init) ?? mappedRecords.count,
+            totalPages: BillingResponseDataValue.string(in: object, keys: ["pages"]).flatMap(Int.init) ?? 1
+        )
+    }
+
+    private func mapOrderRecord(_ responseData: HTTPClient.ResponseData) -> RechargeOrderRecord? {
+        guard let object = responseData.objectValue else {
+            return nil
+        }
+
+        let statusCode = BillingResponseDataValue.string(in: object, keys: ["status"]) ?? "0"
+        guard let status = RechargeOrderStatus(backendCode: statusCode) else {
+            return nil
+        }
+
+        let amountRaw = BillingResponseDataValue.string(in: object, keys: ["chargeAmount"]) ?? "0"
+
+        return RechargeOrderRecord(
+            id: BillingResponseDataValue.string(in: object, keys: ["id"]) ?? UUID().uuidString,
+            orderId: BillingResponseDataValue.string(in: object, keys: ["extOrderNo"]) ?? "",
+            amountRaw: amountRaw,
+            amountText: BillingNumberParser.displayMoney(amountRaw),
+            chargeMethod: BillingResponseDataValue.string(in: object, keys: ["chargeMethod"]) ?? "MobileMoney",
+            createdTimeText: BillingResponseDataValue.string(in: object, keys: ["createdTime"]) ?? "-",
+            status: status,
+            statusCode: statusCode,
+            serviceNumber: AuthValidator.localPhoneDigits(
+                BillingResponseDataValue.string(in: object, keys: ["receiveServiceNumber", "serviceNumber"]) ?? ""
+            ),
+            oldBalanceText: {
+                guard let value = BillingResponseDataValue.string(in: object, keys: ["oldBalanceAmt"]) else { return nil }
+                return BillingNumberParser.displayMoney(value)
+            }(),
+            newBalanceText: {
+                guard let value = BillingResponseDataValue.string(in: object, keys: ["newBalanceAmt"]) else { return nil }
+                return BillingNumberParser.displayMoney(value)
+            }()
+        )
+    }
+
+    private func mapClientError(_ error: HTTPClient.ClientError) -> RechargeServiceError {
+        switch error {
+        case let .business(_, message, _):
+            let trimmed = message.trimmingCharacters(in: .whitespacesAndNewlines)
+            return trimmed.isEmpty ? .networkUnavailable : .featureUnavailable(message: trimmed)
+        case let .networkUnavailable(underlying):
+            if let urlError = underlying as? URLError, urlError.code == .cancelled {
+                return .requestCancelled
+            }
+
+            let nsError = underlying as NSError
+            if nsError.domain == NSURLErrorDomain && nsError.code == NSURLErrorCancelled {
+                return .requestCancelled
+            }
+
+            return .networkUnavailable
+        default:
+            return .networkUnavailable
+        }
+    }
+
+    private func normalizedAmount(_ rawValue: String) -> String? {
+        guard let normalized = BillingNumberParser.normalized(rawValue),
+              let decimal = Decimal(string: normalized),
+              decimal > 0 else {
+            return nil
+        }
+
+        var amount = decimal
+        var rounded = Decimal.zero
+        NSDecimalRound(&rounded, &amount, 2, .bankers)
+        return NSDecimalNumber(decimal: rounded).stringValue
+    }
+
+    private static let queryDateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+        return formatter
+    }()
+
+    private static func startOfDay(for date: Date) -> Date {
+        Calendar(identifier: .gregorian).startOfDay(for: date)
+    }
+
+    private static func endOfDay(for date: Date) -> Date {
+        let calendar = Calendar(identifier: .gregorian)
+        let start = calendar.startOfDay(for: date)
+        return calendar.date(byAdding: DateComponents(day: 1, second: -1), to: start) ?? date
+    }
+}
