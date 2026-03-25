@@ -277,6 +277,51 @@
       "usagePartial": "Some usage details are temporarily unavailable."
     }
   },
+  "mall": {
+    "state": {
+      "loading": {
+        "title": "Loading mall..."
+      },
+      "error": {
+        "title": "Couldn't load the mall",
+        "subtitle": "We couldn't reach the mall content right now."
+      }
+    },
+    "category": {
+      "button": "Categories",
+      "title": "Categories"
+    },
+    "search": {
+      "placeholder": {
+        "page": "Search laptops, skincare, shoes..."
+      },
+      "submit": "Search",
+      "history": "Search history",
+      "hot": "Trending today",
+      "clearAll": "Clear",
+      "validation": {
+        "empty": "Enter a keyword before searching."
+      },
+      "empty": {
+        "title": "No matching products",
+        "subtitle": "Try a different keyword. Your current sort will stay in place."
+      },
+      "error": {
+        "title": "Search is unavailable",
+        "subtitle": "We couldn't load mall search results right now."
+      }
+    },
+    "sort": {
+      "best": "Best",
+      "sales": "Sales",
+      "price": "Price",
+      "newest": "Newest"
+    },
+    "detail": {
+      "title": "Detail target reserved",
+      "subtitle": "This mock currently shows the reserved detailTarget: %@."
+    }
+  },
   "messageCenter": {
     "title": "Message Center",
     "subtitle": "Track account alerts, offers, and service updates in one place.",

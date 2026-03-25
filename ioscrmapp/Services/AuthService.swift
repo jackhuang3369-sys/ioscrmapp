@@ -478,6 +478,7 @@ actor MockAuthService: AuthServicing {
     private let expirySeconds = 300
     private let lockThreshold = 5
     private let lockDurationSeconds = 15 * 60
+    private let tokenStore: KeychainAuthTokenStore
 
     private var loginOTPByPhone: [String: OTPRecord] = [:]
     private var registrationOTPByPhone: [String: OTPRecord] = [:]
@@ -490,6 +491,10 @@ actor MockAuthService: AuthServicing {
         "971555551111": MockAccount(password: "DuPass1!", displayName: "Mariam Al Suwaidi")
     ]
 
+    init(tokenStore: KeychainAuthTokenStore = KeychainAuthTokenStore()) {
+        self.tokenStore = tokenStore
+    }
+
     func loginWithPassword(phone: String, password: String) async throws -> CustSubInfo {
         try await Task.sleep(nanoseconds: 700_000_000)
         let normalizedPhone = AuthValidator.normalizedPhone(phone)
@@ -501,6 +506,12 @@ actor MockAuthService: AuthServicing {
         }
 
         clearFailures(for: normalizedPhone)
+        do {
+            try persistMockTokens(for: normalizedPhone)
+        } catch {
+            authLogger.error("Failed to persist mock login tokens status=\(String(describing: error), privacy: .public)")
+            throw AuthError.networkUnavailable
+        }
         return demoSession(phone: normalizedPhone, displayName: account.displayName)
     }
 
@@ -554,6 +565,12 @@ actor MockAuthService: AuthServicing {
 
         clearFailures(for: normalizedPhone)
         loginOTPByPhone.removeValue(forKey: normalizedPhone)
+        do {
+            try persistMockTokens(for: normalizedPhone)
+        } catch {
+            authLogger.error("Failed to persist mock login tokens status=\(String(describing: error), privacy: .public)")
+            throw AuthError.networkUnavailable
+        }
         return demoSession(
             phone: normalizedPhone,
             displayName: accountsByPhone[normalizedPhone]?.displayName ?? "Ahmed Mohammed"
@@ -785,6 +802,30 @@ actor MockAuthService: AuthServicing {
             userID: "mock-\(phone)",
             serviceNumber: AuthValidator.normalizedPhone(phone)
         )
+    }
+
+    private func persistMockTokens(for phone: String) throws {
+        let accessToken = AuthToken(
+            token: "mock-access-\(phone)-\(UUID().uuidString)",
+            expirationTime: mockExpirationString(after: 24 * 60 * 60),
+            renewal: nil
+        )
+        let refreshToken = AuthToken(
+            token: "mock-refresh-\(phone)-\(UUID().uuidString)",
+            expirationTime: mockExpirationString(after: 7 * 24 * 60 * 60),
+            renewal: nil
+        )
+        try tokenStore.save(
+            AuthSessionTokens(accessToken: accessToken, refreshToken: refreshToken)
+        )
+    }
+
+    private func mockExpirationString(after timeInterval: TimeInterval) -> String {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.timeZone = TimeZone.current
+        formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+        return formatter.string(from: Date().addingTimeInterval(timeInterval))
     }
 
     private func checkLock(for phone: String) throws {

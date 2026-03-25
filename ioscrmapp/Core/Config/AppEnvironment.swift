@@ -113,9 +113,9 @@ private enum Catalog {
             return AppServiceMode(rawValue: override.lowercased()) ?? fallback
         }
 
-        if isLocalDebugRun {
-            return .mock
-        }
+//        if isLocalDebugRun {
+//            return .mock
+//        }
 
         return fallback
     }

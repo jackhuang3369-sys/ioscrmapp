@@ -7,6 +7,7 @@ struct HomeView: View {
     @ObservedObject var sessionStore: SessionStore
     let authService: any AuthServicing
     let meService: any MeServicing
+    let mallService: any MallServicing
     let notificationService: any NotificationServicing
 
     @StateObject private var viewModel: HomeViewModel
@@ -81,12 +82,14 @@ struct HomeView: View {
         sessionStore: SessionStore,
         authService: any AuthServicing,
         homeService: any HomeServicing,
+        mallService: any MallServicing,
         meService: any MeServicing,
         notificationService: any NotificationServicing
     ) {
         self.custSubInfo = custSubInfo
         self.sessionStore = sessionStore
         self.authService = authService
+        self.mallService = mallService
         self.meService = meService
         self.notificationService = notificationService
         _viewModel = StateObject(
@@ -119,10 +122,9 @@ struct HomeView: View {
             }
             .tag(HomeTab.service)
 
-            FeaturePlaceholderView(
-                title: HomeTab.mall.title,
-                icon: HomeTab.mall.emoji,
-                message: .key("home.feature.mall.message")
+            MallContainerView(
+                session: custSubInfo,
+                mallService: mallService
             )
             .tabItem {
                 Image(HomeTab.mall.assetName)
@@ -547,7 +549,11 @@ struct HomeView: View {
             ) {
                 ForEach(quickActions) { item in
                     Button {
-                        showComingSoon(for: item.title)
+                        if item.assetName == "QuickMallIcon" {
+                            selectedTab = .mall
+                        } else {
+                            showComingSoon(for: item.title)
+                        }
                     } label: {
                         VStack(spacing: DUSpacing.sm) {
                             ZStack {
@@ -1016,6 +1022,7 @@ struct HomeView_Previews: PreviewProvider {
             sessionStore: SessionStore.previewAuthenticated,
             authService: MockAuthService(),
             homeService: MockHomeService(),
+            mallService: MockMallService(),
             meService: MockMeService(),
             notificationService: MockNotificationService()
         )

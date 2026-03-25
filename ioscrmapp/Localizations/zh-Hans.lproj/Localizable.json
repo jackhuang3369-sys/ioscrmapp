@@ -277,6 +277,51 @@
       "usagePartial": "部分用量信息暂时不可用。"
     }
   },
+  "mall": {
+    "state": {
+      "loading": {
+        "title": "正在加载商城..."
+      },
+      "error": {
+        "title": "商城加载失败",
+        "subtitle": "当前无法获取商城内容，请稍后重试。"
+      }
+    },
+    "category": {
+      "button": "分类",
+      "title": "分类"
+    },
+    "search": {
+      "placeholder": {
+        "page": "搜索笔记本、护肤、运动鞋..."
+      },
+      "submit": "搜索",
+      "history": "搜索历史",
+      "hot": "今日热搜",
+      "clearAll": "清空",
+      "validation": {
+        "empty": "请输入关键词后再搜索。"
+      },
+      "empty": {
+        "title": "没有找到相关商品",
+        "subtitle": "换个关键词试试看，当前排序会保留。"
+      },
+      "error": {
+        "title": "搜索暂时不可用",
+        "subtitle": "当前无法加载商城搜索结果，请稍后重试。"
+      }
+    },
+    "sort": {
+      "best": "综合",
+      "sales": "销量",
+      "price": "价格",
+      "newest": "新品"
+    },
+    "detail": {
+      "title": "详情跳转已预留",
+      "subtitle": "当前通过 mock 展示预留的 detailTarget：%@。"
+    }
+  },
   "messageCenter": {
     "title": "消息中心",
     "subtitle": "集中查看账户提醒、活动优惠和服务更新。",

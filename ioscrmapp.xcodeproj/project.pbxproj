@@ -59,6 +59,20 @@
 		A1000000000000000000002E /* MessageCenterViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000002E /* MessageCenterViewModel.swift */; };
 		A1000000000000000000002F /* MessageCenterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000002F /* MessageCenterView.swift */; };
 		A10000000000000000000030 /* MessageDetailContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000030 /* MessageDetailContentView.swift */; };
+		A10000000000000000000031 /* MallService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000031 /* MallService.swift */; };
+		A10000000000000000000032 /* MallModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000032 /* MallModels.swift */; };
+		A10000000000000000000033 /* MallViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000033 /* MallViewModel.swift */; };
+		A10000000000000000000034 /* MallComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000034 /* MallComponents.swift */; };
+		A10000000000000000000035 /* MallContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000035 /* MallContainerView.swift */; };
+		A10000000000000000000036 /* MallHomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000036 /* MallHomeView.swift */; };
+		A10000000000000000000037 /* MallCategoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000037 /* MallCategoryView.swift */; };
+		A10000000000000000000038 /* MallSearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000038 /* MallSearchView.swift */; };
+		A10000000000000000000039 /* MallSearchResultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000039 /* MallSearchResultView.swift */; };
+		A10000000000000000000040 /* HomeAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000040 /* HomeAPI.swift */; };
+		A10000000000000000000041 /* HomeService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000041 /* HomeService.swift */; };
+		A10000000000000000000042 /* HomeModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000042 /* HomeModels.swift */; };
+		A10000000000000000000043 /* HomeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000043 /* HomeViewModel.swift */; };
+		A10000000000000000000044 /* MallAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000044 /* MallAPI.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -115,6 +129,20 @@
 		A2000000000000000000002E /* MessageCenterViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageCenterViewModel.swift; sourceTree = "<group>"; };
 		A2000000000000000000002F /* MessageCenterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageCenterView.swift; sourceTree = "<group>"; };
 		A20000000000000000000030 /* MessageDetailContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageDetailContentView.swift; sourceTree = "<group>"; };
+		A20000000000000000000031 /* MallService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MallService.swift; sourceTree = "<group>"; };
+		A20000000000000000000032 /* MallModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MallModels.swift; sourceTree = "<group>"; };
+		A20000000000000000000033 /* MallViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MallViewModel.swift; sourceTree = "<group>"; };
+		A20000000000000000000034 /* MallComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MallComponents.swift; sourceTree = "<group>"; };
+		A20000000000000000000035 /* MallContainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MallContainerView.swift; sourceTree = "<group>"; };
+		A20000000000000000000036 /* MallHomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MallHomeView.swift; sourceTree = "<group>"; };
+		A20000000000000000000037 /* MallCategoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MallCategoryView.swift; sourceTree = "<group>"; };
+		A20000000000000000000038 /* MallSearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MallSearchView.swift; sourceTree = "<group>"; };
+		A20000000000000000000039 /* MallSearchResultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MallSearchResultView.swift; sourceTree = "<group>"; };
+		A20000000000000000000040 /* HomeAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeAPI.swift; sourceTree = "<group>"; };
+		A20000000000000000000041 /* HomeService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeService.swift; sourceTree = "<group>"; };
+		A20000000000000000000042 /* HomeModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeModels.swift; sourceTree = "<group>"; };
+		A20000000000000000000043 /* HomeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewModel.swift; sourceTree = "<group>"; };
+		A20000000000000000000044 /* MallAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MallAPI.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -185,6 +213,8 @@
 			children = (
 				A2000000000000000000000D /* AppServices.swift */,
 				A20000000000000000000002 /* AuthService.swift */,
+				A20000000000000000000041 /* HomeService.swift */,
+				A20000000000000000000031 /* MallService.swift */,
 				A20000000000000000000008 /* MeService.swift */,
 				A2000000000000000000002C /* NotificationService.swift */,
 				A20000000000000000000023 /* SplashAdService.swift */,
@@ -198,6 +228,7 @@
 			children = (
 				A30000000000000000000006 /* Auth */,
 				A30000000000000000000007 /* Home */,
+				A30000000000000000000031 /* Mall */,
 				A3000000000000000000002B /* MessageCenter */,
 				A3000000000000000000001A /* Launch */,
 				A3000000000000000000000C /* Me */,
@@ -236,6 +267,8 @@
 		A30000000000000000000007 /* Home */ = {
 			isa = PBXGroup;
 			children = (
+				A30000000000000000000040 /* Models */,
+				A30000000000000000000041 /* ViewModels */,
 				A3000000000000000000000B /* Views */,
 			);
 			path = Home;
@@ -397,7 +430,9 @@
 				A20000000000000000000021 /* AdvertisementAPI.swift */,
 				A2000000000000000000001C /* AuthAPI.swift */,
 				A2000000000000000000001F /* DeviceIdentityProvider.swift */,
+				A20000000000000000000040 /* HomeAPI.swift */,
 				A2000000000000000000001D /* HTTPClient.swift */,
+				A20000000000000000000044 /* MallAPI.swift */,
 				A2000000000000000000001E /* NetworkContextBuilder.swift */,
 				A2000000000000000000002B /* NotificationAPI.swift */,
 			);
@@ -475,6 +510,61 @@
 			path = Views;
 			sourceTree = "<group>";
 		};
+		A30000000000000000000031 /* Mall */ = {
+			isa = PBXGroup;
+			children = (
+				A30000000000000000000032 /* Models */,
+				A30000000000000000000033 /* ViewModels */,
+				A30000000000000000000034 /* Views */,
+			);
+			path = Mall;
+			sourceTree = "<group>";
+		};
+		A30000000000000000000032 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				A20000000000000000000032 /* MallModels.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		A30000000000000000000033 /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				A20000000000000000000033 /* MallViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		A30000000000000000000034 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				A20000000000000000000034 /* MallComponents.swift */,
+				A20000000000000000000035 /* MallContainerView.swift */,
+				A20000000000000000000036 /* MallHomeView.swift */,
+				A20000000000000000000037 /* MallCategoryView.swift */,
+				A20000000000000000000038 /* MallSearchView.swift */,
+				A20000000000000000000039 /* MallSearchResultView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		A30000000000000000000040 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				A20000000000000000000042 /* HomeModels.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		A30000000000000000000041 /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				A20000000000000000000043 /* HomeViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -546,6 +636,20 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A10000000000000000000043 /* HomeViewModel.swift in Sources */,
+				A10000000000000000000042 /* HomeModels.swift in Sources */,
+				A10000000000000000000041 /* HomeService.swift in Sources */,
+				A10000000000000000000040 /* HomeAPI.swift in Sources */,
+				A10000000000000000000044 /* MallAPI.swift in Sources */,
+				A10000000000000000000039 /* MallSearchResultView.swift in Sources */,
+				A10000000000000000000038 /* MallSearchView.swift in Sources */,
+				A10000000000000000000037 /* MallCategoryView.swift in Sources */,
+				A10000000000000000000036 /* MallHomeView.swift in Sources */,
+				A10000000000000000000035 /* MallContainerView.swift in Sources */,
+				A10000000000000000000034 /* MallComponents.swift in Sources */,
+				A10000000000000000000033 /* MallViewModel.swift in Sources */,
+				A10000000000000000000032 /* MallModels.swift in Sources */,
+				A10000000000000000000031 /* MallService.swift in Sources */,
 				A10000000000000000000028 /* SplashAdView.swift in Sources */,
 				A10000000000000000000027 /* AppLaunchContainerView.swift in Sources */,
 				A10000000000000000000026 /* SplashAdViewModel.swift in Sources */,
