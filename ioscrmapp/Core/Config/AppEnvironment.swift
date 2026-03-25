@@ -62,6 +62,7 @@ private enum Catalog {
 
     private static let environmentURLs: [AppEnvironment: URL] = [
         .develop: URL(string: "http://10.72.61.85:9000")!,
+//        .develop: URL(string: "http://192.168.137.1:9000")!,
         .test: URL(string: "https://staging-api.example.com")!,
         .production: URL(string: "https://api.example.com")!,
     ]
@@ -113,9 +114,9 @@ private enum Catalog {
             return AppServiceMode(rawValue: override.lowercased()) ?? fallback
         }
 
-//        if isLocalDebugRun {
-//            return .mock
-//        }
+        if isLocalDebugRun {
+            return .remote
+        }
 
         return fallback
     }

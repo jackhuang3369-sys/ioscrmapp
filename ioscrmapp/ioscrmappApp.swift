@@ -21,6 +21,8 @@ struct ioscrmappApp: App {
                     authService: services.authService,
                     homeService: services.homeService,
                     mallService: services.mallService,
+                    billingService: services.billingService,
+                    rechargeService: services.rechargeService,
                     meService: services.meService,
                     notificationService: services.notificationService,
                     authServerURL: services.configuration.mode == .remote ? services.configuration.serverURL : nil

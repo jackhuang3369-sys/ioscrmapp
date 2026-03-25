@@ -6,6 +6,8 @@ struct HomeView: View {
     let custSubInfo: CustSubInfo
     @ObservedObject var sessionStore: SessionStore
     let authService: any AuthServicing
+    let billingService: any BillingServicing
+    let rechargeService: any RechargeServicing
     let meService: any MeServicing
     let mallService: any MallServicing
     let notificationService: any NotificationServicing
@@ -15,16 +17,18 @@ struct HomeView: View {
     @State private var selectedTab: HomeTab = .home
     @State private var selectedBannerIndex = 0
     @State private var isMessageCenterPresented = false
+    @State private var isBillingPresented = false
+    @State private var isRechargePresented = false
     @State private var isSigningOut = false
     @State private var signOutFailureMessageKey: String?
 
     private let pageHorizontalPadding: CGFloat = DUSpacing.md
     private let bannerTimer = Timer.publish(every: 4, on: .main, in: .common).autoconnect()
     private let quickActions: [HomeItem] = [
-        .init(title: .key("home.quick.recharge"), assetName: "QuickRechargeIcon"),
-        .init(title: .key("home.quick.plans"), assetName: "QuickPlansIcon"),
+        .init(title: .key("home.quick.recharge"), assetName: "QuickRechargeIcon", action: .recharge),
+        .init(title: .key("home.quick.payBill"), assetName: "ServiceBillsIcon", action: .billing),
         .init(title: .key("home.quick.offers"), assetName: "QuickOffersIcon"),
-        .init(title: .key("home.quick.mall"), assetName: "QuickMallIcon"),
+        .init(title: .key("home.quick.mall"), assetName: "QuickMallIcon", action: .mall),
     ]
 
     private let services: [HomeItem] = [
@@ -32,7 +36,7 @@ struct HomeView: View {
         .init(title: .key("home.service.voicePack"), assetName: "ServiceVoicePackIcon"),
         .init(title: .key("home.service.roaming"), assetName: "ServiceRoamingIcon"),
         .init(title: .key("home.service.tickets"), assetName: "ServiceTicketsIcon"),
-        .init(title: .key("home.service.bills"), assetName: "ServiceBillsIcon"),
+        .init(title: .key("home.service.bills"), assetName: "ServiceBillsIcon", action: .billing),
         .init(title: .key("home.service.points"), assetName: "ServicePointsIcon"),
         .init(title: .key("home.service.mail"), assetName: "ServiceMailIcon"),
         .init(title: .key("home.service.support"), assetName: "ServiceSupportIcon"),
@@ -83,12 +87,16 @@ struct HomeView: View {
         authService: any AuthServicing,
         homeService: any HomeServicing,
         mallService: any MallServicing,
+        billingService: any BillingServicing,
+        rechargeService: any RechargeServicing,
         meService: any MeServicing,
         notificationService: any NotificationServicing
     ) {
         self.custSubInfo = custSubInfo
         self.sessionStore = sessionStore
         self.authService = authService
+        self.billingService = billingService
+        self.rechargeService = rechargeService
         self.mallService = mallService
         self.meService = meService
         self.notificationService = notificationService
@@ -103,11 +111,11 @@ struct HomeView: View {
     var body: some View {
         TabView(selection: $selectedTab) {
             homeDashboard
-                .tabItem {
-                    Image(HomeTab.home.assetName)
-                        .renderingMode(.original)
-                    Text(localized(HomeTab.home.title))
-                }
+            .tabItem {
+                Image(HomeTab.home.assetName)
+                    .renderingMode(.original)
+                Text(localized(HomeTab.home.title))
+            }
                 .tag(HomeTab.home)
 
             FeaturePlaceholderView(
@@ -147,7 +155,10 @@ struct HomeView: View {
 
             MeContainerView(
                 session: custSubInfo,
+                billingService: billingService,
+                rechargeService: rechargeService,
                 meService: meService,
+                showRechargeEntry: showsRechargeEntryInMe,
                 isSigningOut: isSigningOut,
                 onSignOut: {
                     startSignOut()
@@ -178,6 +189,12 @@ struct HomeView: View {
                 session: custSubInfo,
                 notificationService: notificationService
             )
+        }
+        .fullScreenCover(isPresented: $isBillingPresented) {
+            BillingContainerView(session: custSubInfo, billingService: billingService)
+        }
+        .fullScreenCover(isPresented: $isRechargePresented) {
+            RechargeContainerView(session: custSubInfo, rechargeService: rechargeService)
         }
         .confirmationDialog(
             localized("me.signOut.failure.title"),
@@ -345,15 +362,7 @@ struct HomeView: View {
 
                 Spacer()
 
-                Button(localized("home.header.recharge")) {
-                    showComingSoon(for: .key("home.quick.recharge"))
-                }
-                .font(.du(13, weight: .semibold))
-                .foregroundColor(DUTheme.ink)
-                .padding(.horizontal, DUSpacing.lg)
-                .frame(height: 36)
-                .background(Color.white.opacity(0.95))
-                .clipShape(Capsule())
+                dashboardActions(for: summary)
             }
 
             summarySecondaryDetails(summary)
@@ -547,13 +556,9 @@ struct HomeView: View {
                 columns: Array(repeating: GridItem(.flexible(), spacing: DUSpacing.md), count: 4),
                 spacing: DUSpacing.md
             ) {
-                ForEach(quickActions) { item in
+                ForEach(filteredQuickActions) { item in
                     Button {
-                        if item.assetName == "QuickMallIcon" {
-                            selectedTab = .mall
-                        } else {
-                            showComingSoon(for: item.title)
-                        }
+                        handleAction(item)
                     } label: {
                         VStack(spacing: DUSpacing.sm) {
                             ZStack {
@@ -650,7 +655,7 @@ struct HomeView: View {
             ) {
                 ForEach(services) { item in
                     Button {
-                        showComingSoon(for: item.title)
+                        handleAction(item)
                     } label: {
                         VStack(spacing: DUSpacing.sm) {
                             RoundedRectangle(cornerRadius: 18, style: .continuous)
@@ -773,6 +778,70 @@ struct HomeView: View {
 
     private func showComingSoon(for title: LocalizedTextValue) {
         placeholderMessage = .key("common.placeholder.feature", arguments: [localized(title)])
+    }
+
+    @ViewBuilder
+    private func dashboardActions(for summary: HomeSummarySection) -> some View {
+        HStack(spacing: DUSpacing.sm) {
+            if summary.paymentType == .prepaid {
+                Button(localized("home.header.recharge")) {
+                    isRechargePresented = true
+                }
+                .font(.du(13, weight: .semibold))
+                .foregroundColor(DUTheme.ink)
+                .padding(.horizontal, DUSpacing.lg)
+                .frame(height: 36)
+                .background(Color.white.opacity(0.95))
+                .clipShape(Capsule())
+            }
+
+            if summary.paymentType == .postpaid || summary.paymentType == .hybrid {
+                Button(localized("home.header.payBill")) {
+                    isBillingPresented = true
+                }
+                .font(.du(13, weight: .semibold))
+                .foregroundColor(DUTheme.cyan)
+                .padding(.horizontal, DUSpacing.lg)
+                .frame(height: 36)
+                .background(Color.white)
+                .clipShape(Capsule())
+            }
+        }
+    }
+
+    private func handleAction(_ item: HomeItem) {
+        switch item.action {
+        case .placeholder:
+            showComingSoon(for: item.title)
+        case .mall:
+            selectedTab = .mall
+        case .billing:
+            isBillingPresented = true
+        case .recharge:
+            isRechargePresented = true
+        }
+    }
+
+    private var filteredQuickActions: [HomeItem] {
+        guard let paymentType = viewModel.dashboard?.summary.paymentType else {
+            return quickActions
+        }
+
+        switch paymentType {
+        case .prepaid:
+            return quickActions.filter { $0.action != .billing }
+        case .postpaid:
+            return quickActions.filter { $0.action != .recharge }
+        case .hybrid, .unknown:
+            return quickActions
+        }
+    }
+
+    private var showsRechargeEntryInMe: Bool {
+        guard let paymentType = viewModel.dashboard?.summary.paymentType else {
+            return false
+        }
+        return paymentType != .postpaid
     }
 
     private func localized(_ key: String, arguments: [String] = []) -> String {
@@ -943,9 +1012,23 @@ private enum HomeTab: Hashable {
 }
 
 private struct HomeItem: Identifiable {
+    enum Action {
+        case placeholder
+        case mall
+        case billing
+        case recharge
+    }
+
     let id = UUID()
     let title: LocalizedTextValue
     let assetName: String
+    let action: Action
+
+    init(title: LocalizedTextValue, assetName: String, action: Action = .placeholder) {
+        self.title = title
+        self.assetName = assetName
+        self.action = action
+    }
 }
 
 private struct HomeProduct: Identifiable {
@@ -1023,6 +1106,8 @@ struct HomeView_Previews: PreviewProvider {
             authService: MockAuthService(),
             homeService: MockHomeService(),
             mallService: MockMallService(),
+            billingService: MockBillingService(),
+            rechargeService: MockRechargeService(),
             meService: MockMeService(),
             notificationService: MockNotificationService()
         )

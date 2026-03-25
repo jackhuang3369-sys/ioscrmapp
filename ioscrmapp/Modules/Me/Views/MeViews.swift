@@ -3,16 +3,28 @@ import SwiftUI
 struct MeContainerView: View {
     @EnvironmentObject private var languageStore: AppLanguageStore
     @StateObject private var viewModel: MeViewModel
+    @State private var isRechargePresented = false
 
+    private let session: CustSubInfo
+    private let billingService: any BillingServicing
+    private let rechargeService: any RechargeServicing
+    private let showRechargeEntry: Bool
     private let isSigningOut: Bool
     private let onSignOut: () -> Void
 
     init(
         session: CustSubInfo,
+        billingService: any BillingServicing,
+        rechargeService: any RechargeServicing,
         meService: any MeServicing,
+        showRechargeEntry: Bool = false,
         isSigningOut: Bool = false,
         onSignOut: @escaping () -> Void = {}
     ) {
+        self.session = session
+        self.billingService = billingService
+        self.rechargeService = rechargeService
+        self.showRechargeEntry = showRechargeEntry
         _viewModel = StateObject(
             wrappedValue: MeViewModel(session: session, meService: meService)
         )
@@ -53,6 +65,12 @@ struct MeContainerView: View {
                     viewModel.placeholderMessage = nil
                 }
             )
+        }
+        .fullScreenCover(isPresented: $viewModel.isBillingPresented) {
+            BillingContainerView(session: session, billingService: billingService)
+        }
+        .fullScreenCover(isPresented: $isRechargePresented) {
+            RechargeContainerView(session: session, rechargeService: rechargeService)
         }
     }
 
@@ -139,6 +157,9 @@ struct MeContainerView: View {
                         .padding(.bottom, -4)
 
                     VStack(spacing: DUSpacing.lg) {
+                        if showRechargeEntry {
+                            rechargeEntryCard
+                        }
                         badgesSection(items: content.badges)
                         menuGroupsSection(groups: content.menuGroups)
                         signOutButton
@@ -446,6 +467,49 @@ struct MeContainerView: View {
         .disabled(isSigningOut)
     }
 
+    private var rechargeEntryCard: some View {
+        Button {
+            isRechargePresented = true
+        } label: {
+            HStack(spacing: DUSpacing.md) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                        .fill(DUTheme.cyanBackground)
+                        .frame(width: 56, height: 56)
+
+                    Image("QuickRechargeIcon")
+                        .renderingMode(.original)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 40, height: 40)
+                }
+
+                VStack(alignment: .leading, spacing: DUSpacing.xs) {
+                    Text(localized("recharge.title"))
+                        .font(.du(16, weight: .bold))
+                        .foregroundColor(DUTheme.ink)
+                    Text(localized("recharge.meEntry.subtitle"))
+                        .font(.du(12, weight: .medium))
+                        .foregroundColor(DUTheme.inkSecondary)
+                }
+
+                Spacer()
+
+                Image(systemName: "chevron.right")
+                    .font(.du(12, weight: .bold))
+                    .foregroundColor(DUTheme.inkTertiary)
+            }
+            .padding(DUSpacing.lg)
+            .background(DUTheme.panel)
+            .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 24, style: .continuous)
+                    .stroke(DUTheme.lineLight, lineWidth: 1)
+            )
+        }
+        .buttonStyle(.plain)
+    }
+
     private var placeholderAlertIsPresented: Binding<Bool> {
         Binding(
             get: { viewModel.placeholderMessage != nil },
@@ -476,13 +540,13 @@ struct MeContainerView_Previews: PreviewProvider {
 
     static var previews: some View {
         Group {
-            MeContainerView(session: previewSession, meService: MockMeService())
+            MeContainerView(session: previewSession, billingService: MockBillingService(), rechargeService: MockRechargeService(), meService: MockMeService(), showRechargeEntry: true)
                 .previewDisplayName("Loaded")
 
-            MeContainerView(session: previewSession, meService: MockMeService(mode: .empty))
+            MeContainerView(session: previewSession, billingService: MockBillingService(), rechargeService: MockRechargeService(), meService: MockMeService(mode: .empty))
                 .previewDisplayName("Empty")
 
-            MeContainerView(session: previewSession, meService: MockMeService(mode: .failed))
+            MeContainerView(session: previewSession, billingService: MockBillingService(), rechargeService: MockRechargeService(), meService: MockMeService(mode: .failed))
                 .previewDisplayName("Error")
         }
         .environmentObject(AppLanguageStore(initialLanguage: .english))

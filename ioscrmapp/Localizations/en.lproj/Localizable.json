@@ -190,7 +190,8 @@
       "creditTotalTitle": "Total",
       "creditUsedTitle": "Used",
       "creditRemainingTitle": "Remaining",
-      "recharge": "Recharge"
+      "recharge": "Recharge",
+      "payBill": "Pay Bill"
     },
     "placeholder": {
       "search": "Search is coming soon.",
@@ -198,6 +199,7 @@
     },
     "quick": {
       "recharge": "Recharge",
+      "payBill": "Pay Bill",
       "plans": "Plans",
       "offers": "Offers",
       "mall": "Mall"
@@ -484,6 +486,233 @@
       "english": "English",
       "chinese": "Simplified Chinese",
       "arabic": "Arabic"
+    }
+  },
+  "billing": {
+    "title": "Billing",
+    "tab": {
+      "summary": "Pay Bill",
+      "list": "Bill List"
+    },
+    "summary": {
+      "outstanding": "Outstanding Amount",
+      "dueDate": "Due Date",
+      "account": "Account",
+      "unbilled": "Current Unbilled",
+      "remainingCredit": "Available Credit",
+      "totalUsage": "Total Usage"
+    },
+    "unbilledDetail": {
+      "title": "Current Unbilled",
+      "subtitle": "Static estimate for the current cycle before invoice generation.",
+      "estimatedAmount": "Estimated Amount",
+      "expectedBillDate": "Expected Bill Date",
+      "currentCycle": "Current Cycle",
+      "lastUpdated": "Last Updated",
+      "charge": {
+        "title": "Estimated Charges",
+        "monthlyFee": "Monthly Fee",
+        "addOnPackage": "Add-on Package",
+        "internationalRoaming": "International Roaming",
+        "outOfBundle": "Out-of-Bundle Usage"
+      },
+      "usage": {
+        "title": "Current Usage",
+        "localData": "Local Data",
+        "localVoice": "Local Voice",
+        "sms": "SMS"
+      },
+      "notice": {
+        "title": "Estimate Notice",
+        "body": "This page is a static estimated bill preview. Amounts may change before the official invoice is generated."
+      }
+    },
+    "amount": {
+      "title": "Payment Amount"
+    },
+    "payment": {
+      "title": "Payment Method",
+      "otp": {
+        "title": "Payment OTP",
+        "subtitle": "Enter the Mobile Money OTP before submitting the payment.",
+        "placeholder": "Enter OTP",
+        "required": "Enter the Mobile Money OTP to continue."
+      },
+      "method": {
+        "creditCard": "Credit / Debit Card",
+        "applePay": "Apple Pay",
+        "samsungPay": "Samsung Pay"
+      },
+      "amountInvalid": "Enter a valid payment amount."
+    },
+    "outstanding": {
+      "listTitle": "Outstanding Bills"
+    },
+    "invoice": {
+      "cycle": "Bill Cycle",
+      "invoiceDate": "Invoice Date",
+      "totalAmount": "Total Amount",
+      "openAmount": "Open Amount",
+      "taxAmount": "Tax Amount",
+      "viewDetail": "View Detail",
+      "previewPdf": "Preview PDF",
+      "pay": "Pay Bill"
+    },
+    "detail": {
+      "title": "Bill Detail",
+      "visualBill": "Visual Bill",
+      "facts": "Bill Facts"
+    },
+    "visual": {
+      "monthlyFee": "Monthly Fee",
+      "otherCharges": "Other Charges"
+    },
+    "pdf": {
+      "title": "Bill PDF",
+      "error": "Unable to preview bill PDF. Please try again later."
+    },
+    "pay": {
+      "button": "Pay Bill",
+      "submitting": "Submitting..."
+    },
+    "submission": {
+      "subtitle": "Your payment has been submitted. The bill list updates after CBS refreshes the latest bill facts.",
+      "continue": "Back to Billing"
+    },
+    "toast": {
+      "title": "Billing"
+    },
+    "status": {
+      "outstanding": "Outstanding",
+      "completed": "Completed",
+      "unknown": "Unknown"
+    },
+    "statusLabel": "Status",
+    "empty": {
+      "title": "No bills available",
+      "subtitle": "There are no bill records to show right now."
+    },
+    "state": {
+      "loadingTitle": "Loading billing details...",
+      "errorTitle": "Billing unavailable",
+      "errorSubtitle": "Billing information is temporarily unavailable. Please try again."
+    }
+  },
+  "recharge": {
+    "title": "Recharge",
+    "subtitle": {
+      "recharge": "For your current prepaid line",
+      "orders": "Status uses only the status field"
+    },
+    "tab": {
+      "recharge": "Recharge",
+      "orders": "Orders"
+    },
+    "meEntry": {
+      "subtitle": "Top up your current number and review recharge records."
+    },
+    "hero": {
+      "serviceNumber": "Service Number",
+      "source": "Source",
+      "queryBalance": "queryBalance",
+      "prepaid": "Prepaid",
+      "noSwitching": "No number switching"
+    },
+    "balance": {
+      "title": "Current Balance"
+    },
+    "number": {
+      "title": "Current Number",
+      "viewOrders": "View Orders",
+      "fixed": "Fixed to the logged-in account"
+    },
+    "amount": {
+      "title": "Recharge Amount",
+      "placeholder": "0.00",
+      "minimum": "Minimum amount: %@",
+      "decimals": "2 decimals",
+      "helper": "Minimum amount comes from RECHARGE_LIMIT_VALUE.min. No front-end max validation in V1."
+    },
+    "quick": {
+      "title": "Quick Amounts"
+    },
+    "primary": "Continue",
+    "method": {
+      "title": "Payment Method",
+      "creditCard": "Credit / Debit Card",
+      "applePay": "Apple Pay",
+      "bankTransfer": "Bank Transfer",
+      "mobileMoneyRoute": "Visible in UI, executed through MobileMoney.",
+      "displayOnly": "Display only",
+      "creditCardDesc": "Success receipt shows this selected chargeMethod.",
+      "applePayDesc": "Visible in UI, actual execution still routes to MobileMoney.",
+      "bankTransferDesc": "Retained for design consistency with the DU payment catalogue.",
+      "routeNote": "UI keeps the selected chargeMethod; execution remains MobileMoney -> paybill."
+    },
+    "status": {
+      "processing": "Processing",
+      "success": "Success",
+      "failed": "Failed"
+    },
+    "receipt": {
+      "orderId": "Order ID",
+      "chargeMethod": "chargeMethod"
+    },
+    "orders": {
+      "defaultNote": "Default: no date filter",
+      "loadingMore": "Loading more orders...",
+      "listTitle": "Order List",
+      "methodSource": "chargeMethod from backend",
+      "page": "Time unlimited, page %@ of %@",
+      "filter": {
+        "title": "Filter Orders",
+        "date": "Date",
+        "start": "Start Date",
+        "end": "End Date",
+        "all": "All",
+        "apply": "Apply",
+        "clear": "Clear",
+        "statusTitle": "Status"
+      },
+      "failure": {
+        "async": "The accepted recharge was later marked as failed. Retry from a new recharge request."
+      },
+      "empty": {
+        "title": "No recharge records",
+        "subtitle": "Recharge records will appear here after your first accepted request."
+      },
+      "detail": {
+        "title": "Order Detail",
+        "subtitle": "Review the accepted receipt fields and latest asynchronous status.",
+        "status": "Status",
+        "created": "Created Time",
+        "number": "Current Number",
+        "amount": "Recharge Amount",
+        "statusCode": "Status Code",
+        "balanceTitle": "Balance Snapshot",
+        "balanceBefore": "Balance Before",
+        "balanceAfter": "Balance After",
+        "failure": "Failure Detail",
+        "failureHint": "Asynchronous failures only surface in Orders after the request was accepted.",
+        "noBalanceChange": "No balance snapshot"
+      }
+    },
+    "success": {
+      "title": "Recharge Receipt"
+    },
+    "confirm": {
+      "otpRequired": "Enter the OTP before submitting the recharge."
+    },
+    "toast": {
+      "title": "Recharge"
+    },
+    "error": {
+      "generic": "Recharge is temporarily unavailable. Please try again.",
+      "invalidAmount": "Enter a valid recharge amount."
+    },
+    "state": {
+      "loading": "Loading recharge details...",
+      "errorTitle": "Recharge unavailable"
     }
   },
   "splash": {
