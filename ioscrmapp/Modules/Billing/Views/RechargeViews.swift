@@ -13,7 +13,6 @@ struct RechargeContainerView: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var languageStore: AppLanguageStore
     @StateObject private var viewModel: RechargeViewModel
-    @State private var shareItems: [Any] = []
     @State private var isDateFilterPresented = false
     @State private var draftStartDate = Date()
     @State private var draftEndDate = Date()
@@ -98,16 +97,6 @@ struct RechargeContainerView: View {
                     viewModel.dismissFailure()
                 }
             )
-        }
-        .sheet(isPresented: Binding(
-            get: { !shareItems.isEmpty },
-            set: { isPresented in
-                if !isPresented {
-                    shareItems = []
-                }
-            }
-        )) {
-            BillingExportController(items: shareItems)
         }
         .sheet(isPresented: $isDateFilterPresented) {
             rechargeDateFilterSheet
@@ -665,11 +654,27 @@ struct RechargeContainerView: View {
     }
 
     private var ordersListSection: some View {
-        VStack(spacing: DUSpacing.md) {
+        LazyVStack(spacing: DUSpacing.md) {
             ForEach(viewModel.ordersSnapshot?.records ?? []) { record in
                 rechargeOrderCard(record)
-                    .task {
-                        await viewModel.loadMoreOrdersIfNeeded(currentRecord: record)
+                    .onAppear {
+                        guard record.id == viewModel.ordersSnapshot?.records.last?.id else {
+                            return
+                        }
+                        Task {
+                            await viewModel.loadMoreOrdersIfNeeded(currentRecord: record)
+                        }
+                    }
+            }
+
+            if viewModel.hasMoreOrders,
+               let lastRecord = viewModel.ordersSnapshot?.records.last {
+                Color.clear
+                    .frame(height: 24)
+                    .onAppear {
+                        Task {
+                            await viewModel.loadMoreOrdersIfNeeded(currentRecord: lastRecord)
+                        }
                     }
             }
 
@@ -817,7 +822,7 @@ struct RechargeContainerView: View {
     private func shareReceipt(_ receipt: RechargeAcceptedReceipt) {
         #if canImport(UIKit)
         let items = [receipt.orderId, receipt.amountText, receipt.requestChargeMethod]
-        shareItems = items
+        presentShareSheet(items: items)
         #endif
     }
 
@@ -829,10 +834,30 @@ struct RechargeContainerView: View {
             localizedTitle: localized("recharge.success.title")
         ) {
             UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil)
-            shareItems = [image]
         }
         #endif
     }
+
+    #if canImport(UIKit)
+    private func presentShareSheet(items: [Any]) {
+        guard !items.isEmpty,
+              let presenter = RechargeSharePresenter.topViewController() else {
+            return
+        }
+
+        let controller = UIActivityViewController(activityItems: items, applicationActivities: nil)
+        if let popover = controller.popoverPresentationController {
+            popover.sourceView = presenter.view
+            popover.sourceRect = CGRect(
+                x: presenter.view.bounds.midX,
+                y: presenter.view.bounds.midY,
+                width: 1,
+                height: 1
+            )
+        }
+        presenter.present(controller, animated: true)
+    }
+    #endif
 
     private func localized(_ key: String, arguments: [String] = []) -> String {
         languageStore.string(key, arguments: arguments)
@@ -848,6 +873,29 @@ struct RechargeContainerView: View {
         return formatter
     }()
 }
+
+#if canImport(UIKit)
+private enum RechargeSharePresenter {
+    static func topViewController(
+        from controller: UIViewController? = UIApplication.shared.connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .flatMap(\.windows)
+            .first(where: \.isKeyWindow)?
+            .rootViewController
+    ) -> UIViewController? {
+        if let navigationController = controller as? UINavigationController {
+            return topViewController(from: navigationController.visibleViewController)
+        }
+        if let tabBarController = controller as? UITabBarController {
+            return topViewController(from: tabBarController.selectedViewController)
+        }
+        if let presentedViewController = controller?.presentedViewController {
+            return topViewController(from: presentedViewController)
+        }
+        return controller
+    }
+}
+#endif
 
 private struct RechargeNumericDatePicker: View {
     @Binding var selection: Date
@@ -961,7 +1009,6 @@ private struct RechargeOrderDetailView: View {
             VStack(spacing: DUSpacing.lg) {
                 detailHero
                 detailFacts
-                detailBalanceSection
 
                 if let failureMessageKey = record.failureMessageKey {
                     DUSectionCard(title: localized("recharge.orders.detail.failure")) {
@@ -1029,21 +1076,6 @@ private struct RechargeOrderDetailView: View {
                 detailFactRow(title: localized("recharge.orders.detail.amount"), value: record.amountText)
                 detailFactRow(title: localized("recharge.orders.detail.status"), value: localized(record.status.titleKey))
                 detailFactRow(title: localized("recharge.orders.detail.statusCode"), value: record.statusCode)
-            }
-        }
-    }
-
-    private var detailBalanceSection: some View {
-        DUSectionCard(title: localized("recharge.orders.detail.balanceTitle")) {
-            VStack(spacing: DUSpacing.md) {
-                detailFactRow(
-                    title: localized("recharge.orders.detail.balanceBefore"),
-                    value: record.oldBalanceText ?? localized("recharge.orders.detail.noBalanceChange")
-                )
-                detailFactRow(
-                    title: localized("recharge.orders.detail.balanceAfter"),
-                    value: record.newBalanceText ?? localized("recharge.orders.detail.noBalanceChange")
-                )
             }
         }
     }

@@ -444,7 +444,7 @@ final class RechargeViewModel: ObservableObject {
 
     private let session: CustSubInfo
     private let rechargeService: any RechargeServicing
-    private let ordersPageSize = 20
+    private let ordersPageSize = 10
 
     init(session: CustSubInfo, rechargeService: any RechargeServicing) {
         self.session = session
@@ -484,6 +484,16 @@ final class RechargeViewModel: ObservableObject {
         BillingNumberParser.displayMoney(NSDecimalNumber(decimal: minimumAmount).stringValue)
     }
 
+    var hasMoreOrders: Bool {
+        guard let snapshot = ordersSnapshot else {
+            return false
+        }
+        if snapshot.records.count < snapshot.totalCount {
+            return true
+        }
+        return snapshot.pageIndex < snapshot.totalPages
+    }
+
     private var minimumAmount: Decimal {
         entrySnapshot?.minAmount ?? 10
     }
@@ -507,7 +517,16 @@ final class RechargeViewModel: ObservableObject {
     }
 
     func refreshEntry() async {
-        entryState = .loading
+        let hadLoadedContent = entrySnapshot != nil && {
+            if case .loaded = entryState {
+                return true
+            }
+            return false
+        }()
+
+        if !hadLoadedContent {
+            entryState = .loading
+        }
 
         do {
             let snapshot = try await rechargeService.fetchEntrySnapshot(session: session)
@@ -515,14 +534,32 @@ final class RechargeViewModel: ObservableObject {
             entryState = .loaded
         } catch {
             if let rechargeError = error as? RechargeServiceError, case .requestCancelled = rechargeError {
+                if hadLoadedContent {
+                    entryState = .loaded
+                }
                 return
             }
-            entryState = .failed((error as? RechargeServiceError)?.textValue ?? .key("recharge.error.generic"))
+            let message = (error as? RechargeServiceError)?.textValue ?? .key("recharge.error.generic")
+            if hadLoadedContent {
+                toastMessage = message
+                entryState = .loaded
+            } else {
+                entryState = .failed(message)
+            }
         }
     }
 
     func refreshOrders() async {
-        ordersState = .loading
+        let hadLoadedContent = ordersSnapshot != nil && {
+            if case .loaded = ordersState {
+                return true
+            }
+            return false
+        }()
+
+        if !hadLoadedContent {
+            ordersState = .loading
+        }
 
         do {
             ordersSnapshot = try await rechargeService.fetchOrders(
@@ -534,9 +571,18 @@ final class RechargeViewModel: ObservableObject {
             ordersState = .loaded
         } catch {
             if let rechargeError = error as? RechargeServiceError, case .requestCancelled = rechargeError {
+                if hadLoadedContent {
+                    ordersState = .loaded
+                }
                 return
             }
-            ordersState = .failed((error as? RechargeServiceError)?.textValue ?? .key("recharge.error.generic"))
+            let message = (error as? RechargeServiceError)?.textValue ?? .key("recharge.error.generic")
+            if hadLoadedContent {
+                toastMessage = message
+                ordersState = .loaded
+            } else {
+                ordersState = .failed(message)
+            }
         }
     }
 

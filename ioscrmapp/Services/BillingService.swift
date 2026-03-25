@@ -714,6 +714,34 @@ private enum BillingResponseDataValue {
         return nil
     }
 
+    static func int(in responseData: HTTPClient.ResponseData, keys: [String]) -> Int? {
+        guard let dictionary = responseData.objectValue else {
+            return nil
+        }
+        return int(in: dictionary, keys: keys)
+    }
+
+    static func int(in dictionary: [String: HTTPClient.ResponseData], keys: [String]) -> Int? {
+        guard let rawValue = string(in: dictionary, keys: keys) else {
+            return nil
+        }
+
+        let trimmed = rawValue.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else {
+            return nil
+        }
+
+        if let integer = Int(trimmed) {
+            return integer
+        }
+
+        if let decimal = Decimal(string: trimmed) {
+            return NSDecimalNumber(decimal: decimal).intValue
+        }
+
+        return nil
+    }
+
     static func dateText(in responseData: HTTPClient.ResponseData, keys: [String]) -> String {
         guard let dictionary = responseData.objectValue else {
             return "-"
@@ -979,59 +1007,71 @@ actor MockRechargeService: RechargeServicing {
         pageIndex: Int,
         pageSize: Int
     ) async throws -> RechargeOrderPageSnapshot {
-        let allRecords = [
-            RechargeOrderRecord(
-                id: "recharge-order-1",
-                orderId: "RCH-20260324001",
-                amountRaw: "50.00",
-                amountText: billingDisplayMoney("50.00 AED"),
-                chargeMethod: "Credit / Debit Card",
-                createdTimeText: "2026-03-24 10:32:15",
-                status: .processing,
-                statusCode: "0",
-                serviceNumber: AuthValidator.localPhoneDigits(session.serviceNumber ?? session.phoneNumber),
-                oldBalanceText: nil,
-                newBalanceText: nil
-            ),
-            RechargeOrderRecord(
-                id: "recharge-order-2",
-                orderId: "RCH-20260323017",
-                amountRaw: "20.00",
-                amountText: billingDisplayMoney("20.00 AED"),
-                chargeMethod: "Apple Pay",
-                createdTimeText: "2026-03-23 18:08:43",
-                status: .success,
-                statusCode: "1",
-                serviceNumber: AuthValidator.localPhoneDigits(session.serviceNumber ?? session.phoneNumber),
-                oldBalanceText: billingDisplayMoney("88.50 AED"),
-                newBalanceText: billingDisplayMoney("108.50 AED")
-            ),
-            RechargeOrderRecord(
-                id: "recharge-order-3",
-                orderId: "RCH-20260322005",
-                amountRaw: "10.00",
-                amountText: billingDisplayMoney("10.00 AED"),
-                chargeMethod: "Bank Transfer",
-                createdTimeText: "2026-03-22 09:16:09",
-                status: .failed,
-                statusCode: "2",
-                serviceNumber: AuthValidator.localPhoneDigits(session.serviceNumber ?? session.phoneNumber),
-                oldBalanceText: nil,
-                newBalanceText: nil
+        let serviceNumber = AuthValidator.localPhoneDigits(session.serviceNumber ?? session.phoneNumber)
+        let calendar = Calendar(identifier: .gregorian)
+        let anchorDate = calendar.date(from: DateComponents(year: 2026, month: 3, day: 24, hour: 10, minute: 32, second: 15)) ?? Date()
+        let allRecords = (0..<36).map { index -> RechargeOrderRecord in
+            let status: RechargeOrderStatus
+            let chargeMethod: String
+            let amountRaw: String
+
+            switch index % 3 {
+            case 0:
+                status = .processing
+                chargeMethod = "Credit / Debit Card"
+                amountRaw = "50.00"
+            case 1:
+                status = .success
+                chargeMethod = "Apple Pay"
+                amountRaw = "20.00"
+            default:
+                status = .failed
+                chargeMethod = "Bank Transfer"
+                amountRaw = "10.00"
+            }
+
+            let createdDate = calendar.date(byAdding: .day, value: -index, to: anchorDate) ?? anchorDate
+            let formatter = DateFormatter()
+            formatter.locale = Locale(identifier: "en_US_POSIX")
+            formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+
+            return RechargeOrderRecord(
+                id: "recharge-order-\(index + 1)",
+                orderId: String(format: "RCH-202603%02d%03d", max(1, 24 - (index % 24)), index + 1),
+                amountRaw: amountRaw,
+                amountText: billingDisplayMoney("\(amountRaw) AED"),
+                chargeMethod: chargeMethod,
+                createdTimeText: formatter.string(from: createdDate),
+                status: status,
+                statusCode: status.backendValue,
+                serviceNumber: serviceNumber,
+                oldBalanceText: status == .success ? billingDisplayMoney("88.50 AED") : nil,
+                newBalanceText: status == .success ? billingDisplayMoney("108.50 AED") : nil
             )
-        ]
+        }
 
         let filtered = allRecords.filter { record in
             let statusMatches = filter.status == nil || filter.status == record.status
-            return statusMatches
+            let formatter = DateFormatter()
+            formatter.locale = Locale(identifier: "en_US_POSIX")
+            formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+            let recordDate = formatter.date(from: record.createdTimeText) ?? .distantPast
+            let startMatches = filter.startDate == nil || recordDate >= filter.startDate!
+            let endMatches = filter.endDate == nil || recordDate <= filter.endDate!
+            return statusMatches && startMatches && endMatches
         }
 
+        let startIndex = max(0, (pageIndex - 1) * pageSize)
+        let endIndex = min(filtered.count, startIndex + pageSize)
+        let pagedRecords = startIndex < endIndex ? Array(filtered[startIndex..<endIndex]) : []
+        let totalPages = max(1, Int(ceil(Double(filtered.count) / Double(max(pageSize, 1)))))
+
         return RechargeOrderPageSnapshot(
-            records: filtered,
+            records: pagedRecords,
             pageIndex: pageIndex,
             pageSize: pageSize,
             totalCount: filtered.count,
-            totalPages: 1
+            totalPages: totalPages
         )
     }
 
@@ -1318,10 +1358,10 @@ struct RemoteRechargeService: RechargeServicing {
         let mappedRecords = records.compactMap(mapOrderRecord)
         return RechargeOrderPageSnapshot(
             records: mappedRecords,
-            pageIndex: BillingResponseDataValue.string(in: object, keys: ["current"]).flatMap(Int.init) ?? 1,
-            pageSize: BillingResponseDataValue.string(in: object, keys: ["size"]).flatMap(Int.init) ?? 20,
-            totalCount: BillingResponseDataValue.string(in: object, keys: ["total"]).flatMap(Int.init) ?? mappedRecords.count,
-            totalPages: BillingResponseDataValue.string(in: object, keys: ["pages"]).flatMap(Int.init) ?? 1
+            pageIndex: BillingResponseDataValue.int(in: object, keys: ["current"]) ?? 1,
+            pageSize: BillingResponseDataValue.int(in: object, keys: ["size"]) ?? 20,
+            totalCount: BillingResponseDataValue.int(in: object, keys: ["total"]) ?? mappedRecords.count,
+            totalPages: BillingResponseDataValue.int(in: object, keys: ["pages"]) ?? 1
         )
     }
 
