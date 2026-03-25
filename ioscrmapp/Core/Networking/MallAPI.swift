@@ -7,6 +7,12 @@ enum MallAPI {
         requiresAuthorization: true
     )
 
+    static let homeProducts = HTTPClient.Endpoint(
+        path: "ser-query/api/mall/home/products",
+        method: .get,
+        requiresAuthorization: true
+    )
+
     static let searchBootstrap = HTTPClient.Endpoint(
         path: "ser-query/api/mall/search/bootstrap",
         method: .get,

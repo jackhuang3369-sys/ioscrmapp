@@ -93,12 +93,18 @@ struct MallSearchView: View {
                         Button {
                             runSearch(keyword)
                         } label: {
-                            Text(keyword)
-                                .font(.du(12, weight: .medium))
-                                .foregroundColor(DUTheme.inkSecondary)
-                                .lineLimit(1)
-                                .frame(maxWidth: .infinity, alignment: .leading)
+                            HStack(spacing: 0) {
+                                Text(keyword)
+                                    .font(.du(12, weight: .medium))
+                                    .foregroundColor(DUTheme.inkSecondary)
+                                    .lineLimit(1)
+
+                                Spacer(minLength: 0)
+                            }
+                            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+                            .contentShape(Rectangle())
                         }
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
                         .buttonStyle(.plain)
 
                         Button {

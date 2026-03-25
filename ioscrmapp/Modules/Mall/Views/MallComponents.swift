@@ -273,6 +273,147 @@ struct MallProductCard: View {
     }
 }
 
+struct MallProductFeedGrid: View {
+    let products: [MallProduct]
+    var columnSpacing: CGFloat = DUSpacing.md
+    var rowSpacing: CGFloat = DUSpacing.md
+    var oddItemTopPadding: CGFloat = DUSpacing.lg
+    let onSelectProduct: (MallProduct) -> Void
+
+    var body: some View {
+        LazyVGrid(
+            columns: [
+                GridItem(.flexible(), spacing: columnSpacing),
+                GridItem(.flexible(), spacing: columnSpacing),
+            ],
+            spacing: rowSpacing
+        ) {
+            ForEach(products.indices, id: \.self) { index in
+                let product = products[index]
+                MallProductCard(product: product) {
+                    onSelectProduct(product)
+                }
+                .padding(.top, index.isMultiple(of: 2) ? 0 : oddItemTopPadding)
+            }
+        }
+    }
+}
+
+private enum MallLoadMoreTriggerDefaults {
+    static let activationDistance: CGFloat = 24
+    static let preloadDistance: CGFloat = 220
+}
+
+struct MallScrollActivationTrigger: View {
+    let coordinateSpaceName: String
+    var activationDistance: CGFloat = MallLoadMoreTriggerDefaults.activationDistance
+    let isArmed: Bool
+    let onActivate: () -> Void
+
+    var body: some View {
+        GeometryReader { proxy in
+            let hasPassedThreshold = proxy.frame(in: .named(coordinateSpaceName)).minY <= -activationDistance
+
+            Color.clear
+                .frame(height: 1)
+                .task(id: ActivationState(isArmed: isArmed, hasPassedThreshold: hasPassedThreshold)) {
+                    if !isArmed, hasPassedThreshold {
+                        onActivate()
+                    }
+                }
+        }
+        .frame(height: 1)
+    }
+
+    private struct ActivationState: Equatable {
+        let isArmed: Bool
+        let hasPassedThreshold: Bool
+    }
+}
+
+struct MallScrollLoadMoreTrigger: View {
+    let coordinateSpaceName: String
+    let viewportHeight: CGFloat
+    let isArmed: Bool
+    let canTrigger: Bool
+    var preloadDistance: CGFloat = MallLoadMoreTriggerDefaults.preloadDistance
+    let onTrigger: () -> Void
+
+    @State private var hasTriggeredInsideThreshold = false
+
+    var body: some View {
+        GeometryReader { proxy in
+            let isWithinThreshold = proxy.frame(in: .named(coordinateSpaceName)).minY
+                <= viewportHeight + preloadDistance
+
+            Color.clear
+                .frame(height: 1)
+                .task(id: TriggerState(
+                    isArmed: isArmed,
+                    canTrigger: canTrigger,
+                    isWithinThreshold: isWithinThreshold
+                )) {
+                    if !isArmed || !isWithinThreshold {
+                        hasTriggeredInsideThreshold = false
+                        return
+                    }
+
+                    guard canTrigger, !hasTriggeredInsideThreshold else {
+                        return
+                    }
+
+                    hasTriggeredInsideThreshold = true
+                    onTrigger()
+                }
+        }
+        .frame(height: 1)
+    }
+
+    private struct TriggerState: Equatable {
+        let isArmed: Bool
+        let canTrigger: Bool
+        let isWithinThreshold: Bool
+    }
+}
+
+struct MallProductFeedLoadMoreFooter: View {
+    @EnvironmentObject private var languageStore: AppLanguageStore
+
+    let isLoading: Bool
+    let errorMessage: LocalizedTextValue?
+    let retryTint: Color
+    let onRetry: () -> Void
+
+    var body: some View {
+        if isLoading {
+            HStack(spacing: DUSpacing.sm) {
+                ProgressView()
+                Text(languageStore.string("mall.state.loading.title"))
+                    .font(.du(12, weight: .medium))
+                    .foregroundColor(DUTheme.inkSecondary)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, DUSpacing.md)
+        } else if let errorMessage {
+            VStack(spacing: DUSpacing.sm) {
+                Text(languageStore.string(errorMessage))
+                    .font(.du(12, weight: .medium))
+                    .foregroundColor(DUTheme.inkSecondary)
+                    .multilineTextAlignment(.center)
+
+                Button(action: onRetry) {
+                    Text(languageStore.string("common.retry"))
+                        .font(.du(12, weight: .bold))
+                        .foregroundColor(retryTint)
+                }
+                .buttonStyle(.plain)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.top, DUSpacing.sm)
+        }
+    }
+}
+
 struct MallProductTargetSheet: View {
     @EnvironmentObject private var languageStore: AppLanguageStore
     @Environment(\.dismiss) private var dismiss

@@ -15,7 +15,15 @@ struct MallSearchResultView: View {
     @State private var validationMessage: String?
     @State private var resultSnapshot: MallSearchResultSnapshot?
     @State private var screenState: ScreenState = .loading
+    @State private var submittedQuery: String
+    @State private var isLoadingMore = false
+    @State private var loadMoreErrorMessage: LocalizedTextValue?
+    @State private var searchGeneration = 0
     @State private var selectedProduct: MallProduct?
+    @State private var resultViewportHeight: CGFloat = 0
+    @State private var hasArmedLoadMore = false
+
+    private let scrollCoordinateSpaceName = "MallSearchResultScroll"
 
     init(
         viewModel: MallViewModel,
@@ -26,6 +34,7 @@ struct MallSearchResultView: View {
         self.initialQuery = initialQuery
         self.initialCategoryID = initialCategoryID
         _query = State(initialValue: initialQuery)
+        _submittedQuery = State(initialValue: initialQuery.trimmingCharacters(in: .whitespacesAndNewlines))
     }
 
     var body: some View {
@@ -139,24 +148,49 @@ struct MallSearchResultView: View {
         case .loaded:
             if let products = resultSnapshot?.products, !products.isEmpty {
                 ScrollView(showsIndicators: false) {
-                    // 结果页沿用首页商品卡片样式，降低搜索结果和首页推荐之间的认知切换。
-                    LazyVGrid(
-                        columns: [
-                            GridItem(.flexible(), spacing: DUSpacing.md),
-                            GridItem(.flexible(), spacing: DUSpacing.md),
-                        ],
-                        spacing: DUSpacing.md
+                    MallScrollActivationTrigger(
+                        coordinateSpaceName: scrollCoordinateSpaceName,
+                        isArmed: hasArmedLoadMore
                     ) {
-                        ForEach(products.indices, id: \.self) { index in
-                            MallProductCard(product: products[index]) {
-                                selectedProduct = products[index]
-                            }
-                            .padding(.top, index.isMultiple(of: 2) ? 0 : DUSpacing.lg)
-                        }
+                        hasArmedLoadMore = true
+                    }
+
+                    // 结果页沿用首页商品卡片样式，降低搜索结果和首页推荐之间的认知切换。
+                    MallProductFeedGrid(products: products) { product in
+                        selectedProduct = product
                     }
                     .padding(DUSpacing.md)
-                    .padding(.bottom, DUSpacing.xxl)
+
+                    loadMoreFooter
+                        .padding(.horizontal, DUSpacing.md)
+                        .padding(.bottom, DUSpacing.xxl)
+
+                    MallScrollLoadMoreTrigger(
+                        coordinateSpaceName: scrollCoordinateSpaceName,
+                        viewportHeight: resultViewportHeight,
+                        isArmed: hasArmedLoadMore,
+                        canTrigger: canTriggerLoadMore
+                    ) {
+                        guard let lastProduct = resultSnapshot?.products.last else {
+                            return
+                        }
+                        Task {
+                            await loadMoreIfNeeded(currentProduct: lastProduct)
+                        }
+                    }
                 }
+                .coordinateSpace(name: scrollCoordinateSpaceName)
+                .background(
+                    GeometryReader { geometry in
+                        Color.clear
+                            .onAppear {
+                                resultViewportHeight = geometry.size.height
+                            }
+                            .onChange(of: geometry.size.height) { value in
+                                resultViewportHeight = value
+                            }
+                    }
+                )
             } else {
                 DUStateView(
                     systemImage: "shippingbox",
@@ -182,6 +216,13 @@ struct MallSearchResultView: View {
         case .best, .newest:
             return .descending
         }
+    }
+
+    private var canTriggerLoadMore: Bool {
+        resultViewportHeight > 0
+            && resultSnapshot?.hasMore == true
+            && !isLoadingMore
+            && loadMoreErrorMessage == nil
     }
 
     private func selectSort(_ sort: MallSearchSortMode) {
@@ -213,28 +254,121 @@ struct MallSearchResultView: View {
         // 结果页顶部搜索框支持再次发起搜索，但仍然沿用相同的关键词校验。
         guard !trimmedQuery.isEmpty, trimmedQuery.count <= 50 else {
             validationMessage = languageStore.string("mall.search.validation.empty")
+            loadMoreErrorMessage = nil
+            isLoadingMore = false
             screenState = .loaded
             resultSnapshot = nil
             return
         }
 
         validationMessage = nil
+        loadMoreErrorMessage = nil
+        isLoadingMore = false
+        hasArmedLoadMore = false
         screenState = .loading
+        resultSnapshot = nil
+        searchGeneration += 1
+        let generation = searchGeneration
 
         do {
             // 结果页会带着初始分类 ID 继续搜索，用于承接首页分类入口和活动入口跳转。
-            resultSnapshot = try await viewModel.searchProducts(
+            let snapshot = try await viewModel.searchProducts(
                 query: trimmedQuery,
                 categoryID: initialCategoryID,
                 sort: activeSort,
                 order: effectiveOrder,
+                pageNum: MallPaginationDefaults.firstPage,
+                pageSize: MallPaginationDefaults.pageSize,
                 language: languageStore.currentLanguage
             )
+            guard generation == searchGeneration else {
+                return
+            }
+            submittedQuery = snapshot.query
+            resultSnapshot = snapshot
             screenState = .loaded
         } catch let error as MallServiceError {
+            guard generation == searchGeneration else {
+                return
+            }
             screenState = .failed(error.textValue)
         } catch {
+            guard generation == searchGeneration else {
+                return
+            }
             screenState = .failed(MallServiceError.searchUnavailable.textValue)
+        }
+    }
+
+    private func loadMoreIfNeeded(currentProduct: MallProduct) async {
+        guard let snapshot = resultSnapshot,
+              snapshot.hasMore,
+              !isLoadingMore,
+              snapshot.products.last?.id == currentProduct.id else {
+            return
+        }
+
+        isLoadingMore = true
+        loadMoreErrorMessage = nil
+        let generation = searchGeneration
+
+        do {
+            let nextSnapshot = try await viewModel.searchProducts(
+                query: submittedQuery,
+                categoryID: initialCategoryID,
+                sort: activeSort,
+                order: effectiveOrder,
+                pageNum: snapshot.pageNum + 1,
+                pageSize: snapshot.pageSize,
+                language: languageStore.currentLanguage
+            )
+
+            guard generation == searchGeneration else {
+                isLoadingMore = false
+                return
+            }
+
+            resultSnapshot = MallSearchResultSnapshot(
+                query: nextSnapshot.query,
+                categoryID: nextSnapshot.categoryID,
+                pageNum: nextSnapshot.pageNum,
+                pageSize: nextSnapshot.pageSize,
+                total: nextSnapshot.total,
+                hasMore: nextSnapshot.hasMore,
+                products: snapshot.products + nextSnapshot.products
+            )
+            isLoadingMore = false
+        } catch let error as MallServiceError {
+            guard generation == searchGeneration else {
+                isLoadingMore = false
+                return
+            }
+
+            isLoadingMore = false
+            loadMoreErrorMessage = error.textValue
+        } catch {
+            guard generation == searchGeneration else {
+                isLoadingMore = false
+                return
+            }
+
+            isLoadingMore = false
+            loadMoreErrorMessage = MallServiceError.searchUnavailable.textValue
+        }
+    }
+
+    @ViewBuilder
+    private var loadMoreFooter: some View {
+        MallProductFeedLoadMoreFooter(
+            isLoading: isLoadingMore,
+            errorMessage: loadMoreErrorMessage,
+            retryTint: Color(hex: 0xFF445D)
+        ) {
+            Task {
+                if let lastProduct = resultSnapshot?.products.last {
+                    await loadMoreIfNeeded(currentProduct: lastProduct)
+                }
+            }
         }
     }
 }

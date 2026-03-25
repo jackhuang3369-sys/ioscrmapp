@@ -214,6 +214,21 @@ struct MallHomeSnapshot: Sendable {
     let cartBadgeCount: Int
 }
 
+enum MallHomeProductFeedScene: String, Hashable, Sendable {
+    case recommendation
+    case category
+}
+
+struct MallHomeProductFeedSnapshot: Sendable {
+    let scene: MallHomeProductFeedScene
+    let categoryID: String?
+    let pageNum: Int
+    let pageSize: Int
+    let total: Int
+    let hasMore: Bool
+    let products: [MallProduct]
+}
+
 struct MallSearchBootstrap: Sendable {
     var history: [String]
     let hotKeywords: [MallHotKeyword]
@@ -222,6 +237,10 @@ struct MallSearchBootstrap: Sendable {
 struct MallSearchResultSnapshot: Sendable {
     let query: String
     let categoryID: String?
+    let pageNum: Int
+    let pageSize: Int
+    let total: Int
+    let hasMore: Bool
     let products: [MallProduct]
 }
 
@@ -248,6 +267,11 @@ enum MallSearchSortMode: String, Hashable, Sendable {
 enum MallSortOrder: String, Hashable, Sendable {
     case ascending
     case descending
+}
+
+enum MallPaginationDefaults {
+    static let firstPage = 1
+    static let pageSize = 20
 }
 
 private func formatDecimal(_ value: Decimal, locale: Locale) -> String {

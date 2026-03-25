@@ -11,6 +11,8 @@ struct MallHomeView: View {
     @State private var isCategoryPresented = false
     @State private var selectedProduct: MallProduct?
     @State private var searchResultRoute: MallBrowseSearchRoute?
+    @State private var productSectionViewportHeight: CGFloat = 0
+    @State private var hasArmedProductSectionLoadMore = false
 
     private let recommendedCategoryID = "mall-recommended"
     private let contentTopAnchorID = "mall-home-content-top"
@@ -33,9 +35,13 @@ struct MallHomeView: View {
         .task {
             await viewModel.loadIfNeeded()
             syncSelection()
+            await loadSelectedProductFeed(forceRefresh: false)
         }
         .onChange(of: viewModel.homeSnapshot?.defaultCategoryID ?? "") { _ in
             syncSelection()
+            Task {
+                await loadSelectedProductFeed(forceRefresh: false)
+            }
         }
         .sheet(item: $selectedProduct) { product in
             MallProductTargetSheet(product: product)
@@ -68,8 +74,21 @@ struct MallHomeView: View {
                         .padding(.bottom, DUSpacing.xxl)
                     }
                     .coordinateSpace(name: scrollCoordinateSpaceName)
+                    .background(
+                        GeometryReader { geometry in
+                            Color.clear
+                                .onAppear {
+                                    productSectionViewportHeight = geometry.size.height
+                                }
+                                .onChange(of: geometry.size.height) { value in
+                                    productSectionViewportHeight = value
+                                }
+                        }
+                    )
                     .refreshable {
                         await viewModel.refresh()
+                        syncSelection()
+                        await loadSelectedProductFeed(forceRefresh: true)
                     }
                     .overlay(navigationLinks)
                 }
@@ -78,6 +97,9 @@ struct MallHomeView: View {
                 .onChange(of: selectedCategoryID) { _ in
                     withAnimation(.easeInOut(duration: 0.22)) {
                         scrollProxy.scrollTo(contentTopAnchorID, anchor: .top)
+                    }
+                    Task {
+                        await loadSelectedProductFeed(forceRefresh: false)
                     }
                 }
             }
@@ -205,9 +227,8 @@ struct MallHomeView: View {
             recommendationCarouselSection(containerWidth: containerWidth)
             recommendationActivitySection
             productSection(
-                title: "",
-                subtitle: nil,
-                products: recommendedProducts
+                title: homeSnapshot?.recommendation.productSectionTitle.value(for: languageStore.currentLanguage) ?? "",
+                subtitle: nil
             )
         }
     }
@@ -218,8 +239,7 @@ struct MallHomeView: View {
             thirdLevelDirectoryGridSection
             productSection(
                 title: currentCategory?.title.value(for: languageStore.currentLanguage) ?? "",
-                subtitle: nil,
-                products: currentProducts
+                subtitle: nil
             )
         }
     }
@@ -308,49 +328,155 @@ struct MallHomeView: View {
     @ViewBuilder
     private func productSection(
         title: String,
-        subtitle: String?,
-        products: [MallProduct]
+        subtitle: String?
     ) -> some View {
-        if !products.isEmpty {
-            VStack(alignment: .leading, spacing: DUSpacing.md) {
-                if !title.isEmpty || ((subtitle?.isEmpty) == false) {
-                    HStack(alignment: .top, spacing: DUSpacing.sm) {
-                        if !title.isEmpty {
-                            Text(title)
-                                .font(.du(20, weight: .bold))
-                                .foregroundColor(DUTheme.ink)
-                        }
-
-                        if let subtitle, !subtitle.isEmpty {
-                            Text(subtitle)
-                                .font(.du(12, weight: .semibold))
-                                .foregroundColor(Color(hex: 0xFF5163))
-                                .padding(.horizontal, 10)
-                                .frame(height: 24)
-                                .background(Color(hex: 0xFFF0F1))
-                                .clipShape(Capsule())
-                        }
-
-                        Spacer(minLength: 0)
+        VStack(alignment: .leading, spacing: DUSpacing.md) {
+            if !title.isEmpty || ((subtitle?.isEmpty) == false) {
+                HStack(alignment: .top, spacing: DUSpacing.sm) {
+                    if !title.isEmpty {
+                        Text(title)
+                            .font(.du(20, weight: .bold))
+                            .foregroundColor(DUTheme.ink)
                     }
-                    .padding(.horizontal, DUSpacing.md)
-                }
 
-                LazyVGrid(
-                    columns: [
-                        GridItem(.flexible(), spacing: DUSpacing.md),
-                        GridItem(.flexible(), spacing: DUSpacing.md),
-                    ],
-                    spacing: DUSpacing.sm
-                ) {
-                    ForEach(products.indices, id: \.self) { index in
-                        MallProductCard(product: products[index]) {
-                            selectedProduct = products[index]
-                        }
-                        .padding(.top, index.isMultiple(of: 2) ? 0 : DUSpacing.sm)
+                    if let subtitle, !subtitle.isEmpty {
+                        Text(subtitle)
+                            .font(.du(12, weight: .semibold))
+                            .foregroundColor(Color(hex: 0xFF5163))
+                            .padding(.horizontal, 10)
+                            .frame(height: 24)
+                            .background(Color(hex: 0xFFF0F1))
+                            .clipShape(Capsule())
                     }
+
+                    Spacer(minLength: 0)
                 }
                 .padding(.horizontal, DUSpacing.md)
+            }
+
+            switch viewModel.homeProductFeedState {
+            case .idle, .loading:
+                productSectionLoadingView
+                    .padding(.horizontal, DUSpacing.md)
+            case let .failed(message):
+                productSectionFailureView(message)
+                    .padding(.horizontal, DUSpacing.md)
+            case .loaded:
+                if currentHomeProducts.isEmpty {
+                    productSectionEmptyView
+                        .padding(.horizontal, DUSpacing.md)
+                } else {
+                    MallScrollActivationTrigger(
+                        coordinateSpaceName: scrollCoordinateSpaceName,
+                        isArmed: hasArmedProductSectionLoadMore
+                    ) {
+                        hasArmedProductSectionLoadMore = true
+                    }
+
+                    MallProductFeedGrid(
+                        products: currentHomeProducts,
+                        rowSpacing: DUSpacing.sm,
+                        oddItemTopPadding: DUSpacing.sm
+                    ) { product in
+                        selectedProduct = product
+                    }
+                    .padding(.horizontal, DUSpacing.md)
+
+                    productSectionFooter
+
+                    MallScrollLoadMoreTrigger(
+                        coordinateSpaceName: scrollCoordinateSpaceName,
+                        viewportHeight: productSectionViewportHeight,
+                        isArmed: hasArmedProductSectionLoadMore,
+                        canTrigger: canTriggerHomeProductLoadMore
+                    ) {
+                        guard let lastProduct = currentHomeProducts.last else {
+                            return
+                        }
+                        Task {
+                            await viewModel.loadMoreHomeProductsIfNeeded(currentProduct: lastProduct)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private var productSectionLoadingView: some View {
+        HStack(spacing: DUSpacing.sm) {
+            ProgressView()
+
+            Text(languageStore.string("mall.state.loading.title"))
+                .font(.du(13, weight: .medium))
+                .foregroundColor(DUTheme.inkSecondary)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, DUSpacing.xl)
+        .duCardStyle()
+    }
+
+    private func productSectionFailureView(_ message: LocalizedTextValue) -> some View {
+        VStack(spacing: DUSpacing.md) {
+            Image(systemName: "wifi.exclamationmark")
+                .font(.du(20, weight: .semibold))
+                .foregroundColor(DUTheme.magenta)
+
+            Text(languageStore.string(message))
+                .font(.du(13, weight: .medium))
+                .foregroundColor(DUTheme.inkSecondary)
+                .multilineTextAlignment(.center)
+
+            Button {
+                Task {
+                    await loadSelectedProductFeed(forceRefresh: true)
+                }
+            } label: {
+                Text(languageStore.string("common.retry"))
+                    .font(.du(13, weight: .bold))
+                    .foregroundColor(.white)
+                    .padding(.horizontal, DUSpacing.lg)
+                    .frame(height: 36)
+                    .background(MallTheme.headerGradient)
+                    .clipShape(Capsule())
+            }
+            .buttonStyle(.plain)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, DUSpacing.xl)
+        .padding(.horizontal, DUSpacing.lg)
+        .duCardStyle()
+    }
+
+    private var productSectionEmptyView: some View {
+        VStack(spacing: DUSpacing.sm) {
+            Image(systemName: "shippingbox")
+                .font(.du(20, weight: .semibold))
+                .foregroundColor(DUTheme.cyan)
+
+            Text(languageStore.string("mall.search.empty.title"))
+                .font(.du(14, weight: .bold))
+                .foregroundColor(DUTheme.ink)
+
+            Text(languageStore.string("mall.search.empty.subtitle"))
+                .font(.du(12, weight: .medium))
+                .foregroundColor(DUTheme.inkSecondary)
+                .multilineTextAlignment(.center)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, DUSpacing.xl)
+        .padding(.horizontal, DUSpacing.lg)
+        .duCardStyle()
+    }
+
+    @ViewBuilder
+    private var productSectionFooter: some View {
+        MallProductFeedLoadMoreFooter(
+            isLoading: viewModel.isLoadingMoreHomeProducts,
+            errorMessage: viewModel.homeProductFeedLoadMoreError,
+            retryTint: Color(hex: 0xFF4B5F)
+        ) {
+            Task {
+                await viewModel.retryLoadingMoreHomeProducts()
             }
         }
     }
@@ -365,6 +491,8 @@ struct MallHomeView: View {
         ) {
             Task {
                 await viewModel.reload()
+                syncSelection()
+                await loadSelectedProductFeed(forceRefresh: true)
             }
         }
     }
@@ -447,20 +575,15 @@ struct MallHomeView: View {
         return viewModel.primaryCategory(id: selectedCategoryID)
     }
 
-    private var currentProducts: [MallProduct] {
-        guard let currentCategory else {
-            return []
-        }
-
-        return viewModel.products(
-            for: currentCategory.id,
-            subcategoryID: nil
-        )
+    private var currentHomeProducts: [MallProduct] {
+        viewModel.homeProductFeed?.products ?? []
     }
 
-    private var recommendedProducts: [MallProduct] {
-        let products = homeSnapshot?.products ?? []
-        return Array(products.sorted(by: isHigherPriorityProduct).prefix(6))
+    private var canTriggerHomeProductLoadMore: Bool {
+        productSectionViewportHeight > 0
+            && viewModel.homeProductFeed?.hasMore == true
+            && !viewModel.isLoadingMoreHomeProducts
+            && viewModel.homeProductFeedLoadMoreError == nil
     }
 
     private var thirdLevelDirectoryEntries: [MallHomeThirdLevelDirectory] {
@@ -538,7 +661,8 @@ struct MallHomeView: View {
     }
 
     private func showProduct(id: String) {
-        selectedProduct = homeSnapshot?.products.first { $0.id == id }
+        selectedProduct = currentHomeProducts.first { $0.id == id }
+            ?? homeSnapshot?.products.first { $0.id == id }
     }
 
     private func openSearchResult(
@@ -549,16 +673,6 @@ struct MallHomeView: View {
             query: query,
             categoryID: categoryID
         )
-    }
-
-    private func isHigherPriorityProduct(_ lhs: MallProduct, _ rhs: MallProduct) -> Bool {
-        if lhs.sortWeight != rhs.sortWeight {
-            return lhs.sortWeight > rhs.sortWeight
-        }
-        if lhs.salesCount != rhs.salesCount {
-            return lhs.salesCount > rhs.salesCount
-        }
-        return lhs.updatedAt > rhs.updatedAt
     }
 
     private func syncSelection() {
@@ -584,6 +698,33 @@ struct MallHomeView: View {
         if !currentCategory.subcategories.contains(where: { $0.id == selectedSubcategoryID }) {
             selectedSubcategoryID = ""
         }
+    }
+
+    private func loadSelectedProductFeed(forceRefresh: Bool) async {
+        guard homeSnapshot != nil else {
+            return
+        }
+
+        resetProductSectionLoadMoreState()
+
+        if isRecommendationSelected {
+            await viewModel.loadHomeProductFeed(
+                scene: .recommendation,
+                categoryID: nil,
+                forceRefresh: forceRefresh
+            )
+            return
+        }
+
+        await viewModel.loadHomeProductFeed(
+            scene: .category,
+            categoryID: currentCategory?.id ?? selectedCategoryID,
+            forceRefresh: forceRefresh
+        )
+    }
+
+    private func resetProductSectionLoadMoreState() {
+        hasArmedProductSectionLoadMore = false
     }
 
     @ViewBuilder

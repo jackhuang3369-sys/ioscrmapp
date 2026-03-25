@@ -8,12 +8,21 @@ private let mallLogger = Logger(
 
 protocol MallServicing: Sendable {
     func fetchHome(session: CustSubInfo) async throws -> MallHomeSnapshot
+    func fetchHomeProductFeed(
+        scene: MallHomeProductFeedScene,
+        categoryID: String?,
+        pageNum: Int,
+        pageSize: Int,
+        session: CustSubInfo
+    ) async throws -> MallHomeProductFeedSnapshot
     func fetchSearchBootstrap(session: CustSubInfo) async throws -> MallSearchBootstrap
     func searchProducts(
         query: String,
         categoryID: String?,
         sort: MallSearchSortMode,
         order: MallSortOrder,
+        pageNum: Int,
+        pageSize: Int,
         language: AppLanguage,
         session: CustSubInfo
     ) async throws -> MallSearchResultSnapshot
@@ -23,18 +32,24 @@ protocol MallServicing: Sendable {
 
 enum MallServiceError: Error {
     case homeUnavailable
+    case homeProductFeedUnavailable
     case searchUnavailable
     case keywordInvalid
+    case pageInvalid
     case networkUnavailable
 
     var textValue: LocalizedTextValue {
         switch self {
         case .homeUnavailable:
             return .key("mall.state.error.subtitle")
+        case .homeProductFeedUnavailable:
+            return .key("mall.state.error.subtitle")
         case .searchUnavailable:
             return .key("mall.search.error.subtitle")
         case .keywordInvalid:
             return .key("mall.search.validation.empty")
+        case .pageInvalid:
+            return .key("mall.search.error.subtitle")
         case .networkUnavailable:
             return .key("mall.state.error.subtitle")
         }
@@ -51,6 +66,33 @@ actor MockMallService: MallServicing {
         return homeSnapshot
     }
 
+    func fetchHomeProductFeed(
+        scene: MallHomeProductFeedScene,
+        categoryID: String?,
+        pageNum: Int,
+        pageSize: Int,
+        session: CustSubInfo
+    ) async throws -> MallHomeProductFeedSnapshot {
+        guard pageNum >= MallPaginationDefaults.firstPage, pageSize > 0 else {
+            throw MallServiceError.pageInvalid
+        }
+
+        try await Task.sleep(nanoseconds: 90_000_000)
+
+        let filteredProducts = homeProducts(for: scene, categoryID: categoryID)
+        let pagedProducts = pageProducts(filteredProducts, pageNum: pageNum, pageSize: pageSize)
+
+        return MallHomeProductFeedSnapshot(
+            scene: scene,
+            categoryID: scene == .category ? categoryID : nil,
+            pageNum: pageNum,
+            pageSize: pageSize,
+            total: filteredProducts.count,
+            hasMore: pageNum * pageSize < filteredProducts.count,
+            products: pagedProducts
+        )
+    }
+
     func fetchSearchBootstrap(session: CustSubInfo) async throws -> MallSearchBootstrap {
         try await Task.sleep(nanoseconds: 80_000_000)
         return MallSearchBootstrap(history: searchHistory, hotKeywords: hotKeywords)
@@ -61,12 +103,17 @@ actor MockMallService: MallServicing {
         categoryID: String?,
         sort: MallSearchSortMode,
         order: MallSortOrder,
+        pageNum: Int,
+        pageSize: Int,
         language: AppLanguage,
         session: CustSubInfo
     ) async throws -> MallSearchResultSnapshot {
         let normalizedQuery = query.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !normalizedQuery.isEmpty, normalizedQuery.count <= 50 else {
             throw MallServiceError.keywordInvalid
+        }
+        guard pageNum >= MallPaginationDefaults.firstPage, pageSize > 0 else {
+            throw MallServiceError.pageInvalid
         }
 
         try await Task.sleep(nanoseconds: 90_000_000)
@@ -104,6 +151,7 @@ actor MockMallService: MallServicing {
             sort: sort,
             order: order
         )
+        let pagedProducts = pageProducts(filteredProducts, pageNum: pageNum, pageSize: pageSize)
 
         searchHistory = [normalizedQuery] + searchHistory.filter { $0 != normalizedQuery }
         if searchHistory.count > 6 {
@@ -113,7 +161,11 @@ actor MockMallService: MallServicing {
         return MallSearchResultSnapshot(
             query: normalizedQuery,
             categoryID: categoryID,
-            products: filteredProducts
+            pageNum: pageNum,
+            pageSize: pageSize,
+            total: filteredProducts.count,
+            hasMore: pageNum * pageSize < filteredProducts.count,
+            products: pagedProducts
         )
     }
 
@@ -123,6 +175,26 @@ actor MockMallService: MallServicing {
 
     func clearSearchHistory(session: CustSubInfo) async throws {
         searchHistory.removeAll()
+    }
+
+    private func homeProducts(
+        for scene: MallHomeProductFeedScene,
+        categoryID: String?
+    ) -> [MallProduct] {
+        switch scene {
+        case .recommendation:
+            return sortProducts(homeSnapshot.products, sort: .best, order: .descending)
+        case .category:
+            let filteredProducts = homeSnapshot.products.filter { product in
+                guard let categoryID, !categoryID.isEmpty else {
+                    return false
+                }
+                return product.categoryID == categoryID
+                    || product.subcategoryID == categoryID
+                    || product.thirdCategoryID == categoryID
+            }
+            return sortProducts(filteredProducts, sort: .best, order: .descending)
+        }
     }
 
     private func sortProducts(
@@ -199,6 +271,19 @@ actor MockMallService: MallServicing {
             .trimmingCharacters(in: .whitespacesAndNewlines)
             .folding(options: [.diacriticInsensitive, .caseInsensitive], locale: .current)
     }
+
+    private func pageProducts(
+        _ products: [MallProduct],
+        pageNum: Int,
+        pageSize: Int
+    ) -> [MallProduct] {
+        let startIndex = max(0, (pageNum - 1) * pageSize)
+        guard startIndex < products.count else {
+            return []
+        }
+        let endIndex = min(products.count, startIndex + pageSize)
+        return Array(products[startIndex..<endIndex])
+    }
 }
 
 struct RemoteMallService: MallServicing {
@@ -233,6 +318,41 @@ struct RemoteMallService: MallServicing {
         }
     }
 
+    func fetchHomeProductFeed(
+        scene: MallHomeProductFeedScene,
+        categoryID: String?,
+        pageNum: Int,
+        pageSize: Int,
+        session: CustSubInfo
+    ) async throws -> MallHomeProductFeedSnapshot {
+        guard pageNum >= MallPaginationDefaults.firstPage, pageSize > 0 else {
+            throw MallServiceError.pageInvalid
+        }
+
+        var requestQuery: [String: Any] = [
+            "scene": scene.rawValue,
+            "pageNum": pageNum,
+            "pageSize": pageSize,
+            "lang": MallRequestLanguage.currentCode()
+        ]
+
+        if let categoryID, !categoryID.isEmpty {
+            requestQuery["categoryId"] = categoryID
+        }
+
+        do {
+            let responseData = try await client.get(MallAPI.homeProducts, query: requestQuery)
+            return try MallResponseMapper.mapHomeProductFeed(from: responseData)
+        } catch let error as HTTPClient.ClientError {
+            mallLogger.error("Fetch mall home product feed failed: \(String(describing: error), privacy: .public)")
+            throw mapClientError(error, fallback: .homeProductFeedUnavailable)
+        } catch let error as MallServiceError {
+            throw error
+        } catch {
+            throw MallServiceError.networkUnavailable
+        }
+    }
+
     func fetchSearchBootstrap(session: CustSubInfo) async throws -> MallSearchBootstrap {
         do {
             let responseData = try await client.get(
@@ -255,6 +375,8 @@ struct RemoteMallService: MallServicing {
         categoryID: String?,
         sort: MallSearchSortMode,
         order: MallSortOrder,
+        pageNum: Int,
+        pageSize: Int,
         language: AppLanguage,
         session: CustSubInfo
     ) async throws -> MallSearchResultSnapshot {
@@ -262,11 +384,16 @@ struct RemoteMallService: MallServicing {
         guard !normalizedQuery.isEmpty, normalizedQuery.count <= 50 else {
             throw MallServiceError.keywordInvalid
         }
+        guard pageNum >= MallPaginationDefaults.firstPage, pageSize > 0 else {
+            throw MallServiceError.pageInvalid
+        }
 
         var requestQuery: [String: Any] = [
             "query": normalizedQuery,
             "sort": sort.rawValue,
             "order": order.rawValue,
+            "pageNum": pageNum,
+            "pageSize": pageSize,
             "lang": language.rawValue
         ]
 
@@ -331,10 +458,14 @@ struct RemoteMallService: MallServicing {
             switch code {
             case 50_016:
                 return .homeUnavailable
+            case 50_024, 50_025:
+                return .homeProductFeedUnavailable
             case 50_017, 50_020:
                 return .searchUnavailable
             case 50_018:
                 return .keywordInvalid
+            case 50_019:
+                return .pageInvalid
             default:
                 return fallback
             }
@@ -383,11 +514,30 @@ private enum MallResponseMapper {
         )
     }
 
+    static func mapHomeProductFeed(from responseData: HTTPClient.ResponseData) throws -> MallHomeProductFeedSnapshot {
+        let payload = try object(from: responseData)
+        let sceneRawValue = string(in: payload, keys: ["scene"]) ?? MallHomeProductFeedScene.recommendation.rawValue
+        let scene = MallHomeProductFeedScene(rawValue: sceneRawValue) ?? .recommendation
+        return MallHomeProductFeedSnapshot(
+            scene: scene,
+            categoryID: string(in: payload, keys: ["categoryID", "categoryId"]),
+            pageNum: int(in: payload, keys: ["pageNum"]) ?? MallPaginationDefaults.firstPage,
+            pageSize: int(in: payload, keys: ["pageSize"]) ?? MallPaginationDefaults.pageSize,
+            total: int(in: payload, keys: ["total"]) ?? 0,
+            hasMore: bool(in: payload, keys: ["hasMore"]) ?? false,
+            products: try objectArray(in: payload, keys: ["products"]).map(mapProduct)
+        )
+    }
+
     static func mapSearchResults(from responseData: HTTPClient.ResponseData) throws -> MallSearchResultSnapshot {
         let payload = try object(from: responseData)
         return MallSearchResultSnapshot(
             query: string(in: payload, keys: ["query"]) ?? "",
             categoryID: string(in: payload, keys: ["categoryID", "categoryId"]),
+            pageNum: int(in: payload, keys: ["pageNum"]) ?? MallPaginationDefaults.firstPage,
+            pageSize: int(in: payload, keys: ["pageSize"]) ?? MallPaginationDefaults.pageSize,
+            total: int(in: payload, keys: ["total"]) ?? 0,
+            hasMore: bool(in: payload, keys: ["hasMore"]) ?? false,
             products: try objectArray(in: payload, keys: ["products"]).map(mapProduct)
         )
     }
@@ -734,6 +884,24 @@ private enum MallResponseMapper {
             }
             if let stringValue = dictionary[key]?.stringValue, let intValue = Int(stringValue) {
                 return intValue
+            }
+        }
+        return nil
+    }
+
+    private static func bool(in dictionary: [String: HTTPClient.ResponseData], keys: [String]) -> Bool? {
+        for key in keys {
+            if let boolValue = dictionary[key]?.boolValue {
+                return boolValue
+            }
+            if let stringValue = dictionary[key]?.stringValue {
+                let normalized = stringValue.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+                if normalized == "true" {
+                    return true
+                }
+                if normalized == "false" {
+                    return false
+                }
             }
         }
         return nil
