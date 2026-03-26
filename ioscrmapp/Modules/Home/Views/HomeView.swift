@@ -10,6 +10,7 @@ struct HomeView: View {
     let rechargeService: any RechargeServicing
     let meService: any MeServicing
     let mallService: any MallServicing
+    let offersService: any OffersServicing
     let notificationService: any NotificationServicing
 
     @StateObject private var viewModel: HomeViewModel
@@ -19,6 +20,7 @@ struct HomeView: View {
     @State private var isMessageCenterPresented = false
     @State private var isBillingPresented = false
     @State private var isRechargePresented = false
+    @State private var isOffersPresented = false
     @State private var isSigningOut = false
     @State private var signOutFailureMessageKey: String?
 
@@ -27,7 +29,7 @@ struct HomeView: View {
     private let quickActions: [HomeItem] = [
         .init(title: .key("home.quick.recharge"), assetName: "QuickRechargeIcon", action: .recharge),
         .init(title: .key("home.quick.payBill"), assetName: "ServiceBillsIcon", action: .billing),
-        .init(title: .key("home.quick.offers"), assetName: "QuickOffersIcon"),
+        .init(title: .key("home.quick.offers"), assetName: "QuickOffersIcon", action: .offers),
         .init(title: .key("home.quick.mall"), assetName: "QuickMallIcon", action: .mall),
     ]
 
@@ -87,6 +89,7 @@ struct HomeView: View {
         authService: any AuthServicing,
         homeService: any HomeServicing,
         mallService: any MallServicing,
+        offersService: any OffersServicing,
         billingService: any BillingServicing,
         rechargeService: any RechargeServicing,
         meService: any MeServicing,
@@ -98,6 +101,7 @@ struct HomeView: View {
         self.billingService = billingService
         self.rechargeService = rechargeService
         self.mallService = mallService
+        self.offersService = offersService
         self.meService = meService
         self.notificationService = notificationService
         _viewModel = StateObject(
@@ -195,6 +199,9 @@ struct HomeView: View {
         }
         .fullScreenCover(isPresented: $isRechargePresented) {
             RechargeContainerView(session: custSubInfo, rechargeService: rechargeService)
+        }
+        .fullScreenCover(isPresented: $isOffersPresented) {
+            OffersContainerView(session: custSubInfo, offersService: offersService)
         }
         .confirmationDialog(
             localized("me.signOut.failure.title"),
@@ -819,6 +826,8 @@ struct HomeView: View {
             isBillingPresented = true
         case .recharge:
             isRechargePresented = true
+        case .offers:
+            isOffersPresented = true
         }
     }
 
@@ -1017,6 +1026,7 @@ private struct HomeItem: Identifiable {
         case mall
         case billing
         case recharge
+        case offers
     }
 
     let id = UUID()
@@ -1106,6 +1116,7 @@ struct HomeView_Previews: PreviewProvider {
             authService: MockAuthService(),
             homeService: MockHomeService(),
             mallService: MockMallService(),
+            offersService: MockOffersService(),
             billingService: MockBillingService(),
             rechargeService: MockRechargeService(),
             meService: MockMeService(),

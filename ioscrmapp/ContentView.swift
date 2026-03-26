@@ -12,6 +12,7 @@ struct ContentView: View {
     let authService: any AuthServicing
     let homeService: any HomeServicing
     let mallService: any MallServicing
+    let offersService: any OffersServicing
     let billingService: any BillingServicing
     let rechargeService: any RechargeServicing
     let meService: any MeServicing
@@ -29,6 +30,7 @@ struct ContentView: View {
                     authService: authService,
                     homeService: homeService,
                     mallService: mallService,
+                    offersService: offersService,
                     billingService: billingService,
                     rechargeService: rechargeService,
                     meService: meService,
@@ -57,6 +59,7 @@ struct ContentView_Previews: PreviewProvider {
                 authService: previewServices.authService,
                 homeService: previewServices.homeService,
                 mallService: previewServices.mallService,
+                offersService: previewServices.offersService,
                 billingService: previewServices.billingService,
                 rechargeService: previewServices.rechargeService,
                 meService: previewServices.meService,
@@ -71,6 +74,7 @@ struct ContentView_Previews: PreviewProvider {
                 authService: previewServices.authService,
                 homeService: previewServices.homeService,
                 mallService: previewServices.mallService,
+                offersService: previewServices.offersService,
                 billingService: previewServices.billingService,
                 rechargeService: previewServices.rechargeService,
                 meService: previewServices.meService,
