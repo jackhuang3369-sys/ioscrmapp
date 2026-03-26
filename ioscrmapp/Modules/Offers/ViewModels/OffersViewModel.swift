@@ -34,6 +34,7 @@ final class OffersViewModel: ObservableObject {
     @Published var pendingSubscribeOffer: EligibleOfferItem?
     @Published var pendingUnsubscribeOffer: SubscribedOfferItem?
     @Published var acceptedResult: OfferAcceptedResult?
+    @Published var selectedOrder: OffersOrderRecord?
     @Published var toastMessage: LocalizedTextValue?
     @Published private(set) var isLoadingMoreOrders = false
 
@@ -57,6 +58,10 @@ final class OffersViewModel: ObservableObject {
             return false
         }
         return ordersSnapshot.pageIndex < ordersSnapshot.totalPages
+    }
+
+    var serviceNumberText: String {
+        AuthValidator.localPhoneDigits(session.serviceNumber ?? session.phoneNumber)
     }
 
     var filteredEligibleOffers: [EligibleOfferItem] {
@@ -298,6 +303,14 @@ final class OffersViewModel: ObservableObject {
 
     func resetOrderFilter() {
         applyOrderFilter(.empty)
+    }
+
+    func openOrderDetail(_ record: OffersOrderRecord) {
+        selectedOrder = record
+    }
+
+    func dismissOrderDetail() {
+        selectedOrder = nil
     }
 
     func requestSubscribe(_ offer: EligibleOfferItem) {

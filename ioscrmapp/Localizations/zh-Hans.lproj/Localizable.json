@@ -511,6 +511,54 @@
       "subtitle": "打开订购列表，查看可订购优惠、分类和筛选条件。",
       "cta": "订购优惠"
     },
+    "orders": {
+      "entry": "订单列表",
+      "title": "优惠订单",
+      "filterSummary": "订单筛选",
+      "summary": "已加载 %@ / %@ 条订单",
+      "createdTime": "创建时间",
+      "type": "订单类型",
+      "offerType": "优惠类型",
+      "effectiveMode": "生效方式",
+      "loadingMore": "正在加载更多订单...",
+      "empty": {
+        "title": "暂无订单",
+        "subtitle": "当前筛选条件下没有套餐变更订单。"
+      },
+      "filters": {
+        "button": "筛选",
+        "title": "订单筛选",
+        "date": "时间",
+        "time": "时间范围",
+        "startTime": "开始时间",
+        "endTime": "结束时间",
+        "startTimeValue": "开始 %@",
+        "endTimeValue": "结束 %@",
+        "subscribeType": "订购类型",
+        "status": "状态",
+        "allTypes": "全部类型",
+        "allStatus": "全部状态",
+        "clear": "清除",
+        "none": "当前没有筛选条件"
+      },
+      "subscribeType": {
+        "add": "订购",
+        "delete": "退订"
+      },
+      "status": {
+        "initial": "初始",
+        "success": "成功",
+        "abnormal": "异常"
+      },
+      "detail": {
+        "title": "订单详情",
+        "sectionTitle": "订单信息",
+        "created": "创建时间",
+        "number": "当前号码",
+        "status": "状态",
+        "statusCode": "状态码"
+      }
+    },
     "unsubscribe": {
       "cta": "退订",
       "title": "确认退订该优惠？",
@@ -604,12 +652,6 @@
       "daily": "日包",
       "weekly": "周包",
       "monthly": "月包"
-    },
-    "priceRange": {
-      "zeroToTwentyFive": "0 - 25 AED",
-      "twentyFiveToFifty": "25 - 50 AED",
-      "fiftyToOneHundred": "50 - 100 AED",
-      "aboveOneHundred": "100+ AED"
     },
     "state": {
       "loadingTitle": "正在加载优惠...",

@@ -511,6 +511,54 @@
       "subtitle": "افتح قائمة الشراء لاستعراض العروض المؤهلة والتصنيفات والفلاتر.",
       "cta": "الاشتراك في العروض"
     },
+    "orders": {
+      "entry": "سجل الطلبات",
+      "title": "طلبات العروض",
+      "filterSummary": "فلاتر الطلبات",
+      "summary": "تم تحميل %@ من أصل %@ طلبًا",
+      "createdTime": "وقت الإنشاء",
+      "type": "نوع الطلب",
+      "offerType": "نوع العرض",
+      "effectiveMode": "طريقة التفعيل",
+      "loadingMore": "جارٍ تحميل المزيد من الطلبات...",
+      "empty": {
+        "title": "لا توجد طلبات",
+        "subtitle": "لا توجد طلبات تغيير عروض ضمن الفلاتر الحالية."
+      },
+      "filters": {
+        "button": "الفلاتر",
+        "title": "فلاتر الطلبات",
+        "date": "التاريخ",
+        "time": "النطاق الزمني",
+        "startTime": "وقت البدء",
+        "endTime": "وقت الانتهاء",
+        "startTimeValue": "من %@",
+        "endTimeValue": "إلى %@",
+        "subscribeType": "نوع العملية",
+        "status": "الحالة",
+        "allTypes": "كل الأنواع",
+        "allStatus": "كل الحالات",
+        "clear": "مسح",
+        "none": "لا توجد فلاتر مفعلة"
+      },
+      "subscribeType": {
+        "add": "اشتراك",
+        "delete": "إلغاء اشتراك"
+      },
+      "status": {
+        "initial": "مبدئي",
+        "success": "نجاح",
+        "abnormal": "غير طبيعي"
+      },
+      "detail": {
+        "title": "تفاصيل الطلب",
+        "sectionTitle": "بيانات الطلب",
+        "created": "وقت الإنشاء",
+        "number": "الرقم الحالي",
+        "status": "الحالة",
+        "statusCode": "رمز الحالة"
+      }
+    },
     "unsubscribe": {
       "cta": "إلغاء الاشتراك",
       "title": "إلغاء اشتراك هذا العرض؟",
@@ -604,12 +652,6 @@
       "daily": "يومي",
       "weekly": "أسبوعي",
       "monthly": "شهري"
-    },
-    "priceRange": {
-      "zeroToTwentyFive": "0 - 25 درهم",
-      "twentyFiveToFifty": "25 - 50 درهم",
-      "fiftyToOneHundred": "50 - 100 درهم",
-      "aboveOneHundred": "100+ درهم"
     },
     "state": {
       "loadingTitle": "جارٍ تحميل العروض...",

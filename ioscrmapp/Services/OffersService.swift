@@ -118,9 +118,9 @@ actor MockOffersService: OffersServicing {
         let filtered = records.filter { record in
             let subscribeTypeMatches = filter.subscribeType == nil || filter.subscribeType == record.subscribeType
             let statusMatches = filter.status == nil || filter.status == record.status
-            let recordDate = Self.queryDateFormatter.date(from: record.createdTimeText) ?? anchorDate
-            let startMatches = filter.startDate == nil || recordDate >= Self.startOfDay(for: filter.startDate!)
-            let endMatches = filter.endDate == nil || recordDate <= Self.endOfDay(for: filter.endDate!)
+            let recordDate = OffersOrderQueryDate.formatter.date(from: record.createdTimeText) ?? anchorDate
+            let startMatches = filter.startDate == nil || recordDate >= OffersOrderQueryDate.startOfDay(for: filter.startDate!)
+            let endMatches = filter.endDate == nil || recordDate <= OffersOrderQueryDate.endOfDay(for: filter.endDate!)
             return subscribeTypeMatches && statusMatches && startMatches && endMatches
         }
 
@@ -325,10 +325,10 @@ struct RemoteOffersService: OffersServicing {
         ]
 
         if let startDate = filter.startDate {
-            body["startTime"] = Self.queryDateFormatter.string(from: Self.startOfDay(for: startDate))
+            body["startTime"] = OffersOrderQueryDate.formatter.string(from: OffersOrderQueryDate.startOfDay(for: startDate))
         }
         if let endDate = filter.endDate {
-            body["endTime"] = Self.queryDateFormatter.string(from: Self.endOfDay(for: endDate))
+            body["endTime"] = OffersOrderQueryDate.formatter.string(from: OffersOrderQueryDate.endOfDay(for: endDate))
         }
         if let subscribeType = filter.subscribeType {
             body["subscribeType"] = subscribeType.rawValue
@@ -891,8 +891,8 @@ private enum OffersResponseValue {
     }
 }
 
-private extension RemoteOffersService {
-    static let queryDateFormatter: DateFormatter = {
+private enum OffersOrderQueryDate {
+    static let formatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "en_US_POSIX")
         formatter.calendar = Calendar(identifier: .gregorian)

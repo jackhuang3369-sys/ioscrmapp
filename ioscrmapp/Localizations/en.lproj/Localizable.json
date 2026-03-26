@@ -511,6 +511,54 @@
       "subtitle": "Open the purchase list to browse eligible offers, categories, and filters.",
       "cta": "Subscribe offers"
     },
+    "orders": {
+      "entry": "Order history",
+      "title": "Offer orders",
+      "filterSummary": "Order filters",
+      "summary": "Loaded %@ of %@ orders",
+      "createdTime": "Created time",
+      "type": "Order type",
+      "offerType": "Offer type",
+      "effectiveMode": "Effective mode",
+      "loadingMore": "Loading more orders...",
+      "empty": {
+        "title": "No orders found",
+        "subtitle": "There are no package-change orders under the current filters."
+      },
+      "filters": {
+        "button": "Filters",
+        "title": "Order filters",
+        "date": "Date",
+        "time": "Time range",
+        "startTime": "Start time",
+        "endTime": "End time",
+        "startTimeValue": "Start %@",
+        "endTimeValue": "End %@",
+        "subscribeType": "Subscribe type",
+        "status": "Status",
+        "allTypes": "All types",
+        "allStatus": "All status",
+        "clear": "Clear",
+        "none": "No active filters"
+      },
+      "subscribeType": {
+        "add": "Subscribe",
+        "delete": "Unsubscribe"
+      },
+      "status": {
+        "initial": "Initial",
+        "success": "Success",
+        "abnormal": "Abnormal"
+      },
+      "detail": {
+        "title": "Order detail",
+        "sectionTitle": "Order facts",
+        "created": "Created time",
+        "number": "Current number",
+        "status": "Status",
+        "statusCode": "Status code"
+      }
+    },
     "unsubscribe": {
       "cta": "Unsubscribe",
       "title": "Unsubscribe this offer?",
@@ -604,12 +652,6 @@
       "daily": "Daily",
       "weekly": "Weekly",
       "monthly": "Monthly"
-    },
-    "priceRange": {
-      "zeroToTwentyFive": "0 - 25 AED",
-      "twentyFiveToFifty": "25 - 50 AED",
-      "fiftyToOneHundred": "50 - 100 AED",
-      "aboveOneHundred": "100+ AED"
     },
     "state": {
       "loadingTitle": "Loading offers...",
