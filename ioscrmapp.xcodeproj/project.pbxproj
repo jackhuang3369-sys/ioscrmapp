@@ -74,6 +74,12 @@
 		A10000000000000000000043 /* HomeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000043 /* HomeViewModel.swift */; };
 		A10000000000000000000044 /* MallAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000044 /* MallAPI.swift */; };
 		A10000000000000000000045 /* BadgeCenterAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000045 /* BadgeCenterAPI.swift */; };
+		D10000000000000000000001 /* OffersAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = D20000000000000000000001 /* OffersAPI.swift */; };
+		D10000000000000000000002 /* OffersService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D20000000000000000000002 /* OffersService.swift */; };
+		D10000000000000000000003 /* OffersModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = D20000000000000000000003 /* OffersModels.swift */; };
+		D10000000000000000000004 /* OffersViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D20000000000000000000004 /* OffersViewModel.swift */; };
+		D10000000000000000000005 /* OffersContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D20000000000000000000005 /* OffersContainerView.swift */; };
+		D10000000000000000000006 /* OffersViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = D20000000000000000000006 /* OffersViews.swift */; };
 		B10000000000000000000001 /* BillingAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000001 /* BillingAPI.swift */; };
 		B10000000000000000000002 /* BillingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000002 /* BillingService.swift */; };
 		B10000000000000000000003 /* BillingModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000003 /* BillingModels.swift */; };
@@ -159,6 +165,12 @@
 		A20000000000000000000043 /* HomeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewModel.swift; sourceTree = "<group>"; };
 		A20000000000000000000044 /* MallAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MallAPI.swift; sourceTree = "<group>"; };
 		A20000000000000000000045 /* BadgeCenterAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BadgeCenterAPI.swift; sourceTree = "<group>"; };
+		D20000000000000000000001 /* OffersAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OffersAPI.swift; sourceTree = "<group>"; };
+		D20000000000000000000002 /* OffersService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OffersService.swift; sourceTree = "<group>"; };
+		D20000000000000000000003 /* OffersModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OffersModels.swift; sourceTree = "<group>"; };
+		D20000000000000000000004 /* OffersViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OffersViewModel.swift; sourceTree = "<group>"; };
+		D20000000000000000000005 /* OffersContainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OffersContainerView.swift; sourceTree = "<group>"; };
+		D20000000000000000000006 /* OffersViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OffersViews.swift; sourceTree = "<group>"; };
 		B20000000000000000000001 /* BillingAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BillingAPI.swift; sourceTree = "<group>"; };
 		B20000000000000000000002 /* BillingService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BillingService.swift; sourceTree = "<group>"; };
 		B20000000000000000000003 /* BillingModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BillingModels.swift; sourceTree = "<group>"; };
@@ -247,6 +259,7 @@
 				B20000000000000000000002 /* BillingService.swift */,
 				A20000000000000000000041 /* HomeService.swift */,
 				A20000000000000000000031 /* MallService.swift */,
+				D20000000000000000000002 /* OffersService.swift */,
 				A20000000000000000000008 /* MeService.swift */,
 				A2000000000000000000002C /* NotificationService.swift */,
 				A20000000000000000000023 /* SplashAdService.swift */,
@@ -263,6 +276,7 @@
 				B30000000000000000000001 /* Billing */,
 				A30000000000000000000007 /* Home */,
 				A30000000000000000000031 /* Mall */,
+				D30000000000000000000001 /* Offers */,
 				A3000000000000000000002B /* MessageCenter */,
 				A3000000000000000000001A /* Launch */,
 				A3000000000000000000000C /* Me */,
@@ -469,6 +483,7 @@
 				A20000000000000000000040 /* HomeAPI.swift */,
 				A2000000000000000000001D /* HTTPClient.swift */,
 				A20000000000000000000044 /* MallAPI.swift */,
+				D20000000000000000000001 /* OffersAPI.swift */,
 				A2000000000000000000001E /* NetworkContextBuilder.swift */,
 				A2000000000000000000002B /* NotificationAPI.swift */,
 			);
@@ -682,6 +697,41 @@
 			path = Views;
 			sourceTree = "<group>";
 		};
+		D30000000000000000000001 /* Offers */ = {
+			isa = PBXGroup;
+			children = (
+				D30000000000000000000002 /* Models */,
+				D30000000000000000000003 /* ViewModels */,
+				D30000000000000000000004 /* Views */,
+			);
+			path = Offers;
+			sourceTree = "<group>";
+		};
+		D30000000000000000000002 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				D20000000000000000000003 /* OffersModels.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		D30000000000000000000003 /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				D20000000000000000000004 /* OffersViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		D30000000000000000000004 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				D20000000000000000000005 /* OffersContainerView.swift */,
+				D20000000000000000000006 /* OffersViews.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -760,6 +810,12 @@
 				A10000000000000000000045 /* BadgeCenterAPI.swift in Sources */,
 				C10000000000000000000004 /* BadgeCenterView.swift in Sources */,
 				A10000000000000000000044 /* MallAPI.swift in Sources */,
+				D10000000000000000000006 /* OffersViews.swift in Sources */,
+				D10000000000000000000005 /* OffersContainerView.swift in Sources */,
+				D10000000000000000000004 /* OffersViewModel.swift in Sources */,
+				D10000000000000000000003 /* OffersModels.swift in Sources */,
+				D10000000000000000000002 /* OffersService.swift in Sources */,
+				D10000000000000000000001 /* OffersAPI.swift in Sources */,
 				A10000000000000000000039 /* MallSearchResultView.swift in Sources */,
 				A10000000000000000000038 /* MallSearchView.swift in Sources */,
 				A10000000000000000000037 /* MallCategoryView.swift in Sources */,

@@ -489,6 +489,185 @@
       "arabic": "Arabic"
     }
   },
+  "offers": {
+    "title": "Offers",
+    "landing": {
+      "title": "Manage your offers",
+      "subtitle": "Review your current primary offer, unsubscribe add-ons, or subscribe to a new offer."
+    },
+    "primary": {
+      "title": "Primary offer",
+      "effective": "Effective",
+      "expiry": "Expiry"
+    },
+    "subscribed": {
+      "title": "Subscribed add-ons",
+      "expand": "Show all",
+      "collapse": "Hide",
+      "empty": "No subscribed add-ons right now.",
+      "summary": "%@ subscribed offers"
+    },
+    "subscribeEntry": {
+      "title": "Subscribe a new offer",
+      "subtitle": "Open the purchase list to browse eligible offers, categories, and filters.",
+      "cta": "Subscribe offers"
+    },
+    "orders": {
+      "entry": "Order history",
+      "title": "Offer orders",
+      "filterSummary": "Order filters",
+      "summary": "Loaded %@ of %@ orders",
+      "createdTime": "Created time",
+      "type": "Order type",
+      "offerType": "Offer type",
+      "effectiveMode": "Effective mode",
+      "loadingMore": "Loading more orders...",
+      "empty": {
+        "title": "No orders found",
+        "subtitle": "There are no package-change orders under the current filters."
+      },
+      "filters": {
+        "button": "Filters",
+        "title": "Order filters",
+        "date": "Date",
+        "time": "Time range",
+        "startTime": "Start time",
+        "endTime": "End time",
+        "startTimeValue": "Start %@",
+        "endTimeValue": "End %@",
+        "subscribeType": "Subscribe type",
+        "status": "Status",
+        "allTypes": "All types",
+        "allStatus": "All status",
+        "clear": "Clear",
+        "none": "No active filters"
+      },
+      "subscribeType": {
+        "add": "Subscribe",
+        "delete": "Unsubscribe"
+      },
+      "status": {
+        "initial": "Initial",
+        "success": "Success",
+        "abnormal": "Abnormal"
+      },
+      "detail": {
+        "title": "Order detail",
+        "sectionTitle": "Order facts",
+        "created": "Created time",
+        "number": "Current number",
+        "status": "Status",
+        "statusCode": "Status code"
+      }
+    },
+    "unsubscribe": {
+      "cta": "Unsubscribe",
+      "title": "Unsubscribe this offer?",
+      "subtitle": "This request is accepted asynchronously. You will see the accepted result before returning to the landing page.",
+      "confirmAction": "Confirm unsubscribe"
+    },
+    "purchase": {
+      "title": "Subscribe offers",
+      "viewDetail": "View detail",
+      "popularRank": "Popular #%@",
+      "emptyFiltered": {
+        "title": "No offers match the current filters",
+        "subtitle": "Reset the active filters or change the selected category."
+      }
+    },
+    "filters": {
+      "title": "Filters",
+      "button": "Filters",
+      "reset": "Reset",
+      "category": "Category",
+      "categoryEmpty": "Select a category group",
+      "price": "Price range",
+      "minPrice": "Min price",
+      "maxPrice": "Max price",
+      "validity": "Validity"
+    },
+    "category": {
+      "all": "Default set"
+    },
+    "detail": {
+      "title": "Offer detail",
+      "price": "Price",
+      "validity": "Validity",
+      "resource": "Included resource",
+      "rules": "Rules",
+      "effectiveRule": "Effective rule",
+      "changeRule": "Change rule",
+      "cancelRule": "Cancel rule"
+    },
+    "rules": {
+      "effective": "Activated immediately after the request is accepted by the order system.",
+      "change": "Only eligible customers under the current primary offer can submit this add-on.",
+      "cancel": "Unsubscribe is available from the landing page when the upstream response allows it."
+    },
+    "subscribe": {
+      "title": "Confirm subscription",
+      "subtitle": "The order is accepted asynchronously. You will see a separate accepted-result page before going back to the landing page.",
+      "confirmAction": "Confirm subscription"
+    },
+    "confirmation": {
+      "offer": "Offer",
+      "price": "New price",
+      "category": "Category",
+      "effective": "Effective time"
+    },
+    "effective": {
+      "immediate": "Immediate",
+      "immediateExpiry": "Immediate expiry"
+    },
+    "accepted": {
+      "title": "Accepted result",
+      "orderId": "Order ID",
+      "offerName": "Offer name",
+      "operationType": "Operation type",
+      "message": "Accepted message",
+      "back": "Back to offers landing",
+      "subscribe": {
+        "title": "Offer request accepted",
+        "body": "Your request has been submitted to the order system. We will update the subscribed add-on list after you return to the landing page."
+      },
+      "unsubscribe": {
+        "title": "Unsubscribe request accepted",
+        "body": "Your unsubscribe request is being processed. The subscribed add-on list will refresh after you return to the landing page."
+      }
+    },
+    "operation": {
+      "subscribe": "Subscribe",
+      "unsubscribe": "Unsubscribe"
+    },
+    "resource": {
+      "all": "All",
+      "data": "Data",
+      "voice": "Voice",
+      "sms": "SMS"
+    },
+    "sort": {
+      "popular": "Popular",
+      "price": "Price"
+    },
+    "validity": {
+      "daily": "Daily",
+      "weekly": "Weekly",
+      "monthly": "Monthly"
+    },
+    "state": {
+      "loadingTitle": "Loading offers...",
+      "errorTitle": "We could not load offers",
+      "errorSubtitle": "Some offer details are temporarily unavailable."
+    },
+    "empty": {
+      "title": "No offers available",
+      "subtitle": "Try again later or reload the page."
+    },
+    "failure": {
+      "title": "We could not submit this request",
+      "body": "The order system did not accept the request. You can retry from the detail page or return to the previous screen."
+    }
+  },
   "billing": {
     "title": "Billing",
     "tab": {
