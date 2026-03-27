@@ -8,6 +8,7 @@ struct HomeView: View {
     let authService: any AuthServicing
     let billingService: any BillingServicing
     let rechargeService: any RechargeServicing
+    let badgeCenterService: any BadgeCenterServicing
     let meService: any MeServicing
     let mallService: any MallServicing
     let notificationService: any NotificationServicing
@@ -89,6 +90,7 @@ struct HomeView: View {
         mallService: any MallServicing,
         billingService: any BillingServicing,
         rechargeService: any RechargeServicing,
+        badgeCenterService: any BadgeCenterServicing,
         meService: any MeServicing,
         notificationService: any NotificationServicing
     ) {
@@ -97,6 +99,7 @@ struct HomeView: View {
         self.authService = authService
         self.billingService = billingService
         self.rechargeService = rechargeService
+        self.badgeCenterService = badgeCenterService
         self.mallService = mallService
         self.meService = meService
         self.notificationService = notificationService
@@ -157,6 +160,7 @@ struct HomeView: View {
                 session: custSubInfo,
                 billingService: billingService,
                 rechargeService: rechargeService,
+                badgeCenterService: badgeCenterService,
                 meService: meService,
                 showRechargeEntry: showsRechargeEntryInMe,
                 isSigningOut: isSigningOut,
@@ -1108,6 +1112,7 @@ struct HomeView_Previews: PreviewProvider {
             mallService: MockMallService(),
             billingService: MockBillingService(),
             rechargeService: MockRechargeService(),
+            badgeCenterService: MockBadgeCenterService(),
             meService: MockMeService(),
             notificationService: MockNotificationService()
         )

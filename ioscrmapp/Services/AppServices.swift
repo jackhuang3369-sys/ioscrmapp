@@ -5,6 +5,7 @@ struct AppServices {
     let billingService: any BillingServicing
     let rechargeService: any RechargeServicing
     let meService: any MeServicing
+    let badgeCenterService: any BadgeCenterServicing
     let notificationService: any NotificationServicing
     let splashAdService: any SplashAdServicing
     let configuration: AppServiceConfiguration
@@ -20,6 +21,7 @@ struct AppServices {
             billingService = MockBillingService()
             rechargeService = MockRechargeService()
             meService = MockMeService()
+            badgeCenterService = MockBadgeCenterService()
             notificationService = MockNotificationService()
             splashAdService = MockSplashAdService()
         case .remote:
@@ -28,7 +30,9 @@ struct AppServices {
             mallService = RemoteMallService(serverURL: configuration.serverURL)
             billingService = RemoteBillingService(serverURL: configuration.serverURL)
             rechargeService = RemoteRechargeService(serverURL: configuration.serverURL)
-            meService = MockMeService()
+            let remoteBadgeCenterService = RemoteBadgeCenterService(serverURL: configuration.serverURL)
+            badgeCenterService = remoteBadgeCenterService
+            meService = RemoteMeService(badgeCenterService: remoteBadgeCenterService)
             notificationService = RemoteNotificationService(serverURL: configuration.serverURL)
             splashAdService = RemoteSplashAdService(serverURL: configuration.serverURL)
         }

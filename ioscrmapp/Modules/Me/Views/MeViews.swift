@@ -8,6 +8,7 @@ struct MeContainerView: View {
     private let session: CustSubInfo
     private let billingService: any BillingServicing
     private let rechargeService: any RechargeServicing
+    private let badgeCenterService: any BadgeCenterServicing
     private let showRechargeEntry: Bool
     private let isSigningOut: Bool
     private let onSignOut: () -> Void
@@ -16,6 +17,7 @@ struct MeContainerView: View {
         session: CustSubInfo,
         billingService: any BillingServicing,
         rechargeService: any RechargeServicing,
+        badgeCenterService: any BadgeCenterServicing,
         meService: any MeServicing,
         showRechargeEntry: Bool = false,
         isSigningOut: Bool = false,
@@ -24,6 +26,7 @@ struct MeContainerView: View {
         self.session = session
         self.billingService = billingService
         self.rechargeService = rechargeService
+        self.badgeCenterService = badgeCenterService
         self.showRechargeEntry = showRechargeEntry
         _viewModel = StateObject(
             wrappedValue: MeViewModel(session: session, meService: meService)
@@ -48,8 +51,8 @@ struct MeContainerView: View {
             .navigationBarHidden(true)
         }
         .navigationViewStyle(.stack)
-        .task {
-            await viewModel.loadIfNeeded()
+        .task(id: languageStore.currentLanguage) {
+            await viewModel.loadIfNeeded(language: languageStore.currentLanguage)
         }
         .duBottomSheet(
             isPresented: $viewModel.isRevealSheetPresented,
@@ -71,6 +74,12 @@ struct MeContainerView: View {
         }
         .fullScreenCover(isPresented: $isRechargePresented) {
             RechargeContainerView(session: session, rechargeService: rechargeService)
+        }
+        .fullScreenCover(isPresented: $viewModel.isBadgeCenterPresented) {
+            BadgeCenterContainerView(
+                session: session,
+                badgeCenterService: badgeCenterService
+            )
         }
     }
 
@@ -171,7 +180,7 @@ struct MeContainerView: View {
             .background(DUTheme.background.ignoresSafeArea())
             .ignoresSafeArea(edges: .top)
             .refreshable {
-                await viewModel.refresh()
+                await viewModel.refresh(language: languageStore.currentLanguage)
             }
         }
     }
@@ -186,7 +195,7 @@ struct MeContainerView: View {
             footer: AnyView(signOutButton)
         ) {
             Task {
-                await viewModel.refresh()
+                await viewModel.refresh(language: languageStore.currentLanguage)
             }
         }
     }
@@ -201,7 +210,7 @@ struct MeContainerView: View {
             footer: AnyView(signOutButton)
         ) {
             Task {
-                await viewModel.refresh()
+                await viewModel.refresh(language: languageStore.currentLanguage)
             }
         }
     }
@@ -335,16 +344,26 @@ struct MeContainerView: View {
             } else {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: DUSpacing.md) {
-                        ForEach(items) { item in
+                        ForEach(Array(items.prefix(5))) { item in
                             Button {
                                 viewModel.handleAction(item.actionID, localizedTitle: localized(item.title))
                             } label: {
                                 VStack(spacing: DUSpacing.sm) {
-                                    Image(item.assetName)
-                                        .renderingMode(.original)
-                                        .resizable()
-                                        .scaledToFit()
-                                        .frame(width: 52, height: 52)
+                                    ZStack(alignment: .topTrailing) {
+                                        badgePreviewIcon(for: item)
+
+                                        if item.isUnread {
+                                            Circle()
+                                                .fill(DUTheme.error)
+                                                .frame(width: 12, height: 12)
+                                                .overlay(
+                                                    Circle()
+                                                        .stroke(Color.white, lineWidth: 2)
+                                                )
+                                                .offset(x: 3, y: -3)
+                                        }
+                                    }
+
                                     Text(localized(item.title))
                                         .font(.du(10, weight: .medium))
                                         .foregroundColor(DUTheme.inkSecondary)
@@ -359,6 +378,47 @@ struct MeContainerView: View {
                 }
             }
         }
+    }
+
+    private func badgePreviewIcon(for item: MeBadgeItem) -> some View {
+        return ZStack {
+            Circle()
+                .fill(
+                    LinearGradient(
+                        colors: [DUTheme.cyan.opacity(0.18), DUTheme.blue.opacity(0.14)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .frame(width: 56, height: 56)
+
+            if let assetName = item.assetName {
+                Image(assetName)
+                    .renderingMode(.original)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 52, height: 52)
+            } else if let remoteIconURL = item.remoteIconURL {
+                AsyncImage(url: remoteIconURL) { phase in
+                    switch phase {
+                    case let .success(image):
+                        image
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 52, height: 52)
+                    default:
+                        Image(systemName: item.fallbackSystemName)
+                            .font(.du(24, weight: .semibold))
+                            .foregroundColor(DUTheme.blue)
+                    }
+                }
+            } else {
+                Image(systemName: item.fallbackSystemName)
+                    .font(.du(24, weight: .semibold))
+                    .foregroundColor(DUTheme.blue)
+            }
+        }
+        .frame(width: 56, height: 56)
     }
 
     private func menuGroupsSection(groups: [MeMenuGroup]) -> some View {
@@ -540,13 +600,13 @@ struct MeContainerView_Previews: PreviewProvider {
 
     static var previews: some View {
         Group {
-            MeContainerView(session: previewSession, billingService: MockBillingService(), rechargeService: MockRechargeService(), meService: MockMeService(), showRechargeEntry: true)
+            MeContainerView(session: previewSession, billingService: MockBillingService(), rechargeService: MockRechargeService(), badgeCenterService: MockBadgeCenterService(), meService: MockMeService(), showRechargeEntry: true)
                 .previewDisplayName("Loaded")
 
-            MeContainerView(session: previewSession, billingService: MockBillingService(), rechargeService: MockRechargeService(), meService: MockMeService(mode: .empty))
+            MeContainerView(session: previewSession, billingService: MockBillingService(), rechargeService: MockRechargeService(), badgeCenterService: MockBadgeCenterService(), meService: MockMeService(mode: .empty))
                 .previewDisplayName("Empty")
 
-            MeContainerView(session: previewSession, billingService: MockBillingService(), rechargeService: MockRechargeService(), meService: MockMeService(mode: .failed))
+            MeContainerView(session: previewSession, billingService: MockBillingService(), rechargeService: MockRechargeService(), badgeCenterService: MockBadgeCenterService(), meService: MockMeService(mode: .failed))
                 .previewDisplayName("Error")
         }
         .environmentObject(AppLanguageStore(initialLanguage: .english))

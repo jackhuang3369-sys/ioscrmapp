@@ -1,7 +1,7 @@
 import Foundation
 
 protocol MeServicing: Sendable {
-    func fetchMeContent(session: CustSubInfo) async throws -> MeContent
+    func fetchMeContent(session: CustSubInfo, language: AppLanguage) async throws -> MeContent
     func validateRevealPassword(_ password: String, session: CustSubInfo) async throws -> Bool
 }
 
@@ -35,7 +35,7 @@ actor MockMeService: MeServicing {
         self.mode = mode
     }
 
-    func fetchMeContent(session: CustSubInfo) async throws -> MeContent {
+    func fetchMeContent(session: CustSubInfo, language _: AppLanguage) async throws -> MeContent {
         switch mode {
         case .loaded:
             return buildContent(session: session, includeContent: true)
@@ -55,6 +55,14 @@ actor MockMeService: MeServicing {
     }
 
     private func buildContent(session: CustSubInfo, includeContent: Bool) -> MeContent {
+        struct BadgePreview {
+            let id: String
+            let title: LocalizedTextValue
+            let assetName: String
+            let levelRank: Int
+            let acquiredAt: String
+        }
+
         let profile = MeProfileSummary(
             displayName: session.displayName,
             maskedPhoneNumber: MePhoneNumberFormatter.masked(session.phoneNumber),
@@ -95,13 +103,63 @@ actor MockMeService: MeServicing {
         ]
 
         let badges = includeContent
-            ? [
-                MeBadgeItem(id: "new-user", title: .key("me.badge.newUser"), assetName: "MeBadgeNewUserIcon", actionID: .badges),
-                MeBadgeItem(id: "first-recharge", title: .key("me.badge.firstRecharge"), assetName: "MeBadgeRechargeIcon", actionID: .badges),
-                MeBadgeItem(id: "first-order", title: .key("me.badge.firstOrder"), assetName: "MeBadgeOrderIcon", actionID: .badges),
-                MeBadgeItem(id: "vip", title: .key("me.badge.vip"), assetName: "MeBadgeVipIcon", actionID: .badges),
-                MeBadgeItem(id: "streak", title: .key("me.badge.streak"), assetName: "MeBadgeStreakIcon", actionID: .badges)
-            ]
+            ? Array(
+                [
+                    BadgePreview(
+                        id: "vip",
+                        title: .key("me.badge.vip"),
+                        assetName: "MeBadgeVipIcon",
+                        levelRank: 4,
+                        acquiredAt: "2026-03-25 10:20"
+                    ),
+                    BadgePreview(
+                        id: "first-order",
+                        title: .key("me.badge.firstOrder"),
+                        assetName: "MeBadgeOrderIcon",
+                        levelRank: 3,
+                        acquiredAt: "2026-03-24 09:18"
+                    ),
+                    BadgePreview(
+                        id: "first-recharge",
+                        title: .key("me.badge.firstRecharge"),
+                        assetName: "MeBadgeRechargeIcon",
+                        levelRank: 3,
+                        acquiredAt: "2026-03-18 20:42"
+                    ),
+                    BadgePreview(
+                        id: "streak",
+                        title: .key("me.badge.streak"),
+                        assetName: "MeBadgeStreakIcon",
+                        levelRank: 2,
+                        acquiredAt: "2026-03-21 08:05"
+                    ),
+                    BadgePreview(
+                        id: "new-user",
+                        title: .key("me.badge.newUser"),
+                        assetName: "MeBadgeNewUserIcon",
+                        levelRank: 1,
+                        acquiredAt: "2026-02-08 10:20"
+                    )
+                ]
+                .sorted { lhs, rhs in
+                    if lhs.levelRank != rhs.levelRank {
+                        return lhs.levelRank > rhs.levelRank
+                    }
+                    return lhs.acquiredAt > rhs.acquiredAt
+                }
+                .prefix(5)
+                .map { item in
+                    MeBadgeItem(
+                        id: item.id,
+                        title: item.title,
+                        assetName: item.assetName,
+                        remoteIconURL: nil,
+                        fallbackSystemName: "rosette",
+                        isUnread: false,
+                        actionID: .badges
+                    )
+                }
+            )
             : []
 
         let menuGroups = includeContent
@@ -137,17 +195,87 @@ actor MockMeService: MeServicing {
     }
 }
 
-/// Reserved for future server integration. Replace `MockMeService` injection with this
-/// implementation after the profile-related endpoints are available and mapped.
 struct RemoteMeService: MeServicing {
-    let serverURL: URL
+    private let fallbackService: MockMeService
+    private let badgeCenterService: any BadgeCenterServicing
 
-    func fetchMeContent(session: CustSubInfo) async throws -> MeContent {
-        throw MeServiceError.featureUnavailable(message: "Remote profile service is not configured yet.")
+    init(
+        badgeCenterService: any BadgeCenterServicing,
+        fallbackService: MockMeService = MockMeService()
+    ) {
+        self.badgeCenterService = badgeCenterService
+        self.fallbackService = fallbackService
+    }
+
+    func fetchMeContent(session: CustSubInfo, language: AppLanguage) async throws -> MeContent {
+        let fallbackContent = try await fallbackService.fetchMeContent(
+            session: session,
+            language: language
+        )
+
+        guard
+            let snapshot = try? await badgeCenterService.fetchBadgeCenter(
+                session: session,
+                language: language
+            )
+        else {
+            return fallbackContent
+        }
+
+        let previewBadges = buildBadgePreviewItems(from: snapshot)
+        return MeContent(
+            profile: fallbackContent.profile,
+            stats: mergedStats(
+                from: fallbackContent.stats,
+                acquiredBadgeCount: snapshot.overview.acquiredCount
+            ),
+            badges: previewBadges,
+            menuGroups: fallbackContent.menuGroups
+        )
     }
 
     func validateRevealPassword(_ password: String, session: CustSubInfo) async throws -> Bool {
-        throw MeServiceError.featureUnavailable(message: "Remote password verification is not configured yet.")
+        try await fallbackService.validateRevealPassword(password, session: session)
+    }
+
+    private func mergedStats(from stats: [MeStatItem], acquiredBadgeCount: Int) -> [MeStatItem] {
+        stats.map { item in
+            guard item.actionID == .badges else {
+                return item
+            }
+
+            return MeStatItem(
+                id: item.id,
+                title: item.title,
+                value: String(acquiredBadgeCount),
+                assetName: item.assetName,
+                actionID: item.actionID
+            )
+        }
+    }
+
+    private func buildBadgePreviewItems(from snapshot: BadgeCenterSnapshot) -> [MeBadgeItem] {
+        snapshot.badges
+            .filter { $0.status == .acquired }
+            .sorted { lhs, rhs in
+                if lhs.level.sortRank != rhs.level.sortRank {
+                    return lhs.level.sortRank > rhs.level.sortRank
+                }
+
+                return (lhs.acquiredAt ?? .distantPast) > (rhs.acquiredAt ?? .distantPast)
+            }
+            .prefix(5)
+            .map { badge in
+                MeBadgeItem(
+                    id: badge.id,
+                    title: badge.title,
+                    assetName: nil,
+                    remoteIconURL: badge.iconURL,
+                    fallbackSystemName: badge.iconSystemName,
+                    isUnread: badge.isUnread,
+                    actionID: .badges
+                )
+            }
     }
 }
 

@@ -1,6 +1,7 @@
 {
   "common": {
     "ok": "OK",
+    "back": "Back",
     "cancel": "Cancel",
     "retry": "Retry",
     "reload": "Reload",
@@ -713,6 +714,110 @@
     "state": {
       "loading": "Loading recharge details...",
       "errorTitle": "Recharge unavailable"
+    }
+  },
+  "badgeCenter": {
+    "title": "Badge Center",
+    "loading": "Loading badge center...",
+    "unread": "Unread %@",
+    "action": {
+      "back": "Back",
+      "backToList": "Back to List"
+    },
+    "overview": {
+      "title": "Your Badge Portfolio",
+      "subtitle": "Browse earned, locked, and expired badges by category, and keep track of the latest unlock alerts.",
+      "memberSubtitle": "Badge Collector · %@ of %@ unlocked",
+      "acquired": "Acquired",
+      "locked": "To Acquire",
+      "expired": "Expired",
+      "unread": "Unread",
+      "featured": "%@ featured badges",
+      "featuredBadge": "Featured"
+    },
+    "filter": {
+      "button": "Filter",
+      "category": {
+        "title": "Category",
+        "all": "All Badges",
+        "new": "New",
+        "daily": "Daily",
+        "challenge": "Challenge",
+        "event": "Event",
+        "cycle": "Cycle",
+        "ultimate": "Ultimate"
+      },
+      "status": {
+        "title": "Status",
+        "all": "All Statuses",
+        "acquired": "Acquired",
+        "locked": "To Acquire",
+        "expired": "Expired"
+      },
+      "level": {
+        "title": "Badge Level",
+        "all": "All Levels",
+        "base": "Basic",
+        "advanced": "Intermediate",
+        "premium": "Advanced",
+        "ultimate": "Ultimate"
+      }
+    },
+    "status": {
+      "acquired": "Acquired",
+      "locked": "To Acquire",
+      "expired": "Expired"
+    },
+    "level": {
+      "base": "Base",
+      "advanced": "Mid",
+      "premium": "High",
+      "ultimate": "Top"
+    },
+    "rewardStatus": {
+      "active": "Active",
+      "upcoming": "To Acquire",
+      "unavailable": "Unavailable",
+      "expired": "Expired"
+    },
+    "card": {
+      "acquiredAt": "Acquired on %@"
+    },
+    "detail": {
+      "title": "Badge Detail",
+      "loading": "Opening badge details...",
+      "meta": "Badge Info",
+      "englishName": "English Name",
+      "arabicName": "Arabic Name",
+      "status": "Status",
+      "acquisitionTime": "Acquisition Time",
+      "validity": "Validity",
+      "trigger": "Trigger Rule",
+      "requirements": "Requirements",
+      "rewards": "Rewards",
+      "badgeStory": "Badge Story",
+      "history": "Recent History",
+      "historyEmpty": "No history yet",
+      "progress": "Unlock Progress",
+      "notAcquiredYet": "Not acquired yet"
+    },
+    "popup": {
+      "title": "New Badge Unlocked",
+      "later": "Later",
+      "viewNow": "View Now"
+    },
+    "empty": {
+      "title": "No badges to display",
+      "subtitle": "New badges will appear here after you complete more activities.",
+      "filteredTitle": "No badges match this filter",
+      "filteredSubtitle": "Try another status, level, or category to explore more badges."
+    },
+    "error": {
+      "title": "Badge center unavailable",
+      "load": "We couldn't load your badge information right now.",
+      "detail": "We couldn't open the badge detail right now.",
+      "handleUnlock": "We couldn't process the unlock prompt right now.",
+      "notFound": "The requested badge couldn't be found."
     }
   },
   "splash": {

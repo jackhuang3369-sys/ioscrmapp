@@ -14,6 +14,7 @@ struct ContentView: View {
     let mallService: any MallServicing
     let billingService: any BillingServicing
     let rechargeService: any RechargeServicing
+    let badgeCenterService: any BadgeCenterServicing
     let meService: any MeServicing
     let notificationService: any NotificationServicing
     let authServerURL: URL?
@@ -31,6 +32,7 @@ struct ContentView: View {
                     mallService: mallService,
                     billingService: billingService,
                     rechargeService: rechargeService,
+                    badgeCenterService: badgeCenterService,
                     meService: meService,
                     notificationService: notificationService
                 )
@@ -59,6 +61,7 @@ struct ContentView_Previews: PreviewProvider {
                 mallService: previewServices.mallService,
                 billingService: previewServices.billingService,
                 rechargeService: previewServices.rechargeService,
+                badgeCenterService: previewServices.badgeCenterService,
                 meService: previewServices.meService,
                 notificationService: previewServices.notificationService,
                 authServerURL: previewServices.configuration.mode == .remote ? previewServices.configuration.serverURL : nil
@@ -73,6 +76,7 @@ struct ContentView_Previews: PreviewProvider {
                 mallService: previewServices.mallService,
                 billingService: previewServices.billingService,
                 rechargeService: previewServices.rechargeService,
+                badgeCenterService: previewServices.badgeCenterService,
                 meService: previewServices.meService,
                 notificationService: previewServices.notificationService,
                 authServerURL: previewServices.configuration.mode == .remote ? previewServices.configuration.serverURL : nil

@@ -14,6 +14,7 @@ final class MeViewModel: ObservableObject {
     @Published var isRevealSheetPresented = false
     @Published var isLanguageSettingsPresented = false
     @Published var isBillingPresented = false
+    @Published var isBadgeCenterPresented = false
     @Published var revealPassword = ""
     @Published var revealErrorMessage: LocalizedTextValue?
     @Published private(set) var isPhoneNumberRevealed = false
@@ -21,6 +22,7 @@ final class MeViewModel: ObservableObject {
 
     private let custSubInfo: CustSubInfo
     private let meService: any MeServicing
+    private var lastLoadedLanguage: AppLanguage?
 
     init(session: CustSubInfo, meService: any MeServicing) {
         custSubInfo = session
@@ -37,18 +39,25 @@ final class MeViewModel: ObservableObject {
         }
     }
 
-    func loadIfNeeded() async {
+    func loadIfNeeded(language: AppLanguage) async {
         guard case .idle = screenState else {
+            if lastLoadedLanguage != language {
+                await refresh(language: language)
+            }
             return
         }
-        await refresh()
+        await refresh(language: language)
     }
 
-    func refresh() async {
+    func refresh(language: AppLanguage) async {
+        lastLoadedLanguage = language
         screenState = .loading
 
         do {
-            let content = try await meService.fetchMeContent(session: custSubInfo)
+            let content = try await meService.fetchMeContent(
+                session: custSubInfo,
+                language: language
+            )
             screenState = .loaded(content)
         } catch {
             let errorText = (error as? MeServiceError)?.textValue ?? .key("me.error.subtitle")
@@ -60,6 +69,8 @@ final class MeViewModel: ObservableObject {
         switch actionID {
         case .billing:
             isBillingPresented = true
+        case .badges:
+            isBadgeCenterPresented = true
         case .changeLanguage:
             isLanguageSettingsPresented = true
         default:

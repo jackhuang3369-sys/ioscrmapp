@@ -1,6 +1,7 @@
 {
   "common": {
     "ok": "确定",
+    "back": "返回",
     "cancel": "取消",
     "retry": "重试",
     "reload": "重新加载",
@@ -713,6 +714,110 @@
     "state": {
       "loading": "正在加载充值信息...",
       "errorTitle": "充值暂不可用"
+    }
+  },
+  "badgeCenter": {
+    "title": "徽章中心",
+    "loading": "正在加载徽章中心...",
+    "unread": "未读 %@",
+    "action": {
+      "back": "返回",
+      "backToList": "返回列表"
+    },
+    "overview": {
+      "title": "你的徽章资产",
+      "subtitle": "按分类和状态查看已获得、锁定中与已过期的徽章，并跟踪最新解锁提醒。",
+      "memberSubtitle": "徽章收藏家 · 已点亮 %@ / %@",
+      "acquired": "已获得",
+      "locked": "待获得",
+      "expired": "已过期",
+      "unread": "未读",
+      "featured": "重点展示徽章 %@ 枚",
+      "featuredBadge": "重点"
+    },
+    "filter": {
+      "button": "筛选",
+      "category": {
+        "title": "徽章分类",
+        "all": "全部徽章",
+        "new": "新手徽章",
+        "daily": "日常徽章",
+        "challenge": "挑战徽章",
+        "event": "活动徽章",
+        "cycle": "周期徽章",
+        "ultimate": "终极徽章"
+      },
+      "status": {
+        "title": "状态筛选",
+        "all": "全部状态",
+        "acquired": "已获得",
+        "locked": "待获得",
+        "expired": "已过期"
+      },
+      "level": {
+        "title": "徽章等级",
+        "all": "全部等级",
+        "base": "基础",
+        "advanced": "中级",
+        "premium": "高级",
+        "ultimate": "终极"
+      }
+    },
+    "status": {
+      "acquired": "已获得",
+      "locked": "待获得",
+      "expired": "已过期"
+    },
+    "level": {
+      "base": "基础",
+      "advanced": "中阶",
+      "premium": "高阶",
+      "ultimate": "终极"
+    },
+    "rewardStatus": {
+      "active": "生效中",
+      "upcoming": "待获得",
+      "unavailable": "暂不可用",
+      "expired": "已失效"
+    },
+    "card": {
+      "acquiredAt": "获得于 %@"
+    },
+    "detail": {
+      "title": "徽章详情",
+      "loading": "正在打开徽章详情...",
+      "meta": "徽章信息",
+      "englishName": "英文名",
+      "arabicName": "阿语名",
+      "status": "状态说明",
+      "acquisitionTime": "获得时间",
+      "validity": "有效期",
+      "trigger": "触发规则",
+      "requirements": "达成条件",
+      "rewards": "奖励权益",
+      "badgeStory": "徽章故事",
+      "history": "最近历史",
+      "historyEmpty": "暂无历史记录",
+      "progress": "解锁进度",
+      "notAcquiredYet": "尚未获得"
+    },
+    "popup": {
+      "title": "新徽章已解锁",
+      "later": "稍后查看",
+      "viewNow": "立即查看"
+    },
+    "empty": {
+      "title": "暂无可展示徽章",
+      "subtitle": "完成活动后，新的徽章会出现在这里。",
+      "filteredTitle": "当前筛选下没有徽章",
+      "filteredSubtitle": "切换状态、等级或分类后，再看看其他徽章。"
+    },
+    "error": {
+      "title": "徽章中心暂不可用",
+      "load": "当前无法加载徽章信息，请稍后重试。",
+      "detail": "当前无法打开徽章详情。",
+      "handleUnlock": "当前无法处理解锁提醒，请稍后再试。",
+      "notFound": "未找到对应徽章。"
     }
   },
   "splash": {

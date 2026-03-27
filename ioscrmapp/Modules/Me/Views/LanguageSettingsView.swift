@@ -1,59 +1,95 @@
 import SwiftUI
 
 struct LanguageSettingsView: View {
-    @Environment(\.presentationMode) private var presentationMode
+    @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var languageStore: AppLanguageStore
 
     @State private var selectedLanguage: AppLanguage = .fallback
 
     var body: some View {
-        VStack(spacing: DUSpacing.xl) {
-            VStack(alignment: .leading, spacing: DUSpacing.sm) {
-                Text(languageStore.string("language.settings.subtitle"))
-                    .font(.du(15, weight: .medium))
-                    .foregroundColor(DUTheme.inkSecondary)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+        VStack(spacing: 0) {
+            header
 
-                Text(languageStore.string("language.settings.current"))
-                    .font(.du(12, weight: .semibold))
-                    .foregroundColor(DUTheme.inkTertiary)
+            VStack(spacing: DUSpacing.xl) {
+                VStack(alignment: .leading, spacing: DUSpacing.sm) {
+                    Text(languageStore.string("language.settings.subtitle"))
+                        .font(.du(15, weight: .medium))
+                        .foregroundColor(DUTheme.inkSecondary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
 
-                Text(languageStore.string(languageStore.currentLanguage.displayNameKey))
-                    .font(.du(15, weight: .bold))
-                    .foregroundColor(DUTheme.ink)
-            }
+                    Text(languageStore.string("language.settings.current"))
+                        .font(.du(12, weight: .semibold))
+                        .foregroundColor(DUTheme.inkTertiary)
 
-            VStack(spacing: DUSpacing.md) {
-                ForEach(AppLanguage.allCases) { language in
-                    DUListItem(
-                        title: language.nativeName,
-                        subtitle: languageStore.string(language.displayNameKey),
-                        accessory: .selection(isSelected: selectedLanguage == language)
-                    ) {
-                        selectedLanguage = language
-                    }
-                    .duCardStyle()
+                    Text(languageStore.string(languageStore.currentLanguage.displayNameKey))
+                        .font(.du(15, weight: .bold))
+                        .foregroundColor(DUTheme.ink)
                 }
-            }
 
-            DUButton(
-                title: languageStore.string("language.settings.save"),
-                style: .primary
-            ) {
-                languageStore.updateLanguage(selectedLanguage)
-                presentationMode.wrappedValue.dismiss()
-            }
+                VStack(spacing: DUSpacing.md) {
+                    ForEach(AppLanguage.allCases) { language in
+                        DUListItem(
+                            title: language.nativeName,
+                            subtitle: languageStore.string(language.displayNameKey),
+                            accessory: .selection(isSelected: selectedLanguage == language)
+                        ) {
+                            selectedLanguage = language
+                        }
+                        .duCardStyle()
+                    }
+                }
 
-            Spacer()
+                DUButton(
+                    title: languageStore.string("language.settings.save"),
+                    style: .primary
+                ) {
+                    languageStore.updateLanguage(selectedLanguage)
+                    dismiss()
+                }
+
+                Spacer()
+            }
+            .padding(DUSpacing.xl)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         }
-        .padding(DUSpacing.xl)
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .background(DUTheme.background.ignoresSafeArea())
-        .navigationTitle(languageStore.string("language.settings.title"))
-        .navigationBarTitleDisplayMode(.inline)
+        .navigationBarHidden(true)
         .onAppear {
             selectedLanguage = languageStore.currentLanguage
         }
+    }
+
+    private var header: some View {
+        HStack(spacing: DUSpacing.md) {
+            Button(action: { dismiss() }) {
+                HStack(spacing: DUSpacing.sm) {
+                    Image(systemName: "chevron.backward")
+                        .font(.du(15, weight: .bold))
+                    Text(languageStore.string("common.back"))
+                        .font(.du(15, weight: .semibold))
+                }
+                .foregroundColor(DUTheme.ink)
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("languageSettings.backButton")
+
+            Spacer()
+
+            Text(languageStore.string("language.settings.title"))
+                .font(.du(20, weight: .bold))
+                .foregroundColor(DUTheme.ink)
+                .multilineTextAlignment(.center)
+                .lineLimit(1)
+
+            Spacer()
+
+            Color.clear
+                .frame(width: 82, height: 32)
+        }
+        .padding(.horizontal, DUSpacing.lg)
+        .padding(.top, DUSpacing.md)
+        .padding(.bottom, DUSpacing.md)
+        .background(DUTheme.panel)
     }
 }
 

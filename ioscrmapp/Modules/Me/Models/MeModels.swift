@@ -30,7 +30,10 @@ struct MeStatItem: Identifiable {
 struct MeBadgeItem: Identifiable {
     let id: String
     let title: LocalizedTextValue
-    let assetName: String
+    let assetName: String?
+    let remoteIconURL: URL?
+    let fallbackSystemName: String
+    let isUnread: Bool
     let actionID: MeActionID
 }
 
