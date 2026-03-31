@@ -10,6 +10,7 @@ import SwiftUI
 struct ContentView: View {
     @ObservedObject var sessionStore: SessionStore
     let authService: any AuthServicing
+    let aiChatService: any AIChatServicing
     let homeService: any HomeServicing
     let mallService: any MallServicing
     let offersService: any OffersServicing
@@ -29,6 +30,7 @@ struct ContentView: View {
                     custSubInfo: custSubInfo,
                     sessionStore: sessionStore,
                     authService: authService,
+                    aiChatService: aiChatService,
                     homeService: homeService,
                     mallService: mallService,
                     offersService: offersService,
@@ -59,6 +61,7 @@ struct ContentView_Previews: PreviewProvider {
             ContentView(
                 sessionStore: SessionStore(),
                 authService: previewServices.authService,
+                aiChatService: previewServices.aiChatService,
                 homeService: previewServices.homeService,
                 mallService: previewServices.mallService,
                 offersService: previewServices.offersService,
@@ -75,6 +78,7 @@ struct ContentView_Previews: PreviewProvider {
             ContentView(
                 sessionStore: SessionStore.previewAuthenticated,
                 authService: previewServices.authService,
+                aiChatService: previewServices.aiChatService,
                 homeService: previewServices.homeService,
                 mallService: previewServices.mallService,
                 offersService: previewServices.offersService,

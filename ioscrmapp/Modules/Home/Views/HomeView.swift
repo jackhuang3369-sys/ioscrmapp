@@ -6,6 +6,7 @@ struct HomeView: View {
     let custSubInfo: CustSubInfo
     @ObservedObject var sessionStore: SessionStore
     let authService: any AuthServicing
+    let aiChatService: any AIChatServicing
     let billingService: any BillingServicing
     let rechargeService: any RechargeServicing
     let badgeCenterService: any BadgeCenterServicing
@@ -22,6 +23,7 @@ struct HomeView: View {
     @State private var isBillingPresented = false
     @State private var isRechargePresented = false
     @State private var isOffersPresented = false
+    @State private var isAIChatPresented = false
     @State private var isSigningOut = false
     @State private var signOutFailureMessageKey: String?
 
@@ -88,6 +90,7 @@ struct HomeView: View {
         custSubInfo: CustSubInfo,
         sessionStore: SessionStore,
         authService: any AuthServicing,
+        aiChatService: any AIChatServicing,
         homeService: any HomeServicing,
         mallService: any MallServicing,
         offersService: any OffersServicing,
@@ -100,6 +103,7 @@ struct HomeView: View {
         self.custSubInfo = custSubInfo
         self.sessionStore = sessionStore
         self.authService = authService
+        self.aiChatService = aiChatService
         self.billingService = billingService
         self.rechargeService = rechargeService
         self.badgeCenterService = badgeCenterService
@@ -197,6 +201,15 @@ struct HomeView: View {
                 session: custSubInfo,
                 notificationService: notificationService
             )
+        }
+        .fullScreenCover(isPresented: $isAIChatPresented) {
+            AIChatView(
+                custSubInfo: custSubInfo,
+                language: languageStore.currentLanguage,
+                aiChatService: aiChatService
+            ) { target in
+                handleAIChatNavigation(target)
+            }
         }
         .fullScreenCover(isPresented: $isBillingPresented) {
             BillingContainerView(session: custSubInfo, billingService: billingService)
@@ -330,6 +343,9 @@ struct HomeView: View {
                 HStack(spacing: DUSpacing.sm) {
                     CircleAction(symbol: "magnifyingglass") {
                         placeholderMessage = .key("home.placeholder.search")
+                    }
+                    CircleAction(symbol: "sparkles") {
+                        isAIChatPresented = true
                     }
                     CircleAction(symbol: "bell.fill") {
                         isMessageCenterPresented = true
@@ -835,6 +851,31 @@ struct HomeView: View {
         }
     }
 
+    private func handleAIChatNavigation(_ target: AIChatNavigationTarget) {
+        isAIChatPresented = false
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+            switch target {
+            case .home:
+                selectedTab = .home
+            case .service:
+                selectedTab = .service
+            case .mall:
+                selectedTab = .mall
+            case .offers:
+                isOffersPresented = true
+            case .billing:
+                isBillingPresented = true
+            case .recharge:
+                isRechargePresented = true
+            case .me:
+                selectedTab = .me
+            case .external:
+                break
+            }
+        }
+    }
+
     private var filteredQuickActions: [HomeItem] {
         guard let paymentType = viewModel.dashboard?.summary.paymentType else {
             return quickActions
@@ -1118,6 +1159,7 @@ struct HomeView_Previews: PreviewProvider {
             ),
             sessionStore: SessionStore.previewAuthenticated,
             authService: MockAuthService(),
+            aiChatService: MockAIChatService(),
             homeService: MockHomeService(),
             mallService: MockMallService(),
             offersService: MockOffersService(),

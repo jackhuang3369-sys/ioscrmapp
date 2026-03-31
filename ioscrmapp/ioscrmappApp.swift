@@ -19,6 +19,7 @@ struct ioscrmappApp: App {
                 ContentView(
                     sessionStore: sessionStore,
                     authService: services.authService,
+                    aiChatService: services.aiChatService,
                     homeService: services.homeService,
                     mallService: services.mallService,
                     offersService: services.offersService,

@@ -1,4 +1,5 @@
 struct AppServices {
+    let aiChatService: any AIChatServicing
     let authService: any AuthServicing
     let homeService: any HomeServicing
     let mallService: any MallServicing
@@ -16,6 +17,7 @@ struct AppServices {
 
         switch configuration.mode {
         case .mock:
+            aiChatService = MockAIChatService()
             authService = MockAuthService()
             homeService = MockHomeService()
             mallService = MockMallService()
@@ -27,6 +29,7 @@ struct AppServices {
             notificationService = MockNotificationService()
             splashAdService = MockSplashAdService()
         case .remote:
+            aiChatService = RemoteAIChatService()
             authService = RemoteAuthService(serverURL: configuration.serverURL)
             homeService = RemoteHomeService(serverURL: configuration.serverURL)
             mallService = RemoteMallService(serverURL: configuration.serverURL)
