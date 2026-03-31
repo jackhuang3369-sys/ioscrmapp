@@ -289,6 +289,8 @@ struct AIChatView: View {
 
     private func assistantRichTextView(_ richText: AttributedString) -> some View {
         Text(richText)
+            .font(.du(14, weight: .medium))
+            .foregroundColor(DUTheme.ink)
             .multilineTextAlignment(.leading)
             .frame(maxWidth: .infinity, alignment: .leading)
             .fixedSize(horizontal: false, vertical: true)
