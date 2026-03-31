@@ -520,11 +520,11 @@ struct MeContainerView: View {
                     }
 
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("智能体")
+                        Text("AI")
                             .font(.du(16, weight: .bold))
                             .foregroundColor(DUTheme.ink)
 
-                        Text("暂时从 Me 页面进入")
+                        Text("")
                             .font(.du(12, weight: .medium))
                             .foregroundColor(DUTheme.inkSecondary)
                     }
