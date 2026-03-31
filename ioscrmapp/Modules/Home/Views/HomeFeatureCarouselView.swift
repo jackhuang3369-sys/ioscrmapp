@@ -9,15 +9,12 @@ import SwiftUI
 struct HomeFeatureCarouselView: View {
     let assetNames: [String]
 
-    @State private var selectedIndex = 0
+    @State private var settledIndex = 0
     @State private var dragTranslation: CGFloat = 0
     @State private var isDraggingHorizontally = false
+    @State private var autoAdvanceCycle = 0
 
-    private let autoAdvanceTimer = Timer.publish(
-        every: 4,
-        on: .main,
-        in: .common
-    ).autoconnect()
+    private let autoAdvanceIntervalNanoseconds: UInt64 = 4_000_000_000
 
     var body: some View {
         VStack(spacing: DUSpacing.md) {
@@ -27,7 +24,7 @@ struct HomeFeatureCarouselView: View {
                 ZStack {
                     ForEach(visibleLayouts(metrics: metrics)) { layout in
                         carouselCard(
-                            assetName: assetNames[layout.index],
+                            assetName: assetNames[layout.assetIndex],
                             layout: layout,
                             metrics: metrics
                         )
@@ -46,14 +43,18 @@ struct HomeFeatureCarouselView: View {
                 pageIndicator
             }
         }
-        .onReceive(autoAdvanceTimer) { _ in
-            guard assetNames.count > 1, !isDraggingHorizontally else {
+        .task(id: autoAdvanceCycle) {
+            await runAutoAdvanceCycle()
+        }
+        .onChange(of: assetNames.count) { newCount in
+            guard newCount > 0 else {
+                settledIndex = 0
+                restartAutoAdvanceCycle()
                 return
             }
 
-            withAnimation(carouselAnimation) {
-                selectedIndex = wrappedIndex(selectedIndex + 1)
-            }
+            settledIndex = wrappedIndex(settledIndex, assetCount: newCount)
+            restartAutoAdvanceCycle()
         }
     }
 
@@ -62,11 +63,11 @@ struct HomeFeatureCarouselView: View {
             ForEach(assetNames.indices, id: \.self) { index in
                 Capsule()
                     .fill(
-                        index == selectedIndex
+                        index == selectedAssetIndex
                         ? DUTheme.cyan
                         : DUTheme.inkDisabled.opacity(0.35)
                     )
-                    .frame(width: index == selectedIndex ? 18 : 6, height: 6)
+                    .frame(width: index == selectedAssetIndex ? 18 : 6, height: 6)
             }
         }
     }
@@ -74,22 +75,29 @@ struct HomeFeatureCarouselView: View {
     private func visibleLayouts(
         metrics: HomeFeatureCarouselMetrics
     ) -> [HomeFeatureCarouselCardLayout] {
-        let displayedIndex = CGFloat(selectedIndex) - (dragTranslation / metrics.travelDistance)
+        let displayedIndex = CGFloat(settledIndex) - (dragTranslation / metrics.travelDistance)
+        let settledDisplayIndex = CGFloat(settledIndex)
 
-        // 只保留中心卡与相邻卡参与布局，避免不可见卡片继续承担阴影和裁剪开销。
+        // 保留当前卡、相邻卡和下一层预备卡，避免边缘卡片在切换时突然出现或消失。
         return assetNames.indices
-            .compactMap { index in
-                let position = wrappedRelativePosition(
-                    for: index,
-                    displayedIndex: displayedIndex
+            .compactMap { assetIndex in
+                let restingProjectedIndex = projectedIndex(
+                    for: assetIndex,
+                    displayedIndex: settledDisplayIndex
                 )
+                let restingPosition = restingProjectedIndex - settledDisplayIndex
+                let position = restingPosition - (displayedIndex - settledDisplayIndex)
 
-                guard abs(position) <= 1.45 else {
+                guard shouldDisplayLayout(
+                    restingPosition: restingPosition,
+                    position: position
+                ) else {
                     return nil
                 }
 
                 return HomeFeatureCarouselCardLayout(
-                    index: index,
+                    assetIndex: assetIndex,
+                    restingPosition: restingPosition,
                     position: position
                 )
             }
@@ -103,6 +111,29 @@ struct HomeFeatureCarouselView: View {
 
                 return leftDistance > rightDistance
             }
+    }
+
+    private func shouldDisplayLayout(
+        restingPosition: CGFloat,
+        position: CGFloat
+    ) -> Bool {
+        guard abs(position) <= 2.2 else {
+            return false
+        }
+
+        if abs(restingPosition) <= 1.05 {
+            return true
+        }
+
+        if dragTranslation < 0 {
+            return restingPosition > 1.05
+        }
+
+        if dragTranslation > 0 {
+            return restingPosition < -1.05
+        }
+
+        return false
     }
 
     private func carouselCard(
@@ -142,7 +173,12 @@ struct HomeFeatureCarouselView: View {
                 x: 0,
                 y: 10
             )
-            .offset(x: metrics.cardOffset(for: layout.position))
+            .offset(
+                x: metrics.cardOffset(
+                    restingPosition: layout.restingPosition,
+                    dragTranslation: dragTranslation
+                )
+            )
             .opacity(Double(opacityValue))
             .zIndex(Double(2 - abs(layout.position)))
     }
@@ -152,7 +188,7 @@ struct HomeFeatureCarouselView: View {
     ) -> some Gesture {
         DragGesture(minimumDistance: 8)
             .onChanged { value in
-                guard shouldHandle(translation: value.translation) else {
+                guard assetNames.count > 1, shouldHandle(translation: value.translation) else {
                     return
                 }
 
@@ -180,11 +216,12 @@ struct HomeFeatureCarouselView: View {
                 }
 
                 withAnimation(carouselAnimation) {
-                    selectedIndex = wrappedIndex(selectedIndex + step)
+                    settledIndex += step
                     dragTranslation = 0
                 }
 
                 isDraggingHorizontally = false
+                restartAutoAdvanceCycle()
             }
     }
 
@@ -192,17 +229,54 @@ struct HomeFeatureCarouselView: View {
         abs(translation.width) > abs(translation.height)
     }
 
-    private func wrappedIndex(_ index: Int) -> Int {
-        guard !assetNames.isEmpty else {
+    private var selectedAssetIndex: Int {
+        wrappedIndex(settledIndex)
+    }
+
+    @MainActor
+    private func runAutoAdvanceCycle() async {
+        guard assetNames.count > 1 else {
+            return
+        }
+
+        do {
+            try await Task.sleep(nanoseconds: autoAdvanceIntervalNanoseconds)
+        } catch {
+            return
+        }
+
+        guard !Task.isCancelled else {
+            return
+        }
+
+        guard assetNames.count > 1, !isDraggingHorizontally else {
+            restartAutoAdvanceCycle()
+            return
+        }
+
+        withAnimation(carouselAnimation) {
+            settledIndex += 1
+        }
+
+        restartAutoAdvanceCycle()
+    }
+
+    private func restartAutoAdvanceCycle() {
+        autoAdvanceCycle &+= 1
+    }
+
+    private func wrappedIndex(_ index: Int, assetCount: Int? = nil) -> Int {
+        let resolvedAssetCount = assetCount ?? assetNames.count
+
+        guard resolvedAssetCount > 0 else {
             return 0
         }
 
-        let count = assetNames.count
-        return ((index % count) + count) % count
+        return ((index % resolvedAssetCount) + resolvedAssetCount) % resolvedAssetCount
     }
 
-    private func wrappedRelativePosition(
-        for index: Int,
+    private func projectedIndex(
+        for assetIndex: Int,
         displayedIndex: CGFloat
     ) -> CGFloat {
         guard !assetNames.isEmpty else {
@@ -210,15 +284,10 @@ struct HomeFeatureCarouselView: View {
         }
 
         let count = CGFloat(assetNames.count)
-        var distance = CGFloat(index) - displayedIndex
+        let baseIndex = CGFloat(assetIndex)
+        let cycleOffset = ((displayedIndex - baseIndex) / count).rounded()
 
-        if distance > count / 2 {
-            distance -= count
-        } else if distance < -count / 2 {
-            distance += count
-        }
-
-        return distance
+        return baseIndex + (cycleOffset * count)
     }
 
     private func opacity(for position: CGFloat) -> CGFloat {
@@ -227,7 +296,7 @@ struct HomeFeatureCarouselView: View {
             return 1
         }
 
-        return 1 - smoothStep((distance - 1) / 0.45)
+        return 1 - smoothStep((distance - 1) / 1.1)
     }
 
     private func grayscaleAmount(for position: CGFloat) -> CGFloat {
@@ -295,8 +364,13 @@ private struct HomeFeatureCarouselMetrics {
         )
     }
 
-    func cardOffset(for position: CGFloat) -> CGFloat {
-        travelDistance * position
+    func cardOffset(restingPosition: CGFloat, dragTranslation: CGFloat) -> CGFloat {
+        let multiplier = dragResponseMultiplier(
+            for: restingPosition,
+            dragTranslation: dragTranslation
+        )
+
+        return (travelDistance * restingPosition) + (dragTranslation * multiplier)
     }
 
     func imageOffset(for position: CGFloat) -> CGFloat {
@@ -310,14 +384,39 @@ private struct HomeFeatureCarouselMetrics {
         let clampedDistance = min(max(distance, 0), 1)
         return clampedDistance * clampedDistance * (3 - (2 * clampedDistance))
     }
+
+    private func dragResponseMultiplier(
+        for restingPosition: CGFloat,
+        dragTranslation: CGFloat
+    ) -> CGFloat {
+        guard dragTranslation != 0 else {
+            return 0
+        }
+
+        guard restingPosition != 0 else {
+            return 1
+        }
+
+        let isDraggingRight = dragTranslation > 0
+        let isCardOnRight = restingPosition > 0
+        let isOutgoingSide = isDraggingRight == isCardOnRight
+        let distance = abs(restingPosition)
+
+        if isOutgoingSide {
+            return distance > 1.5 ? 1.3 : 1.16
+        }
+
+        return distance > 1.5 ? 0.44 : 0.78
+    }
 }
 
 private struct HomeFeatureCarouselCardLayout: Identifiable {
-    let index: Int
+    let assetIndex: Int
+    let restingPosition: CGFloat
     let position: CGFloat
 
     var id: Int {
-        index
+        assetIndex
     }
 }
 
