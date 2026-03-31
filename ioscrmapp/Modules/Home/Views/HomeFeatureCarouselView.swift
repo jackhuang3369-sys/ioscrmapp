@@ -104,16 +104,17 @@ struct HomeFeatureCarouselView: View {
         metrics: HomeFeatureCarouselMetrics
     ) -> some View {
         let distance = min(abs(layout.position), 1)
-        let size = metrics.cardSize(for: distance)
+        let cardSize = metrics.cardSize(for: distance)
         let grayscaleAmount = grayscaleAmount(for: layout.position)
         let opacityValue = opacity(for: layout.position)
 
-        return Image(assetName)
-            .renderingMode(.original)
-            .resizable()
-            .scaledToFill()
-            .frame(width: size.width, height: size.height)
-            .grayscale(Double(grayscaleAmount))
+        return HomeFeatureCarouselCardView(
+            assetName: assetName,
+            position: layout.position,
+            cardSize: cardSize,
+            grayscaleAmount: grayscaleAmount,
+            metrics: metrics
+        )
             .clipShape(
                 RoundedRectangle(
                     cornerRadius: metrics.cornerRadius,
@@ -133,7 +134,7 @@ struct HomeFeatureCarouselView: View {
                 x: 0,
                 y: 10
             )
-            .offset(x: metrics.travelDistance * layout.position)
+            .offset(x: metrics.cardOffset(for: layout.position))
             .opacity(Double(opacityValue))
             .zIndex(Double(2 - abs(layout.position)))
     }
@@ -212,15 +213,6 @@ struct HomeFeatureCarouselView: View {
         return distance
     }
 
-    private func grayscaleAmount(for position: CGFloat) -> CGFloat {
-        let distance = abs(position)
-        guard distance > 0.5 else {
-            return 0
-        }
-
-        return smoothStep((distance - 0.5) / 0.5)
-    }
-
     private func opacity(for position: CGFloat) -> CGFloat {
         let distance = abs(position)
         guard distance > 1 else {
@@ -230,43 +222,79 @@ struct HomeFeatureCarouselView: View {
         return 1 - smoothStep((distance - 1) / 0.45)
     }
 
+    private func grayscaleAmount(for position: CGFloat) -> CGFloat {
+        let distance = abs(position)
+        guard distance > 0.5 else {
+            return 0
+        }
+
+        return smoothStep((distance - 0.5) / 0.5)
+    }
+
     private func smoothStep(_ value: CGFloat) -> CGFloat {
         let clampedValue = min(max(value, 0), 1)
         return clampedValue * clampedValue * (3 - (2 * clampedValue))
     }
 
+//    想让“切换过程变慢一点”，最直接调这里的动画时长
     private var carouselAnimation: Animation {
-        .easeInOut(duration: 0.42)
+        .easeInOut(duration: 0.70)
     }
 }
 
 private struct HomeFeatureCarouselMetrics {
-    let containerWidth: CGFloat
-    let centerCardWidth: CGFloat
-    let centerCardHeight: CGFloat
-    let sideScale: CGFloat
+    let baseCardWidth: CGFloat
+    let baseCardHeight: CGFloat
+    let minimumCardScale: CGFloat
+    let maximumCardScale: CGFloat
     let travelDistance: CGFloat
+    let imageWidth: CGFloat
+    let imageHeight: CGFloat
+    let parallaxTravel: CGFloat
     let cornerRadius: CGFloat = 28
 
     init(containerWidth: CGFloat) {
-        self.containerWidth = containerWidth
+        let resolvedCardWidth = min(max(containerWidth - 96, 214), 252)
+        let resolvedCardHeight = resolvedCardWidth * 0.74
+        let resolvedMinimumCardScale: CGFloat = 0.92
+        let resolvedMaximumCardScale: CGFloat = 1.12
+        let maximumCardWidth = resolvedCardWidth * resolvedMaximumCardScale
+        let maximumCardHeight = resolvedCardHeight * resolvedMaximumCardScale
+//        它决定“图片比卡片宽多少”，也就是窗口外还藏了多少内容。这个值越大，被扫出来的内容越明显
+//        let imageOverflowWidth = min(max(maximumCardWidth * 0.78, 156), 210)
+        let imageOverflowWidth = min(max(maximumCardWidth * 0.80, 160), 210)
 
-        let resolvedCenterWidth = min(max(containerWidth - 96, 214), 252)
-        centerCardWidth = resolvedCenterWidth
-        centerCardHeight = resolvedCenterWidth * 0.74
-        sideScale = 1.12
-        travelDistance = (resolvedCenterWidth / 2) + ((resolvedCenterWidth * sideScale) / 2) + 14
+        baseCardWidth = resolvedCardWidth
+        baseCardHeight = resolvedCardHeight
+        minimumCardScale = resolvedMinimumCardScale
+        maximumCardScale = resolvedMaximumCardScale
+        imageWidth = maximumCardWidth + imageOverflowWidth
+        imageHeight = maximumCardHeight
+        parallaxTravel = imageOverflowWidth / 2
+        travelDistance = (resolvedCardWidth / 2) + (maximumCardWidth / 2) + 14
     }
 
     func cardSize(for distance: CGFloat) -> CGSize {
-        let scale = 0.92 + (0.20 * smoothScaleProgress(for: distance))
+        let scale = minimumCardScale + (
+            (maximumCardScale - minimumCardScale) * smoothProgress(for: distance)
+        )
+
         return CGSize(
-            width: centerCardWidth * scale,
-            height: centerCardHeight * scale
+            width: baseCardWidth * scale,
+            height: baseCardHeight * scale
         )
     }
 
-    private func smoothScaleProgress(for distance: CGFloat) -> CGFloat {
+    func cardOffset(for position: CGFloat) -> CGFloat {
+        travelDistance * position
+    }
+
+    func imageOffset(for position: CGFloat) -> CGFloat {
+        let clampedPosition = min(max(position, -1), 1)
+        return -clampedPosition * parallaxTravel
+    }
+
+    private func smoothProgress(for distance: CGFloat) -> CGFloat {
         let clampedDistance = min(max(distance, 0), 1)
         return clampedDistance * clampedDistance * (3 - (2 * clampedDistance))
     }
@@ -278,6 +306,26 @@ private struct HomeFeatureCarouselCardLayout: Identifiable {
 
     var id: Int {
         index
+    }
+}
+
+private struct HomeFeatureCarouselCardView: View {
+    let assetName: String
+    let position: CGFloat
+    let cardSize: CGSize
+    let grayscaleAmount: CGFloat
+    let metrics: HomeFeatureCarouselMetrics
+
+    var body: some View {
+        Image(assetName)
+            .renderingMode(.original)
+            .resizable()
+            .scaledToFill()
+            .frame(width: metrics.imageWidth, height: metrics.imageHeight)
+            .grayscale(Double(grayscaleAmount))
+            .offset(x: metrics.imageOffset(for: position))
+            .frame(width: cardSize.width, height: cardSize.height)
+            .clipped()
     }
 }
 
