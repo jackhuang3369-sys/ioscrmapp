@@ -221,6 +221,12 @@ struct AIChatView: View {
                                 .foregroundColor(DUTheme.inkSecondary)
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
+                    } else if let richText = message.richText {
+                        Text(richText)
+                            .font(.du(14, weight: .medium))
+                            .foregroundColor(message.sender == .user ? .white : DUTheme.ink)
+                            .multilineTextAlignment(.leading)
+                            .frame(maxWidth: .infinity, alignment: .leading)
                     } else {
                         Text(message.text)
                             .font(.du(14, weight: .medium))

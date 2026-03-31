@@ -105,7 +105,8 @@ final class AIChatViewModel: ObservableObject {
                     conversationID = reply.conversationID ?? conversationID
                     updateAssistantPlaceholder(
                         placeholderID: placeholderID,
-                        text: reply.text.isEmpty ? AIChatLocalizedCopy.emptyReply(for: language) : reply.text,
+                        text: resolvedReplyText(reply),
+                        richText: reply.richText,
                         thinkingText: reply.thinkingText,
                         actions: reply.actions
                     )
@@ -115,6 +116,7 @@ final class AIChatViewModel: ObservableObject {
                     updateAssistantPlaceholder(
                         placeholderID: placeholderID,
                         text: AIChatLocalizedCopy.errorMessage(for: language, error: error),
+                        richText: nil,
                         thinkingText: "",
                         actions: []
                     )
@@ -127,6 +129,7 @@ final class AIChatViewModel: ObservableObject {
                             for: language,
                             error: .network(underlying: error)
                         ),
+                        richText: nil,
                         thinkingText: "",
                         actions: []
                     )
@@ -138,6 +141,7 @@ final class AIChatViewModel: ObservableObject {
     private func updateAssistantPlaceholder(
         placeholderID: UUID,
         text: String,
+        richText: AttributedString?,
         thinkingText: String,
         actions: [AIChatAction]
     ) {
@@ -147,10 +151,23 @@ final class AIChatViewModel: ObservableObject {
         }
 
         messages[index].text = text
+        messages[index].richText = richText
         messages[index].thinkingText = thinkingText
         messages[index].actions = actions
         messages[index].isLoading = false
         isSending = false
+    }
+
+    private func resolvedReplyText(_ reply: AIChatReply) -> String {
+        if !reply.text.isEmpty {
+            return reply.text
+        }
+
+        if reply.richText != nil || !reply.actions.isEmpty {
+            return ""
+        }
+
+        return AIChatLocalizedCopy.emptyReply(for: language)
     }
 
     private func buildContext() -> AIChatContext {
