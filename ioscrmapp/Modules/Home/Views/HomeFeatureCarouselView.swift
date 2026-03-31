@@ -1,5 +1,11 @@
 import SwiftUI
 
+/// 首页轮播图的模块内专用实现。
+///
+/// 实现路径为 `HomeView.featuredCarouselSection -> HomeFeatureCarouselView -> HomeFeatureCarouselCardView`。
+/// 当前效果不是靠图片本体的缩放或旋转制造变化，而是让卡片窗口横向滑动，
+/// 再让更宽的图片在窗口内部做反向缓慢位移，形成 viewport reveal + parallax crop。
+/// 两侧卡片额外叠加灰度、透明度和尺寸差异，用来保留首页当前的层级感。
 struct HomeFeatureCarouselView: View {
     let assetNames: [String]
 
@@ -70,6 +76,7 @@ struct HomeFeatureCarouselView: View {
     ) -> [HomeFeatureCarouselCardLayout] {
         let displayedIndex = CGFloat(selectedIndex) - (dragTranslation / metrics.travelDistance)
 
+        // 只保留中心卡与相邻卡参与布局，避免不可见卡片继续承担阴影和裁剪开销。
         return assetNames.indices
             .compactMap { index in
                 let position = wrappedRelativePosition(
@@ -108,6 +115,7 @@ struct HomeFeatureCarouselView: View {
         let grayscaleAmount = grayscaleAmount(for: layout.position)
         let opacityValue = opacity(for: layout.position)
 
+        // 窗口尺寸负责层级变化，图片本体尺寸固定大于窗口，避免图片跟着卡片一起缩放。
         return HomeFeatureCarouselCardView(
             assetName: assetName,
             position: layout.position,
@@ -236,12 +244,13 @@ struct HomeFeatureCarouselView: View {
         return clampedValue * clampedValue * (3 - (2 * clampedValue))
     }
 
-//    想让“切换过程变慢一点”，最直接调这里的动画时长
+    // 自动推进和手势吸附共用同一条动画曲线，方便统一调节首页轮播节奏。
     private var carouselAnimation: Animation {
         .easeInOut(duration: 0.85)
     }
 }
 
+/// 统一管理首页轮播的窗口尺寸、图片溢出和位移参数。
 private struct HomeFeatureCarouselMetrics {
     let baseCardWidth: CGFloat
     let baseCardHeight: CGFloat
@@ -260,8 +269,8 @@ private struct HomeFeatureCarouselMetrics {
         let resolvedMaximumCardScale: CGFloat = 1.12
         let maximumCardWidth = resolvedCardWidth * resolvedMaximumCardScale
         let maximumCardHeight = resolvedCardHeight * resolvedMaximumCardScale
-//        它决定“图片比卡片宽多少”，也就是窗口外还藏了多少内容。这个值越大，被扫出来的内容越明显
-//        let imageOverflowWidth = min(max(maximumCardWidth * 0.78, 156), 210)
+
+        // 图片固定比最大卡片更宽，视觉变化全部来自裁剪窗口扫过和反向位移。
         let imageOverflowWidth = min(max(maximumCardWidth * 0.80, 160), 210)
 
         baseCardWidth = resolvedCardWidth
@@ -275,6 +284,7 @@ private struct HomeFeatureCarouselMetrics {
     }
 
     func cardSize(for distance: CGFloat) -> CGSize {
+        // 当前首页保留“主卡略小、两侧略大”的窗口层级；变化只作用在裁剪窗口。
         let scale = minimumCardScale + (
             (maximumCardScale - minimumCardScale) * smoothProgress(for: distance)
         )
@@ -291,6 +301,8 @@ private struct HomeFeatureCarouselMetrics {
 
     func imageOffset(for position: CGFloat) -> CGFloat {
         let clampedPosition = min(max(position, -1), 1)
+
+        // 图片相对卡片做反向缓动，让被裁出的内容变化比卡片位移更慢、更明显。
         return -clampedPosition * parallaxTravel
     }
 
@@ -317,6 +329,7 @@ private struct HomeFeatureCarouselCardView: View {
     let metrics: HomeFeatureCarouselMetrics
 
     var body: some View {
+        // 先布局完整图片，再限制进当前卡片窗口，保证变化始终来自裁剪 + 位移。
         Image(assetName)
             .renderingMode(.original)
             .resizable()

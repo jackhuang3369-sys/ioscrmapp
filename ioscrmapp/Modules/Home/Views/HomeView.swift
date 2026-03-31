@@ -614,6 +614,7 @@ struct HomeView: View {
     }
 
     private var featuredCarouselSection: some View {
+        // 首页只在这里编排轮播区块；裁剪视差、自动轮播和手势吸附都封装在 Home 模块局部组件中。
         HomeFeatureCarouselView(assetNames: featuredCarouselAssetNames)
             .padding(.horizontal, DUSpacing.lg)
             .padding(.vertical, DUSpacing.lg)
