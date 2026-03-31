@@ -69,6 +69,20 @@ struct AIChatReply {
     let richText: AttributedString?
     let thinkingText: String
     let actions: [AIChatAction]
+
+    init(
+        conversationID: String?,
+        text: String,
+        richText: AttributedString? = nil,
+        thinkingText: String,
+        actions: [AIChatAction]
+    ) {
+        self.conversationID = conversationID
+        self.text = text
+        self.richText = richText
+        self.thinkingText = thinkingText
+        self.actions = actions
+    }
 }
 
 enum AIChatServiceError: Error {

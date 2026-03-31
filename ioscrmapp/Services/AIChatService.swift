@@ -1,4 +1,7 @@
 import Foundation
+#if canImport(UIKit)
+import UIKit
+#endif
 
 protocol AIChatServicing {
     func sendMessage(
@@ -160,6 +163,7 @@ struct RemoteAIChatService: AIChatServicing {
             return AIChatReply(
                 conversationID: jsonObject["chatId"] as? String ?? conversationID,
                 text: parsed.text,
+                richText: parsed.richText,
                 thinkingText: parsed.thinkingText,
                 actions: parsed.actions
             )
@@ -243,7 +247,7 @@ private final class AIChatURLSessionDelegate: NSObject, URLSessionDelegate {
     func urlSession(
         _ session: URLSession,
         didReceive challenge: URLAuthenticationChallenge,
-        completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void
+        completionHandler: @escaping @Sendable (URLSession.AuthChallengeDisposition, URLCredential?) -> Void
     ) {
         guard
             challenge.protectionSpace.authenticationMethod == NSURLAuthenticationMethodServerTrust,
@@ -265,20 +269,30 @@ private final class AIChatURLSessionDelegate: NSObject, URLSessionDelegate {
 
 private struct AIChatParsedContent {
     let text: String
+    let richText: AttributedString?
     let thinkingText: String
     let actions: [AIChatAction]
 }
 
+private struct AIChatRenderedText {
+    let plainText: String
+    let richText: AttributedString?
+}
+
 private enum AIChatResponseParser {
     static func parse(content: Any) -> AIChatParsedContent {
-        var textParts: [String] = []
+        var renderedParts: [AIChatRenderedText] = []
         var thinkingParts: [String] = []
         var actions: [AIChatAction] = []
 
-        collect(node: content, textParts: &textParts, thinkingParts: &thinkingParts, actions: &actions)
+        collect(node: content, renderedParts: &renderedParts, thinkingParts: &thinkingParts, actions: &actions)
 
         return AIChatParsedContent(
-            text: textParts.joined(separator: "\n\n").trimmingCharacters(in: .whitespacesAndNewlines),
+            text: renderedParts
+                .map(\.plainText)
+                .joined(separator: "\n\n")
+                .trimmingCharacters(in: .whitespacesAndNewlines),
+            richText: combinedRichText(from: renderedParts),
             thinkingText: thinkingParts.joined(separator: "\n\n").trimmingCharacters(in: .whitespacesAndNewlines),
             actions: actions
         )
@@ -286,13 +300,13 @@ private enum AIChatResponseParser {
 
     private static func collect(
         node: Any,
-        textParts: inout [String],
+        renderedParts: inout [AIChatRenderedText],
         thinkingParts: inout [String],
         actions: inout [AIChatAction]
     ) {
         switch node {
         case let text as String:
-            appendText(text, textParts: &textParts, thinkingParts: &thinkingParts)
+            appendText(text, renderedParts: &renderedParts, thinkingParts: &thinkingParts)
         case let array as [Any]:
             for item in array {
                 if let dictionary = item as? [String: Any] {
@@ -300,17 +314,22 @@ private enum AIChatResponseParser {
                        type == "text",
                        let textNode = dictionary["text"] as? [String: Any],
                        let content = textNode["content"] as? String {
-                        appendText(content, textParts: &textParts, thinkingParts: &thinkingParts)
+                        appendText(content, renderedParts: &renderedParts, thinkingParts: &thinkingParts)
                         continue
                     }
 
                     if let interactive = dictionary["interactive"] as? [String: Any] {
-                        collectInteractive(interactive, textParts: &textParts, thinkingParts: &thinkingParts, actions: &actions)
+                        collectInteractive(
+                            interactive,
+                            renderedParts: &renderedParts,
+                            thinkingParts: &thinkingParts,
+                            actions: &actions
+                        )
                         continue
                     }
                 }
 
-                collect(node: item, textParts: &textParts, thinkingParts: &thinkingParts, actions: &actions)
+                collect(node: item, renderedParts: &renderedParts, thinkingParts: &thinkingParts, actions: &actions)
             }
         case let dictionary as [String: Any]:
             if looksLikeCard(dictionary) {
@@ -318,27 +337,39 @@ private enum AIChatResponseParser {
             }
 
             if let interactive = dictionary["interactive"] as? [String: Any] {
-                collectInteractive(interactive, textParts: &textParts, thinkingParts: &thinkingParts, actions: &actions)
+                collectInteractive(
+                    interactive,
+                    renderedParts: &renderedParts,
+                    thinkingParts: &thinkingParts,
+                    actions: &actions
+                )
                 return
             }
 
-            if let text = dictionary["text"] as? String {
-                appendText(text, textParts: &textParts, thinkingParts: &thinkingParts)
+            if let textValue = dictionary["text"] {
+                if let text = textValue as? String {
+                    appendText(text, renderedParts: &renderedParts, thinkingParts: &thinkingParts)
+                } else {
+                    collect(node: textValue, renderedParts: &renderedParts, thinkingParts: &thinkingParts, actions: &actions)
+                }
                 return
             }
 
             if let content = dictionary["content"] {
-                collect(node: content, textParts: &textParts, thinkingParts: &thinkingParts, actions: &actions)
+                collect(node: content, renderedParts: &renderedParts, thinkingParts: &thinkingParts, actions: &actions)
                 return
             }
 
             if let body = dictionary["body"] {
-                collect(node: body, textParts: &textParts, thinkingParts: &thinkingParts, actions: &actions)
+                collect(node: body, renderedParts: &renderedParts, thinkingParts: &thinkingParts, actions: &actions)
                 return
             }
 
-            if let description = dictionary["description"] as? String {
-                appendText(description, textParts: &textParts, thinkingParts: &thinkingParts)
+            if
+                let description = dictionary["description"] as? String,
+                !looksLikeCard(dictionary)
+            {
+                appendText(description, renderedParts: &renderedParts, thinkingParts: &thinkingParts)
             }
         default:
             return
@@ -347,18 +378,27 @@ private enum AIChatResponseParser {
 
     private static func collectInteractive(
         _ interactive: [String: Any],
-        textParts: inout [String],
+        renderedParts: inout [AIChatRenderedText],
         thinkingParts: inout [String],
         actions: inout [AIChatAction]
     ) {
         let params = interactive["params"] as? [String: Any] ?? [:]
+        let interactiveType = (interactive["type"] as? String)?.lowercased() ?? ""
+        var interactiveActions: [AIChatAction] = []
+        collectActions(from: interactive, actions: &interactiveActions)
 
-        if let description = params["description"] as? String {
-            appendText(description, textParts: &textParts, thinkingParts: &thinkingParts)
+        if
+            let description = params["description"] as? String,
+            shouldDisplayInteractiveDescription(
+                interactiveType: interactiveType,
+                actions: interactiveActions
+            )
+        {
+            appendText(description, renderedParts: &renderedParts, thinkingParts: &thinkingParts)
         }
 
         if
-            (interactive["type"] as? String) == "userSelect",
+            interactiveType == "userselect",
             let options = params["userSelectOptions"] as? [[String: Any]],
             !options.isEmpty
         {
@@ -369,15 +409,15 @@ private enum AIChatResponseParser {
                 return "\(index + 1). \(value)"
             }.joined(separator: "\n")
 
-            appendText(optionText, textParts: &textParts, thinkingParts: &thinkingParts)
+            appendText(optionText, renderedParts: &renderedParts, thinkingParts: &thinkingParts)
         }
 
-        collectActions(from: interactive, actions: &actions)
+        interactiveActions.forEach { appendUnique($0, actions: &actions) }
     }
 
     private static func appendText(
         _ rawText: String,
-        textParts: inout [String],
+        renderedParts: inout [AIChatRenderedText],
         thinkingParts: inout [String]
     ) {
         let extracted = extractThinking(from: rawText)
@@ -385,9 +425,9 @@ private enum AIChatResponseParser {
             thinkingParts.append(extracted.thinking)
         }
 
-        let normalized = normalizeDisplayText(extracted.visibleText)
-        if !normalized.isEmpty {
-            textParts.append(normalized)
+        let rendered = renderDisplayText(extracted.visibleText)
+        if !rendered.plainText.isEmpty {
+            renderedParts.append(rendered)
         }
     }
 
@@ -419,32 +459,29 @@ private enum AIChatResponseParser {
         )
     }
 
-    private static func normalizeDisplayText(_ rawText: String) -> String {
-        let withoutCodeTags = rawText.replacingOccurrences(
-            of: "</?code[^>]*>",
-            with: "",
-            options: .regularExpression
-        )
-
-        let htmlPrepared = withoutCodeTags.replacingOccurrences(of: "\n", with: "<br/>")
-        let decodedText: String
-        if
-            let data = htmlPrepared.data(using: .utf8),
-            let attributed = try? NSAttributedString(
-                data: data,
-                options: [
-                    .documentType: NSAttributedString.DocumentType.html,
-                    .characterEncoding: String.Encoding.utf8.rawValue
-                ],
-                documentAttributes: nil
-            )
-        {
-            decodedText = attributed.string
-        } else {
-            decodedText = withoutCodeTags
+    private static func renderDisplayText(_ rawText: String) -> AIChatRenderedText {
+        let trimmedRawText = rawText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedRawText.isEmpty else {
+            return AIChatRenderedText(plainText: "", richText: nil)
         }
 
-        let collapsedLines = decodedText
+        if let richText = attributedText(from: trimmedRawText) {
+            let plainText = collapseDisplayText(String(richText.characters))
+            return AIChatRenderedText(
+                plainText: plainText,
+                richText: plainText.isEmpty ? nil : richText
+            )
+        }
+
+        let plainText = collapseDisplayText(trimmedRawText)
+        return AIChatRenderedText(
+            plainText: plainText,
+            richText: plainText.isEmpty ? nil : AttributedString(plainText)
+        )
+    }
+
+    private static func collapseDisplayText(_ rawText: String) -> String {
+        let collapsedLines = rawText
             .replacingOccurrences(of: "\r\n", with: "\n")
             .replacingOccurrences(of: "\r", with: "\n")
             .components(separatedBy: "\n")
@@ -462,6 +499,84 @@ private enum AIChatResponseParser {
         return collapsedLines
             .joined(separator: "\n")
             .trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    private static func attributedText(from rawText: String) -> AttributedString? {
+        guard
+            let data = htmlDocument(for: rawText).data(using: .utf8),
+            let attributed = try? NSAttributedString(
+                data: data,
+                options: [
+                    .documentType: NSAttributedString.DocumentType.html,
+                    .characterEncoding: String.Encoding.utf8.rawValue
+                ],
+                documentAttributes: nil
+            )
+        else {
+            return nil
+        }
+
+        #if canImport(UIKit)
+        if let richText = try? AttributedString(attributed, including: \.uiKit) {
+            return richText
+        }
+        #endif
+
+        return AttributedString(attributed.string)
+    }
+
+    private static func htmlDocument(for rawText: String) -> String {
+        let htmlPrepared = rawText.replacingOccurrences(of: "\n", with: "<br/>")
+        return """
+        <html>
+        <head>
+        <meta charset="utf-8">
+        <style>
+        body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif; font-size: 14px; line-height: 1.5; color: #1F2D3D; }
+        p { margin: 0 0 10px 0; }
+        h1, h2, h3, h4, h5, h6 { margin: 0 0 8px 0; font-weight: 700; line-height: 1.35; }
+        ul, ol { margin: 0; padding-left: 18px; }
+        li { margin: 0 0 6px 0; }
+        strong, b { font-weight: 700; }
+        em, i { font-style: italic; }
+        code { font-family: Menlo, Monaco, monospace; font-size: 13px; }
+        </style>
+        </head>
+        <body>\(htmlPrepared)</body>
+        </html>
+        """
+    }
+
+    private static func combinedRichText(from renderedParts: [AIChatRenderedText]) -> AttributedString? {
+        guard !renderedParts.isEmpty else {
+            return nil
+        }
+
+        var combined = AttributedString()
+        for (index, part) in renderedParts.enumerated() {
+            if index > 0 {
+                combined += AttributedString("\n\n")
+            }
+
+            if let richText = part.richText {
+                combined += richText
+            } else {
+                combined += AttributedString(part.plainText)
+            }
+        }
+
+        return combined.characters.isEmpty ? nil : combined
+    }
+
+    private static func shouldDisplayInteractiveDescription(
+        interactiveType: String,
+        actions: [AIChatAction]
+    ) -> Bool {
+        if interactiveType == "userselect" {
+            return true
+        }
+
+        return actions.isEmpty
     }
 
     private static func looksLikeCard(_ dictionary: [String: Any]) -> Bool {

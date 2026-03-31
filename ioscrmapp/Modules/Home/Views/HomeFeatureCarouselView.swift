@@ -238,7 +238,7 @@ struct HomeFeatureCarouselView: View {
 
 //    想让“切换过程变慢一点”，最直接调这里的动画时长
     private var carouselAnimation: Animation {
-        .easeInOut(duration: 0.70)
+        .easeInOut(duration: 0.85)
     }
 }
 

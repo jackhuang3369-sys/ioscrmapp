@@ -221,12 +221,8 @@ struct AIChatView: View {
                                 .foregroundColor(DUTheme.inkSecondary)
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
-                    } else if let richText = message.richText {
-                        Text(richText)
-                            .font(.du(14, weight: .medium))
-                            .foregroundColor(message.sender == .user ? .white : DUTheme.ink)
-                            .multilineTextAlignment(.leading)
-                            .frame(maxWidth: .infinity, alignment: .leading)
+                    } else if message.sender == .assistant, let richText = message.richText {
+                        assistantRichTextView(richText)
                     } else {
                         Text(message.text)
                             .font(.du(14, weight: .medium))
@@ -285,6 +281,13 @@ struct AIChatView: View {
             }
         }
         .frame(maxWidth: .infinity, alignment: message.sender == .user ? .trailing : .leading)
+    }
+
+    private func assistantRichTextView(_ richText: AttributedString) -> some View {
+        Text(richText)
+            .multilineTextAlignment(.leading)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .fixedSize(horizontal: false, vertical: true)
     }
 
     private func avatarView(systemName: String) -> some View {
