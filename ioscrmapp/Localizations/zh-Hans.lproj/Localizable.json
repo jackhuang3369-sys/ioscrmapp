@@ -999,6 +999,15 @@
       "notFound": "未找到对应徽章。"
     }
   },
+  "tickets": {
+    "state": {
+      "errorTitle": "页面暂不可用",
+      "errorSubtitle": "页面加载失败，请刷新重试。"
+    },
+    "action": {
+      "backHome": "返回首页"
+    }
+  },
   "splash": {
     "skip": {
       "ready": "跳过",

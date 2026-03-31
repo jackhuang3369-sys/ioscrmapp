@@ -1047,7 +1047,8 @@ private enum LoginResponseMapper {
             greeting: "Good Morning",
             balanceText: "0.00 AED",
             userID: ResponseDataValue.string(in: user, keys: ["userId"]),
-            serviceNumber: AuthValidator.normalizedPhone(phoneNumber)
+            serviceNumber: AuthValidator.normalizedPhone(phoneNumber),
+            subscriberKey: nil
         )
 
         return ParsedLoginResponse(

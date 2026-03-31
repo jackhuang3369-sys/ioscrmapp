@@ -25,6 +25,7 @@ struct ioscrmappApp: App {
                     offersService: services.offersService,
                     billingService: services.billingService,
                     rechargeService: services.rechargeService,
+                    ticketsService: services.ticketsService,
                     badgeCenterService: services.badgeCenterService,
                     meService: services.meService,
                     notificationService: services.notificationService,

@@ -16,6 +16,7 @@ struct ContentView: View {
     let offersService: any OffersServicing
     let billingService: any BillingServicing
     let rechargeService: any RechargeServicing
+    let ticketsService: any TicketsServicing
     let badgeCenterService: any BadgeCenterServicing
     let meService: any MeServicing
     let notificationService: any NotificationServicing
@@ -36,6 +37,7 @@ struct ContentView: View {
                     offersService: offersService,
                     billingService: billingService,
                     rechargeService: rechargeService,
+                    ticketsService: ticketsService,
                     badgeCenterService: badgeCenterService,
                     meService: meService,
                     notificationService: notificationService
@@ -67,6 +69,7 @@ struct ContentView_Previews: PreviewProvider {
                 offersService: previewServices.offersService,
                 billingService: previewServices.billingService,
                 rechargeService: previewServices.rechargeService,
+                ticketsService: previewServices.ticketsService,
                 badgeCenterService: previewServices.badgeCenterService,
                 meService: previewServices.meService,
                 notificationService: previewServices.notificationService,
@@ -84,6 +87,7 @@ struct ContentView_Previews: PreviewProvider {
                 offersService: previewServices.offersService,
                 billingService: previewServices.billingService,
                 rechargeService: previewServices.rechargeService,
+                ticketsService: previewServices.ticketsService,
                 badgeCenterService: previewServices.badgeCenterService,
                 meService: previewServices.meService,
                 notificationService: previewServices.notificationService,

@@ -177,6 +177,32 @@ final class SessionStore: ObservableObject {
         defaultsStore.savePreferredLoginMode(loginMode)
     }
 
+    func updateSubscriberKey(_ subscriberKey: String?) {
+        guard let custSubInfo else {
+            return
+        }
+
+        let normalizedSubscriberKey = subscriberKey?.trimmingCharacters(in: .whitespacesAndNewlines)
+        let resolvedSubscriberKey = normalizedSubscriberKey?.isEmpty == false ? normalizedSubscriberKey : nil
+
+        guard custSubInfo.subscriberKey != resolvedSubscriberKey else {
+            return
+        }
+
+        let updatedSession = CustSubInfo(
+            displayName: custSubInfo.displayName,
+            phoneNumber: custSubInfo.phoneNumber,
+            greeting: custSubInfo.greeting,
+            balanceText: custSubInfo.balanceText,
+            userID: custSubInfo.userID,
+            serviceNumber: custSubInfo.serviceNumber,
+            subscriberKey: resolvedSubscriberKey
+        )
+
+        self.custSubInfo = updatedSession
+        defaultsStore.savePersistedCustSubInfo(updatedSession)
+    }
+
     func restoreAuthenticationIfNeeded(
         baseURL: URL?,
         session urlSession: URLSession = .shared
@@ -323,7 +349,8 @@ extension SessionStore {
             greeting: "Good Morning",
             balanceText: "128.50 AED",
             userID: "preview-user",
-            serviceNumber: AuthValidator.demoPhone
+            serviceNumber: AuthValidator.demoPhone,
+            subscriberKey: "preview-subscriber-key"
         )
         store.currentAuthType = .password
         return store

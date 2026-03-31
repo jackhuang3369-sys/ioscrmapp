@@ -1,4 +1,5 @@
 import SwiftUI
+import WebKit
 
 struct HomeView: View {
     @EnvironmentObject private var languageStore: AppLanguageStore
@@ -9,6 +10,7 @@ struct HomeView: View {
     let aiChatService: any AIChatServicing
     let billingService: any BillingServicing
     let rechargeService: any RechargeServicing
+    let ticketsService: any TicketsServicing
     let badgeCenterService: any BadgeCenterServicing
     let meService: any MeServicing
     let mallService: any MallServicing
@@ -24,6 +26,7 @@ struct HomeView: View {
     @State private var isRechargePresented = false
     @State private var isOffersPresented = false
     @State private var isAIChatPresented = false
+    @State private var isTicketsPresented = false
     @State private var isSigningOut = false
     @State private var signOutFailureMessageKey: String?
 
@@ -40,7 +43,7 @@ struct HomeView: View {
         .init(title: .key("home.service.dataPack"), assetName: "ServiceDataPackIcon"),
         .init(title: .key("home.service.voicePack"), assetName: "ServiceVoicePackIcon"),
         .init(title: .key("home.service.roaming"), assetName: "ServiceRoamingIcon"),
-        .init(title: .key("home.service.tickets"), assetName: "ServiceTicketsIcon"),
+        .init(title: .key("home.service.tickets"), assetName: "ServiceTicketsIcon", action: .tickets),
         .init(title: .key("home.service.bills"), assetName: "ServiceBillsIcon", action: .billing),
         .init(title: .key("home.service.points"), assetName: "ServicePointsIcon"),
         .init(title: .key("home.service.mail"), assetName: "ServiceMailIcon"),
@@ -96,6 +99,7 @@ struct HomeView: View {
         offersService: any OffersServicing,
         billingService: any BillingServicing,
         rechargeService: any RechargeServicing,
+        ticketsService: any TicketsServicing,
         badgeCenterService: any BadgeCenterServicing,
         meService: any MeServicing,
         notificationService: any NotificationServicing
@@ -106,6 +110,7 @@ struct HomeView: View {
         self.aiChatService = aiChatService
         self.billingService = billingService
         self.rechargeService = rechargeService
+        self.ticketsService = ticketsService
         self.badgeCenterService = badgeCenterService
         self.mallService = mallService
         self.offersService = offersService
@@ -114,7 +119,10 @@ struct HomeView: View {
         _viewModel = StateObject(
             wrappedValue: HomeViewModel(
                 session: custSubInfo,
-                homeService: homeService
+                homeService: homeService,
+                didResolveSubscriberKey: { subscriberKey in
+                    sessionStore.updateSubscriberKey(subscriberKey)
+                }
             )
         )
     }
@@ -127,7 +135,7 @@ struct HomeView: View {
                     .renderingMode(.original)
                 Text(localized(HomeTab.home.title))
             }
-                .tag(HomeTab.home)
+            .tag(HomeTab.home)
 
             FeaturePlaceholderView(
                 title: HomeTab.service.title,
@@ -219,6 +227,9 @@ struct HomeView: View {
         }
         .fullScreenCover(isPresented: $isOffersPresented) {
             OffersContainerView(session: custSubInfo, offersService: offersService)
+        }
+        .fullScreenCover(isPresented: $isTicketsPresented) {
+            TicketsModalContainerView(ticketsService: ticketsService)
         }
         .confirmationDialog(
             localized("me.signOut.failure.title"),
@@ -848,6 +859,8 @@ struct HomeView: View {
             isRechargePresented = true
         case .offers:
             isOffersPresented = true
+        case .tickets:
+            isTicketsPresented = true
         }
     }
 
@@ -1012,6 +1025,27 @@ struct HomeView: View {
     }
 }
 
+private struct TicketsModalContainerView: View {
+    @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var languageStore: AppLanguageStore
+
+    let ticketsService: any TicketsServicing
+
+    var body: some View {
+        NavigationView {
+            TicketsContainerView(ticketsService: ticketsService)
+                .toolbar {
+                    ToolbarItem(placement: .navigationBarLeading) {
+                        Button(languageStore.string("common.cancel")) {
+                            dismiss()
+                        }
+                    }
+                }
+        }
+        .navigationViewStyle(.stack)
+    }
+}
+
 private enum HomeTab: Hashable {
     case home
     case service
@@ -1072,6 +1106,7 @@ private struct HomeItem: Identifiable {
         case billing
         case recharge
         case offers
+        case tickets
     }
 
     let id = UUID()
@@ -1146,6 +1181,314 @@ private struct FeaturePlaceholderView: View {
     }
 }
 
+private struct TicketsContainerView: View {
+    @EnvironmentObject private var languageStore: AppLanguageStore
+    @Environment(\.dismiss) private var dismiss
+
+    let ticketsService: any TicketsServicing
+
+    @StateObject private var viewModel: TicketsViewModel
+
+    init(ticketsService: any TicketsServicing) {
+        self.ticketsService = ticketsService
+        _viewModel = StateObject(
+            wrappedValue: TicketsViewModel(ticketsService: ticketsService)
+        )
+    }
+
+    var body: some View {
+        Group {
+            switch viewModel.phase {
+            case .idle, .resolvingConfig:
+                loadingView
+            case let .browsing(load):
+                ZStack {
+                    TicketsWebView(
+                        load: load,
+                        onFirstContentVisible: { loadID in
+                            viewModel.markContentVisible(for: loadID)
+                        },
+                        onLoadFailed: { loadID in
+                            viewModel.markLoadFailed(for: loadID)
+                        }
+                    )
+
+                    if !viewModel.isCurrentLoadVisible {
+                        loadingOverlay
+                    }
+                }
+                .background(DUTheme.background.ignoresSafeArea())
+            case let .failed(allowsBackHome):
+                failureView(allowsBackHome: allowsBackHome)
+            }
+        }
+        .navigationTitle(languageStore.string("home.service.tickets"))
+        .navigationBarTitleDisplayMode(.inline)
+        .task {
+            await viewModel.loadIfNeeded()
+        }
+    }
+
+    private var loadingView: some View {
+        loadingOverlay
+            .background(DUTheme.background.ignoresSafeArea())
+    }
+
+    private var loadingOverlay: some View {
+        VStack {
+            ProgressView()
+                .progressViewStyle(.circular)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(DUTheme.background.opacity(0.92).ignoresSafeArea())
+    }
+
+    private func failureView(allowsBackHome: Bool) -> some View {
+        DUStateView(
+            systemImage: "wifi.exclamationmark",
+            iconColor: DUTheme.magenta,
+            title: languageStore.string("tickets.state.errorTitle"),
+            subtitle: languageStore.string("tickets.state.errorSubtitle"),
+            actionTitle: languageStore.string("common.refresh"),
+            footer: allowsBackHome
+                ? AnyView(
+                    DUButton(
+                        title: languageStore.string("tickets.action.backHome"),
+                        style: .secondary,
+                        height: 46,
+                        fontSize: 15,
+                        horizontalPadding: DUSpacing.xxl
+                    ) {
+                        dismiss()
+                    }
+                  )
+                : nil
+        ) {
+            Task {
+                await viewModel.reload()
+            }
+        }
+        .background(DUTheme.background.ignoresSafeArea())
+    }
+}
+
+@MainActor
+private final class TicketsViewModel: ObservableObject {
+    enum Phase {
+        case idle
+        case resolvingConfig
+        case browsing(TicketsPageLoad)
+        case failed(allowsBackHome: Bool)
+    }
+
+    @Published private(set) var phase: Phase = .idle
+    @Published private(set) var isCurrentLoadVisible = false
+
+    private let ticketsService: any TicketsServicing
+    private var hasLoaded = false
+    private var currentLoadID: UUID?
+    private var webFailureCount = 0
+
+    init(ticketsService: any TicketsServicing) {
+        self.ticketsService = ticketsService
+    }
+
+    func loadIfNeeded() async {
+        guard !hasLoaded else {
+            return
+        }
+
+        await reload()
+    }
+
+    func reload() async {
+        phase = .resolvingConfig
+        isCurrentLoadVisible = false
+
+        do {
+            let url = try await ticketsService.fetchTicketURL()
+            let load = TicketsPageLoad(url: url)
+            currentLoadID = load.id
+            hasLoaded = true
+            phase = .browsing(load)
+        } catch {
+            phase = .failed(allowsBackHome: webFailureCount >= 3)
+        }
+    }
+
+    func markContentVisible(for loadID: UUID) {
+        guard currentLoadID == loadID else {
+            return
+        }
+
+        isCurrentLoadVisible = true
+        webFailureCount = 0
+    }
+
+    func markLoadFailed(for loadID: UUID) {
+        guard currentLoadID == loadID else {
+            return
+        }
+
+        isCurrentLoadVisible = false
+        webFailureCount += 1
+        phase = .failed(allowsBackHome: webFailureCount >= 3)
+    }
+}
+
+private struct TicketsPageLoad: Equatable {
+    let id = UUID()
+    let url: URL
+}
+
+private struct TicketsWebView: UIViewRepresentable {
+    let load: TicketsPageLoad
+    let onFirstContentVisible: @MainActor @Sendable (UUID) -> Void
+    let onLoadFailed: @MainActor @Sendable (UUID) -> Void
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(
+            onFirstContentVisible: onFirstContentVisible,
+            onLoadFailed: onLoadFailed
+        )
+    }
+
+    func makeUIView(context: Context) -> WKWebView {
+        let configuration = WKWebViewConfiguration()
+        configuration.defaultWebpagePreferences.allowsContentJavaScript = true
+        configuration.preferences.javaScriptCanOpenWindowsAutomatically = true
+        configuration.websiteDataStore = .default()
+
+        let webView = WKWebView(frame: .zero, configuration: configuration)
+        webView.navigationDelegate = context.coordinator
+        webView.allowsBackForwardNavigationGestures = true
+        webView.scrollView.contentInsetAdjustmentBehavior = .automatic
+        webView.pageZoom = 1.0
+        webView.isOpaque = false
+        webView.backgroundColor = .clear
+        webView.scrollView.backgroundColor = .clear
+
+        context.coordinator.startLoad(load, in: webView)
+        return webView
+    }
+
+    func updateUIView(_ webView: WKWebView, context: Context) {
+        context.coordinator.startLoad(load, in: webView)
+    }
+
+    final class Coordinator: NSObject, WKNavigationDelegate {
+        private let onFirstContentVisible: @MainActor @Sendable (UUID) -> Void
+        private let onLoadFailed: @MainActor @Sendable (UUID) -> Void
+
+        private var currentLoadID: UUID?
+        private var timeoutWorkItem: DispatchWorkItem?
+        private var hasResolvedAttempt = false
+
+        init(
+            onFirstContentVisible: @escaping @MainActor @Sendable (UUID) -> Void,
+            onLoadFailed: @escaping @MainActor @Sendable (UUID) -> Void
+        ) {
+            self.onFirstContentVisible = onFirstContentVisible
+            self.onLoadFailed = onLoadFailed
+        }
+
+        deinit {
+            timeoutWorkItem?.cancel()
+        }
+
+        func startLoad(_ load: TicketsPageLoad, in webView: WKWebView) {
+            guard currentLoadID != load.id else {
+                return
+            }
+
+            currentLoadID = load.id
+            hasResolvedAttempt = false
+            timeoutWorkItem?.cancel()
+
+            let request = URLRequest(
+                url: load.url,
+                cachePolicy: .useProtocolCachePolicy,
+                timeoutInterval: 30
+            )
+            webView.load(request)
+
+            let workItem = DispatchWorkItem { [weak self, weak webView] in
+                guard let self, self.currentLoadID == load.id, !self.hasResolvedAttempt else {
+                    return
+                }
+
+                webView?.stopLoading()
+                self.resolveFailure(for: load.id)
+            }
+
+            timeoutWorkItem = workItem
+            DispatchQueue.main.asyncAfter(deadline: .now() + 10, execute: workItem)
+        }
+
+        func webView(
+            _ webView: WKWebView,
+            didCommit navigation: WKNavigation!
+        ) {
+            guard let currentLoadID, !hasResolvedAttempt else {
+                return
+            }
+
+            hasResolvedAttempt = true
+            timeoutWorkItem?.cancel()
+
+            Task { @MainActor in
+                onFirstContentVisible(currentLoadID)
+            }
+        }
+
+        func webView(
+            _ webView: WKWebView,
+            didFail navigation: WKNavigation!,
+            withError error: Error
+        ) {
+            guard shouldReportFailure(for: error) else {
+                return
+            }
+
+            resolveFailure(for: currentLoadID)
+        }
+
+        func webView(
+            _ webView: WKWebView,
+            didFailProvisionalNavigation navigation: WKNavigation!,
+            withError error: Error
+        ) {
+            guard shouldReportFailure(for: error) else {
+                return
+            }
+
+            resolveFailure(for: currentLoadID)
+        }
+
+        private func shouldReportFailure(for error: Error) -> Bool {
+            guard !hasResolvedAttempt else {
+                return false
+            }
+
+            let nsError = error as NSError
+            return nsError.code != NSURLErrorCancelled
+        }
+
+        private func resolveFailure(for loadID: UUID?) {
+            guard let loadID, currentLoadID == loadID, !hasResolvedAttempt else {
+                return
+            }
+
+            hasResolvedAttempt = true
+            timeoutWorkItem?.cancel()
+
+            Task { @MainActor in
+                onLoadFailed(loadID)
+            }
+        }
+    }
+}
+
 struct HomeView_Previews: PreviewProvider {
     static var previews: some View {
         HomeView(
@@ -1155,7 +1498,8 @@ struct HomeView_Previews: PreviewProvider {
                 greeting: "Good Morning",
                 balanceText: "128.50 AED",
                 userID: "preview-user",
-                serviceNumber: AuthValidator.demoPhone
+                serviceNumber: AuthValidator.demoPhone,
+                subscriberKey: "preview-subscriber-key"
             ),
             sessionStore: SessionStore.previewAuthenticated,
             authService: MockAuthService(),
@@ -1165,6 +1509,7 @@ struct HomeView_Previews: PreviewProvider {
             offersService: MockOffersService(),
             billingService: MockBillingService(),
             rechargeService: MockRechargeService(),
+            ticketsService: MockTicketsService(),
             badgeCenterService: MockBadgeCenterService(),
             meService: MockMeService(),
             notificationService: MockNotificationService()

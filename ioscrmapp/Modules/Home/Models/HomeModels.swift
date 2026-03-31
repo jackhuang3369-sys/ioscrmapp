@@ -152,3 +152,8 @@ struct HomeDashboardSnapshot: Equatable, Sendable {
     let summary: HomeSummarySection
     let usage: HomeUsageSection
 }
+
+struct HomeDashboardResponse: Equatable, Sendable {
+    let snapshot: HomeDashboardSnapshot
+    let subscriberKey: String?
+}
