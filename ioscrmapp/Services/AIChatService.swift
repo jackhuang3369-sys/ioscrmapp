@@ -1,7 +1,13 @@
 import Foundation
+import OSLog
 #if canImport(UIKit)
 import UIKit
 #endif
+
+private let aiChatLogger = Logger(
+    subsystem: "com.inspur.ioscrmapp",
+    category: "AIChat"
+)
 
 protocol AIChatServicing {
     func sendMessage(
@@ -160,6 +166,11 @@ struct RemoteAIChatService: AIChatServicing {
             }
 
             let parsed = AIChatResponseParser.parse(content: content)
+            if parsed.text.isEmpty, parsed.richText == nil, parsed.actions.isEmpty {
+                aiChatLogger.error(
+                    "AI chat parsed empty content. Raw content: \(String(describing: content), privacy: .public)"
+                )
+            }
             return AIChatReply(
                 conversationID: jsonObject["chatId"] as? String ?? conversationID,
                 text: parsed.text,
@@ -365,11 +376,38 @@ private enum AIChatResponseParser {
                 return
             }
 
+            if let html = dictionary["html"] as? String {
+                appendText(html, renderedParts: &renderedParts, thinkingParts: &thinkingParts)
+                return
+            }
+
+            if let markdown = dictionary["markdown"] as? String {
+                appendText(markdown, renderedParts: &renderedParts, thinkingParts: &thinkingParts)
+                return
+            }
+
+            for key in ["answer", "message", "result", "output", "outputs", "data", "payload", "response"] {
+                if let value = dictionary[key] {
+                    collect(node: value, renderedParts: &renderedParts, thinkingParts: &thinkingParts, actions: &actions)
+                    return
+                }
+            }
+
             if
                 let description = dictionary["description"] as? String,
                 !looksLikeCard(dictionary)
             {
                 appendText(description, renderedParts: &renderedParts, thinkingParts: &thinkingParts)
+                return
+            }
+
+            if !looksLikeCard(dictionary) {
+                for key in ["summary", "subtitle", "title", "label", "caption", "value"] {
+                    if let value = dictionary[key] as? String, !value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                        appendText(value, renderedParts: &renderedParts, thinkingParts: &thinkingParts)
+                        return
+                    }
+                }
             }
         default:
             return
@@ -503,7 +541,7 @@ private enum AIChatResponseParser {
 
     private static func attributedText(from rawText: String) -> AttributedString? {
         guard
-            let data = htmlDocument(for: rawText).data(using: .utf8),
+            let data = htmlDocument(for: sanitizeHTMLForDisplay(rawText)).data(using: .utf8),
             let attributed = try? NSAttributedString(
                 data: data,
                 options: [
@@ -516,13 +554,15 @@ private enum AIChatResponseParser {
             return nil
         }
 
+        let normalized = normalizedHTMLAttributedString(attributed)
+
         #if canImport(UIKit)
-        if let richText = try? AttributedString(attributed, including: \.uiKit) {
+        if let richText = try? AttributedString(normalized, including: \.uiKit) {
             return richText
         }
         #endif
 
-        return AttributedString(attributed.string)
+        return AttributedString(normalized.string)
     }
 
     private static func htmlDocument(for rawText: String) -> String {
@@ -546,6 +586,130 @@ private enum AIChatResponseParser {
         </html>
         """
     }
+
+    private static func sanitizeHTMLForDisplay(_ rawText: String) -> String {
+        var sanitized = extractedInlineFrameDocument(from: rawText)
+            .replacingOccurrences(of: "\r\n", with: "\n")
+            .replacingOccurrences(of: "\r", with: "\n")
+            .replacingOccurrences(of: "&nbsp;", with: " ")
+
+        sanitized = removingUnsupportedDisplayCharacters(from: sanitized)
+        sanitized = replacingRegex(in: sanitized, pattern: "(?is)<!DOCTYPE[^>]*>", with: "")
+        sanitized = replacingRegex(in: sanitized, pattern: "(?is)<\\/?(?:html|body|head)\\b[^>]*>", with: "")
+        sanitized = replacingRegex(in: sanitized, pattern: "(?is)<(?:meta|link)\\b[^>]*>", with: "")
+        sanitized = replacingRegex(
+            in: sanitized,
+            pattern: "(?is)<\\s*(script|style|svg|canvas|iframe|object|embed|noscript)\\b[^>]*>.*?<\\s*/\\s*\\1\\s*>",
+            with: ""
+        )
+        sanitized = replacingRegex(in: sanitized, pattern: "(?is)<\\s*img\\b[^>]*>", with: "")
+        sanitized = replacingRegex(in: sanitized, pattern: "(?is)<\\s*mark\\b[^>]*>", with: "<strong>")
+        sanitized = replacingRegex(in: sanitized, pattern: "(?is)</\\s*mark\\s*>", with: "</strong>")
+        sanitized = replacingRegex(in: sanitized, pattern: "(?is)<\\s*pre\\b[^>]*>", with: "<div>")
+        sanitized = replacingRegex(in: sanitized, pattern: "(?is)</\\s*pre\\s*>", with: "</div>")
+        sanitized = replacingRegex(in: sanitized, pattern: "(?is)<\\s*code\\b[^>]*>", with: "<span>")
+        sanitized = replacingRegex(in: sanitized, pattern: "(?is)</\\s*code\\s*>", with: "</span>")
+
+        return sanitized.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    private static func extractedInlineFrameDocument(from rawText: String) -> String {
+        guard rawText.localizedCaseInsensitiveContains("<iframe") else {
+            return rawText
+        }
+
+        for pattern in [
+            #"(?is)<iframe\b[^>]*\bsrcdoc\s*=\s*"([^"]*)""#,
+            #"(?is)<iframe\b[^>]*\bsrcdoc\s*=\s*'([^']*)'"#
+        ] {
+            guard let regex = try? NSRegularExpression(pattern: pattern) else {
+                continue
+            }
+
+            let range = NSRange(rawText.startIndex..., in: rawText)
+            guard
+                let match = regex.firstMatch(in: rawText, options: [], range: range),
+                match.numberOfRanges > 1,
+                let srcdocRange = Range(match.range(at: 1), in: rawText)
+            else {
+                continue
+            }
+
+            let srcdoc = String(rawText[srcdocRange]).trimmingCharacters(in: .whitespacesAndNewlines)
+            if !srcdoc.isEmpty {
+                return srcdoc
+            }
+        }
+
+        return rawText
+    }
+
+    private static func removingUnsupportedDisplayCharacters(from text: String) -> String {
+        String(text.unicodeScalars.filter { scalar in
+            switch scalar.value {
+            case 0xFFFC, 0xFFFD:
+                return false
+            case 0xE000 ... 0xF8FF, 0xF0000 ... 0xFFFFD, 0x100000 ... 0x10FFFD:
+                return false
+            default:
+                return true
+            }
+        })
+    }
+
+    private static func replacingRegex(
+        in text: String,
+        pattern: String,
+        with template: String
+    ) -> String {
+        guard let regex = try? NSRegularExpression(pattern: pattern) else {
+            return text
+        }
+
+        let range = NSRange(text.startIndex..., in: text)
+        return regex.stringByReplacingMatches(in: text, options: [], range: range, withTemplate: template)
+    }
+
+    private static func normalizedHTMLAttributedString(_ attributed: NSAttributedString) -> NSAttributedString {
+        #if canImport(UIKit)
+        let mutable = NSMutableAttributedString(attributedString: attributed)
+        let fullRange = NSRange(location: 0, length: mutable.length)
+
+        mutable.removeAttribute(.backgroundColor, range: fullRange)
+        mutable.removeAttribute(.attachment, range: fullRange)
+        mutable.removeAttribute(.foregroundColor, range: fullRange)
+
+        mutable.enumerateAttribute(.font, in: fullRange) { value, range, _ in
+            guard let font = value as? UIFont else {
+                return
+            }
+            mutable.addAttribute(.font, value: normalizedHTMLFont(font), range: range)
+        }
+
+        mutable.enumerateAttribute(.paragraphStyle, in: fullRange) { value, range, _ in
+            let paragraphStyle = ((value as? NSParagraphStyle)?.mutableCopy() as? NSMutableParagraphStyle)
+                ?? NSMutableParagraphStyle()
+            paragraphStyle.lineSpacing = max(paragraphStyle.lineSpacing, 2)
+            paragraphStyle.paragraphSpacing = max(paragraphStyle.paragraphSpacing, 6)
+            mutable.addAttribute(.paragraphStyle, value: paragraphStyle, range: range)
+        }
+
+        return mutable
+        #else
+        return attributed
+        #endif
+    }
+
+    #if canImport(UIKit)
+    private static func normalizedHTMLFont(_ font: UIFont) -> UIFont {
+        let pointSize = min(max(font.pointSize, 13), 30)
+        let baseDescriptor = UIFont.systemFont(ofSize: pointSize).fontDescriptor
+        let supportedTraits: UIFontDescriptor.SymbolicTraits = [.traitBold, .traitItalic]
+        let traits = font.fontDescriptor.symbolicTraits.intersection(supportedTraits)
+        let descriptor = baseDescriptor.withSymbolicTraits(traits) ?? baseDescriptor
+        return UIFont(descriptor: descriptor, size: pointSize)
+    }
+    #endif
 
     private static func combinedRichText(from renderedParts: [AIChatRenderedText]) -> AttributedString? {
         guard !renderedParts.isEmpty else {

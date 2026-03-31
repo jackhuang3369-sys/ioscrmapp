@@ -211,34 +211,38 @@ struct AIChatView: View {
                     .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                 }
 
-                Group {
-                    if message.isLoading {
-                        HStack(spacing: DUSpacing.sm) {
-                            ProgressView()
-                                .progressViewStyle(.circular)
-                            Text(AIChatLocalizedCopy.loadingTitle(for: viewModel.language))
-                                .font(.du(13, weight: .medium))
-                                .foregroundColor(DUTheme.inkSecondary)
-                        }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                    } else if message.sender == .assistant, let richText = message.richText {
-                        assistantRichTextView(richText)
-                    } else {
-                        Text(message.text)
-                            .font(.du(14, weight: .medium))
-                            .foregroundColor(message.sender == .user ? .white : DUTheme.ink)
-                            .multilineTextAlignment(.leading)
+                if shouldShowMessageContentBubble(message) {
+                    Group {
+                        if message.isLoading {
+                            HStack(spacing: DUSpacing.sm) {
+                                ProgressView()
+                                    .progressViewStyle(.circular)
+                                Text(AIChatLocalizedCopy.loadingTitle(for: viewModel.language))
+                                    .font(.du(13, weight: .medium))
+                                    .foregroundColor(DUTheme.inkSecondary)
+                            }
                             .frame(maxWidth: .infinity, alignment: .leading)
+                        } else if message.sender == .assistant,
+                                  let richText = message.richText,
+                                  !normalizedDisplayText(String(richText.characters)).isEmpty {
+                            assistantRichTextView(richText)
+                        } else {
+                            Text(message.text)
+                                .font(.du(14, weight: .medium))
+                                .foregroundColor(message.sender == .user ? .white : DUTheme.ink)
+                                .multilineTextAlignment(.leading)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        }
                     }
+                    .padding(.horizontal, DUSpacing.lg)
+                    .padding(.vertical, DUSpacing.md)
+                    .background(message.sender == .user ? AnyShapeStyle(DUTheme.brandGradient) : AnyShapeStyle(DUTheme.panel))
+                    .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 20, style: .continuous)
+                            .stroke(message.sender == .user ? Color.clear : DUTheme.lineLight, lineWidth: 1)
+                    )
                 }
-                .padding(.horizontal, DUSpacing.lg)
-                .padding(.vertical, DUSpacing.md)
-                .background(message.sender == .user ? AnyShapeStyle(DUTheme.brandGradient) : AnyShapeStyle(DUTheme.panel))
-                .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 20, style: .continuous)
-                        .stroke(message.sender == .user ? Color.clear : DUTheme.lineLight, lineWidth: 1)
-                )
 
                 if !message.actions.isEmpty {
                     VStack(alignment: .leading, spacing: DUSpacing.sm) {
@@ -285,9 +289,42 @@ struct AIChatView: View {
 
     private func assistantRichTextView(_ richText: AttributedString) -> some View {
         Text(richText)
+            .font(.du(14, weight: .medium))
+            .foregroundColor(DUTheme.ink)
             .multilineTextAlignment(.leading)
             .frame(maxWidth: .infinity, alignment: .leading)
             .fixedSize(horizontal: false, vertical: true)
+    }
+
+    private func shouldShowMessageContentBubble(_ message: AIChatMessage) -> Bool {
+        if message.isLoading {
+            return true
+        }
+
+        if let richText = message.richText,
+           !normalizedDisplayText(String(richText.characters)).isEmpty {
+            return true
+        }
+
+        return !normalizedDisplayText(message.text).isEmpty
+    }
+
+    private func normalizedDisplayText(_ text: String) -> String {
+        let replacements = [
+            ("\u{00A0}", " "),
+            ("\u{200B}", ""),
+            ("\u{200C}", ""),
+            ("\u{200D}", ""),
+            ("\u{2060}", ""),
+            ("\u{FEFF}", ""),
+            ("\u{FFFC}", "")
+        ]
+
+        let normalized = replacements.reduce(text) { partialResult, replacement in
+            partialResult.replacingOccurrences(of: replacement.0, with: replacement.1)
+        }
+
+        return normalized.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     private func avatarView(systemName: String) -> some View {
