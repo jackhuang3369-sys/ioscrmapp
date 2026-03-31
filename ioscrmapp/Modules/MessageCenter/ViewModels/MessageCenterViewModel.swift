@@ -119,6 +119,8 @@ final class MessageCenterViewModel: ObservableObject {
         do {
             try await notificationService.deleteMessage(messageID: messageID, session: session)
             removeMessages(with: [messageID])
+        } catch let error as MessageCenterServiceError {
+            banner = MessageCenterBanner(message: error.textValue, style: .error)
         } catch {
             banner = MessageCenterBanner(
                 message: .key("messageCenter.banner.deleteSingleFailed"),
@@ -141,6 +143,8 @@ final class MessageCenterViewModel: ObservableObject {
         do {
             let result = try await notificationService.markMessagesRead(messageIDs: messageIDs, session: session)
             applyMarkReadResult(result)
+        } catch let error as MessageCenterServiceError {
+            banner = MessageCenterBanner(message: error.textValue, style: .error)
         } catch {
             banner = MessageCenterBanner(
                 message: .key("messageCenter.banner.batchReadFailed"),
@@ -163,6 +167,8 @@ final class MessageCenterViewModel: ObservableObject {
         do {
             let result = try await notificationService.deleteMessages(messageIDs: messageIDs, session: session)
             applyDeleteResult(result)
+        } catch let error as MessageCenterServiceError {
+            banner = MessageCenterBanner(message: error.textValue, style: .error)
         } catch {
             banner = MessageCenterBanner(
                 message: .key("messageCenter.banner.batchDeleteFailed"),
@@ -209,6 +215,8 @@ final class MessageCenterViewModel: ObservableObject {
             messages = messages.map { message in
                 message.id == messageID ? message.markingRead() : message
             }
+        } catch let error as MessageCenterServiceError {
+            banner = MessageCenterBanner(message: error.textValue, style: .warning)
         } catch {
             banner = MessageCenterBanner(
                 message: .key("messageCenter.banner.readSyncFailed"),

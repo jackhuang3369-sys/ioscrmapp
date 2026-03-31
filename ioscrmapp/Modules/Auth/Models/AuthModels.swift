@@ -305,6 +305,7 @@ enum AuthError: Error, Equatable {
     case sessionInvalidated
     case backend(message: String, traceID: String?)
     case featureUnavailable(message: String)
+    case tooManyRequests
     case networkUnavailable
 
     var textValue: LocalizedTextValue {
@@ -347,6 +348,8 @@ enum AuthError: Error, Equatable {
             return .literal(message)
         case let .featureUnavailable(message):
             return .literal(message)
+        case .tooManyRequests:
+            return .key("common.error.tooManyRequests")
         case .networkUnavailable:
             return .key("auth.error.networkUnavailable")
         }

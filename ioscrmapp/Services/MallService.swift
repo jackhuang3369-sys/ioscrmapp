@@ -36,6 +36,8 @@ enum MallServiceError: Error {
     case searchUnavailable
     case keywordInvalid
     case pageInvalid
+    case featureUnavailable(message: String)
+    case tooManyRequests
     case networkUnavailable
 
     var textValue: LocalizedTextValue {
@@ -50,6 +52,10 @@ enum MallServiceError: Error {
             return .key("mall.search.validation.empty")
         case .pageInvalid:
             return .key("mall.search.error.subtitle")
+        case let .featureUnavailable(message):
+            return .literal(message)
+        case .tooManyRequests:
+            return .key("common.error.tooManyRequests")
         case .networkUnavailable:
             return .key("mall.state.error.subtitle")
         }
@@ -454,7 +460,7 @@ struct RemoteMallService: MallServicing {
         fallback: MallServiceError
     ) -> MallServiceError {
         switch error {
-        case let .business(code, _, _):
+        case let .business(code, message, _):
             switch code {
             case 50_016:
                 return .homeUnavailable
@@ -467,8 +473,11 @@ struct RemoteMallService: MallServicing {
             case 50_019:
                 return .pageInvalid
             default:
-                return fallback
+                let trimmedMessage = message.trimmingCharacters(in: .whitespacesAndNewlines)
+                return trimmedMessage.isEmpty ? fallback : .featureUnavailable(message: trimmedMessage)
             }
+        case .tooManyRequests:
+            return .tooManyRequests
         case .networkUnavailable:
             return .networkUnavailable
         default:

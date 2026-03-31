@@ -59,6 +59,8 @@ final class MallViewModel: ObservableObject {
         do {
             try await mallService.deleteSearchHistory(keyword: keyword, session: session)
             try await reloadBootstrap()
+        } catch let error as MallServiceError {
+            bannerMessage = error.textValue
         } catch {
             bannerMessage = .key("mall.search.error.subtitle")
         }
@@ -68,6 +70,8 @@ final class MallViewModel: ObservableObject {
         do {
             try await mallService.clearSearchHistory(session: session)
             try await reloadBootstrap()
+        } catch let error as MallServiceError {
+            bannerMessage = error.textValue
         } catch {
             bannerMessage = .key("mall.search.error.subtitle")
         }

@@ -127,12 +127,14 @@ struct HTTPClient: Sendable {
     enum ClientError: Error {
         case invalidResponse
         case httpStatus(Int)
+        case tooManyRequests
         case invalidJSON
         case business(code: Int, message: String, traceID: String?)
         case networkUnavailable(underlying: Error)
     }
 
     private static let wrapperSuccessCodes: Set<Int> = [200, 201, 204, 205, 206, 207, 208, 209, 211, 212, 20_000]
+    private static let tooManyRequestsStatusCode = 429
 
     private let baseURL: URL
     private let session: URLSession
@@ -299,6 +301,13 @@ struct HTTPClient: Sendable {
                 throw ClientError.invalidResponse
             }
 
+            if httpResponse.statusCode == Self.tooManyRequestsStatusCode {
+                networkLogger.error(
+                    "HTTP status error path=\(endpoint.path, privacy: .public) status=\(httpResponse.statusCode, privacy: .public)"
+                )
+                throw ClientError.tooManyRequests
+            }
+
             guard (200 ... 299).contains(httpResponse.statusCode) else {
                 networkLogger.error(
                     "HTTP status error path=\(endpoint.path, privacy: .public) status=\(httpResponse.statusCode, privacy: .public)"
@@ -366,6 +375,13 @@ struct HTTPClient: Sendable {
     }
 
     private func parseResponseBody(_ data: Data, httpStatusCode: Int, path: String) throws -> ResponseData {
+        if httpStatusCode == Self.tooManyRequestsStatusCode {
+            networkLogger.error(
+                "HTTP status error path=\(path, privacy: .public) status=\(httpStatusCode, privacy: .public)"
+            )
+            throw ClientError.tooManyRequests
+        }
+
         if data.isEmpty {
             guard (200 ... 299).contains(httpStatusCode) else {
                 networkLogger.error(

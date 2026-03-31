@@ -127,6 +127,7 @@ struct MessageCenterBatchResult: Equatable, Sendable {
 enum MessageCenterServiceError: Error, Equatable {
     case missingIdentity
     case featureUnavailable(message: String)
+    case tooManyRequests
     case networkUnavailable
 
     var textValue: LocalizedTextValue {
@@ -135,6 +136,8 @@ enum MessageCenterServiceError: Error, Equatable {
             return .key("messageCenter.error.missingIdentity")
         case let .featureUnavailable(message):
             return .literal(message)
+        case .tooManyRequests:
+            return .key("common.error.tooManyRequests")
         case .networkUnavailable:
             return .key("messageCenter.error.subtitle")
         }

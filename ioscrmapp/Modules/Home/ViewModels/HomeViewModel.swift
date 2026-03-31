@@ -75,7 +75,7 @@ final class HomeViewModel: ObservableObject {
     ) {
         if preserveSnapshotOnFailure, dashboard != nil {
             screenState = .loaded
-            bannerMessage = .key("home.state.refreshFailed")
+            bannerMessage = error.textValue
             return
         }
 

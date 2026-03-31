@@ -129,7 +129,7 @@ struct RemoteTicketsService: TicketsServicing {
 
     private func mapClientError(_ error: HTTPClient.ClientError) -> TicketsServiceError {
         switch error {
-        case .invalidResponse, .invalidJSON, .httpStatus, .networkUnavailable, .business:
+        case .invalidResponse, .invalidJSON, .httpStatus, .tooManyRequests, .networkUnavailable, .business:
             return .networkUnavailable
         }
     }

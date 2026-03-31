@@ -24,6 +24,7 @@ enum BillingServiceError: Error {
     case missingIdentity
     case missingAccountCode
     case featureUnavailable(message: String)
+    case tooManyRequests
     case networkUnavailable
     case requestCancelled
 
@@ -31,6 +32,8 @@ enum BillingServiceError: Error {
         switch self {
         case .missingIdentity, .missingAccountCode, .networkUnavailable:
             return .key("billing.state.errorSubtitle")
+        case .tooManyRequests:
+            return .key("common.error.tooManyRequests")
         case .requestCancelled:
             return .literal("")
         case let .featureUnavailable(message):
@@ -489,6 +492,8 @@ struct RemoteBillingService: BillingServicing {
 
     private func mapClientError(_ error: HTTPClient.ClientError) -> BillingServiceError {
         switch error {
+        case .tooManyRequests:
+            return .tooManyRequests
         case let .business(_, message, _):
             let trimmed = message.trimmingCharacters(in: .whitespacesAndNewlines)
             return trimmed.isEmpty ? .networkUnavailable : .featureUnavailable(message: trimmed)
@@ -802,6 +807,7 @@ enum RechargeServiceError: Error {
     case missingIdentity
     case invalidAmount
     case featureUnavailable(message: String)
+    case tooManyRequests
     case networkUnavailable
     case requestCancelled
 
@@ -809,6 +815,8 @@ enum RechargeServiceError: Error {
         switch self {
         case .missingIdentity, .invalidAmount, .networkUnavailable:
             return .key("recharge.error.generic")
+        case .tooManyRequests:
+            return .key("common.error.tooManyRequests")
         case .requestCancelled:
             return .literal("")
         case let .featureUnavailable(message):
@@ -1402,6 +1410,8 @@ struct RemoteRechargeService: RechargeServicing {
 
     private func mapClientError(_ error: HTTPClient.ClientError) -> RechargeServiceError {
         switch error {
+        case .tooManyRequests:
+            return .tooManyRequests
         case let .business(_, message, _):
             let trimmed = message.trimmingCharacters(in: .whitespacesAndNewlines)
             return trimmed.isEmpty ? .networkUnavailable : .featureUnavailable(message: trimmed)

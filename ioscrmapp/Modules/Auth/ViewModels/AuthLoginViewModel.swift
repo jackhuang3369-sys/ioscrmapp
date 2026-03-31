@@ -226,7 +226,7 @@ final class AuthLoginViewModel: ObservableObject {
         case .accountLocked:
             passwordError = nil
             otpError = nil
-        case .deviceNotUnique, .featureUnavailable, .networkUnavailable, .phoneAlreadyRegistered, .phoneNotRegistered, .registrationPasswordFormat, .passwordMismatch, .passwordHistoryConflict, .verificationTokenExpired, .sessionInvalidated, .backend:
+        case .deviceNotUnique, .featureUnavailable, .tooManyRequests, .networkUnavailable, .phoneAlreadyRegistered, .phoneNotRegistered, .registrationPasswordFormat, .passwordMismatch, .passwordHistoryConflict, .verificationTokenExpired, .sessionInvalidated, .backend:
             break
         }
     }
@@ -517,7 +517,7 @@ final class AuthRegistrationViewModel: ObservableObject {
             passwordError = authError.textValue
         case .passwordMismatch:
             confirmPasswordError = authError.textValue
-        case .invalidPasswordFormat, .invalidCredentials, .accountLocked, .deviceNotUnique, .phoneNotRegistered, .passwordHistoryConflict, .verificationTokenExpired, .sessionInvalidated, .backend, .featureUnavailable, .networkUnavailable:
+        case .invalidPasswordFormat, .invalidCredentials, .accountLocked, .deviceNotUnique, .phoneNotRegistered, .passwordHistoryConflict, .verificationTokenExpired, .sessionInvalidated, .backend, .featureUnavailable, .tooManyRequests, .networkUnavailable:
             if stage == .register {
                 passwordError = nil
                 confirmPasswordError = nil
@@ -811,7 +811,7 @@ final class AuthForgotPasswordViewModel: ObservableObject {
             confirmPasswordError = authError.textValue
         case .passwordHistoryConflict:
             passwordError = authError.textValue
-        case .invalidPasswordFormat, .invalidCredentials, .accountLocked, .deviceNotUnique, .phoneAlreadyRegistered, .sessionInvalidated, .backend, .featureUnavailable, .networkUnavailable:
+        case .invalidPasswordFormat, .invalidCredentials, .accountLocked, .deviceNotUnique, .phoneAlreadyRegistered, .sessionInvalidated, .backend, .featureUnavailable, .tooManyRequests, .networkUnavailable:
             break
         }
     }

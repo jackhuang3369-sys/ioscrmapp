@@ -291,6 +291,8 @@ struct RemoteNotificationService: NotificationServicing {
 
     private func mapClientError(_ error: HTTPClient.ClientError) -> MessageCenterServiceError {
         switch error {
+        case .tooManyRequests:
+            return .tooManyRequests
         case let .business(code, message, _):
             if code == 40_001 || code == 40_014 || code == 40_015 {
                 return .missingIdentity

@@ -25,6 +25,7 @@ enum BadgeUnlockHandledSource: String, Sendable {
 
 enum BadgeCenterServiceError: Error {
     case notFound
+    case tooManyRequests
     case networkUnavailable
     case featureUnavailable(message: String)
 
@@ -32,6 +33,8 @@ enum BadgeCenterServiceError: Error {
         switch self {
         case .notFound:
             return .key("badgeCenter.error.notFound")
+        case .tooManyRequests:
+            return .key("common.error.tooManyRequests")
         case .networkUnavailable:
             return .key("badgeCenter.error.load")
         case let .featureUnavailable(message):
@@ -310,6 +313,8 @@ struct RemoteBadgeCenterService: BadgeCenterServicing {
                 }
                 return .networkUnavailable
             }
+        case .tooManyRequests:
+            return .tooManyRequests
         case .httpStatus, .invalidJSON, .invalidResponse, .networkUnavailable:
             return .networkUnavailable
         }

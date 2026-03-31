@@ -11,6 +11,9 @@
     },
     "placeholder": {
       "feature": "%@ 功能即将上线。"
+    },
+    "error": {
+      "tooManyRequests": "操作过于频繁，请稍后再试吧"
     }
   },
   "auth": {

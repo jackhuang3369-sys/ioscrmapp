@@ -423,6 +423,8 @@ struct RemoteAuthService: AuthServicing {
         switch error {
         case let .business(code, message, traceID):
             return RegistrationRemoteErrorMapper.map(code: code, message: message, traceID: traceID)
+        case .tooManyRequests:
+            return .tooManyRequests
         case .httpStatus, .invalidJSON, .invalidResponse, .networkUnavailable:
             return .networkUnavailable
         }
@@ -432,6 +434,8 @@ struct RemoteAuthService: AuthServicing {
         switch error {
         case let .business(code, message, traceID):
             return LoginRemoteErrorMapper.map(code: code, message: message, traceID: traceID)
+        case .tooManyRequests:
+            return .tooManyRequests
         case .httpStatus, .invalidJSON, .invalidResponse, .networkUnavailable:
             return .networkUnavailable
         }
@@ -441,6 +445,8 @@ struct RemoteAuthService: AuthServicing {
         switch error {
         case let .business(code, message, traceID):
             return ForgotPasswordRemoteErrorMapper.map(code: code, message: message, traceID: traceID)
+        case .tooManyRequests:
+            return .tooManyRequests
         case .httpStatus, .invalidJSON, .invalidResponse, .networkUnavailable:
             return .networkUnavailable
         }
@@ -455,6 +461,8 @@ struct RemoteAuthService: AuthServicing {
                 return .sessionInvalidated
             }
             return .backend(message: message, traceID: traceID)
+        case .tooManyRequests:
+            return .tooManyRequests
         case .httpStatus, .invalidJSON, .invalidResponse, .networkUnavailable:
             return .networkUnavailable
         }

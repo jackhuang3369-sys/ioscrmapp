@@ -29,6 +29,7 @@ protocol OffersServicing: Sendable {
 
 enum OffersServiceError: Error {
     case missingIdentity
+    case tooManyRequests
     case networkUnavailable
     case requestCancelled
     case featureUnavailable(message: String)
@@ -37,6 +38,8 @@ enum OffersServiceError: Error {
         switch self {
         case .missingIdentity, .networkUnavailable:
             return .key("offers.state.errorSubtitle")
+        case .tooManyRequests:
+            return .key("common.error.tooManyRequests")
         case .requestCancelled:
             return .literal("")
         case let .featureUnavailable(message):
@@ -640,6 +643,8 @@ struct RemoteOffersService: OffersServicing {
         }
 
         switch clientError {
+        case .tooManyRequests:
+            return .tooManyRequests
         case .networkUnavailable:
             return .networkUnavailable
         case let .business(_, message, _):

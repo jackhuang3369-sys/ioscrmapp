@@ -26,6 +26,7 @@ protocol HomeServicing: Sendable {
 enum HomeServiceError: Error {
     case missingIdentity
     case featureUnavailable(message: String)
+    case tooManyRequests
     case networkUnavailable
 
     var textValue: LocalizedTextValue {
@@ -34,6 +35,8 @@ enum HomeServiceError: Error {
             return .key("home.state.errorSubtitle")
         case let .featureUnavailable(message):
             return .literal(message)
+        case .tooManyRequests:
+            return .key("common.error.tooManyRequests")
         case .networkUnavailable:
             return .key("home.state.errorSubtitle")
         }
@@ -415,6 +418,8 @@ struct RemoteHomeService: HomeServicing {
             return trimmedMessage.isEmpty
                 ? .networkUnavailable
                 : .featureUnavailable(message: trimmedMessage)
+        case .tooManyRequests:
+            return .tooManyRequests
         case .httpStatus, .invalidJSON, .invalidResponse, .networkUnavailable:
             return .networkUnavailable
         }

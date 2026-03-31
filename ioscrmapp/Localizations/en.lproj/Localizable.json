@@ -11,6 +11,9 @@
     },
     "placeholder": {
       "feature": "%@ is coming soon."
+    },
+    "error": {
+      "tooManyRequests": "Too many operations. Please try again later."
     }
   },
   "auth": {
