@@ -18,7 +18,6 @@ struct HomeView: View {
     @StateObject private var viewModel: HomeViewModel
     @State private var placeholderMessage: LocalizedTextValue?
     @State private var selectedTab: HomeTab = .home
-    @State private var selectedBannerIndex = 0
     @State private var isMessageCenterPresented = false
     @State private var isBillingPresented = false
     @State private var isRechargePresented = false
@@ -27,7 +26,6 @@ struct HomeView: View {
     @State private var signOutFailureMessageKey: String?
 
     private let pageHorizontalPadding: CGFloat = DUSpacing.md
-    private let bannerTimer = Timer.publish(every: 4, on: .main, in: .common).autoconnect()
     private let quickActions: [HomeItem] = [
         .init(title: .key("home.quick.recharge"), assetName: "QuickRechargeIcon", action: .recharge),
         .init(title: .key("home.quick.payBill"), assetName: "ServiceBillsIcon", action: .billing),
@@ -67,22 +65,11 @@ struct HomeView: View {
         ),
     ]
 
-    private let banners: [HomeBanner] = [
-        .init(
-            title: .key("home.banner.newCustomer.title"),
-            subtitle: .key("home.banner.newCustomer.subtitle"),
-            colors: [DUTheme.cyanLight, DUTheme.blueLight]
-        ),
-        .init(
-            title: .key("home.banner.weekendData.title"),
-            subtitle: .key("home.banner.weekendData.subtitle"),
-            colors: [DUTheme.blueLight, DUTheme.indigo]
-        ),
-        .init(
-            title: .key("home.banner.mallFlash.title"),
-            subtitle: .key("home.banner.mallFlash.subtitle"),
-            colors: [DUTheme.indigo, DUTheme.magenta]
-        ),
+    private let featuredCarouselAssetNames: [String] = [
+        "HomeCarouselGreenHills",
+        "HomeCarouselGoldenValley",
+        "HomeCarouselSnowMountains",
+        "HomeCarouselCliffDawn",
     ]
     init(
         custSubInfo: CustSubInfo,
@@ -243,7 +230,7 @@ struct HomeView: View {
                         }
 
                         quickActionsSection
-                        bannerCarousel
+                        featuredCarouselSection
                         servicesSection
                         productsSection
                     }
@@ -599,58 +586,16 @@ struct HomeView: View {
         .padding(.bottom, -8)
     }
 
-    private var bannerCarousel: some View {
-        VStack(spacing: DUSpacing.sm) {
-            TabView(selection: $selectedBannerIndex) {
-                ForEach(Array(banners.enumerated()), id: \.offset) { index, banner in
-                    Button {
-                        showComingSoon(for: banner.title)
-                    } label: {
-                        HStack {
-                            VStack(alignment: .leading, spacing: DUSpacing.sm) {
-                                Text("✨ \(localized(banner.title))")
-                                    .font(.du(17, weight: .bold))
-                                    .foregroundColor(.white)
-
-                                Text(localized(banner.subtitle))
-                                    .font(.du(12, weight: .medium))
-                                    .foregroundColor(.white.opacity(0.92))
-                                    .multilineTextAlignment(.leading)
-                            }
-
-                            Spacer(minLength: DUSpacing.md)
-                        }
-                        .padding(.horizontal, DUSpacing.lg)
-                        .padding(.vertical, DUSpacing.xl)
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .background(
-                            LinearGradient(
-                                gradient: Gradient(colors: banner.colors),
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                        .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
-                    }
-                    .buttonStyle(.plain)
-                    .tag(index)
-                }
-            }
-            .tabViewStyle(.page(indexDisplayMode: .never))
-            .frame(height: 132)
-
-            HStack(spacing: DUSpacing.xs) {
-                ForEach(banners.indices, id: \.self) { index in
-                    Capsule()
-                        .fill(index == selectedBannerIndex ? DUTheme.cyan : DUTheme.inkDisabled.opacity(0.45))
-                        .frame(width: index == selectedBannerIndex ? 18 : 6, height: 6)
-                }
-            }
-        }
-        .padding(.horizontal, pageHorizontalPadding)
-        .onReceive(bannerTimer) { _ in
-            selectedBannerIndex = (selectedBannerIndex + 1) % banners.count
-        }
+    private var featuredCarouselSection: some View {
+        HomeFeatureCarouselView(assetNames: featuredCarouselAssetNames)
+            .padding(.horizontal, DUSpacing.lg)
+            .padding(.vertical, DUSpacing.lg)
+            .overlay(
+                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                    .stroke(DUTheme.lineLight, lineWidth: 1)
+            )
+            .duCardStyle()
+            .padding(.horizontal, pageHorizontalPadding)
     }
 
     private var servicesSection: some View {
@@ -1052,12 +997,6 @@ private struct HomeProduct: Identifiable {
     let price: LocalizedTextValue
     let oldPrice: LocalizedTextValue?
     let assetName: String
-}
-
-private struct HomeBanner {
-    let title: LocalizedTextValue
-    let subtitle: LocalizedTextValue
-    let colors: [Color]
 }
 
 private struct CircleAction: View {
