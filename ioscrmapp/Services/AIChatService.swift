@@ -93,10 +93,18 @@ struct RemoteAIChatService: AIChatServicing {
 
     init(
         configuration: AIChatConfiguration = .current,
-        session: URLSession = .shared
+        session: URLSession? = nil
     ) {
         self.configuration = configuration
-        self.session = session
+        if let session {
+            self.session = session
+        } else {
+            self.session = URLSession(
+                configuration: .default,
+                delegate: AIChatURLSessionDelegate(configuration: configuration),
+                delegateQueue: nil
+            )
+        }
     }
 
     func sendMessage(
@@ -204,6 +212,54 @@ struct RemoteAIChatService: AIChatServicing {
                 ]
             ]
         ]
+    }
+}
+
+private final class AIChatURLSessionDelegate: NSObject, URLSessionDelegate {
+    private let allowedHosts: Set<String>
+    private let allowsInvalidCertificates: Bool
+
+    init(configuration: AIChatConfiguration) {
+        let host = configuration.chatCompletionsURL?.host?.lowercased()
+        if let host {
+            allowedHosts = [host]
+        } else {
+            allowedHosts = []
+        }
+
+        #if DEBUG
+        let debugDefault = true
+        #else
+        let debugDefault = false
+        #endif
+
+        if let override = ProcessInfo.processInfo.environment["IOSCRMAPP_AI_ALLOW_INVALID_CERT"]?.lowercased() {
+            allowsInvalidCertificates = ["1", "true", "yes"].contains(override)
+        } else {
+            allowsInvalidCertificates = debugDefault
+        }
+    }
+
+    func urlSession(
+        _ session: URLSession,
+        didReceive challenge: URLAuthenticationChallenge,
+        completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void
+    ) {
+        guard
+            challenge.protectionSpace.authenticationMethod == NSURLAuthenticationMethodServerTrust,
+            let trust = challenge.protectionSpace.serverTrust
+        else {
+            completionHandler(.performDefaultHandling, nil)
+            return
+        }
+
+        let host = challenge.protectionSpace.host.lowercased()
+        guard allowsInvalidCertificates, allowedHosts.contains(host) else {
+            completionHandler(.performDefaultHandling, nil)
+            return
+        }
+
+        completionHandler(.useCredential, URLCredential(trust: trust))
     }
 }
 
