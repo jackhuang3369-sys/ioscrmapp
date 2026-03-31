@@ -999,6 +999,79 @@
       "notFound": "未找到对应徽章。"
     }
   },
+  "video": {
+    "state": {
+      "loading": {
+        "title": "正在加载视频专区..."
+      },
+      "error": {
+        "title": "视频专区暂不可用",
+        "subtitle": "当前无法加载视频专区，请稍后重试。"
+      }
+    },
+    "search": {
+      "placeholder": "搜索影片、演员或标签",
+      "submit": "搜索",
+      "history": "最近搜索",
+      "clearAll": "清空全部",
+      "empty": {
+        "title": "没有找到相关内容",
+        "subtitle": "“%@” 暂时没有匹配内容，已为你保留搜索记录。"
+      },
+      "validation": {
+        "empty": "请输入 1 到 50 个字符的搜索词。"
+      },
+      "error": {
+        "subtitle": "当前无法完成搜索，请稍后再试。",
+        "historySync": "已更新本地历史，云端同步稍后重试。"
+      }
+    },
+    "unavailable": {
+      "removed": {
+        "title": "内容已下架"
+      },
+      "noSource": {
+        "title": "暂无可播放源"
+      },
+      "recommendations": "你也许会喜欢"
+    },
+    "list": {
+      "loadingMore": "正在加载更多内容...",
+      "error": {
+        "title": "更多内容稍后再试"
+      }
+    },
+    "detail": {
+      "loading": "正在打开视频详情...",
+      "error": {
+        "title": "视频详情暂不可用",
+        "subtitle": "当前无法加载该视频详情。"
+      },
+      "synopsis": "简介",
+      "episodes": "选集",
+      "cast": "主创",
+      "related": "相关推荐",
+      "playNow": "立即播放",
+      "stat": {
+        "views": "播放量",
+        "released": "上线时间",
+        "episodes": "集数",
+        "duration": "时长"
+      }
+    },
+    "player": {
+      "error": {
+        "subtitle": "当前无法拉起播放，请稍后再试。"
+      },
+      "episodes": "切换选集",
+      "playback": "播放设置",
+      "quality": "清晰度",
+      "subtitle": "字幕",
+      "audio": "音轨",
+      "pipHint": "播放器支持系统画中画，可在系统控件中直接开启。",
+      "loading": "正在切换播放会话..."
+    }
+  },
   "splash": {
     "skip": {
       "ready": "跳过",

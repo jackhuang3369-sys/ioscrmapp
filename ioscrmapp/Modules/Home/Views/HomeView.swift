@@ -11,6 +11,7 @@ struct HomeView: View {
     let badgeCenterService: any BadgeCenterServicing
     let meService: any MeServicing
     let mallService: any MallServicing
+    let videoService: any VideoServicing
     let offersService: any OffersServicing
     let notificationService: any NotificationServicing
 
@@ -83,13 +84,13 @@ struct HomeView: View {
             colors: [DUTheme.indigo, DUTheme.magenta]
         ),
     ]
-
     init(
         custSubInfo: CustSubInfo,
         sessionStore: SessionStore,
         authService: any AuthServicing,
         homeService: any HomeServicing,
         mallService: any MallServicing,
+        videoService: any VideoServicing,
         offersService: any OffersServicing,
         billingService: any BillingServicing,
         rechargeService: any RechargeServicing,
@@ -104,6 +105,7 @@ struct HomeView: View {
         self.rechargeService = rechargeService
         self.badgeCenterService = badgeCenterService
         self.mallService = mallService
+        self.videoService = videoService
         self.offersService = offersService
         self.meService = meService
         self.notificationService = notificationService
@@ -125,7 +127,7 @@ struct HomeView: View {
             }
                 .tag(HomeTab.home)
 
-            FeaturePlaceholderView(
+            DUFeaturePlaceholderView(
                 title: HomeTab.service.title,
                 icon: HomeTab.service.emoji,
                 message: .key("home.feature.service.message")
@@ -148,10 +150,9 @@ struct HomeView: View {
             }
             .tag(HomeTab.mall)
 
-            FeaturePlaceholderView(
-                title: HomeTab.video.title,
-                icon: HomeTab.video.emoji,
-                message: .key("home.feature.video.message")
+            VideoContainerView(
+                session: custSubInfo,
+                videoService: videoService
             )
             .tabItem {
                 Image(HomeTab.video.assetName)
@@ -1078,33 +1079,6 @@ private struct CircleAction: View {
     }
 }
 
-private struct FeaturePlaceholderView: View {
-    @EnvironmentObject private var languageStore: AppLanguageStore
-
-    let title: LocalizedTextValue
-    let icon: String
-    let message: LocalizedTextValue
-
-    var body: some View {
-        VStack(spacing: DUSpacing.lg) {
-            Text(icon)
-                .font(.du(48))
-
-            Text(languageStore.string(title))
-                .font(.du(24, weight: .bold))
-                .foregroundColor(DUTheme.ink)
-
-            Text(languageStore.string(message))
-                .font(.du(15, weight: .medium))
-                .foregroundColor(DUTheme.inkSecondary)
-                .multilineTextAlignment(.center)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding(.horizontal, DUSpacing.xxl)
-        .background(DUTheme.background.ignoresSafeArea())
-    }
-}
-
 struct HomeView_Previews: PreviewProvider {
     static var previews: some View {
         HomeView(
@@ -1120,6 +1094,7 @@ struct HomeView_Previews: PreviewProvider {
             authService: MockAuthService(),
             homeService: MockHomeService(),
             mallService: MockMallService(),
+            videoService: MockVideoService(),
             offersService: MockOffersService(),
             billingService: MockBillingService(),
             rechargeService: MockRechargeService(),

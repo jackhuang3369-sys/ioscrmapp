@@ -2,6 +2,7 @@ struct AppServices {
     let authService: any AuthServicing
     let homeService: any HomeServicing
     let mallService: any MallServicing
+    let videoService: any VideoServicing
     let offersService: any OffersServicing
     let billingService: any BillingServicing
     let rechargeService: any RechargeServicing
@@ -19,6 +20,7 @@ struct AppServices {
             authService = MockAuthService()
             homeService = MockHomeService()
             mallService = MockMallService()
+            videoService = MockVideoService()
             offersService = MockOffersService()
             billingService = MockBillingService()
             rechargeService = MockRechargeService()
@@ -30,6 +32,7 @@ struct AppServices {
             authService = RemoteAuthService(serverURL: configuration.serverURL)
             homeService = RemoteHomeService(serverURL: configuration.serverURL)
             mallService = RemoteMallService(serverURL: configuration.serverURL)
+            videoService = RemoteVideoService(serverURL: configuration.serverURL)
             offersService = RemoteOffersService(serverURL: configuration.serverURL)
             billingService = RemoteBillingService(serverURL: configuration.serverURL)
             rechargeService = RemoteRechargeService(serverURL: configuration.serverURL)

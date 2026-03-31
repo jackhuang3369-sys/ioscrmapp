@@ -74,6 +74,14 @@
 		A10000000000000000000043 /* HomeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000043 /* HomeViewModel.swift */; };
 		A10000000000000000000044 /* MallAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000044 /* MallAPI.swift */; };
 		A10000000000000000000045 /* BadgeCenterAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000045 /* BadgeCenterAPI.swift */; };
+		E10000000000000000000001 /* DUFeaturePlaceholderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20000000000000000000001 /* DUFeaturePlaceholderView.swift */; };
+		E10000000000000000000002 /* VideoAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20000000000000000000002 /* VideoAPI.swift */; };
+		E10000000000000000000003 /* VideoService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20000000000000000000003 /* VideoService.swift */; };
+		E10000000000000000000004 /* VideoModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20000000000000000000004 /* VideoModels.swift */; };
+		E10000000000000000000005 /* VideoViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20000000000000000000005 /* VideoViewModel.swift */; };
+		E10000000000000000000006 /* VideoComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20000000000000000000006 /* VideoComponents.swift */; };
+		E10000000000000000000007 /* VideoContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20000000000000000000007 /* VideoContainerView.swift */; };
+		E10000000000000000000008 /* VideoViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20000000000000000000008 /* VideoViews.swift */; };
 		D10000000000000000000001 /* OffersAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = D20000000000000000000001 /* OffersAPI.swift */; };
 		D10000000000000000000002 /* OffersService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D20000000000000000000002 /* OffersService.swift */; };
 		D10000000000000000000003 /* OffersModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = D20000000000000000000003 /* OffersModels.swift */; };
@@ -165,6 +173,14 @@
 		A20000000000000000000043 /* HomeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewModel.swift; sourceTree = "<group>"; };
 		A20000000000000000000044 /* MallAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MallAPI.swift; sourceTree = "<group>"; };
 		A20000000000000000000045 /* BadgeCenterAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BadgeCenterAPI.swift; sourceTree = "<group>"; };
+		E20000000000000000000001 /* DUFeaturePlaceholderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DUFeaturePlaceholderView.swift; sourceTree = "<group>"; };
+		E20000000000000000000002 /* VideoAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoAPI.swift; sourceTree = "<group>"; };
+		E20000000000000000000003 /* VideoService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoService.swift; sourceTree = "<group>"; };
+		E20000000000000000000004 /* VideoModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoModels.swift; sourceTree = "<group>"; };
+		E20000000000000000000005 /* VideoViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoViewModel.swift; sourceTree = "<group>"; };
+		E20000000000000000000006 /* VideoComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoComponents.swift; sourceTree = "<group>"; };
+		E20000000000000000000007 /* VideoContainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoContainerView.swift; sourceTree = "<group>"; };
+		E20000000000000000000008 /* VideoViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoViews.swift; sourceTree = "<group>"; };
 		D20000000000000000000001 /* OffersAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OffersAPI.swift; sourceTree = "<group>"; };
 		D20000000000000000000002 /* OffersService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OffersService.swift; sourceTree = "<group>"; };
 		D20000000000000000000003 /* OffersModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OffersModels.swift; sourceTree = "<group>"; };
@@ -259,6 +275,7 @@
 				B20000000000000000000002 /* BillingService.swift */,
 				A20000000000000000000041 /* HomeService.swift */,
 				A20000000000000000000031 /* MallService.swift */,
+				E20000000000000000000003 /* VideoService.swift */,
 				D20000000000000000000002 /* OffersService.swift */,
 				A20000000000000000000008 /* MeService.swift */,
 				A2000000000000000000002C /* NotificationService.swift */,
@@ -280,6 +297,7 @@
 				A3000000000000000000002B /* MessageCenter */,
 				A3000000000000000000001A /* Launch */,
 				A3000000000000000000000C /* Me */,
+				E30000000000000000000001 /* Video */,
 			);
 			path = Modules;
 			sourceTree = "<group>";
@@ -468,6 +486,7 @@
 			isa = PBXGroup;
 			children = (
 				A2000000000000000000001A /* DUStateView.swift */,
+				E20000000000000000000001 /* DUFeaturePlaceholderView.swift */,
 			);
 			path = States;
 			sourceTree = "<group>";
@@ -486,6 +505,7 @@
 				D20000000000000000000001 /* OffersAPI.swift */,
 				A2000000000000000000001E /* NetworkContextBuilder.swift */,
 				A2000000000000000000002B /* NotificationAPI.swift */,
+				E20000000000000000000002 /* VideoAPI.swift */,
 			);
 			path = Networking;
 			sourceTree = "<group>";
@@ -596,6 +616,42 @@
 				A20000000000000000000037 /* MallCategoryView.swift */,
 				A20000000000000000000038 /* MallSearchView.swift */,
 				A20000000000000000000039 /* MallSearchResultView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		E30000000000000000000001 /* Video */ = {
+			isa = PBXGroup;
+			children = (
+				E30000000000000000000002 /* Models */,
+				E30000000000000000000003 /* ViewModels */,
+				E30000000000000000000004 /* Views */,
+			);
+			path = Video;
+			sourceTree = "<group>";
+		};
+		E30000000000000000000002 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				E20000000000000000000004 /* VideoModels.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		E30000000000000000000003 /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				E20000000000000000000005 /* VideoViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		E30000000000000000000004 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				E20000000000000000000006 /* VideoComponents.swift */,
+				E20000000000000000000007 /* VideoContainerView.swift */,
+				E20000000000000000000008 /* VideoViews.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -803,6 +859,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E10000000000000000000008 /* VideoViews.swift in Sources */,
+				E10000000000000000000007 /* VideoContainerView.swift in Sources */,
+				E10000000000000000000006 /* VideoComponents.swift in Sources */,
+				E10000000000000000000005 /* VideoViewModel.swift in Sources */,
+				E10000000000000000000004 /* VideoModels.swift in Sources */,
+				E10000000000000000000003 /* VideoService.swift in Sources */,
+				E10000000000000000000002 /* VideoAPI.swift in Sources */,
 				A10000000000000000000043 /* HomeViewModel.swift in Sources */,
 				A10000000000000000000042 /* HomeModels.swift in Sources */,
 				A10000000000000000000041 /* HomeService.swift in Sources */,
@@ -853,6 +916,7 @@
 				A1000000000000000000002B /* NotificationAPI.swift in Sources */,
 				A1000000000000000000001B /* DUSectionCard.swift in Sources */,
 				A1000000000000000000001A /* DUStateView.swift in Sources */,
+				E10000000000000000000001 /* DUFeaturePlaceholderView.swift in Sources */,
 				A10000000000000000000019 /* DUIconButton.swift in Sources */,
 				A10000000000000000000018 /* DUTextButton.swift in Sources */,
 				A10000000000000000000017 /* DUListItem.swift in Sources */,

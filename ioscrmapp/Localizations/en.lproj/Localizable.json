@@ -999,6 +999,79 @@
       "notFound": "The requested badge couldn't be found."
     }
   },
+  "video": {
+    "state": {
+      "loading": {
+        "title": "Loading your video zone..."
+      },
+      "error": {
+        "title": "Video zone unavailable",
+        "subtitle": "We couldn't load the video zone right now."
+      }
+    },
+    "search": {
+      "placeholder": "Search titles, cast, or tags",
+      "submit": "Search",
+      "history": "Recent Searches",
+      "clearAll": "Clear All",
+      "empty": {
+        "title": "No matching title found",
+        "subtitle": "\"%@\" has no matching result yet. We still saved it to your recent history."
+      },
+      "validation": {
+        "empty": "Enter between 1 and 50 characters."
+      },
+      "error": {
+        "subtitle": "We couldn't finish this search right now.",
+        "historySync": "Local history was updated. Cloud sync will retry later."
+      }
+    },
+    "unavailable": {
+      "removed": {
+        "title": "This title has been removed"
+      },
+      "noSource": {
+        "title": "No playable source yet"
+      },
+      "recommendations": "You may also like"
+    },
+    "list": {
+      "loadingMore": "Loading more titles...",
+      "error": {
+        "title": "More titles will be available soon"
+      }
+    },
+    "detail": {
+      "loading": "Opening video details...",
+      "error": {
+        "title": "Video detail unavailable",
+        "subtitle": "We couldn't load this title right now."
+      },
+      "synopsis": "Synopsis",
+      "episodes": "Episodes",
+      "cast": "Cast",
+      "related": "Related",
+      "playNow": "Play Now",
+      "stat": {
+        "views": "Views",
+        "released": "Released",
+        "episodes": "Episodes",
+        "duration": "Duration"
+      }
+    },
+    "player": {
+      "error": {
+        "subtitle": "We couldn't start playback right now."
+      },
+      "episodes": "Switch Episode",
+      "playback": "Playback Settings",
+      "quality": "Quality",
+      "subtitle": "Subtitles",
+      "audio": "Audio",
+      "pipHint": "Picture in Picture is available from the system playback controls.",
+      "loading": "Switching playback session..."
+    }
+  },
   "splash": {
     "skip": {
       "ready": "Skip",
