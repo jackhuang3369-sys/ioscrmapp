@@ -286,13 +286,16 @@ private struct HomeFeatureCarouselMetrics {
     let cornerRadius: CGFloat = 28
 
     init(containerWidth: CGFloat) {
-        let resolvedCardWidth = min(max(containerWidth - 96, 214), 252)
+        let resolvedCardWidth = min(max(containerWidth - 80, 224), 260)
         // 这里控制卡片视窗的高宽比，会直接影响图片上下被裁剪的程度。
-        let resolvedCardHeight = resolvedCardWidth * 0.74
+        let resolvedCardHeight = resolvedCardWidth * 0.78
         // 这里控制主卡的窗口大小；值越大，主卡可见内容越多、裁剪越轻。
-        let resolvedMinimumCardScale: CGFloat = 0.85
+        let resolvedMinimumCardScale: CGFloat = 0.90
         // 这里控制两侧卡片的窗口大小；值越大，两侧卡片的裁剪越轻。
         let resolvedMaximumCardScale: CGFloat = 1.05
+        // 主卡和两侧卡片的实际白缝压缩到原来的约 40%。
+        let resolvedInterCardSpacing: CGFloat = 13
+        let primaryCardWidth = resolvedCardWidth * resolvedMinimumCardScale
         let maximumCardWidth = resolvedCardWidth * resolvedMaximumCardScale
         let maximumCardHeight = resolvedCardHeight * resolvedMaximumCardScale
 
@@ -303,7 +306,7 @@ private struct HomeFeatureCarouselMetrics {
         // 图片承载尺寸越大，`scaledToFill` 之后被裁掉的内容越多；越接近卡片尺寸，裁剪越轻。
         imageWidth = maximumCardWidth
         imageHeight = maximumCardHeight
-        travelDistance = (resolvedCardWidth / 2) + (maximumCardWidth / 2) + 14
+        travelDistance = (primaryCardWidth / 2) + (maximumCardWidth / 2) + resolvedInterCardSpacing
     }
 
     func cardSize(for distance: CGFloat) -> CGSize {
