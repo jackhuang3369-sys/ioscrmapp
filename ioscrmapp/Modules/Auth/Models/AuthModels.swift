@@ -39,6 +39,7 @@ struct CustSubInfo: Codable, Equatable {
     let balanceText: String
     let userID: String?
     let serviceNumber: String?
+    let subscriberKey: String?
 
     init(
         displayName: String,
@@ -46,7 +47,8 @@ struct CustSubInfo: Codable, Equatable {
         greeting: String,
         balanceText: String,
         userID: String? = nil,
-        serviceNumber: String? = nil
+        serviceNumber: String? = nil,
+        subscriberKey: String? = nil
     ) {
         self.displayName = displayName
         self.phoneNumber = phoneNumber
@@ -54,6 +56,7 @@ struct CustSubInfo: Codable, Equatable {
         self.balanceText = balanceText
         self.userID = userID
         self.serviceNumber = serviceNumber
+        self.subscriberKey = subscriberKey
     }
 
     private enum CodingKeys: String, CodingKey {
@@ -63,6 +66,7 @@ struct CustSubInfo: Codable, Equatable {
         case balanceText
         case userID
         case serviceNumber
+        case subscriberKey
     }
 
     init(from decoder: Decoder) throws {
@@ -73,6 +77,7 @@ struct CustSubInfo: Codable, Equatable {
         balanceText = try container.decode(String.self, forKey: .balanceText)
         userID = try container.decodeIfPresent(String.self, forKey: .userID)
         serviceNumber = try container.decodeIfPresent(String.self, forKey: .serviceNumber)
+        subscriberKey = try container.decodeIfPresent(String.self, forKey: .subscriberKey)
     }
 }
 

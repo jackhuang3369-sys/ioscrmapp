@@ -1072,6 +1072,15 @@
       "loading": "Switching playback session..."
     }
   },
+  "tickets": {
+    "state": {
+      "errorTitle": "Page unavailable",
+      "errorSubtitle": "Page load failed, please refresh and try again."
+    },
+    "action": {
+      "backHome": "Back to Home"
+    }
+  },
   "splash": {
     "skip": {
       "ready": "Skip",

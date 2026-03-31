@@ -10,12 +10,14 @@ import SwiftUI
 struct ContentView: View {
     @ObservedObject var sessionStore: SessionStore
     let authService: any AuthServicing
+    let aiChatService: any AIChatServicing
     let homeService: any HomeServicing
     let mallService: any MallServicing
     let videoService: any VideoServicing
     let offersService: any OffersServicing
     let billingService: any BillingServicing
     let rechargeService: any RechargeServicing
+    let ticketsService: any TicketsServicing
     let badgeCenterService: any BadgeCenterServicing
     let meService: any MeServicing
     let notificationService: any NotificationServicing
@@ -30,12 +32,14 @@ struct ContentView: View {
                     custSubInfo: custSubInfo,
                     sessionStore: sessionStore,
                     authService: authService,
+                    aiChatService: aiChatService,
                     homeService: homeService,
                     mallService: mallService,
                     videoService: videoService,
                     offersService: offersService,
                     billingService: billingService,
                     rechargeService: rechargeService,
+                    ticketsService: ticketsService,
                     badgeCenterService: badgeCenterService,
                     meService: meService,
                     notificationService: notificationService
@@ -61,12 +65,14 @@ struct ContentView_Previews: PreviewProvider {
             ContentView(
                 sessionStore: SessionStore(),
                 authService: previewServices.authService,
+                aiChatService: previewServices.aiChatService,
                 homeService: previewServices.homeService,
                 mallService: previewServices.mallService,
                 videoService: previewServices.videoService,
                 offersService: previewServices.offersService,
                 billingService: previewServices.billingService,
                 rechargeService: previewServices.rechargeService,
+                ticketsService: previewServices.ticketsService,
                 badgeCenterService: previewServices.badgeCenterService,
                 meService: previewServices.meService,
                 notificationService: previewServices.notificationService,
@@ -78,12 +84,14 @@ struct ContentView_Previews: PreviewProvider {
             ContentView(
                 sessionStore: SessionStore.previewAuthenticated,
                 authService: previewServices.authService,
+                aiChatService: previewServices.aiChatService,
                 homeService: previewServices.homeService,
                 mallService: previewServices.mallService,
                 videoService: previewServices.videoService,
                 offersService: previewServices.offersService,
                 billingService: previewServices.billingService,
                 rechargeService: previewServices.rechargeService,
+                ticketsService: previewServices.ticketsService,
                 badgeCenterService: previewServices.badgeCenterService,
                 meService: previewServices.meService,
                 notificationService: previewServices.notificationService,

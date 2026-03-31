@@ -15,12 +15,18 @@ final class HomeViewModel: ObservableObject {
 
     private let session: CustSubInfo
     private let homeService: any HomeServicing
+    private let didResolveSubscriberKey: @MainActor @Sendable (String?) -> Void
     private var hasLoaded = false
-    private var inFlightLoadTask: Task<HomeDashboardSnapshot, Error>?
+    private var inFlightLoadTask: Task<HomeDashboardResponse, Error>?
 
-    init(session: CustSubInfo, homeService: any HomeServicing) {
+    init(
+        session: CustSubInfo,
+        homeService: any HomeServicing,
+        didResolveSubscriberKey: @escaping @MainActor @Sendable (String?) -> Void = { _ in }
+    ) {
         self.session = session
         self.homeService = homeService
+        self.didResolveSubscriberKey = didResolveSubscriberKey
     }
 
     func loadIfNeeded() async {
@@ -51,8 +57,9 @@ final class HomeViewModel: ObservableObject {
         bannerMessage = nil
 
         do {
-            let fetchedDashboard = try await fetchDashboard()
-            dashboard = fetchedDashboard
+            let response = try await fetchDashboard()
+            dashboard = response.snapshot
+            didResolveSubscriberKey(response.subscriberKey)
             hasLoaded = true
             screenState = .loaded
         } catch let error as HomeServiceError {
@@ -75,7 +82,7 @@ final class HomeViewModel: ObservableObject {
         screenState = .failed(error.textValue)
     }
 
-    private func fetchDashboard() async throws -> HomeDashboardSnapshot {
+    private func fetchDashboard() async throws -> HomeDashboardResponse {
         if let inFlightLoadTask {
             return try await awaitLoadResult(from: inFlightLoadTask)
         }
@@ -95,8 +102,8 @@ final class HomeViewModel: ObservableObject {
     }
 
     private func awaitLoadResult(
-        from task: Task<HomeDashboardSnapshot, Error>
-    ) async throws -> HomeDashboardSnapshot {
+        from task: Task<HomeDashboardResponse, Error>
+    ) async throws -> HomeDashboardResponse {
         try await withCheckedThrowingContinuation { continuation in
             Task.detached(priority: .userInitiated) {
                 do {

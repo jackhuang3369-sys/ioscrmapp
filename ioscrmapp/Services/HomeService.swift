@@ -20,7 +20,7 @@ private func homeDisplayMoney(_ value: String) -> String {
 }
 
 protocol HomeServicing: Sendable {
-    func fetchDashboard(session: CustSubInfo) async throws -> HomeDashboardSnapshot
+    func fetchDashboard(session: CustSubInfo) async throws -> HomeDashboardResponse
 }
 
 enum HomeServiceError: Error {
@@ -51,39 +51,42 @@ actor MockHomeService: HomeServicing {
         self.networkStatusProvider = networkStatusProvider
     }
 
-    func fetchDashboard(session: CustSubInfo) async throws -> HomeDashboardSnapshot {
+    func fetchDashboard(session: CustSubInfo) async throws -> HomeDashboardResponse {
         try await Task.sleep(nanoseconds: 250_000_000)
 
-        return HomeDashboardSnapshot(
-            profile: HomeProfileSection(
-                displayName: session.displayName,
-                packageName: HomePackageName(
-                    defaultName: "Power Plan 500",
-                    arabicName: nil
+        return HomeDashboardResponse(
+            snapshot: HomeDashboardSnapshot(
+                profile: HomeProfileSection(
+                    displayName: session.displayName,
+                    packageName: HomePackageName(
+                        defaultName: "Power Plan 500",
+                        arabicName: nil
+                    ),
+                    serviceNumber: (session.serviceNumber ?? session.phoneNumber),
+                    networkStatus: await networkStatusProvider.currentStatus() ?? .fiveG
                 ),
-                serviceNumber: (session.serviceNumber ?? session.phoneNumber),
-                networkStatus: await networkStatusProvider.currentStatus() ?? .fiveG
-            ),
-            summary: HomeSummarySection(
-                paymentType: .hybrid,
-                balanceValue: .literal(homeDisplayMoney("128.50 AED")),
-                currentBillValue: .literal(homeDisplayMoney("43.20 AED")),
-                dueDateValue: .literal("2026-03-28"),
-                creditLimit: HomeCreditLimitSection(
-                    totalValue: .key("home.value.unlimited"),
-                    usedValue: .literal(homeDisplayMoney("311.80 AED")),
-                    remainingValue: .literal(homeDisplayMoney("188.20 AED"))
+                summary: HomeSummarySection(
+                    paymentType: .hybrid,
+                    balanceValue: .literal(homeDisplayMoney("128.50 AED")),
+                    currentBillValue: .literal(homeDisplayMoney("43.20 AED")),
+                    dueDateValue: .literal("2026-03-28"),
+                    creditLimit: HomeCreditLimitSection(
+                        totalValue: .key("home.value.unlimited"),
+                        usedValue: .literal(homeDisplayMoney("311.80 AED")),
+                        remainingValue: .literal(homeDisplayMoney("188.20 AED"))
+                    ),
+                    inlineMessage: nil
                 ),
-                inlineMessage: nil
+                usage: HomeUsageSection(
+                    cards: [
+                        HomeUsageCard(kind: .data, value: .literal("23.4 / 30 GB"), progress: 0.22),
+                        HomeUsageCard(kind: .voice, value: .literal("148 / 300 Min"), progress: 0.51),
+                        HomeUsageCard(kind: .sms, value: .literal("42 / 100 SMS"), progress: 0.58),
+                    ],
+                    inlineMessage: nil
+                )
             ),
-            usage: HomeUsageSection(
-                cards: [
-                    HomeUsageCard(kind: .data, value: .literal("23.4 / 30 GB"), progress: 0.22),
-                    HomeUsageCard(kind: .voice, value: .literal("148 / 300 Min"), progress: 0.51),
-                    HomeUsageCard(kind: .sms, value: .literal("42 / 100 SMS"), progress: 0.58),
-                ],
-                inlineMessage: nil
-            )
+            subscriberKey: session.subscriberKey
         )
     }
 }
@@ -106,7 +109,7 @@ struct RemoteHomeService: HomeServicing {
         self.networkStatusProvider = networkStatusProvider
     }
 
-    func fetchDashboard(session: CustSubInfo) async throws -> HomeDashboardSnapshot {
+    func fetchDashboard(session: CustSubInfo) async throws -> HomeDashboardResponse {
         let identity = try session.homeIdentity()
         let userInfo = try await fetchUserInfo(
             requestServiceNumber: AuthValidator.localPhoneDigits(identity.serviceNumber),
@@ -208,7 +211,7 @@ struct RemoteHomeService: HomeServicing {
         balanceResult: Result<HomeBalancePayload, HomeServiceError>,
         freeUnitResult: Result<HomeFreeUnitPayload, HomeServiceError>,
         networkStatus: HomeNetworkStatus?
-    ) -> HomeDashboardSnapshot {
+    ) -> HomeDashboardResponse {
         let paymentType = HomePaymentType(code: userInfo.paymentTypeCode)
         let balancePayload = try? balanceResult.get()
         let freeUnitPayload = try? freeUnitResult.get()
@@ -238,35 +241,38 @@ struct RemoteHomeService: HomeServicing {
             )
             : nil
 
-        return HomeDashboardSnapshot(
-            profile: HomeProfileSection(
-                displayName: userInfo.displayName,
-                packageName: packageName,
-                serviceNumber: userInfo.serviceNumber.isEmpty ? session.phoneNumber : userInfo.serviceNumber,
-                networkStatus: networkStatus
-            ),
-            summary: HomeSummarySection(
-                paymentType: paymentType,
-                balanceValue: balanceValue,
-                currentBillValue: currentBillValue,
-                dueDateValue: dueDateValue,
-                creditLimit: creditLimit,
-                inlineMessage: accountInlineMessage(
+        return HomeDashboardResponse(
+            snapshot: HomeDashboardSnapshot(
+                profile: HomeProfileSection(
+                    displayName: userInfo.displayName,
+                    packageName: packageName,
+                    serviceNumber: userInfo.serviceNumber.isEmpty ? session.phoneNumber : userInfo.serviceNumber,
+                    networkStatus: networkStatus
+                ),
+                summary: HomeSummarySection(
                     paymentType: paymentType,
-                    balanceResult: balanceResult,
                     balanceValue: balanceValue,
                     currentBillValue: currentBillValue,
                     dueDateValue: dueDateValue,
-                    creditLimit: creditLimit
+                    creditLimit: creditLimit,
+                    inlineMessage: accountInlineMessage(
+                        paymentType: paymentType,
+                        balanceResult: balanceResult,
+                        balanceValue: balanceValue,
+                        currentBillValue: currentBillValue,
+                        dueDateValue: dueDateValue,
+                        creditLimit: creditLimit
+                    )
+                ),
+                usage: HomeUsageSection(
+                    cards: usageCards,
+                    inlineMessage: usageInlineMessage(
+                        freeUnitResult: freeUnitResult,
+                        cards: usageCards
+                    )
                 )
             ),
-            usage: HomeUsageSection(
-                cards: usageCards,
-                inlineMessage: usageInlineMessage(
-                    freeUnitResult: freeUnitResult,
-                    cards: usageCards
-                )
-            )
+            subscriberKey: userInfo.subscriberKey
         )
     }
 

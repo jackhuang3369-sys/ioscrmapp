@@ -36,6 +36,18 @@ struct NetworkContextBuilder: Sendable {
             "latitude": defaultLatitude
         ]
 
+        if let session = SessionUserDefaultsStore().loadPersistedCustSubInfo() {
+            if let userID = trimmedSessionValue(session.userID) {
+                parameters["userId"] = userID
+            }
+            if let serviceNumber = trimmedSessionValue(session.serviceNumber) {
+                parameters["serviceNumber"] = serviceNumber
+            }
+            if let subscriberKey = trimmedSessionValue(session.subscriberKey) {
+                parameters["subscriberKey"] = subscriberKey
+            }
+        }
+
         guard includeDeviceInfo else {
             return parameters
         }
@@ -211,5 +223,12 @@ struct NetworkContextBuilder: Sendable {
         #else
         return "iPhone"
         #endif
+    }
+
+    private func trimmedSessionValue(_ value: String?) -> String? {
+        guard let value = value?.trimmingCharacters(in: .whitespacesAndNewlines), !value.isEmpty else {
+            return nil
+        }
+        return value
     }
 }
