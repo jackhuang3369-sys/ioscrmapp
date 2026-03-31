@@ -3,15 +3,7 @@ import SwiftUI
 import UIKit
 
 enum VideoTheme {
-    static let headerGradient = LinearGradient(
-        colors: [
-            Color(hex: 0x081B33),
-            Color(hex: 0x0B4F80),
-            Color(hex: 0x2452C7),
-        ],
-        startPoint: .topLeading,
-        endPoint: .bottomTrailing
-    )
+    static let headerGradient = DUTheme.brandGradient
 }
 
 struct VideoImageView: View {
@@ -33,6 +25,16 @@ struct VideoImageView: View {
                 default:
                     placeholder
                 }
+            }
+        case let .asset(name):
+            if let uiImage = UIImage(named: name) {
+                Image(uiImage: uiImage)
+                    .resizable()
+                    .aspectRatio(contentMode: contentMode)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .clipped()
+            } else {
+                placeholder
             }
         case let .system(name, backgroundHex, tintHex):
             RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
@@ -70,33 +72,16 @@ struct VideoSelectionChip: View {
     let isSelected: Bool
 
     var body: some View {
-        Text(title)
-            .font(.du(13, weight: isSelected ? .bold : .semibold))
-            .foregroundColor(isSelected ? .white : DUTheme.inkSecondary)
-            .padding(.horizontal, DUSpacing.md)
-            .frame(height: 36)
-            .background(backgroundView)
-            .clipShape(Capsule())
-    }
+        VStack(spacing: 6) {
+            Text(title)
+                .font(.du(14, weight: .semibold))
+                .foregroundColor(isSelected ? .white : .white.opacity(0.78))
+                .lineLimit(1)
+                .fixedSize(horizontal: true, vertical: false)
 
-    @ViewBuilder
-    private var backgroundView: some View {
-        if isSelected {
             Capsule()
-                .fill(
-                    LinearGradient(
-                        colors: [DUTheme.cyan, DUTheme.blue],
-                        startPoint: .leading,
-                        endPoint: .trailing
-                    )
-                )
-        } else {
-            Capsule()
-                .fill(Color.white.opacity(0.16))
-                .overlay(
-                    Capsule()
-                        .stroke(Color.white.opacity(0.18), lineWidth: 1)
-                )
+                .fill(isSelected ? Color.white : .clear)
+                .frame(width: 20, height: 4)
         }
     }
 }
@@ -163,6 +148,7 @@ struct VideoFeedCard: View {
     @EnvironmentObject private var languageStore: AppLanguageStore
 
     let content: VideoContentSummary
+    let primaryCategoryTitle: String
     let action: () -> Void
 
     private let posterHeight: CGFloat = 220
@@ -171,96 +157,55 @@ struct VideoFeedCard: View {
     var body: some View {
         Button(action: action) {
             VStack(alignment: .leading, spacing: 0) {
-                ZStack(alignment: .topLeading) {
-                    VideoImageView(
-                        image: content.posterImage,
-                        cornerRadius: cardCornerRadius,
-                        contentMode: .fill
-                    )
-
-                    VStack(alignment: .leading, spacing: DUSpacing.sm) {
-                        if let badgeText = content.badgeText?.value(for: languageStore.currentLanguage) {
-                            Text(badgeText)
-                                .font(.du(11, weight: .bold))
-                                .foregroundColor(.white)
-                                .padding(.horizontal, 10)
-                                .frame(height: 24)
-                                .background(
-                                    LinearGradient(
-                                        colors: [Color(hex: 0xFF7A18), Color(hex: 0xAF002D)],
-                                        startPoint: .leading,
-                                        endPoint: .trailing
-                                    )
-                                )
-                                .clipShape(Capsule())
-                        }
-
-                        Spacer()
-
-                        if !content.isPlayable {
-                            Text(content.availabilityMessage?.value(for: languageStore.currentLanguage) ?? "")
-                                .font(.du(11, weight: .bold))
-                                .foregroundColor(.white)
-                                .padding(.horizontal, 10)
-                                .frame(height: 26)
-                                .background(Color.black.opacity(0.64))
-                                .clipShape(Capsule())
-                        }
-                    }
-                    .padding(DUSpacing.md)
-                }
+                VideoImageView(
+                    image: content.posterImage,
+                    cornerRadius: cardCornerRadius,
+                    contentMode: .fill
+                )
                 .frame(height: posterHeight)
                 .clipShape(RoundedRectangle(cornerRadius: cardCornerRadius, style: .continuous))
 
                 VStack(alignment: .leading, spacing: DUSpacing.sm) {
-                    HStack(alignment: .top, spacing: DUSpacing.xs) {
-                        Text(content.title.value(for: languageStore.currentLanguage))
-                            .font(.du(15, weight: .bold))
-                            .foregroundColor(DUTheme.ink)
-                            .lineLimit(2)
+                    Text(content.title.value(for: languageStore.currentLanguage))
+                        .font(.du(15, weight: .bold))
+                        .foregroundColor(DUTheme.ink)
+                        .lineLimit(2)
+                        .frame(height: 42, alignment: .topLeading)
 
-                        Spacer(minLength: 0)
-
-                        if let ratingText = content.ratingText {
-                            HStack(spacing: 3) {
-                                Image(systemName: "star.fill")
-                                    .font(.du(11, weight: .bold))
-                                Text(ratingText)
-                                    .font(.du(11, weight: .bold))
-                            }
-                            .foregroundColor(Color(hex: 0xF59E0B))
-                            .environment(\.layoutDirection, .leftToRight)
-                        }
-                    }
-
-                    Text(content.subtitle.value(for: languageStore.currentLanguage))
+                    Text(content.summary.value(for: languageStore.currentLanguage))
                         .font(.du(12, weight: .medium))
                         .foregroundColor(DUTheme.inkSecondary)
                         .lineLimit(2)
-                        .frame(minHeight: 34, alignment: .topLeading)
+                        .frame(height: 36, alignment: .topLeading)
 
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 6) {
-                            ForEach(content.chips.indices, id: \.self) { index in
-                                VideoTagChip(
-                                    title: content.chips[index].value(for: languageStore.currentLanguage),
-                                    style: index == 0 ? .accent : .neutral
-                                )
-                            }
+                    Text(primaryCategoryTitle)
+                        .font(.du(11, weight: .bold))
+                        .foregroundColor(Color(hex: 0x0C4A6E))
+                        .lineLimit(1)
+                        .padding(.horizontal, 10)
+                        .frame(height: 24)
+                        .background(Color(hex: 0xD9F0FF))
+                        .clipShape(Capsule())
+
+                    HStack(alignment: .center, spacing: DUSpacing.sm) {
+                        HStack(spacing: 3) {
+                            Image(systemName: "star.fill")
+                                .font(.du(11, weight: .bold))
+
+                            Text(content.ratingText ?? "--")
+                                .font(.du(11, weight: .bold))
                         }
-                    }
+                        .foregroundColor(Color(hex: 0xF59E0B))
+                        .environment(\.layoutDirection, .leftToRight)
 
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(content.metaLine.value(for: languageStore.currentLanguage))
-                            .font(.du(11, weight: .semibold))
-                            .foregroundColor(DUTheme.inkSecondary)
-                            .lineLimit(2)
+                        Spacer(minLength: 0)
 
                         Text(content.durationText.value(for: languageStore.currentLanguage))
                             .font(.du(11, weight: .medium))
                             .foregroundColor(DUTheme.inkTertiary)
+                            .lineLimit(1)
                     }
-                    .frame(minHeight: 42, alignment: .topLeading)
+                    .frame(height: 18)
                 }
                 .padding(.horizontal, DUSpacing.md)
                 .padding(.top, DUSpacing.md)
@@ -294,5 +239,191 @@ struct VideoPlayerSurface: UIViewControllerRepresentable {
         }
         controller.allowsPictureInPicturePlayback = pipEnabled
         controller.canStartPictureInPictureAutomaticallyFromInline = pipEnabled
+    }
+}
+
+func configureCRMAudioSessionForPiP() {
+    let session = AVAudioSession.sharedInstance()
+
+    do {
+        try session.setCategory(.playback, mode: .moviePlayback, options: [])
+        try session.setActive(true)
+    } catch {
+        // Best-effort only. Playback can still proceed without PiP auto-activation.
+    }
+}
+
+struct CRMSmartImage: View {
+    let source: String
+    var contentMode: ContentMode = .fill
+
+    var body: some View {
+        if source.hasPrefix("local:") {
+            let imageName = String(source.dropFirst(6))
+            if let image = loadLocalImage(named: imageName) ?? UIImage(named: imageName) {
+                Image(uiImage: image)
+                    .resizable()
+                    .aspectRatio(contentMode: contentMode)
+            } else {
+                placeholder
+            }
+        } else if let url = URL(string: source), url.scheme != nil {
+            AsyncImage(url: url) { phase in
+                switch phase {
+                case .empty:
+                    placeholder
+                case let .success(image):
+                    image
+                        .resizable()
+                        .aspectRatio(contentMode: contentMode)
+                default:
+                    placeholder
+                }
+            }
+        } else {
+            placeholder
+        }
+    }
+
+    private var placeholder: some View {
+        Rectangle()
+            .fill(Color.gray.opacity(0.24))
+            .overlay {
+                Image(systemName: "play.rectangle.fill")
+                    .foregroundColor(.gray)
+                    .font(.title2)
+            }
+    }
+
+    private func loadLocalImage(named name: String) -> UIImage? {
+        if let path = Bundle.main.path(
+            forResource: name,
+            ofType: "jpg",
+            inDirectory: "Resources/Images"
+        ) {
+            return UIImage(contentsOfFile: path)
+        }
+
+        if let path = Bundle.main.path(
+            forResource: name,
+            ofType: "png",
+            inDirectory: "Resources/Images"
+        ) {
+            return UIImage(contentsOfFile: path)
+        }
+
+        if let path = Bundle.main.path(forResource: name, ofType: "jpg") {
+            return UIImage(contentsOfFile: path)
+        }
+
+        if let path = Bundle.main.path(forResource: name, ofType: "png") {
+            return UIImage(contentsOfFile: path)
+        }
+
+        return nil
+    }
+}
+
+struct CRMAvatarImage: View {
+    let source: String?
+    var size: CGFloat = 60
+
+    var body: some View {
+        Group {
+            if let source, !source.isEmpty {
+                CRMSmartImage(source: source, contentMode: .fill)
+                    .frame(width: size, height: size)
+                    .clipShape(Circle())
+            } else {
+                Circle()
+                    .fill(Color.gray.opacity(0.3))
+                    .frame(width: size, height: size)
+                    .overlay {
+                        Image(systemName: "person.fill")
+                            .foregroundColor(.gray)
+                            .font(.title2)
+                    }
+            }
+        }
+    }
+}
+
+struct CRMBackButton: View {
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        Button {
+            dismiss()
+        } label: {
+            Image(systemName: "chevron.left")
+                .font(.title2)
+                .foregroundColor(.white)
+                .padding(8)
+                .background(Color.black.opacity(0.3))
+                .clipShape(Circle())
+        }
+    }
+}
+
+struct CRMCustomVideoPlayer: UIViewRepresentable {
+    let player: AVPlayer
+    var onPlayerLayerReady: ((AVPlayerLayer) -> Void)?
+
+    func makeUIView(context: Context) -> CRMPlayerPlatformView {
+        let view = CRMPlayerPlatformView()
+        view.onPlayerLayerReady = onPlayerLayerReady
+        view.player = player
+        return view
+    }
+
+    func updateUIView(_ uiView: CRMPlayerPlatformView, context: Context) {
+        if uiView.player !== player {
+            uiView.player = player
+        }
+    }
+}
+
+final class CRMPlayerPlatformView: UIView {
+    private var playerLayer: AVPlayerLayer?
+    private var hasNotifiedReady = false
+
+    var onPlayerLayerReady: ((AVPlayerLayer) -> Void)?
+
+    var player: AVPlayer? {
+        didSet {
+            if playerLayer == nil {
+                let layer = AVPlayerLayer()
+                layer.videoGravity = .resizeAspect
+                self.layer.addSublayer(layer)
+                playerLayer = layer
+            }
+
+            playerLayer?.player = player
+
+            if let playerLayer, player != nil, !hasNotifiedReady {
+                hasNotifiedReady = true
+                DispatchQueue.main.async {
+                    self.onPlayerLayerReady?(playerLayer)
+                }
+            }
+        }
+    }
+
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        playerLayer?.frame = bounds
+    }
+}
+
+extension View {
+    @ViewBuilder
+    func crmApplyInlineNavigationTitleDisplayMode() -> some View {
+        navigationBarTitleDisplayMode(.inline)
+    }
+
+    @ViewBuilder
+    func crmApplyHiddenNavigationChrome() -> some View {
+        navigationBarHidden(true)
+            .statusBar(hidden: true)
     }
 }

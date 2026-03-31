@@ -142,9 +142,9 @@ struct VideoHomeView: View {
     }
 
     private func header(topInset: CGFloat) -> some View {
-        VStack(alignment: .leading, spacing: DUSpacing.md) {
+        VStack(alignment: .leading, spacing: DUSpacing.sm) {
             Color.clear
-                .frame(height: max(topInset, DUSpacing.md))
+                .frame(height: max(topInset, DUSpacing.sm))
 
             Button {
                 isSearchPresented = true
@@ -152,28 +152,25 @@ struct VideoHomeView: View {
                 HStack(spacing: DUSpacing.sm) {
                     Image(systemName: "magnifyingglass")
                         .font(.du(15, weight: .semibold))
-                        .foregroundColor(Color.white.opacity(0.88))
+                        .foregroundColor(DUTheme.inkTertiary)
 
                     Text(localized("video.search.placeholder"))
-                        .font(.du(13, weight: .medium))
-                        .foregroundColor(Color.white.opacity(0.78))
+                        .font(.du(12, weight: .medium))
+                        .foregroundColor(DUTheme.inkSecondary)
                         .lineLimit(1)
 
                     Spacer(minLength: 0)
                 }
                 .padding(.horizontal, DUSpacing.md)
-                .frame(height: 48)
-                .background(Color.white.opacity(0.14))
-                .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 20, style: .continuous)
-                        .stroke(Color.white.opacity(0.14), lineWidth: 1)
-                )
+                .frame(height: 46)
+                .background(Color.white.opacity(0.96))
+                .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+                .shadow(color: Color.black.opacity(0.1), radius: 16, x: 0, y: 8)
             }
             .buttonStyle(.plain)
 
             ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: DUSpacing.sm) {
+                HStack(spacing: DUSpacing.lg) {
                     ForEach(viewModel.navigation?.categories ?? []) { category in
                         Button {
                             Task {
@@ -188,17 +185,18 @@ struct VideoHomeView: View {
                         .buttonStyle(.plain)
                     }
                 }
+                .padding(.horizontal, 4)
             }
         }
         .padding(.horizontal, DUSpacing.md)
-        .padding(.bottom, DUSpacing.lg)
+        .padding(.bottom, DUSpacing.sm)
         .background(VideoTheme.headerGradient)
     }
 
     @ViewBuilder
     private func carouselSection(containerWidth: CGFloat) -> some View {
         if !viewModel.carouselItems.isEmpty {
-            VStack(spacing: DUSpacing.md) {
+            VStack(spacing: 0) {
                 TabView(selection: $selectedCarouselIndex) {
                     ForEach(viewModel.carouselItems.indices, id: \.self) { index in
                         let item = viewModel.carouselItems[index]
@@ -207,87 +205,73 @@ struct VideoHomeView: View {
                                 await selectContent(item.content)
                             }
                         } label: {
-                            ZStack(alignment: .bottomLeading) {
-                                VideoImageView(
-                                    image: item.content.backdropImage,
-                                    cornerRadius: 28,
-                                    contentMode: .fill
-                                )
-                                .overlay(
-                                    LinearGradient(
-                                        colors: [
-                                            Color.black.opacity(0.06),
-                                            Color.black.opacity(0.75),
-                                        ],
-                                        startPoint: .top,
-                                        endPoint: .bottom
-                                    )
-                                )
+                            VStack(alignment: .leading, spacing: 12) {
+                                Spacer(minLength: 0)
 
-                                RoundedRectangle(cornerRadius: 28, style: .continuous)
-                                    .fill(
-                                        LinearGradient(
-                                            colors: [
-                                                Color(hex: item.accentStartHex, opacity: 0.72),
-                                                Color(hex: item.accentEndHex, opacity: 0.18),
-                                            ],
-                                            startPoint: .topLeading,
-                                            endPoint: .bottomTrailing
-                                        )
-                                    )
-
-                                VStack(alignment: .leading, spacing: DUSpacing.sm) {
-                                    Text(item.eyebrow.value(for: languageStore.currentLanguage))
-                                        .font(.du(11, weight: .bold))
-                                        .foregroundColor(.white.opacity(0.92))
-
+                                VStack(alignment: .leading, spacing: 6) {
                                     Text(item.content.title.value(for: languageStore.currentLanguage))
                                         .font(.du(24, weight: .bold))
                                         .foregroundColor(.white)
                                         .lineLimit(2)
+                                        .shadow(color: .black.opacity(0.35), radius: 8, x: 0, y: 4)
 
                                     Text(item.content.summary.value(for: languageStore.currentLanguage))
                                         .font(.du(13, weight: .medium))
-                                        .foregroundColor(.white.opacity(0.86))
-                                        .lineLimit(2)
+                                        .foregroundColor(.white.opacity(0.92))
+                                        .lineLimit(1)
+                                        .shadow(color: .black.opacity(0.28), radius: 6, x: 0, y: 3)
+                                }
 
-                                    HStack(spacing: DUSpacing.sm) {
-                                        if let ratingText = item.content.ratingText {
-                                            HStack(spacing: 4) {
-                                                Image(systemName: "star.fill")
-                                                    .font(.du(11, weight: .bold))
-                                                Text(ratingText)
-                                                    .font(.du(11, weight: .bold))
-                                            }
-                                            .foregroundColor(Color(hex: 0xFBBF24))
-                                            .environment(\.layoutDirection, .leftToRight)
-                                        }
-
-                                        Text(item.content.metaLine.value(for: languageStore.currentLanguage))
-                                            .font(.du(11, weight: .semibold))
-                                            .foregroundColor(.white.opacity(0.8))
-                                            .lineLimit(1)
+                                HStack(spacing: 6) {
+                                    ForEach(viewModel.carouselItems.indices, id: \.self) { indicatorIndex in
+                                        Capsule()
+                                            .fill(
+                                                indicatorIndex == selectedCarouselIndex
+                                                    ? Color.white
+                                                    : Color.white.opacity(0.35)
+                                            )
+                                            .frame(
+                                                width: indicatorIndex == selectedCarouselIndex ? 22 : 8,
+                                                height: 8
+                                            )
                                     }
                                 }
-                                .padding(DUSpacing.lg)
                             }
-                            .frame(height: 248)
+                            .padding(DUSpacing.lg)
+                            .frame(
+                                maxWidth: .infinity,
+                                maxHeight: .infinity,
+                                alignment: .bottomLeading
+                            )
+                            .background {
+                                ZStack {
+                                    VideoImageView(
+                                        image: item.content.posterImage,
+                                        cornerRadius: 28,
+                                        contentMode: .fill
+                                    )
+                                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+                                    LinearGradient(
+                                        colors: [
+                                            Color.black.opacity(0.02),
+                                            Color.black.opacity(0.16),
+                                            Color.black.opacity(0.82),
+                                        ],
+                                        startPoint: .top,
+                                        endPoint: .bottom
+                                    )
+                                }
+                            }
+                            .frame(height: 236)
                             .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
                         }
                         .buttonStyle(.plain)
                         .tag(index)
                     }
                 }
-                .frame(height: 248)
+                .frame(height: 236)
                 .tabViewStyle(.page(indexDisplayMode: .never))
-
-                HStack(spacing: 6) {
-                    ForEach(viewModel.carouselItems.indices, id: \.self) { index in
-                        Capsule()
-                            .fill(index == selectedCarouselIndex ? DUTheme.blue : DUTheme.line)
-                            .frame(width: index == selectedCarouselIndex ? 22 : 8, height: 8)
-                    }
-                }
             }
             .padding(.horizontal, DUSpacing.md)
         }
@@ -304,7 +288,10 @@ struct VideoHomeView: View {
                     spacing: DUSpacing.md
                 ) {
                     ForEach(feedSnapshot.items) { item in
-                        VideoFeedCard(content: item) {
+                        VideoFeedCard(
+                            content: item,
+                            primaryCategoryTitle: primaryCategoryTitle(for: item)
+                        ) {
                             Task {
                                 await selectContent(item)
                             }
@@ -385,6 +372,29 @@ struct VideoHomeView: View {
 
     private func localized(_ value: LocalizedTextValue) -> String {
         languageStore.string(value)
+    }
+
+    private func primaryCategoryTitle(for content: VideoContentSummary) -> String {
+        if let category = viewModel.navigation?.categories.first(where: {
+            $0.id == content.categoryID || $0.id == content.type.rawValue
+        }) {
+            return category.title.value(for: languageStore.currentLanguage)
+        }
+
+        switch content.type {
+        case .movie:
+            return VideoLocalizedString("电影", "Movie", "أفلام")
+                .value(for: languageStore.currentLanguage)
+        case .series:
+            return VideoLocalizedString("剧集", "Series", "مسلسلات")
+                .value(for: languageStore.currentLanguage)
+        case .variety:
+            return VideoLocalizedString("综艺", "Variety", "منوعات")
+                .value(for: languageStore.currentLanguage)
+        case .documentary:
+            return VideoLocalizedString("纪录片", "Documentary", "وثائقي")
+                .value(for: languageStore.currentLanguage)
+        }
     }
 
     private func selectContent(_ content: VideoContentSummary) async {
@@ -738,11 +748,6 @@ struct VideoDetailView: View {
                 selectedEpisodeID = value
             }
         }
-        .safeAreaInset(edge: .bottom) {
-            if let detail = viewModel.detail {
-                playBar(for: detail)
-            }
-        }
         .overlay(relatedNavigationLink)
         .fullScreenCover(item: $playbackSession) { playbackSession in
             if let detail = viewModel.detail {
@@ -791,24 +796,29 @@ struct VideoDetailView: View {
     }
 
     private var detailContent: some View {
-        ScrollView(showsIndicators: false) {
+        Group {
             if let detail = viewModel.detail {
-                VStack(alignment: .leading, spacing: DUSpacing.lg) {
-                    heroSection(detail)
-                    statSection(detail)
-                    synopsisSection(detail)
-
-                    if !detail.episodeGroups.isEmpty {
-                        episodeSection(detail)
+                CRMVideoDetailContent(
+                    detail: detail,
+                    selectedEpisodeID: selectedEpisodeID,
+                    isRequestingPlayback: viewModel.isRequestingPlayback,
+                    onSelectEpisode: { episode in
+                        selectedEpisodeID = episode.id
+                    },
+                    onPlay: {
+                        Task {
+                            playbackSession = await viewModel.requestPlaybackSession(
+                                episodeID: selectedEpisode?.id
+                            )
+                        }
+                    },
+                    onSelectRelated: { relatedID in
+                        selectedRelatedVideoID = relatedID
                     }
-
-                    if !detail.cast.isEmpty {
-                        castSection(detail)
-                    }
-
-                    relatedSection(detail)
-                }
-                .padding(.bottom, DUSpacing.xxl)
+                )
+                .navigationTitle(detail.content.title.value(for: languageStore.currentLanguage))
+            } else {
+                EmptyView()
             }
         }
     }
@@ -1160,312 +1170,17 @@ struct VideoDetailView: View {
 }
 
 private struct VideoPlayerContainerView: View {
-    @Environment(\.dismiss) private var dismiss
-    @EnvironmentObject private var languageStore: AppLanguageStore
-
     let detail: VideoDetailSnapshot
+    let initialSession: VideoPlaybackSession
     let session: CustSubInfo
     let videoService: any VideoServicing
 
-    @State private var playbackSession: VideoPlaybackSession
-    @State private var player = AVPlayer()
-    @State private var selectedQuality: VideoQuality
-    @State private var selectedSubtitleID: String
-    @State private var selectedAudioTrackID: String
-    @State private var isLoadingEpisode = false
-
-    init(
-        detail: VideoDetailSnapshot,
-        initialSession: VideoPlaybackSession,
-        session: CustSubInfo,
-        videoService: any VideoServicing
-    ) {
-        self.detail = detail
-        self.session = session
-        self.videoService = videoService
-        _playbackSession = State(initialValue: initialSession)
-        _selectedQuality = State(initialValue: initialSession.videoSources.first?.quality ?? .auto)
-        _selectedSubtitleID = State(initialValue: initialSession.subtitles.first?.id ?? "")
-        _selectedAudioTrackID = State(initialValue: initialSession.audioTracks.first(where: \.isDefault)?.id ?? initialSession.audioTracks.first?.id ?? "")
-    }
-
     var body: some View {
-        VStack(spacing: 0) {
-            header
-
-            VideoPlayerSurface(
-                player: player,
-                pipEnabled: playbackSession.pipEnabled
-            )
-            .frame(height: 264)
-            .background(.black)
-
-            ScrollView(showsIndicators: false) {
-                VStack(spacing: DUSpacing.lg) {
-                    if detail.episodeGroups.flatMap(\.episodes).count > 1 {
-                        episodeSelectorSection
-                    }
-
-                    playbackControlsSection
-                }
-                .padding(DUSpacing.md)
-            }
-            .background(DUTheme.background.ignoresSafeArea())
-        }
-        .background(Color.black.ignoresSafeArea())
-        .task {
-            configurePlayer(for: playbackSession, preferredQuality: selectedQuality)
-        }
-        .onChange(of: selectedQuality) { value in
-            configurePlayer(for: playbackSession, preferredQuality: value)
-        }
-        .onDisappear {
-            player.pause()
-        }
-    }
-
-    private var header: some View {
-        HStack(spacing: DUSpacing.md) {
-            Button {
-                dismiss()
-            } label: {
-                Image(systemName: "xmark")
-                    .font(.du(16, weight: .bold))
-                    .foregroundColor(.white)
-                    .frame(width: 34, height: 34)
-                    .background(Color.white.opacity(0.12))
-                    .clipShape(Circle())
-            }
-            .buttonStyle(.plain)
-
-            VStack(alignment: .leading, spacing: 2) {
-                Text(playbackSession.mediaTitle.value(for: languageStore.currentLanguage))
-                    .font(.du(16, weight: .bold))
-                    .foregroundColor(.white)
-                    .lineLimit(1)
-
-                Text(playbackSession.episode.title.value(for: languageStore.currentLanguage))
-                    .font(.du(12, weight: .medium))
-                    .foregroundColor(.white.opacity(0.8))
-                    .lineLimit(1)
-            }
-
-            Spacer()
-        }
-        .padding(.horizontal, DUSpacing.md)
-        .padding(.top, DUSpacing.md)
-        .padding(.bottom, DUSpacing.md)
-        .background(Color.black)
-    }
-
-    private var episodeSelectorSection: some View {
-        DUSectionCard(title: localized("video.player.episodes")) {
-            VStack(alignment: .leading, spacing: DUSpacing.md) {
-                ForEach(detail.episodeGroups) { group in
-                    VStack(alignment: .leading, spacing: DUSpacing.sm) {
-                        Text(group.title.value(for: languageStore.currentLanguage))
-                            .font(.du(13, weight: .bold))
-                            .foregroundColor(DUTheme.ink)
-
-                        ScrollView(.horizontal, showsIndicators: false) {
-                            HStack(spacing: DUSpacing.sm) {
-                                ForEach(group.episodes) { episode in
-                                    Button {
-                                        Task {
-                                            await switchEpisode(to: episode)
-                                        }
-                                    } label: {
-                                        VideoSelectionChip(
-                                            title: episode.title.value(for: languageStore.currentLanguage),
-                                            isSelected: episode.id == playbackSession.episode.id
-                                        )
-                                    }
-                                    .buttonStyle(.plain)
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private var playbackControlsSection: some View {
-        DUSectionCard(title: localized("video.player.playback")) {
-            VStack(spacing: DUSpacing.md) {
-                controlMenuRow(
-                    title: localized("video.player.quality"),
-                    currentValue: selectedQuality.title(for: languageStore.currentLanguage)
-                ) {
-                    ForEach(availableQualities, id: \.self) { quality in
-                        Button {
-                            selectedQuality = quality
-                        } label: {
-                            labelWithCheck(
-                                quality.title(for: languageStore.currentLanguage),
-                                isSelected: quality == selectedQuality
-                            )
-                        }
-                    }
-                }
-
-                controlMenuRow(
-                    title: localized("video.player.subtitle"),
-                    currentValue: currentSubtitle?.displayName.value(for: languageStore.currentLanguage) ?? "-"
-                ) {
-                    ForEach(playbackSession.subtitles) { subtitle in
-                        Button {
-                            selectedSubtitleID = subtitle.id
-                        } label: {
-                            labelWithCheck(
-                                subtitle.displayName.value(for: languageStore.currentLanguage),
-                                isSelected: subtitle.id == selectedSubtitleID
-                            )
-                        }
-                    }
-                }
-
-                controlMenuRow(
-                    title: localized("video.player.audio"),
-                    currentValue: currentAudioTrack?.displayName.value(for: languageStore.currentLanguage) ?? "-"
-                ) {
-                    ForEach(playbackSession.audioTracks) { audioTrack in
-                        Button {
-                            selectedAudioTrackID = audioTrack.id
-                        } label: {
-                            labelWithCheck(
-                                audioTrack.displayName.value(for: languageStore.currentLanguage),
-                                isSelected: audioTrack.id == selectedAudioTrackID
-                            )
-                        }
-                    }
-                }
-
-                if playbackSession.pipEnabled {
-                    Text(localized("video.player.pipHint"))
-                        .font(.du(12, weight: .medium))
-                        .foregroundColor(DUTheme.inkSecondary)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                }
-
-                if isLoadingEpisode {
-                    HStack(spacing: DUSpacing.sm) {
-                        ProgressView()
-                            .tint(DUTheme.cyan)
-
-                        Text(localized("video.player.loading"))
-                            .font(.du(13, weight: .semibold))
-                            .foregroundColor(DUTheme.inkSecondary)
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                }
-            }
-        }
-    }
-
-    private var currentSubtitle: VideoSubtitleTrack? {
-        playbackSession.subtitles.first { $0.id == selectedSubtitleID }
-    }
-
-    private var currentAudioTrack: VideoAudioTrack? {
-        playbackSession.audioTracks.first { $0.id == selectedAudioTrackID }
-    }
-
-    private var availableQualities: [VideoQuality] {
-        Array(Set(playbackSession.videoSources.map(\.quality))).sorted {
-            $0.sortOrder < $1.sortOrder
-        }
-    }
-
-    private func controlMenuRow<MenuContent: View>(
-        title: String,
-        currentValue: String,
-        @ViewBuilder menuContent: () -> MenuContent
-    ) -> some View {
-        HStack {
-            Text(title)
-                .font(.du(13, weight: .bold))
-                .foregroundColor(DUTheme.ink)
-
-            Spacer()
-
-            Menu {
-                menuContent()
-            } label: {
-                HStack(spacing: DUSpacing.sm) {
-                    Text(currentValue)
-                        .font(.du(12, weight: .semibold))
-                    Image(systemName: "chevron.down")
-                        .font(.du(11, weight: .bold))
-                }
-                .foregroundColor(DUTheme.inkSecondary)
-                .padding(.horizontal, DUSpacing.md)
-                .frame(height: 36)
-                .background(DUTheme.backgroundSecondary)
-                .clipShape(Capsule())
-            }
-        }
-    }
-
-    private func labelWithCheck(
-        _ title: String,
-        isSelected: Bool
-    ) -> some View {
-        HStack {
-            Text(title)
-            if isSelected {
-                Image(systemName: "checkmark")
-            }
-        }
-    }
-
-    private func configurePlayer(
-        for session: VideoPlaybackSession,
-        preferredQuality: VideoQuality
-    ) {
-        let selectedSource = session.videoSources.first { $0.quality == preferredQuality }
-            ?? session.videoSources.sorted { $0.quality.sortOrder < $1.quality.sortOrder }.first
-
-        guard let selectedSource else {
-            return
-        }
-
-        let playerItem = AVPlayerItem(url: selectedSource.url)
-        player.replaceCurrentItem(with: playerItem)
-        player.play()
-    }
-
-    private func switchEpisode(to episode: VideoEpisode) async {
-        guard episode.id != playbackSession.episode.id else {
-            return
-        }
-
-        isLoadingEpisode = true
-        defer {
-            isLoadingEpisode = false
-        }
-
-        do {
-            let nextSession = try await videoService.requestPlaybackSession(
-                videoID: detail.content.id,
-                episodeID: episode.id,
-                preferredQuality: selectedQuality,
-                session: session
-            )
-
-            playbackSession = nextSession
-            selectedQuality = nextSession.videoSources.first?.quality ?? selectedQuality
-            selectedSubtitleID = nextSession.subtitles.first?.id ?? selectedSubtitleID
-            selectedAudioTrackID = nextSession.audioTracks.first(where: \.isDefault)?.id
-                ?? nextSession.audioTracks.first?.id
-                ?? selectedAudioTrackID
-            configurePlayer(for: nextSession, preferredQuality: selectedQuality)
-        } catch {
-            // 切集失败时保留当前播放状态，避免把播放器留在空白页。
-        }
-    }
-
-    private func localized(_ key: String, arguments: [String] = []) -> String {
-        languageStore.string(key, arguments: arguments)
+        CRMVideoPlayExperience(
+            detail: detail,
+            initialSession: initialSession,
+            sessionInfo: session,
+            videoService: videoService
+        )
     }
 }

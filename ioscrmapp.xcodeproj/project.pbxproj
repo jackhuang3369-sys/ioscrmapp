@@ -83,6 +83,7 @@
 		E10000000000000000000006 /* VideoComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20000000000000000000006 /* VideoComponents.swift */; };
 		E10000000000000000000007 /* VideoContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20000000000000000000007 /* VideoContainerView.swift */; };
 		E10000000000000000000008 /* VideoViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20000000000000000000008 /* VideoViews.swift */; };
+		E10000000000000000000009 /* CRMVideoExperienceViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20000000000000000000009 /* CRMVideoExperienceViews.swift */; };
 		D10000000000000000000001 /* OffersAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = D20000000000000000000001 /* OffersAPI.swift */; };
 		D10000000000000000000002 /* OffersService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D20000000000000000000002 /* OffersService.swift */; };
 		D10000000000000000000003 /* OffersModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = D20000000000000000000003 /* OffersModels.swift */; };
@@ -187,6 +188,7 @@
 		E20000000000000000000006 /* VideoComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoComponents.swift; sourceTree = "<group>"; };
 		E20000000000000000000007 /* VideoContainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoContainerView.swift; sourceTree = "<group>"; };
 		E20000000000000000000008 /* VideoViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoViews.swift; sourceTree = "<group>"; };
+		E20000000000000000000009 /* CRMVideoExperienceViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CRMVideoExperienceViews.swift; sourceTree = "<group>"; };
 		D20000000000000000000001 /* OffersAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OffersAPI.swift; sourceTree = "<group>"; };
 		D20000000000000000000002 /* OffersService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OffersService.swift; sourceTree = "<group>"; };
 		D20000000000000000000003 /* OffersModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OffersModels.swift; sourceTree = "<group>"; };
@@ -696,6 +698,7 @@
 		E30000000000000000000004 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				E20000000000000000000009 /* CRMVideoExperienceViews.swift */,
 				E20000000000000000000006 /* VideoComponents.swift */,
 				E20000000000000000000007 /* VideoContainerView.swift */,
 				E20000000000000000000008 /* VideoViews.swift */,
@@ -906,6 +909,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E10000000000000000000009 /* CRMVideoExperienceViews.swift in Sources */,
 				E10000000000000000000008 /* VideoViews.swift in Sources */,
 				E10000000000000000000007 /* VideoContainerView.swift in Sources */,
 				E10000000000000000000006 /* VideoComponents.swift in Sources */,
