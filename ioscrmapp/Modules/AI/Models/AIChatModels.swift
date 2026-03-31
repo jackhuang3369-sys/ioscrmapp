@@ -27,6 +27,7 @@ struct AIChatMessage: Identifiable, Equatable {
     let id: UUID
     let sender: AIChatSender
     var text: String
+    var htmlContent: String?
     var richText: AttributedString?
     var thinkingText: String
     var actions: [AIChatAction]
@@ -45,6 +46,7 @@ struct AIChatMessage: Identifiable, Equatable {
         self.id = id
         self.sender = sender
         self.text = text
+        htmlContent = nil
         richText = nil
         self.thinkingText = thinkingText
         self.actions = actions
@@ -66,6 +68,7 @@ struct AIChatContext {
 struct AIChatReply {
     let conversationID: String?
     let text: String
+    let htmlContent: String?
     let richText: AttributedString?
     let thinkingText: String
     let actions: [AIChatAction]
@@ -73,12 +76,14 @@ struct AIChatReply {
     init(
         conversationID: String?,
         text: String,
+        htmlContent: String? = nil,
         richText: AttributedString? = nil,
         thinkingText: String,
         actions: [AIChatAction]
     ) {
         self.conversationID = conversationID
         self.text = text
+        self.htmlContent = htmlContent
         self.richText = richText
         self.thinkingText = thinkingText
         self.actions = actions

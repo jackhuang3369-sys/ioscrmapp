@@ -1,4 +1,5 @@
 import SwiftUI
+import WebKit
 
 struct AIChatView: View {
     @Environment(\.dismiss) private var dismiss
@@ -223,6 +224,10 @@ struct AIChatView: View {
                             }
                             .frame(maxWidth: .infinity, alignment: .leading)
                         } else if message.sender == .assistant,
+                                  let htmlContent = message.htmlContent,
+                                  !htmlContent.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                            assistantHTMLView(htmlContent)
+                        } else if message.sender == .assistant,
                                   let richText = message.richText,
                                   !normalizedDisplayText(String(richText.characters)).isEmpty {
                             assistantRichTextView(richText)
@@ -296,8 +301,18 @@ struct AIChatView: View {
             .fixedSize(horizontal: false, vertical: true)
     }
 
+    private func assistantHTMLView(_ htmlContent: String) -> some View {
+        AIChatHTMLContentView(html: htmlContent)
+            .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
     private func shouldShowMessageContentBubble(_ message: AIChatMessage) -> Bool {
         if message.isLoading {
+            return true
+        }
+
+        if let htmlContent = message.htmlContent,
+           !htmlContent.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             return true
         }
 
@@ -381,6 +396,124 @@ struct AIChatView: View {
             openURL(url)
         default:
             onNavigate(target)
+        }
+    }
+}
+
+private struct AIChatHTMLContentView: View {
+    let html: String
+
+    @State private var contentHeight: CGFloat = 1
+
+    var body: some View {
+        AIChatHTMLWebView(html: html, contentHeight: $contentHeight)
+            .frame(height: max(contentHeight, 1))
+    }
+}
+
+private struct AIChatHTMLWebView: UIViewRepresentable {
+    let html: String
+    @Binding var contentHeight: CGFloat
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(contentHeight: $contentHeight)
+    }
+
+    func makeUIView(context: Context) -> WKWebView {
+        let configuration = WKWebViewConfiguration()
+        configuration.defaultWebpagePreferences.allowsContentJavaScript = true
+
+        let webView = WKWebView(frame: .zero, configuration: configuration)
+        webView.navigationDelegate = context.coordinator
+        webView.isOpaque = false
+        webView.backgroundColor = .clear
+        webView.scrollView.backgroundColor = .clear
+        webView.scrollView.isScrollEnabled = false
+        webView.scrollView.bounces = false
+        webView.scrollView.contentInsetAdjustmentBehavior = .never
+
+        context.coordinator.attach(to: webView)
+        context.coordinator.load(html, in: webView)
+        return webView
+    }
+
+    func updateUIView(_ webView: WKWebView, context: Context) {
+        context.coordinator.load(html, in: webView)
+    }
+
+    final class Coordinator: NSObject, WKNavigationDelegate {
+        @Binding private var contentHeight: CGFloat
+
+        private var currentHTML: String?
+        private var sizeObservation: NSKeyValueObservation?
+
+        init(contentHeight: Binding<CGFloat>) {
+            _contentHeight = contentHeight
+        }
+
+        deinit {
+            sizeObservation?.invalidate()
+        }
+
+        func attach(to webView: WKWebView) {
+            guard sizeObservation == nil else {
+                return
+            }
+
+            sizeObservation = webView.scrollView.observe(\.contentSize, options: [.new]) { [weak self] scrollView, _ in
+                Task { @MainActor in
+                    self?.updateHeight(scrollView.contentSize.height)
+                }
+            }
+        }
+
+        func load(_ html: String, in webView: WKWebView) {
+            guard currentHTML != html else {
+                return
+            }
+
+            currentHTML = html
+            webView.loadHTMLString(html, baseURL: nil)
+        }
+
+        func webView(
+            _ webView: WKWebView,
+            didFinish navigation: WKNavigation!
+        ) {
+            measureHeight(in: webView)
+        }
+
+        private func measureHeight(in webView: WKWebView) {
+            let script = """
+            Math.max(
+                document.body.scrollHeight,
+                document.documentElement.scrollHeight,
+                document.body.offsetHeight,
+                document.documentElement.offsetHeight
+            )
+            """
+
+            webView.evaluateJavaScript(script) { [weak self, weak webView] result, _ in
+                let resolvedHeight: CGFloat
+                if let number = result as? NSNumber {
+                    resolvedHeight = CGFloat(truncating: number)
+                } else {
+                    resolvedHeight = webView?.scrollView.contentSize.height ?? 1
+                }
+
+                Task { @MainActor in
+                    self?.updateHeight(resolvedHeight)
+                }
+            }
+        }
+
+        @MainActor
+        private func updateHeight(_ height: CGFloat) {
+            let resolved = max(height.rounded(.up), 1)
+            guard abs(contentHeight - resolved) > 0.5 else {
+                return
+            }
+            contentHeight = resolved
         }
     }
 }

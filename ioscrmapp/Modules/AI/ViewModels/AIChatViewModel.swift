@@ -106,6 +106,7 @@ final class AIChatViewModel: ObservableObject {
                     updateAssistantPlaceholder(
                         placeholderID: placeholderID,
                         text: resolvedReplyText(reply),
+                        htmlContent: reply.htmlContent,
                         richText: reply.richText,
                         thinkingText: reply.thinkingText,
                         actions: reply.actions
@@ -116,6 +117,7 @@ final class AIChatViewModel: ObservableObject {
                     updateAssistantPlaceholder(
                         placeholderID: placeholderID,
                         text: AIChatLocalizedCopy.errorMessage(for: language, error: error),
+                        htmlContent: nil,
                         richText: nil,
                         thinkingText: "",
                         actions: []
@@ -129,6 +131,7 @@ final class AIChatViewModel: ObservableObject {
                             for: language,
                             error: .network(underlying: error)
                         ),
+                        htmlContent: nil,
                         richText: nil,
                         thinkingText: "",
                         actions: []
@@ -141,6 +144,7 @@ final class AIChatViewModel: ObservableObject {
     private func updateAssistantPlaceholder(
         placeholderID: UUID,
         text: String,
+        htmlContent: String?,
         richText: AttributedString?,
         thinkingText: String,
         actions: [AIChatAction]
@@ -151,6 +155,7 @@ final class AIChatViewModel: ObservableObject {
         }
 
         messages[index].text = text
+        messages[index].htmlContent = htmlContent
         messages[index].richText = richText
         messages[index].thinkingText = thinkingText
         messages[index].actions = actions
@@ -163,7 +168,7 @@ final class AIChatViewModel: ObservableObject {
             return reply.text
         }
 
-        if reply.richText != nil || !reply.actions.isEmpty {
+        if reply.htmlContent != nil || reply.richText != nil || !reply.actions.isEmpty {
             return ""
         }
 

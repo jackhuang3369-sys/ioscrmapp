@@ -166,7 +166,7 @@ struct RemoteAIChatService: AIChatServicing {
             }
 
             let parsed = AIChatResponseParser.parse(content: content)
-            if parsed.text.isEmpty, parsed.richText == nil, parsed.actions.isEmpty {
+            if parsed.text.isEmpty, parsed.htmlContent == nil, parsed.richText == nil, parsed.actions.isEmpty {
                 aiChatLogger.error(
                     "AI chat parsed empty content. Raw content: \(String(describing: content), privacy: .public)"
                 )
@@ -174,6 +174,7 @@ struct RemoteAIChatService: AIChatServicing {
             return AIChatReply(
                 conversationID: jsonObject["chatId"] as? String ?? conversationID,
                 text: parsed.text,
+                htmlContent: parsed.htmlContent,
                 richText: parsed.richText,
                 thinkingText: parsed.thinkingText,
                 actions: parsed.actions
@@ -280,6 +281,7 @@ private final class AIChatURLSessionDelegate: NSObject, URLSessionDelegate {
 
 private struct AIChatParsedContent {
     let text: String
+    let htmlContent: String?
     let richText: AttributedString?
     let thinkingText: String
     let actions: [AIChatAction]
@@ -303,10 +305,67 @@ private enum AIChatResponseParser {
                 .map(\.plainText)
                 .joined(separator: "\n\n")
                 .trimmingCharacters(in: .whitespacesAndNewlines),
+            htmlContent: htmlContent(from: content),
             richText: combinedRichText(from: renderedParts),
             thinkingText: thinkingParts.joined(separator: "\n\n").trimmingCharacters(in: .whitespacesAndNewlines),
             actions: actions
         )
+    }
+
+    private static func htmlContent(from node: Any) -> String? {
+        switch node {
+        case let text as String:
+            let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !trimmed.isEmpty else {
+                return nil
+            }
+
+            if let object = jsonObject(from: trimmed) {
+                return htmlContent(from: object)
+            }
+
+            let sanitized = sanitizeHTMLForWebView(trimmed)
+            guard looksLikeHTMLDocument(sanitized) else {
+                return nil
+            }
+
+            return htmlDocumentForWebView(sanitized)
+        case let array as [Any]:
+            for item in array {
+                if let html = htmlContent(from: item) {
+                    return html
+                }
+            }
+            return nil
+        case let dictionary as [String: Any]:
+            for key in ["htmlresult", "html", "srcdoc"] {
+                if let value = dictionary[key] as? String, let html = htmlContent(from: value) {
+                    return html
+                }
+            }
+
+            for key in ["content", "body", "text", "answer", "message", "result", "output", "outputs", "data", "payload", "response"] {
+                if let value = dictionary[key], let html = htmlContent(from: value) {
+                    return html
+                }
+            }
+
+            return nil
+        default:
+            return nil
+        }
+    }
+
+    private static func jsonObject(from rawText: String) -> Any? {
+        guard rawText.first == "{" || rawText.first == "[" else {
+            return nil
+        }
+
+        guard let data = rawText.data(using: .utf8) else {
+            return nil
+        }
+
+        return try? JSONSerialization.jsonObject(with: data)
     }
 
     private static func collect(
@@ -378,6 +437,11 @@ private enum AIChatResponseParser {
 
             if let html = dictionary["html"] as? String {
                 appendText(html, renderedParts: &renderedParts, thinkingParts: &thinkingParts)
+                return
+            }
+
+            if let htmlResult = dictionary["htmlresult"] as? String {
+                appendText(htmlResult, renderedParts: &renderedParts, thinkingParts: &thinkingParts)
                 return
             }
 
@@ -644,10 +708,100 @@ private enum AIChatResponseParser {
         return rawText
     }
 
+    private static func sanitizeHTMLForWebView(_ rawText: String) -> String {
+        var sanitized = extractedInlineFrameDocument(from: rawText)
+            .replacingOccurrences(of: "\r\n", with: "\n")
+            .replacingOccurrences(of: "\r", with: "\n")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+
+        sanitized = decodeHTMLSourceEntities(in: sanitized)
+        sanitized = removingUnsupportedDisplayCharacters(from: sanitized)
+        sanitized = replacingRegex(in: sanitized, pattern: "(?is)<!DOCTYPE[^>]*>", with: "")
+        sanitized = replacingRegex(in: sanitized, pattern: "(?is)<\\s*(script|svg|canvas|object|embed|noscript)\\b[^>]*>.*?<\\s*/\\s*\\1\\s*>", with: "")
+
+        return sanitized.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    private static func looksLikeHTMLDocument(_ rawText: String) -> Bool {
+        let lowercased = rawText.lowercased()
+        let htmlMarkers = [
+            "<html", "<body", "<head", "<style", "<div", "<section", "<article",
+            "<p", "<pre", "<table", "<ul", "<ol", "<h1", "<h2", "<h3", "<iframe"
+        ]
+        return htmlMarkers.contains { lowercased.contains($0) }
+    }
+
+    private static func htmlDocumentForWebView(_ rawText: String) -> String {
+        let trimmed = rawText.trimmingCharacters(in: .whitespacesAndNewlines)
+        let overrides = """
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+        <style>
+        html, body { margin: 0 !important; padding: 0 !important; background: transparent !important; }
+        body { overflow-x: hidden; }
+        img, iframe, table { max-width: 100% !important; }
+        iframe { border: none !important; }
+        </style>
+        """
+
+        if trimmed.range(of: "</head>", options: [.caseInsensitive, .regularExpression]) != nil {
+            return trimmed.replacingOccurrences(
+                of: "</head>",
+                with: "\(overrides)</head>",
+                options: [.caseInsensitive, .regularExpression]
+            )
+        }
+
+        if looksLikeHTMLDocument(trimmed) {
+            return """
+            <html>
+            <head>
+            <meta charset="utf-8">
+            \(overrides)
+            </head>
+            <body>\(trimmed)</body>
+            </html>
+            """
+        }
+
+        return """
+        <html>
+        <head>
+        <meta charset="utf-8">
+        \(overrides)
+        </head>
+        <body>\(trimmed)</body>
+        </html>
+        """
+    }
+
+    private static func decodeHTMLSourceEntities(in text: String) -> String {
+        [
+            ("&quot;", "\""),
+            ("&#34;", "\""),
+            ("&#x22;", "\""),
+            ("&apos;", "'"),
+            ("&#39;", "'"),
+            ("&#x27;", "'"),
+            ("&#10;", "\n"),
+            ("&#13;", "\r"),
+            ("&lt;", "<"),
+            ("&gt;", ">"),
+            ("&amp;", "&")
+        ].reduce(text) { partialResult, replacement in
+            partialResult.replacingOccurrences(of: replacement.0, with: replacement.1)
+        }
+    }
+
     private static func removingUnsupportedDisplayCharacters(from text: String) -> String {
         String(text.unicodeScalars.filter { scalar in
             switch scalar.value {
             case 0xFFFC, 0xFFFD:
+                return false
+            case 0x200D, 0x20E3, 0xFE0E, 0xFE0F:
+                return false
+            case 0x2139:
+                return false
+            case 0x2300 ... 0x23FF, 0x2600 ... 0x27BF, 0x1F000 ... 0x1FAFF:
                 return false
             case 0xE000 ... 0xF8FF, 0xF0000 ... 0xFFFFD, 0x100000 ... 0x10FFFD:
                 return false
