@@ -23,11 +23,11 @@ struct AIChatConfiguration: Sendable {
                 ?? "https://10.110.63.144:36667/agent-platform/api/v1/chat/completions"
         ),
         authorizationToken: ProcessInfo.processInfo.environment["IOSCRMAPP_AI_AUTH_TOKEN"]
-            ?? "Bearer jgDaEBKYfM71LAmFvHcGtJxMzsiHhN0xNyF3EuluWO6sjnbolBtrxynQdED5R6",
+            ?? "Bearer uLPyuQK1Who3IjwOeZaLKfTrlfDncmRcgMHLUAOzZ9I35VPGhu7wENlCxVn",
         appID: ProcessInfo.processInfo.environment["IOSCRMAPP_AI_APP_ID"]
             ?? "698ae4d0aaf0d645fac831cc",
         apiKey: ProcessInfo.processInfo.environment["IOSCRMAPP_AI_API_KEY"]
-            ?? "jgDaEBKYfM71LAmFvHcGtJxMzsiHhN0xNyF3EuluWO6sjnbolBtrxynQdED5R6"
+            ?? "uLPyuQK1Who3IjwOeZaLKfTrlfDncmRcgMHLUAOzZ9I35VPGhu7wENlCxVn"
     )
 }
 
