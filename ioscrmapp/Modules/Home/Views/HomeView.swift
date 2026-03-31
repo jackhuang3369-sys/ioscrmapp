@@ -25,7 +25,6 @@ struct HomeView: View {
     @State private var isBillingPresented = false
     @State private var isRechargePresented = false
     @State private var isOffersPresented = false
-    @State private var isAIChatPresented = false
     @State private var isTicketsPresented = false
     @State private var isSigningOut = false
     @State private var signOutFailureMessageKey: String?
@@ -162,12 +161,16 @@ struct HomeView: View {
 
             MeContainerView(
                 session: custSubInfo,
+                aiChatService: aiChatService,
                 billingService: billingService,
                 rechargeService: rechargeService,
                 badgeCenterService: badgeCenterService,
                 meService: meService,
                 showRechargeEntry: showsRechargeEntryInMe,
                 isSigningOut: isSigningOut,
+                onAIChatNavigate: { target in
+                    handleAIChatNavigation(target)
+                },
                 onSignOut: {
                     startSignOut()
                 }
@@ -197,15 +200,6 @@ struct HomeView: View {
                 session: custSubInfo,
                 notificationService: notificationService
             )
-        }
-        .fullScreenCover(isPresented: $isAIChatPresented) {
-            AIChatView(
-                custSubInfo: custSubInfo,
-                language: languageStore.currentLanguage,
-                aiChatService: aiChatService
-            ) { target in
-                handleAIChatNavigation(target)
-            }
         }
         .fullScreenCover(isPresented: $isBillingPresented) {
             BillingContainerView(session: custSubInfo, billingService: billingService)
@@ -342,9 +336,6 @@ struct HomeView: View {
                 HStack(spacing: DUSpacing.sm) {
                     CircleAction(symbol: "magnifyingglass") {
                         placeholderMessage = .key("home.placeholder.search")
-                    }
-                    CircleAction(symbol: "sparkles") {
-                        isAIChatPresented = true
                     }
                     CircleAction(symbol: "bell.fill") {
                         isMessageCenterPresented = true
@@ -812,8 +803,6 @@ struct HomeView: View {
     }
 
     private func handleAIChatNavigation(_ target: AIChatNavigationTarget) {
-        isAIChatPresented = false
-
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
             switch target {
             case .home:

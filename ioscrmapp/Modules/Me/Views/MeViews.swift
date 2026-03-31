@@ -4,26 +4,32 @@ struct MeContainerView: View {
     @EnvironmentObject private var languageStore: AppLanguageStore
     @StateObject private var viewModel: MeViewModel
     @State private var isRechargePresented = false
+    @State private var isAIChatPresented = false
 
     private let session: CustSubInfo
+    private let aiChatService: any AIChatServicing
     private let billingService: any BillingServicing
     private let rechargeService: any RechargeServicing
     private let badgeCenterService: any BadgeCenterServicing
     private let showRechargeEntry: Bool
     private let isSigningOut: Bool
     private let onSignOut: () -> Void
+    private let onAIChatNavigate: (AIChatNavigationTarget) -> Void
 
     init(
         session: CustSubInfo,
+        aiChatService: any AIChatServicing,
         billingService: any BillingServicing,
         rechargeService: any RechargeServicing,
         badgeCenterService: any BadgeCenterServicing,
         meService: any MeServicing,
         showRechargeEntry: Bool = false,
         isSigningOut: Bool = false,
+        onAIChatNavigate: @escaping (AIChatNavigationTarget) -> Void = { _ in },
         onSignOut: @escaping () -> Void = {}
     ) {
         self.session = session
+        self.aiChatService = aiChatService
         self.billingService = billingService
         self.rechargeService = rechargeService
         self.badgeCenterService = badgeCenterService
@@ -32,6 +38,7 @@ struct MeContainerView: View {
             wrappedValue: MeViewModel(session: session, meService: meService)
         )
         self.isSigningOut = isSigningOut
+        self.onAIChatNavigate = onAIChatNavigate
         self.onSignOut = onSignOut
     }
 
@@ -80,6 +87,16 @@ struct MeContainerView: View {
                 session: session,
                 badgeCenterService: badgeCenterService
             )
+        }
+        .fullScreenCover(isPresented: $isAIChatPresented) {
+            AIChatView(
+                custSubInfo: session,
+                language: languageStore.currentLanguage,
+                aiChatService: aiChatService
+            ) { target in
+                isAIChatPresented = false
+                onAIChatNavigate(target)
+            }
         }
     }
 
@@ -485,6 +502,49 @@ struct MeContainerView: View {
 
     private var phoneRevealSheet: some View {
         VStack(alignment: .leading, spacing: DUSpacing.lg) {
+            Button {
+                viewModel.isRevealSheetPresented = false
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                    isAIChatPresented = true
+                }
+            } label: {
+                HStack(spacing: DUSpacing.md) {
+                    ZStack {
+                        Circle()
+                            .fill(DUTheme.brandGradient)
+                            .frame(width: 44, height: 44)
+
+                        Image(systemName: "sparkles")
+                            .font(.du(18, weight: .bold))
+                            .foregroundColor(.white)
+                    }
+
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("智能体")
+                            .font(.du(16, weight: .bold))
+                            .foregroundColor(DUTheme.ink)
+
+                        Text("暂时从 Me 页面进入")
+                            .font(.du(12, weight: .medium))
+                            .foregroundColor(DUTheme.inkSecondary)
+                    }
+
+                    Spacer()
+
+                    Image(systemName: "chevron.right")
+                        .font(.du(12, weight: .bold))
+                        .foregroundColor(DUTheme.inkTertiary)
+                }
+                .padding(DUSpacing.lg)
+                .background(DUTheme.panel)
+                .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 24, style: .continuous)
+                        .stroke(DUTheme.lineLight, lineWidth: 1)
+                )
+            }
+            .buttonStyle(.plain)
+
             Text(localized("me.reveal.title"))
                 .font(.du(20, weight: .bold))
                 .foregroundColor(DUTheme.ink)
@@ -600,13 +660,13 @@ struct MeContainerView_Previews: PreviewProvider {
 
     static var previews: some View {
         Group {
-            MeContainerView(session: previewSession, billingService: MockBillingService(), rechargeService: MockRechargeService(), badgeCenterService: MockBadgeCenterService(), meService: MockMeService(), showRechargeEntry: true)
+            MeContainerView(session: previewSession, aiChatService: MockAIChatService(), billingService: MockBillingService(), rechargeService: MockRechargeService(), badgeCenterService: MockBadgeCenterService(), meService: MockMeService(), showRechargeEntry: true)
                 .previewDisplayName("Loaded")
 
-            MeContainerView(session: previewSession, billingService: MockBillingService(), rechargeService: MockRechargeService(), badgeCenterService: MockBadgeCenterService(), meService: MockMeService(mode: .empty))
+            MeContainerView(session: previewSession, aiChatService: MockAIChatService(), billingService: MockBillingService(), rechargeService: MockRechargeService(), badgeCenterService: MockBadgeCenterService(), meService: MockMeService(mode: .empty))
                 .previewDisplayName("Empty")
 
-            MeContainerView(session: previewSession, billingService: MockBillingService(), rechargeService: MockRechargeService(), badgeCenterService: MockBadgeCenterService(), meService: MockMeService(mode: .failed))
+            MeContainerView(session: previewSession, aiChatService: MockAIChatService(), billingService: MockBillingService(), rechargeService: MockRechargeService(), badgeCenterService: MockBadgeCenterService(), meService: MockMeService(mode: .failed))
                 .previewDisplayName("Error")
         }
         .environmentObject(AppLanguageStore(initialLanguage: .english))
