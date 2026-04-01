@@ -22,6 +22,7 @@ struct HomeView: View {
     @State private var placeholderMessage: LocalizedTextValue?
     @State private var selectedTab: HomeTab = .home
     @State private var isMessageCenterPresented = false
+    @State private var isAIChatPresented = false
     @State private var isBillingPresented = false
     @State private var isRechargePresented = false
     @State private var isOffersPresented = false
@@ -161,16 +162,12 @@ struct HomeView: View {
 
             MeContainerView(
                 session: custSubInfo,
-                aiChatService: aiChatService,
                 billingService: billingService,
                 rechargeService: rechargeService,
                 badgeCenterService: badgeCenterService,
                 meService: meService,
                 showRechargeEntry: showsRechargeEntryInMe,
                 isSigningOut: isSigningOut,
-                onAIChatNavigate: { target in
-                    handleAIChatNavigation(target)
-                },
                 onSignOut: {
                     startSignOut()
                 }
@@ -200,6 +197,16 @@ struct HomeView: View {
                 session: custSubInfo,
                 notificationService: notificationService
             )
+        }
+        .fullScreenCover(isPresented: $isAIChatPresented) {
+            AIChatView(
+                custSubInfo: custSubInfo,
+                language: languageStore.currentLanguage,
+                aiChatService: aiChatService
+            ) { target in
+                isAIChatPresented = false
+                handleAIChatNavigation(target)
+            }
         }
         .fullScreenCover(isPresented: $isBillingPresented) {
             BillingContainerView(session: custSubInfo, billingService: billingService)
@@ -336,6 +343,9 @@ struct HomeView: View {
                 HStack(spacing: DUSpacing.sm) {
                     CircleAction(symbol: "magnifyingglass") {
                         placeholderMessage = .key("home.placeholder.search")
+                    }
+                    AIHeaderAction {
+                        isAIChatPresented = true
                     }
                     CircleAction(symbol: "bell.fill") {
                         isMessageCenterPresented = true
@@ -1081,6 +1091,145 @@ private struct CircleAction: View {
                 )
         }
         .buttonStyle(.plain)
+    }
+}
+
+private struct AIHeaderAction: View {
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            TimelineView(.animation(minimumInterval: 1.0 / 30.0)) { context in
+                let time = context.date.timeIntervalSinceReferenceDate
+                let rotation = Angle.degrees((time * 52).truncatingRemainder(dividingBy: 360) * 1.0)
+                let pulse = 0.92 + 0.08 * sin(time * 2.4)
+
+                ZStack {
+                    Circle()
+                        .fill(Color.white.opacity(0.1))
+                        .frame(width: 42, height: 42)
+
+                    Circle()
+                        .fill(
+                            RadialGradient(
+                                colors: [
+                                    Color.white.opacity(0.34),
+                                    Color.clear
+                                ],
+                                center: .center,
+                                startRadius: 2,
+                                endRadius: 20
+                            )
+                        )
+                        .scaleEffect(pulse)
+                        .blur(radius: 2)
+
+                    Circle()
+                        .stroke(
+                            AngularGradient(
+                                colors: [
+                                    Color.cyan.opacity(0.95),
+                                    Color.white.opacity(0.9),
+                                    Color.pink.opacity(0.92),
+                                    Color.cyan.opacity(0.95)
+                                ],
+                                center: .center,
+                                angle: rotation
+                            ),
+                            lineWidth: 1.4
+                        )
+                        .frame(width: 38, height: 38)
+
+                    orbitDots(time: time)
+
+                    Circle()
+                        .fill(
+                            RadialGradient(
+                                colors: [
+                                    Color.white.opacity(0.98),
+                                    Color.white.opacity(0.08)
+                                ],
+                                center: .topLeading,
+                                startRadius: 1,
+                                endRadius: 16
+                            )
+                        )
+                        .frame(width: 24, height: 24)
+                        .overlay(
+                            Circle()
+                                .fill(
+                                    LinearGradient(
+                                        colors: [
+                                            Color(red: 0.15, green: 0.82, blue: 0.95),
+                                            Color(red: 0.22, green: 0.43, blue: 0.96),
+                                            Color(red: 0.83, green: 0.23, blue: 0.84)
+                                        ],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
+                                )
+                                .padding(1.5)
+                        )
+                        .overlay(
+                            Image(systemName: "sparkles")
+                                .font(.du(11, weight: .bold))
+                                .foregroundColor(.white)
+                                .scaleEffect(0.94 + 0.06 * sin(time * 2.1 + 0.6))
+                        )
+
+                    aiBadge
+                        .offset(x: 10, y: 12)
+                }
+                .frame(width: 46, height: 46)
+            }
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("AI Assistant")
+    }
+
+    @ViewBuilder
+    private func orbitDots(time: TimeInterval) -> some View {
+        ZStack {
+            ForEach(0..<3, id: \.self) { index in
+                let phase = time * 1.3 + Double(index) * 2.1
+                let radius: CGFloat = index == 1 ? 11 : 9
+                let size: CGFloat = index == 2 ? 4.5 : 3.5
+                let x = cos(phase) * radius
+                let y = sin(phase) * radius
+
+                Circle()
+                    .fill(index == 0 ? Color.cyan : (index == 1 ? Color.white : Color.pink.opacity(0.95)))
+                    .frame(width: size, height: size)
+                    .offset(x: x, y: y)
+                    .shadow(color: Color.white.opacity(0.35), radius: 3, x: 0, y: 0)
+            }
+        }
+    }
+
+    private var aiBadge: some View {
+        Text("AI")
+            .font(.du(8, weight: .bold))
+            .foregroundColor(.white)
+            .padding(.horizontal, 6)
+            .frame(height: 14)
+            .background(
+                Capsule()
+                    .fill(
+                        LinearGradient(
+                            colors: [
+                                Color(red: 0.16, green: 0.77, blue: 0.96),
+                                Color(red: 0.61, green: 0.25, blue: 0.88)
+                            ],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
+            )
+            .overlay(
+                Capsule()
+                    .stroke(Color.white.opacity(0.55), lineWidth: 0.6)
+            )
+            .shadow(color: Color.black.opacity(0.14), radius: 4, x: 0, y: 2)
     }
 }
 
