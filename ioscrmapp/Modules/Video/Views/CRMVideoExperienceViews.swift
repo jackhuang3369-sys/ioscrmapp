@@ -474,16 +474,22 @@ struct CRMVideoPlayExperience: View {
     @State private var playerLayer: AVPlayerLayer?
     @State private var timeObserverToken: Any?
     @State private var isSwitchingEpisode = false
+    @State private var isPictureInPictureActive = false
+    @State private var isPictureInPictureStarting = false
+    @State private var shouldCleanupAfterPictureInPictureStops = false
+    @ObservedObject var presentationCoordinator: CRMVideoPlayerPresentationCoordinator
 
     init(
         detail: VideoDetailSnapshot,
         initialSession: VideoPlaybackSession,
         sessionInfo: CustSubInfo,
-        videoService: any VideoServicing
+        videoService: any VideoServicing,
+        presentationCoordinator: CRMVideoPlayerPresentationCoordinator
     ) {
         self.detail = detail
         self.sessionInfo = sessionInfo
         self.videoService = videoService
+        self.presentationCoordinator = presentationCoordinator
         _playbackSession = State(initialValue: initialSession)
         _currentQuality = State(
             initialValue: initialSession.episode.resolutions.first?.quality ?? .auto
@@ -555,10 +561,32 @@ struct CRMVideoPlayExperience: View {
         }
         .crmApplyHiddenNavigationChrome()
         .onAppear {
-            setupPlayer()
+            configurePictureInPictureCallbacks()
+            shouldCleanupAfterPictureInPictureStops = false
+            if presentationCoordinator.shouldForceFullscreenOnNextAppear {
+                presentationCoordinator.shouldForceFullscreenOnNextAppear = false
+                enterFullscreenPlaybackMode()
+            }
+            if restoreRetainedPlaybackIfNeeded() {
+                presentationCoordinator.completePictureInPictureRestoreIfNeeded()
+            } else if player == nil {
+                if presentationCoordinator.isRestoringFromPictureInPicture {
+                    applyRetainedPlaybackSnapshot()
+                    setupPlayer(
+                        initialTime: presentationCoordinator.retainedPlaybackTime,
+                        shouldAutoPlay: presentationCoordinator.retainedWasPlaying
+                    )
+                    presentationCoordinator.completePictureInPictureRestoreIfNeeded()
+                } else {
+                    setupPlayer()
+                }
+            }
         }
         .onDisappear {
-            cleanupPlayer(shouldResetOrientation: true)
+            presentationCoordinator.pictureInPictureCoordinator.onStateChange = nil
+            presentationCoordinator.pictureInPictureCoordinator.onRestoreInterface = nil
+            presentationCoordinator.pictureInPictureCoordinator.onFailure = nil
+            handlePlayerViewDisappear()
         }
     }
 
@@ -717,92 +745,11 @@ struct CRMVideoPlayExperience: View {
                     .monospacedDigit()
             }
 
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 20) {
-                    Menu {
-                        ForEach(availableVideoQualities, id: \.self) { quality in
-                            Button {
-                                switchQuality(to: quality)
-                            } label: {
-                                HStack {
-                                    Text(quality.title(for: languageStore.currentLanguage))
-                                    if quality == currentQuality {
-                                        Image(systemName: "checkmark")
-                                    }
-                                }
-                            }
-                        }
-                    } label: {
-                        controlPill(
-                            icon: "gearshape",
-                            text: currentQuality.title(for: languageStore.currentLanguage)
-                        )
-                    }
+            HStack(spacing: 16) {
+                playbackSelectionControls
+                    .frame(maxWidth: .infinity, alignment: .leading)
 
-                    Menu {
-                        ForEach(playbackSession.episode.subtitleTracks) { subtitle in
-                            Button {
-                                switchSubtitle(to: subtitle)
-                            } label: {
-                                HStack {
-                                    Text(subtitle.displayName.value(for: languageStore.currentLanguage))
-                                    if currentSubtitle?.id == subtitle.id {
-                                        Image(systemName: "checkmark")
-                                    }
-                                }
-                            }
-                        }
-                    } label: {
-                        controlPill(
-                            icon: "captions.bubble",
-                            text: currentSubtitle?.displayName.value(for: languageStore.currentLanguage)
-                                ?? localizedFallback("字幕", "Subtitles", "الترجمة")
-                        )
-                    }
-
-                    Menu {
-                        ForEach(playbackSession.episode.audioTracks) { track in
-                            Button {
-                                switchAudioTrack(to: track)
-                            } label: {
-                                HStack {
-                                    Text(track.displayName.value(for: languageStore.currentLanguage))
-                                    if currentAudioTrack?.id == track.id {
-                                        Image(systemName: "checkmark")
-                                    }
-                                }
-                            }
-                        }
-                    } label: {
-                        controlPill(
-                            icon: "waveform",
-                            text: currentAudioTrack?.displayName.value(for: languageStore.currentLanguage)
-                                ?? localizedFallback("音轨", "Audio", "الصوت")
-                        )
-                    }
-
-                    Button {
-                        togglePiP()
-                    } label: {
-                        Image(systemName: pipController?.isPictureInPictureActive == true ? "pip.exit" : "pip.enter")
-                            .font(.title3)
-                            .foregroundColor(.white)
-                            .frame(width: 44, height: 44)
-                            .contentShape(Rectangle())
-                    }
-                    .buttonStyle(.plain)
-
-                    Button {
-                        toggleFullscreen()
-                    } label: {
-                        Image(systemName: "arrow.up.left.and.arrow.down.right")
-                            .font(.title3)
-                            .foregroundColor(.white)
-                            .frame(width: 44, height: 44)
-                            .contentShape(Rectangle())
-                    }
-                    .buttonStyle(.plain)
-                }
+                playbackActionButtons
             }
 
             if isSwitchingEpisode {
@@ -817,6 +764,121 @@ struct CRMVideoPlayExperience: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
+    }
+
+    private var playbackSelectionControls: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 20) {
+                qualityControl
+                subtitleControl
+                audioTrackControl
+            }
+            .padding(.trailing, 4)
+        }
+    }
+
+    private var playbackActionButtons: some View {
+        HStack(spacing: 16) {
+            pictureInPictureButton
+            fullscreenButton
+        }
+        .frame(alignment: .trailing)
+    }
+
+    private var qualityControl: some View {
+        Menu {
+            ForEach(availableVideoQualities, id: \.self) { quality in
+                Button {
+                    switchQuality(to: quality)
+                } label: {
+                    HStack {
+                        Text(quality.title(for: languageStore.currentLanguage))
+                        if quality == currentQuality {
+                            Image(systemName: "checkmark")
+                        }
+                    }
+                }
+            }
+        } label: {
+            controlPill(
+                icon: "gearshape",
+                text: currentQuality.title(for: languageStore.currentLanguage)
+            )
+        }
+    }
+
+    private var subtitleControl: some View {
+        Menu {
+            ForEach(playbackSession.episode.subtitleTracks) { subtitle in
+                Button {
+                    switchSubtitle(to: subtitle)
+                } label: {
+                    HStack {
+                        Text(subtitle.displayName.value(for: languageStore.currentLanguage))
+                        if currentSubtitle?.id == subtitle.id {
+                            Image(systemName: "checkmark")
+                        }
+                    }
+                }
+            }
+        } label: {
+            controlPill(
+                icon: "captions.bubble",
+                text: currentSubtitle?.displayName.value(for: languageStore.currentLanguage)
+                    ?? localizedFallback("字幕", "Subtitles", "الترجمة")
+            )
+        }
+    }
+
+    private var audioTrackControl: some View {
+        Menu {
+            ForEach(playbackSession.episode.audioTracks) { track in
+                Button {
+                    switchAudioTrack(to: track)
+                } label: {
+                    HStack {
+                        Text(track.displayName.value(for: languageStore.currentLanguage))
+                        if currentAudioTrack?.id == track.id {
+                            Image(systemName: "checkmark")
+                        }
+                    }
+                }
+            }
+        } label: {
+            controlPill(
+                icon: "waveform",
+                text: currentAudioTrack?.displayName.value(for: languageStore.currentLanguage)
+                    ?? localizedFallback("音轨", "Audio", "الصوت")
+            )
+        }
+    }
+
+    private var pictureInPictureButton: some View {
+        Button {
+            togglePiP()
+        } label: {
+            Image(systemName: isPictureInPictureActive || isPictureInPictureStarting ? "pip.exit" : "pip.enter")
+                .font(.title3)
+                .foregroundColor(.white)
+                .frame(width: 44, height: 44)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .disabled(!AVPictureInPictureController.isPictureInPictureSupported())
+        .opacity(AVPictureInPictureController.isPictureInPictureSupported() ? 1 : 0.45)
+    }
+
+    private var fullscreenButton: some View {
+        Button {
+            toggleFullscreen()
+        } label: {
+            Image(systemName: "arrow.up.left.and.arrow.down.right")
+                .font(.title3)
+                .foregroundColor(.white)
+                .frame(width: 44, height: 44)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
     }
 
     private func controlPill(icon: String, text: String) -> some View {
@@ -837,7 +899,43 @@ struct CRMVideoPlayExperience: View {
         .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
     }
 
-    private func setupPlayer() {
+    private func configurePictureInPictureCallbacks() {
+        presentationCoordinator.pictureInPictureCoordinator.onStateChange = { isActive in
+            isPictureInPictureStarting = false
+            isPictureInPictureActive = isActive
+            if !isActive {
+                showControls = true
+                if shouldCleanupAfterPictureInPictureStops {
+                    shouldCleanupAfterPictureInPictureStops = false
+                    if presentationCoordinator.isRestoringFromPictureInPicture {
+                        cleanupPlayer(
+                            shouldResetOrientation: false,
+                            shouldPausePlayer: false,
+                            shouldClearRetainedPlayback: false
+                        )
+                    } else {
+                        cleanupPlayer(shouldResetOrientation: true)
+                    }
+                }
+            }
+        }
+        presentationCoordinator.pictureInPictureCoordinator.onRestoreInterface = { completionHandler in
+            DispatchQueue.main.async {
+                showControls = true
+                enterFullscreenPlaybackMode()
+                completionHandler(true)
+            }
+        }
+        presentationCoordinator.pictureInPictureCoordinator.onFailure = {
+            isPictureInPictureStarting = false
+            isPictureInPictureActive = false
+        }
+    }
+
+    private func setupPlayer(
+        initialTime: Double? = nil,
+        shouldAutoPlay: Bool = true
+    ) {
         configureCRMAudioSessionForPiP()
 
         guard let source = preferredSource(for: currentQuality) else {
@@ -864,8 +962,77 @@ struct CRMVideoPlayExperience: View {
         setupDefaultAudioTrack()
         setupDefaultSubtitle()
 
-        player?.play()
-        isPlaying = true
+        if let initialTime,
+           initialTime.isFinite,
+           initialTime > 0 {
+            seekTo(time: initialTime)
+        }
+
+        if shouldAutoPlay {
+            player?.play()
+        } else {
+            player?.pause()
+        }
+        isPlaying = shouldAutoPlay
+    }
+
+    private func applyRetainedPlaybackSnapshot() {
+        if let retainedPlaybackSession = presentationCoordinator.retainedPlaybackSession {
+            playbackSession = retainedPlaybackSession
+        }
+
+        if let retainedCurrentQuality = presentationCoordinator.retainedCurrentQuality {
+            currentQuality = retainedCurrentQuality
+        }
+
+        if let retainedSubtitleID = presentationCoordinator.retainedSubtitleID {
+            currentSubtitle = playbackSession.episode.subtitleTracks.first(where: { $0.id == retainedSubtitleID })
+        }
+
+        if let retainedAudioTrackID = presentationCoordinator.retainedAudioTrackID {
+            currentAudioTrack = playbackSession.episode.audioTracks.first(where: { $0.id == retainedAudioTrackID })
+        }
+    }
+
+    private func restoreRetainedPlaybackIfNeeded() -> Bool {
+        guard player == nil,
+              let retainedPlayer = presentationCoordinator.retainedPlayer else {
+            return false
+        }
+
+        applyRetainedPlaybackSnapshot()
+
+        player = retainedPlayer
+        retainedPlayer.automaticallyWaitsToMinimizeStalling = true
+
+        let restoredTime = retainedPlayer.currentTime().seconds
+        if presentationCoordinator.retainedPlaybackTime > 0,
+           (!restoredTime.isFinite || abs(restoredTime - presentationCoordinator.retainedPlaybackTime) > 1) {
+            let targetTime = CMTime(
+                seconds: presentationCoordinator.retainedPlaybackTime,
+                preferredTimescale: CMTimeScale(NSEC_PER_SEC)
+            )
+            retainedPlayer.seek(to: targetTime, toleranceBefore: .zero, toleranceAfter: .zero)
+            currentTime = presentationCoordinator.retainedPlaybackTime
+        } else {
+            currentTime = restoredTime.isFinite ? restoredTime : 0
+        }
+
+        if let itemDuration = retainedPlayer.currentItem?.duration.seconds, itemDuration.isFinite {
+            duration = itemDuration
+        }
+
+        isPlaying = retainedPlayer.timeControlStatus != .paused
+        setupTimeObserver()
+
+        if let currentSubtitle, currentSubtitle.languageCode != "off" {
+            loadSubtitle(currentSubtitle)
+        } else {
+            subtitleCues = []
+            subtitleText = ""
+        }
+
+        return true
     }
 
     private func preferredSource(for quality: VideoQuality) -> VideoEpisodeResolution? {
@@ -937,17 +1104,57 @@ struct CRMVideoPlayExperience: View {
         }
     }
 
-    private func cleanupPlayer(shouldResetOrientation: Bool) {
+    private func cleanupPlayer(
+        shouldResetOrientation: Bool,
+        shouldPausePlayer: Bool = true,
+        shouldClearRetainedPlayback: Bool = true
+    ) {
         if let player {
             removeTimeObserver(from: player)
-            player.pause()
+            if shouldPausePlayer {
+                player.pause()
+            }
         }
         self.player = nil
         pipController = nil
+        playerLayer = nil
+        isPictureInPictureActive = false
+        isPictureInPictureStarting = false
+
+        if shouldClearRetainedPlayback {
+            presentationCoordinator.clearRetainedPlayback()
+        }
 
         if shouldResetOrientation {
             resetOrientation()
         }
+    }
+
+    private func handlePlayerViewDisappear() {
+        if shouldKeepPlaybackRunningForPictureInPicture {
+            if let player {
+                removeTimeObserver(from: player)
+            }
+            presentationCoordinator.retainPlayback(
+                player: player,
+                playbackSession: playbackSession,
+                currentQuality: currentQuality,
+                currentSubtitle: currentSubtitle,
+                currentAudioTrack: currentAudioTrack,
+                currentTime: currentTime,
+                wasPlaying: isPlaying
+            )
+            shouldCleanupAfterPictureInPictureStops = true
+            return
+        }
+
+        cleanupPlayer(shouldResetOrientation: true)
+    }
+
+    private var shouldKeepPlaybackRunningForPictureInPicture: Bool {
+        isPictureInPictureActive
+            || isPictureInPictureStarting
+            || pipController?.isPictureInPictureActive == true
     }
 
     private func removeTimeObserver(from player: AVPlayer) {
@@ -1302,8 +1509,11 @@ struct CRMVideoPlayExperience: View {
         let trackLanguage = track.languageCode.lowercased()
         let languagePrefix = trackLanguage.components(separatedBy: "-").first ?? trackLanguage
         let displayNames = [
+            track.languageCode.lowercased(),
+            languagePrefix,
             track.displayName.value(for: languageStore.currentLanguage).lowercased(),
             track.displayName.english.lowercased(),
+            track.displayName.arabic.lowercased(),
         ]
 
         for option in group.options {
@@ -1312,11 +1522,20 @@ struct CRMVideoPlayExperience: View {
 
             if optionLanguage.contains(trackLanguage)
                 || optionLanguage.contains(languagePrefix)
-                || displayNames.contains(where: { !$0.isEmpty && optionName.contains($0) }) {
+                || displayNames.contains(where: { !$0.isEmpty && optionName.contains($0) })
+                || (languagePrefix == "ja" && (optionName.contains("japan") || optionName.contains("日本")))
+                || (languagePrefix == "en" && (optionName.contains("english") || optionName.contains("eng"))) {
                 playerItem.select(option, in: group)
                 currentAudioTrack = track
                 return
             }
+        }
+
+        if let trackIndex = playbackSession.episode.audioTracks.firstIndex(where: { $0.id == track.id }),
+           trackIndex < group.options.count {
+            playerItem.select(group.options[trackIndex], in: group)
+            currentAudioTrack = track
+            return
         }
 
         currentAudioTrack = track
@@ -1344,19 +1563,36 @@ struct CRMVideoPlayExperience: View {
         #if canImport(UIKit)
         controller.canStartPictureInPictureAutomaticallyFromInline = true
         #endif
+        controller.delegate = presentationCoordinator.pictureInPictureCoordinator
+        isPictureInPictureActive = controller.isPictureInPictureActive
         pipController = controller
     }
 
     private func togglePiP() {
-        guard let pipController else {
+        guard let pipController = preparePiPController() else {
             return
         }
 
         if pipController.isPictureInPictureActive {
+            isPictureInPictureStarting = false
             pipController.stopPictureInPicture()
         } else {
+            isPictureInPictureStarting = true
             pipController.startPictureInPicture()
         }
+    }
+
+    private func preparePiPController() -> AVPictureInPictureController? {
+        if let pipController {
+            return pipController
+        }
+
+        guard let playerLayer else {
+            return nil
+        }
+
+        setupPiP(with: playerLayer)
+        return pipController
     }
 
     private func toggleFullscreen() {
@@ -1369,6 +1605,16 @@ struct CRMVideoPlayExperience: View {
             } else {
                 windowScene.requestGeometryUpdate(.iOS(interfaceOrientations: .landscapeRight))
             }
+        }
+        #endif
+    }
+
+    private func enterFullscreenPlaybackMode() {
+        #if canImport(UIKit)
+        if #available(iOS 16.0, *),
+           let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+           !windowScene.interfaceOrientation.isLandscape {
+            windowScene.requestGeometryUpdate(.iOS(interfaceOrientations: .landscapeRight))
         }
         #endif
     }
@@ -1425,6 +1671,124 @@ private struct CRMSubtitleCue {
     let startTime: Double
     let endTime: Double
     let text: String
+}
+
+@MainActor
+final class CRMVideoPlayerPresentationCoordinator: ObservableObject {
+    @Published var isPlayerPresented = false
+    @Published var shouldForceFullscreenOnNextAppear = false
+
+    var isRestoringFromPictureInPicture = false
+    var retainedPlayer: AVPlayer?
+    var retainedPlaybackSession: VideoPlaybackSession?
+    var retainedCurrentQuality: VideoQuality?
+    var retainedSubtitleID: String?
+    var retainedAudioTrackID: String?
+    var retainedPlaybackTime: Double = 0
+    var retainedWasPlaying = false
+
+    let pictureInPictureCoordinator = CRMVideoPictureInPictureCoordinator()
+
+    init() {
+        pictureInPictureCoordinator.onRestorePresentation = { [weak self] in
+            guard let self else {
+                return
+            }
+
+            isRestoringFromPictureInPicture = true
+            shouldForceFullscreenOnNextAppear = true
+            isPlayerPresented = true
+        }
+    }
+
+    func retainPlayback(
+        player: AVPlayer?,
+        playbackSession: VideoPlaybackSession,
+        currentQuality: VideoQuality,
+        currentSubtitle: VideoSubtitleTrack?,
+        currentAudioTrack: VideoAudioTrack?,
+        currentTime: Double,
+        wasPlaying: Bool
+    ) {
+        retainedPlayer = player
+        retainedPlaybackSession = playbackSession
+        retainedCurrentQuality = currentQuality
+        retainedSubtitleID = currentSubtitle?.id
+        retainedAudioTrackID = currentAudioTrack?.id
+        retainedPlaybackTime = currentTime
+        retainedWasPlaying = wasPlaying
+    }
+
+    func clearRetainedPlayback() {
+        retainedPlayer = nil
+        retainedPlaybackSession = nil
+        retainedCurrentQuality = nil
+        retainedSubtitleID = nil
+        retainedAudioTrackID = nil
+        retainedPlaybackTime = 0
+        retainedWasPlaying = false
+        isRestoringFromPictureInPicture = false
+    }
+
+    func completePictureInPictureRestoreIfNeeded() {
+        pictureInPictureCoordinator.completePendingRestoreIfNeeded(success: true)
+        isRestoringFromPictureInPicture = false
+    }
+}
+
+final class CRMVideoPictureInPictureCoordinator: NSObject, ObservableObject, AVPictureInPictureControllerDelegate {
+    typealias RestoreInterfaceHandler = (@escaping (Bool) -> Void) -> Void
+
+    var onStateChange: ((Bool) -> Void)?
+    var onRestorePresentation: (() -> Void)?
+    var onRestoreInterface: RestoreInterfaceHandler?
+    var onFailure: (() -> Void)?
+    private var pendingRestoreCompletionHandler: ((Bool) -> Void)?
+
+    func pictureInPictureControllerDidStartPictureInPicture(_ pictureInPictureController: AVPictureInPictureController) {
+        DispatchQueue.main.async {
+            self.onStateChange?(true)
+        }
+    }
+
+    func pictureInPictureControllerDidStopPictureInPicture(_ pictureInPictureController: AVPictureInPictureController) {
+        DispatchQueue.main.async {
+            self.onStateChange?(false)
+        }
+    }
+
+    func pictureInPictureController(
+        _ pictureInPictureController: AVPictureInPictureController,
+        failedToStartPictureInPictureWithError error: Error
+    ) {
+        DispatchQueue.main.async {
+            self.onFailure?()
+            self.onStateChange?(false)
+        }
+    }
+
+    func pictureInPictureController(
+        _ pictureInPictureController: AVPictureInPictureController,
+        restoreUserInterfaceForPictureInPictureStopWithCompletionHandler completionHandler: @escaping (Bool) -> Void
+    ) {
+        DispatchQueue.main.async {
+            self.onRestorePresentation?()
+            if let onRestoreInterface = self.onRestoreInterface {
+                onRestoreInterface(completionHandler)
+            } else {
+                self.pendingRestoreCompletionHandler = completionHandler
+            }
+        }
+    }
+
+    func completePendingRestoreIfNeeded(success: Bool) {
+        guard let pendingRestoreCompletionHandler else {
+            return
+        }
+
+        self.pendingRestoreCompletionHandler = nil
+        pendingRestoreCompletionHandler(success)
+    }
 }
 
 private extension Sequence where Element: Hashable {

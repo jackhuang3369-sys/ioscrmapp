@@ -709,6 +709,7 @@ struct VideoDetailView: View {
     @EnvironmentObject private var languageStore: AppLanguageStore
 
     @StateObject private var viewModel: VideoDetailViewModel
+    @StateObject private var playerPresentationCoordinator = CRMVideoPlayerPresentationCoordinator()
     @State private var selectedEpisodeID: String?
     @State private var selectedRelatedVideoID: String?
     @State private var playbackSession: VideoPlaybackSession?
@@ -749,13 +750,21 @@ struct VideoDetailView: View {
             }
         }
         .overlay(relatedNavigationLink)
-        .fullScreenCover(item: $playbackSession) { playbackSession in
-            if let detail = viewModel.detail {
+        .fullScreenCover(
+            isPresented: Binding(
+                get: { playerPresentationCoordinator.isPlayerPresented && playbackSession != nil },
+                set: { isPresented in
+                    playerPresentationCoordinator.isPlayerPresented = isPresented
+                }
+            )
+        ) {
+            if let detail = viewModel.detail, let playbackSession {
                 VideoPlayerContainerView(
                     detail: detail,
                     initialSession: playbackSession,
                     session: viewModel.session,
-                    videoService: viewModel.videoService
+                    videoService: viewModel.videoService,
+                    presentationCoordinator: playerPresentationCoordinator
                 )
             }
         }
@@ -807,9 +816,12 @@ struct VideoDetailView: View {
                     },
                     onPlay: {
                         Task {
-                            playbackSession = await viewModel.requestPlaybackSession(
+                            if let session = await viewModel.requestPlaybackSession(
                                 episodeID: selectedEpisode?.id
-                            )
+                            ) {
+                                playbackSession = session
+                                playerPresentationCoordinator.isPlayerPresented = true
+                            }
                         }
                     },
                     onSelectRelated: { relatedID in
@@ -1110,9 +1122,12 @@ struct VideoDetailView: View {
                 isEnabled: detail.isPlayable && selectedEpisode != nil
             ) {
                 Task {
-                    playbackSession = await viewModel.requestPlaybackSession(
+                    if let session = await viewModel.requestPlaybackSession(
                         episodeID: selectedEpisode?.id
-                    )
+                    ) {
+                        playbackSession = session
+                        playerPresentationCoordinator.isPlayerPresented = true
+                    }
                 }
             }
         }
@@ -1174,13 +1189,15 @@ private struct VideoPlayerContainerView: View {
     let initialSession: VideoPlaybackSession
     let session: CustSubInfo
     let videoService: any VideoServicing
+    @ObservedObject var presentationCoordinator: CRMVideoPlayerPresentationCoordinator
 
     var body: some View {
         CRMVideoPlayExperience(
             detail: detail,
             initialSession: initialSession,
             sessionInfo: session,
-            videoService: videoService
+            videoService: videoService,
+            presentationCoordinator: presentationCoordinator
         )
     }
 }
