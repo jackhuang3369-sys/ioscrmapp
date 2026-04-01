@@ -22,6 +22,7 @@ struct HomeView: View {
     @State private var placeholderMessage: LocalizedTextValue?
     @State private var selectedTab: HomeTab = .home
     @State private var isMessageCenterPresented = false
+    @State private var isAIChatPresented = false
     @State private var isBillingPresented = false
     @State private var isRechargePresented = false
     @State private var isOffersPresented = false
@@ -161,16 +162,12 @@ struct HomeView: View {
 
             MeContainerView(
                 session: custSubInfo,
-                aiChatService: aiChatService,
                 billingService: billingService,
                 rechargeService: rechargeService,
                 badgeCenterService: badgeCenterService,
                 meService: meService,
                 showRechargeEntry: showsRechargeEntryInMe,
                 isSigningOut: isSigningOut,
-                onAIChatNavigate: { target in
-                    handleAIChatNavigation(target)
-                },
                 onSignOut: {
                     startSignOut()
                 }
@@ -200,6 +197,16 @@ struct HomeView: View {
                 session: custSubInfo,
                 notificationService: notificationService
             )
+        }
+        .fullScreenCover(isPresented: $isAIChatPresented) {
+            AIChatView(
+                custSubInfo: custSubInfo,
+                language: languageStore.currentLanguage,
+                aiChatService: aiChatService
+            ) { target in
+                isAIChatPresented = false
+                handleAIChatNavigation(target)
+            }
         }
         .fullScreenCover(isPresented: $isBillingPresented) {
             BillingContainerView(session: custSubInfo, billingService: billingService)
@@ -336,6 +343,9 @@ struct HomeView: View {
                 HStack(spacing: DUSpacing.sm) {
                     CircleAction(symbol: "magnifyingglass") {
                         placeholderMessage = .key("home.placeholder.search")
+                    }
+                    CircleAction(symbol: "sparkles") {
+                        isAIChatPresented = true
                     }
                     CircleAction(symbol: "bell.fill") {
                         isMessageCenterPresented = true
