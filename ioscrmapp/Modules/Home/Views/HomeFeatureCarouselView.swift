@@ -247,20 +247,28 @@ struct HomeFeatureCarouselView: View {
 
     private func opacity(for position: CGFloat) -> CGFloat {
         let distance = abs(position)
-        guard distance > 1 else {
+        let sideCardMinimumOpacity: CGFloat = 0.56
+
+        if distance <= 0.18 {
             return 1
         }
 
-        return 1 - smoothStep((distance - 1) / 1.1)
+        if distance <= 1 {
+            let fadeProgress = smoothStep((distance - 0.18) / 0.82)
+            return 1 - ((1 - sideCardMinimumOpacity) * fadeProgress)
+        }
+
+        let offscreenFadeProgress = smoothStep((distance - 1) / 0.7)
+        return sideCardMinimumOpacity * (1 - offscreenFadeProgress)
     }
 
     private func grayscaleAmount(for position: CGFloat) -> CGFloat {
         let distance = abs(position)
-        guard distance > 0.5 else {
+        guard distance > 0.2 else {
             return 0
         }
 
-        return smoothStep((distance - 0.5) / 0.5)
+        return smoothStep((distance - 0.2) / 0.55)
     }
 
     private func smoothStep(_ value: CGFloat) -> CGFloat {
@@ -270,7 +278,7 @@ struct HomeFeatureCarouselView: View {
 
     // 切换动画时间从这里调整；改小更快，改大更慢。
     private var carouselAnimation: Animation {
-        .easeInOut(duration: 1.00)
+        .easeInOut(duration: 0.82)
     }
 }
 
@@ -290,9 +298,9 @@ private struct HomeFeatureCarouselMetrics {
         // 这里控制卡片视窗的高宽比，会直接影响图片上下被裁剪的程度。
         let resolvedCardHeight = resolvedCardWidth * 0.78
         // 这里控制主卡的窗口大小；值越大，主卡可见内容越多、裁剪越轻。
-        let resolvedMinimumCardScale: CGFloat = 0.90
+        let resolvedMinimumCardScale: CGFloat = 0.84
         // 这里控制两侧卡片的窗口大小；值越大，两侧卡片的裁剪越轻。
-        let resolvedMaximumCardScale: CGFloat = 1.05
+        let resolvedMaximumCardScale: CGFloat = 1.11
         // 主卡和两侧卡片的实际白缝压缩到原来的约 40%。
         let resolvedInterCardSpacing: CGFloat = 13
         let primaryCardWidth = resolvedCardWidth * resolvedMinimumCardScale
