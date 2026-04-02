@@ -198,14 +198,27 @@ struct HomeView: View {
                 notificationService: notificationService
             )
         }
-        .fullScreenCover(isPresented: $isAIChatPresented) {
-            AIChatView(
-                custSubInfo: custSubInfo,
-                language: languageStore.currentLanguage,
-                aiChatService: aiChatService
-            ) { target in
-                isAIChatPresented = false
-                handleAIChatNavigation(target)
+        .sheet(isPresented: $isAIChatPresented) {
+            if #available(iOS 16.0, *) {
+                AIChatView(
+                    custSubInfo: custSubInfo,
+                    language: languageStore.currentLanguage,
+                    aiChatService: aiChatService
+                ) { target in
+                    isAIChatPresented = false
+                    handleAIChatNavigation(target)
+                }
+                .presentationDetents([.fraction(0.85)])
+                .presentationDragIndicator(.visible)
+            } else {
+                AIChatView(
+                    custSubInfo: custSubInfo,
+                    language: languageStore.currentLanguage,
+                    aiChatService: aiChatService
+                ) { target in
+                    isAIChatPresented = false
+                    handleAIChatNavigation(target)
+                }
             }
         }
         .fullScreenCover(isPresented: $isBillingPresented) {

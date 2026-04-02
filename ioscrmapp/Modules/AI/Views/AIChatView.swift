@@ -86,6 +86,7 @@ struct AIChatView: View {
                 // Bottom Voice Action
                 voiceActionBar
             }
+            .padding(.top, 16)
             .safeAreaInset(edge: .bottom) {
                 Color.clear.frame(height: 20)
             }
