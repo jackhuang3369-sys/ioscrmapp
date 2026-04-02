@@ -229,37 +229,54 @@ struct HomeView: View {
             Text(localized(signOutFailureMessageKey))
         }
 
-            // Custom AI Assistant Overlay Card Popup
+            // Custom AI Assistant Premium Floating Card Popup
             if isAIChatPresented {
-                ZStack(alignment: .bottom) {
-                    Color.black.opacity(0.55)
-                        .ignoresSafeArea()
-                        .onTapGesture {
-                            withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                GeometryReader { proxy in
+                    let availableWidth = max(proxy.size.width - 32, 240)
+                    let availableHeight = max(proxy.size.height - 48, 320)
+                    let cardWidth = min(availableWidth, 380)
+                    let preferredHeight = min(availableHeight * 0.9, 620)
+                    let cardHeight = min(max(preferredHeight, 420), availableHeight)
+
+                    ZStack(alignment: .center) {
+                        // Extreme deep blur background for premium feel
+                        Color.black.opacity(0.3)
+                            .background(.ultraThinMaterial)
+                            .ignoresSafeArea()
+                            .onTapGesture {
+                                withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
+                                    isAIChatPresented = false
+                                }
+                            }
+
+                        AIChatView(
+                            custSubInfo: custSubInfo,
+                            language: languageStore.currentLanguage,
+                            aiChatService: aiChatService
+                        ) { target in
+                            withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
                                 isAIChatPresented = false
                             }
+                            handleAIChatNavigation(target)
                         }
-                    
-                    AIChatView(
-                        custSubInfo: custSubInfo,
-                        language: languageStore.currentLanguage,
-                        aiChatService: aiChatService
-                    ) { target in
-                        withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
-                            isAIChatPresented = false
-                        }
-                        handleAIChatNavigation(target)
+                        .frame(
+                            width: cardWidth,
+                            height: cardHeight
+                        )
+                        .clipShape(RoundedRectangle(cornerRadius: 36, style: .continuous))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 36, style: .continuous)
+                                .stroke(Color.white.opacity(0.2), lineWidth: 0.5)
+                        )
+                        .shadow(color: DUTheme.magenta.opacity(0.2), radius: 40, x: 0, y: 20)
+                        .shadow(color: Color.black.opacity(0.4), radius: 20, x: 0, y: 10)
                     }
-                    .clipShape(RoundedRectangle(cornerRadius: 36, style: .continuous))
-                    .padding(.top, 60)
-                    .padding(.horizontal, 14)
-                    .padding(.bottom, 16)
-                    .shadow(color: Color.black.opacity(0.3), radius: 30, x: 0, y: 15)
-                    // Allows the overlay to go beneath bottom safe area and top
-                    .ignoresSafeArea(.keyboard, edges: .bottom)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
                 .zIndex(100)
-                .transition(.move(edge: .bottom).combined(with: .opacity))
+                .transition(.scale(scale: 0.85).combined(with: .opacity))
+            }
+                .transition(.scale(scale: 0.85).combined(with: .opacity))
             }
         } // End of ZStack body
     }
@@ -640,9 +657,9 @@ struct HomeView: View {
     }
 
     private var featuredCarouselSection: some View {
-        // 首页只在这里编排轮播区块；裁剪视差、自动轮播和手势吸附都封装在 Home 模块局部组件中。
+        // 婵☆偓绲鹃悧鐘诲Υ婢舵劕鐭楁い蹇撳闊剟寮堕埡鍌滄噰闁革綁顥撶槐鎾诲冀閵娿儳鐟╅柡澶屽剱閸犳骞愰柆宥呯闁告繂瀚崑銉╂煥濞戞瑧顬兼い銉ユ瀹曟粓顢旈崶鑸电秺閻庣懓澹婇崰鎾诲焵椤戞寧绁伴柛銈嗙矒瀹曟繈濡搁妸褎鐎梺鍦檸閸樺ジ骞忔导鏉戠閻庯綆浜滈埣銏ゆ煕濮橆厽鍊愭俊缁㈠櫍閺屽牓鎸婃径灞绢唸闁荤喍绀侀幊搴★耿?Home 濠碘槅鍨埀顒冩珪閸嬨儵鎮橀悙鈺佷壕闂備緡鍠撻崝搴ｅ垝瀹ュ棛顩烽柡鍫滅祷閸橆剟鏌?
         HomeFeatureCarouselView(assetNames: featuredCarouselAssetNames)
-            // 两侧卡片需要直接贴到容器边缘，因此这里不再额外增加左右留白。
+            // 婵炴垶鎸堕崐鎾诲疾閸洖纭€闁挎稑瀚。濠氭⒒閸ワ絽浜鹃柣鐔告磻閼宠泛煤閸ф绠抽柕澶堝妼閸ㄩ亶鏌涢幒鎾寸凡妞ゆ梹鍔欏畷鎶藉Ω閵娧呭骄缂傚倸鍊归敃顐ゆ濠靛鐐婇柣妯诲墯閸斿啴寮堕埡鍌滄噰闁革綁鏀辩粙澶婎吋閸涱厽娅冩俊顐ゅ缁诲倿藝缂佹ɑ娅犻柣鎰絻椤絿鈧綊娼荤粻鎴ｃ亹閹间焦鍋╂繛鍡樺灦椤忋倝鏌?
             .padding(.vertical, DUSpacing.lg)
             .overlay(
                 RoundedRectangle(cornerRadius: 20, style: .continuous)
@@ -784,7 +801,7 @@ struct HomeView: View {
         for profile: HomeProfileSection
     ) -> String {
         let networkValue = localized(profile.networkStatus?.textValue ?? HomeDisplayValue.unavailable)
-        return "\(profile.serviceNumber)  •  \(networkValue)"
+        return "\(profile.serviceNumber)  闂? \(networkValue)"
     }
 
     private func showComingSoon(for title: LocalizedTextValue) {
@@ -1027,15 +1044,15 @@ private enum HomeTab: Hashable {
     var emoji: String {
         switch self {
         case .home:
-            return "🏠"
+            return "濡絽鍟紞?
         case .service:
-            return "📱"
+            return "濡絽鍟幊?
         case .mall:
-            return "🛒"
+            return "濡絽鍟壕?
         case .video:
-            return "🎬"
+            return "濡絽鍟粻?
         case .me:
-            return "👤"
+            return "濡絽鍟崳?
         }
     }
 

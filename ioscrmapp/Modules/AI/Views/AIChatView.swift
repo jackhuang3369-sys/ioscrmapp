@@ -6,8 +6,7 @@ struct AIChatView: View {
     @Environment(\.openURL) private var openURL
     @StateObject private var viewModel: AIChatViewModel
     let onNavigate: (AIChatNavigationTarget) -> Void
-    
-    // Animation states
+
     @State private var isAnimatingCore = false
     @State private var rippleScale: CGFloat = 1.0
     @State private var rippleOpacity: Double = 0.8
@@ -32,57 +31,54 @@ struct AIChatView: View {
     }
 
     var body: some View {
-        ZStack {
-            // 1. Brighter Futuristic background (Blue - Purple - Deep Violet)
-            LinearGradient(
-                gradient: Gradient(colors: [
-                    Color(red: 0.1, green: 0.35, blue: 0.8),
-                    Color(red: 0.35, green: 0.15, blue: 0.75),
-                    Color(red: 0.25, green: 0.1, blue: 0.6)
-                ]),
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .ignoresSafeArea()
-            
-            // Abstract technology mesh / background paths
-            backgroundMesh
+        GeometryReader { proxy in
+            let horizontalPadding = min(max(proxy.size.width * 0.06, 18), 28)
+            let titleTopPadding = max(proxy.size.height * 0.03, DUSpacing.md)
+            let coreSize = min(max(proxy.size.width * 0.42, 138), 176)
+            let voiceButtonSize = min(max(proxy.size.width * 0.2, 68), 80)
+            let contentBottomPadding = max(proxy.safeAreaInsets.bottom, 16) + 12
 
-            VStack(spacing: 0) {
-                // Header (Action buttons)
-                header
-                
-                // Welcome Text at Top
-                VStack(alignment: .leading, spacing: 8) {
-                    Text(viewModel.title.replacingOccurrences(of: "\\n", with: "\n"))
-                        .font(.du(34, weight: .semibold))
-                        .foregroundColor(.white)
-                        .multilineTextAlignment(.leading)
-                        .lineSpacing(2)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, DUSpacing.xxl)
-                .padding(.top, DUSpacing.xxl)
-                
-                Spacer()
+            ZStack {
+                auroraBackground
 
-                // Center Element with scattered Prompts
-                ZStack {
-                    // Magical Floating Orb
-                    aiCoreFeature
-                    
-                    // Scattered Prompt Capsules (absolute positioning)
+                Rectangle()
+                    .fill(.ultraThinMaterial)
+                    .opacity(0.85)
+
+                VStack(spacing: 0) {
+                    header(topPadding: max(proxy.safeAreaInsets.top, 18))
+
+                    VStack(alignment: .center, spacing: 8) {
+                        Text("AI Assistant")
+                            .font(.du(13, weight: .semibold))
+                            .foregroundColor(Color.white.opacity(0.62))
+                            .tracking(3)
+                            .textCase(.uppercase)
+
+                        Text(viewModel.title)
+                            .font(.du(proxy.size.height < 620 ? 24 : 26, weight: .bold))
+                            .foregroundColor(.white)
+                            .multilineTextAlignment(.center)
+                            .lineLimit(3)
+                            .minimumScaleFactor(0.82)
+                    }
+                    .padding(.top, titleTopPadding)
+                    .padding(.horizontal, horizontalPadding)
+
+                    Spacer(minLength: max(proxy.size.height * 0.035, 16))
+
+                    aiCoreFeature(coreSize: coreSize)
+
+                    Spacer(minLength: max(proxy.size.height * 0.05, 20))
+
                     scatteredPrompts
+                        .padding(.horizontal, horizontalPadding)
+
+                    Spacer(minLength: max(proxy.size.height * 0.04, 16))
+
+                    voiceActionBar(buttonSize: voiceButtonSize)
+                        .padding(.bottom, contentBottomPadding)
                 }
-                .frame(height: 300)
-                
-                Spacer()
-                
-                // Bottom Voice Action
-                voiceActionBar
-            }
-            .safeAreaInset(edge: .bottom) {
-                Color.clear.frame(height: 10)
             }
         }
         .onAppear {
@@ -94,138 +90,176 @@ struct AIChatView: View {
         }
     }
 
-    private var backgroundMesh: some View {
+    private var auroraBackground: some View {
         ZStack {
-            // Fluid abstract lines simulating voice waves or network
-            ForEach(0..<6, id: \.self) { i in
-                RoundedRectangle(cornerRadius: 150)
-                    .stroke(Color.white.opacity(0.04 - Double(i) * 0.005), lineWidth: 1)
-                    .frame(width: 300 + CGFloat(i) * 30, height: 200 + CGFloat(i) * 40)
-                    .rotationEffect(.degrees(isAnimatingCore ? 45 + Double(i) * 10 : 0 + Double(i) * 20))
-                    .offset(x: isAnimatingCore ? 20 : -10, y: isAnimatingCore ? -20 : 10)
-                    .animation(.easeInOut(duration: 8 + Double(i)).repeatForever(autoreverses: true), value: isAnimatingCore)
-            }
-            
-            ForEach(0..<4, id: \.self) { i in
-                Circle()
-                    .stroke(Color.cyan.opacity(0.03), lineWidth: 2)
-                    .frame(width: 400 + CGFloat(i) * 80)
-                    .offset(y: 100)
-            }
+            Color.black.opacity(0.12)
+
+            Circle()
+                .fill(Color(hex: 0x4821FF))
+                .frame(width: 250, height: 250)
+                .blur(radius: 60)
+                .offset(x: isAnimatingCore ? -60 : 40, y: isAnimatingCore ? -120 : -80)
+
+            Circle()
+                .fill(Color(hex: 0x00E5FF))
+                .frame(width: 200, height: 200)
+                .blur(radius: 70)
+                .offset(x: isAnimatingCore ? 80 : -40, y: isAnimatingCore ? 60 : 120)
+
+            Circle()
+                .fill(Color(hex: 0xFF2180).opacity(0.6))
+                .frame(width: 180, height: 180)
+                .blur(radius: 80)
+                .offset(x: isAnimatingCore ? -30 : 60, y: isAnimatingCore ? 140 : 40)
         }
+        .animation(.easeInOut(duration: 8).repeatForever(autoreverses: true), value: isAnimatingCore)
     }
 
-    private var header: some View {
+    private func header(topPadding: CGFloat) -> some View {
         HStack {
             Spacer()
-            HStack(spacing: DUSpacing.xl) {
-                Button {
-                    // History/Message log placeholder mapping
-                    dismiss()
-                } label: {
-                    Image(systemName: "rectangle.3.group.bubble.left")
-                        .font(.du(22, weight: .medium))
-                        .foregroundColor(.white.opacity(0.85))
-                }
-                
-                Button {
-                    dismiss()
-                } label: {
-                    Image(systemName: "xmark")
-                        .font(.du(24, weight: .light))
-                        .foregroundColor(.white.opacity(0.85))
-                }
+            Button {
+                dismiss()
+            } label: {
+                Image(systemName: "xmark")
+                    .font(.du(16, weight: .bold))
+                    .foregroundColor(.white.opacity(0.8))
+                    .frame(width: 44, height: 44)
+                    .background(Color.white.opacity(0.15))
+                    .clipShape(Circle())
+                    .overlay(
+                        Circle()
+                            .stroke(Color.white.opacity(0.18), lineWidth: 0.5)
+                    )
             }
-            .padding(.trailing, DUSpacing.xl)
-            .padding(.top, DUSpacing.lg)
+            .buttonStyle(.plain)
+            .padding(.trailing, 20)
+            .padding(.top, topPadding)
         }
     }
 
-    private var aiCoreFeature: some View {
-        ZStack {
-            // Bright aura
+    private func aiCoreFeature(coreSize: CGFloat) -> some View {
+        let haloSize = coreSize * 1.6
+        let orbitSize = coreSize * 1.26
+
+        return ZStack {
             Circle()
-                .fill(RadialGradient(gradient: Gradient(colors: [Color(red: 0.4, green: 0.1, blue: 0.9).opacity(0.7), .clear]), center: .center, startRadius: 40, endRadius: 180))
-                .frame(width: 360, height: 360)
-                .scaleEffect(isAnimatingCore ? 1.08 : 0.92)
-                .animation(.easeInOut(duration: 3).repeatForever(autoreverses: true), value: isAnimatingCore)
-            
-            // Core Magical Sphere (simulating colorful liquid glass)
+                .fill(
+                    RadialGradient(
+                        gradient: Gradient(colors: [Color.white.opacity(0.16), .clear]),
+                        center: .center,
+                        startRadius: 10,
+                        endRadius: haloSize / 2
+                    )
+                )
+                .frame(width: haloSize, height: haloSize)
+
+            Circle()
+                .stroke(
+                    LinearGradient(
+                        gradient: Gradient(colors: [
+                            Color.white.opacity(0.08),
+                            Color.cyan.opacity(0.35),
+                            Color.pink.opacity(0.24),
+                            Color.white.opacity(0.08)
+                        ]),
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    lineWidth: 1
+                )
+                .frame(width: orbitSize, height: orbitSize)
+                .rotationEffect(.degrees(coreRotation))
+
+            Circle()
+                .trim(from: 0.18, to: 0.92)
+                .stroke(
+                    AngularGradient(
+                        colors: [
+                            Color.clear,
+                            Color.cyan.opacity(0.55),
+                            Color.pink.opacity(0.55),
+                            Color.clear
+                        ],
+                        center: .center
+                    ),
+                    style: StrokeStyle(lineWidth: 1.2, lineCap: .round)
+                )
+                .frame(width: orbitSize * 1.08, height: orbitSize * 1.08)
+                .rotationEffect(.degrees(-coreRotation * 0.65))
+
             ZStack {
                 Circle()
                     .fill(
                         LinearGradient(
-                            gradient: Gradient(colors: [Color.cyan, Color.blue, Color.purple]),
+                            gradient: Gradient(colors: [Color(hex: 0x00F0FF), Color(hex: 0x4B30FF), Color(hex: 0xFF2E93)]),
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
                     )
-                
-                // Vibrant color blobs to simulate thick gradient mesh
-                Circle()
-                    .fill(Color.pink)
-                    .frame(width: 90, height: 90)
-                    .blur(radius: 20)
-                    .offset(x: isAnimatingCore ? -30 : 20, y: isAnimatingCore ? -40 : 10)
-                
-                Circle()
-                    .fill(Color(red: 0.1, green: 0.9, blue: 0.8))
-                    .frame(width: 80, height: 80)
-                    .blur(radius: 25)
-                    .offset(x: isAnimatingCore ? 30 : -20, y: isAnimatingCore ? 30 : -10)
 
                 Circle()
-                    .fill(Color.orange)
-                    .frame(width: 60, height: 60)
+                    .fill(Color(hex: 0xFFBDE6))
+                    .frame(width: coreSize * 0.53, height: coreSize * 0.53)
+                    .blur(radius: 15)
+                    .offset(x: isAnimatingCore ? -20 : 15, y: isAnimatingCore ? -25 : 10)
+
+                Circle()
+                    .fill(Color(hex: 0x82FFF0))
+                    .frame(width: coreSize * 0.46, height: coreSize * 0.46)
                     .blur(radius: 20)
-                    .offset(x: 10, y: -40)
+                    .offset(x: isAnimatingCore ? 20 : -15, y: isAnimatingCore ? 20 : -10)
             }
-            .frame(width: 170, height: 170)
+            .frame(width: coreSize, height: coreSize)
             .clipShape(Circle())
-            // Top specular highlight
             .overlay(
                 Circle()
                     .fill(
                         LinearGradient(
-                            gradient: Gradient(colors: [.white.opacity(0.8), .clear, .clear]),
-                            startPoint: .top,
-                            endPoint: .bottom
+                            gradient: Gradient(colors: [Color.white.opacity(0.6), .clear, .clear]),
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
                         )
                     )
-                    .padding(2)
+                    .padding(1)
             )
-            .shadow(color: Color.purple.opacity(0.4), radius: 30, x: 0, y: 10)
-            .scaleEffect(isAnimatingCore ? 1.03 : 0.97)
+            .shadow(color: Color(hex: 0x4B30FF).opacity(0.5), radius: 25, x: 0, y: 15)
+            .scaleEffect(isAnimatingCore ? 1.04 : 0.96)
             .animation(.easeInOut(duration: 2.5).repeatForever(autoreverses: true), value: isAnimatingCore)
         }
     }
 
     private var scatteredPrompts: some View {
-        Group {
-            if viewModel.suggestedPrompts.count >= 1 {
-                promptCapsule(viewModel.suggestedPrompts[0])
-                    .offset(x: -80, y: -60)
+        VStack(spacing: 12) {
+            if let firstPrompt = viewModel.suggestedPrompts[safe: 0] {
+                promptCapsule(firstPrompt, index: 0, isFullWidth: true)
             }
-            if viewModel.suggestedPrompts.count >= 2 {
-                promptCapsule(viewModel.suggestedPrompts[1])
-                    .offset(x: 110, y: 20)
-            }
-            if viewModel.suggestedPrompts.count >= 3 {
-                promptCapsule(viewModel.suggestedPrompts[2])
-                    .offset(x: -60, y: 80)
+            HStack(alignment: .top, spacing: 12) {
+                if let secondPrompt = viewModel.suggestedPrompts[safe: 1] {
+                    promptCapsule(secondPrompt, index: 1)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                if let thirdPrompt = viewModel.suggestedPrompts[safe: 2] {
+                    promptCapsule(thirdPrompt, index: 2)
+                        .frame(maxWidth: .infinity, alignment: .trailing)
+                }
             }
         }
     }
 
-    private func promptCapsule(_ text: String) -> some View {
+    private func promptCapsule(_ text: String, index: Int, isFullWidth: Bool = false) -> some View {
         Button {
             viewModel.sendSuggestedPrompt(text)
         } label: {
             Text(text)
                 .font(.du(13, weight: .medium))
                 .foregroundColor(.white)
+                .multilineTextAlignment(.center)
+                .lineLimit(2)
+                .minimumScaleFactor(0.82)
                 .padding(.horizontal, 16)
                 .padding(.vertical, 10)
+                .frame(maxWidth: isFullWidth ? .infinity : nil)
                 .background(.ultraThinMaterial)
                 .background(Color.white.opacity(0.1))
                 .clipShape(Capsule())
@@ -235,66 +269,50 @@ struct AIChatView: View {
                 .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 2)
         }
         .buttonStyle(.plain)
+        .opacity(promptOpacities[safe: index] ?? 1)
+        .offset(y: promptOffsets[safe: index] ?? 0)
     }
 
-    private var voiceActionBar: some View {
+    private func voiceActionBar(buttonSize: CGFloat) -> some View {
         VStack(spacing: DUSpacing.sm) {
-            Text("Hold to Talk ~")
-                .font(.du(14, weight: .regular))
-                .foregroundColor(.white.opacity(0.75))
-            
+            Text("Hold to Talk")
+                .font(.du(12, weight: .regular))
+                .foregroundColor(.white.opacity(0.5))
+
             ZStack {
-                // Outer subtle rings 
                 Circle()
-                    .stroke(Color.white.opacity(0.08), lineWidth: 1)
-                    .frame(width: 130, height: 130)
-                
-                Circle()
-                    .fill(Color.white.opacity(0.04))
-                    .frame(width: 100, height: 100)
-                
-                // Ripple effect
-                Circle()
-                    .stroke(Color.cyan.opacity(rippleOpacity), lineWidth: 1.5)
-                    .frame(width: 76, height: 76)
+                    .stroke(Color.white.opacity(rippleOpacity * 0.5), lineWidth: 1)
+                    .frame(width: buttonSize + 10, height: buttonSize + 10)
                     .scaleEffect(rippleScale)
-                
-                // Main Voice Button
+
                 Button {
                     triggerVoiceAnimation()
                 } label: {
                     ZStack {
                         Circle()
-                            .fill(Color(hex: 0x2A1559)) // Base dark purple center
-                            .frame(width: 76, height: 76)
-                        
-                        Circle()
-                            // Colorful conic gradient border exactly like image
-                            .strokeBorder(
-                                AngularGradient(
-                                    gradient: Gradient(colors: [.cyan, .blue, .purple, .pink, .orange, .cyan]),
-                                    center: .center
-                                ),
-                                lineWidth: 4
+                            .fill(Color.white.opacity(0.1))
+                            .frame(width: buttonSize, height: buttonSize)
+                            .background(.ultraThinMaterial)
+                            .clipShape(Circle())
+                            .overlay(
+                                Circle().stroke(Color.white.opacity(0.3), lineWidth: 0.5)
                             )
-                            .frame(width: 76, height: 76)
-                            .shadow(color: Color.purple.opacity(0.5), radius: 10, x: 0, y: 4)
-                        
+                            .shadow(color: Color.cyan.opacity(0.18), radius: 16, x: 0, y: 0)
+
                         Image(systemName: "mic.fill")
-                            .font(.du(24, weight: .medium))
-                            .foregroundColor(.cyan)
+                            .font(.du(buttonSize > 72 ? 22 : 20, weight: .semibold))
+                            .foregroundColor(.white)
+                            .shadow(color: Color.cyan.opacity(0.8), radius: 6, x: 0, y: 0)
                     }
                 }
                 .buttonStyle(.plain)
             }
         }
-        .padding(.bottom, DUSpacing.xl)
         .onAppear {
             startRippleAnimation()
         }
     }
 
-    // MARK: - Animations
     private func animatePrompts() {
         for index in 0..<viewModel.suggestedPrompts.count {
             guard index < 4 else { break }
@@ -311,20 +329,18 @@ struct AIChatView: View {
             rippleOpacity = 0.0
         }
     }
-    
+
     private func triggerVoiceAnimation() {
         let generator = UIImpactFeedbackGenerator(style: .medium)
         generator.impactOccurred()
-        
-        // Reset and trigger a fast pulse
+
         rippleScale = 1.0
         rippleOpacity = 0.8
         withAnimation(.easeOut(duration: 0.5)) {
             rippleScale = 2.5
             rippleOpacity = 0.0
         }
-        
-        // Resume normal idle animation after
+
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
             self.rippleScale = 1.0
             self.rippleOpacity = 0.8
@@ -333,10 +349,8 @@ struct AIChatView: View {
     }
 }
 
-// Helper for safe array access
 extension Array {
     subscript(safe index: Int) -> Element? {
         return indices.contains(index) ? self[index] : nil
     }
 }
-
