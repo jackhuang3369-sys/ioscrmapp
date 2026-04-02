@@ -232,7 +232,7 @@ struct HomeView: View {
             // AI Assistant Bottom Sheet
             if isAIChatPresented {
                 GeometryReader { proxy in
-                    let sheetHeight = min(max(proxy.size.height * 0.62, 420), 600)
+                    let sheetHeight = min(max(proxy.size.height * 0.85, 600), 850)
 
                     ZStack(alignment: .bottom) {
                         Color.black.opacity(0.3)
@@ -255,10 +255,10 @@ struct HomeView: View {
                             handleAIChatNavigation(target)
                         }
                         .frame(maxWidth: .infinity)
-                        .frame(height: sheetHeight + proxy.safeAreaInsets.bottom)
-                        .clipShape(RoundedRectangle(cornerRadius: 32, style: .continuous))
+                        .frame(height: sheetHeight)
+                        .clipShape(RoundedRectangle(cornerRadius: 36, style: .continuous))
                         .ignoresSafeArea(edges: .bottom)
-                        .shadow(color: Color(hex: 0x4B30FF).opacity(0.3), radius: 30, x: 0, y: -10)
+                        .shadow(color: Color.black.opacity(0.3), radius: 40, x: 0, y: -10)
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
