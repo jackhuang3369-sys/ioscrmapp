@@ -108,26 +108,14 @@ struct AIChatView: View {
 
     private var orbMesh: some View {
         ZStack {
-            ForEach(0..<3, id: \.self) { i in
-                Ellipse()
-                    .stroke(Color.cyan.opacity(0.12), style: StrokeStyle(lineWidth: 1.5))
-                    .frame(width: 350, height: 120)
-                    .rotationEffect(.degrees(Double(i) * 60))
-            }
-            ForEach(0..<2, id: \.self) { i in
-                Ellipse()
-                    .stroke(Color.pink.opacity(0.12), lineWidth: 1.5)
-                    .frame(width: 380, height: 100)
-                    .rotationEffect(.degrees(Double(i) * 90 + 20))
-            }
-            ForEach(0..<2, id: \.self) { i in
-                Ellipse()
-                    .stroke(Color.white.opacity(0.1), style: StrokeStyle(lineWidth: 1, dash: [4, 4]))
-                    .frame(width: 300, height: 160)
-                    .rotationEffect(.degrees(Double(i) * 90 + 45))
+            ForEach(0..<4, id: \.self) { i in
+                RoundedRectangle(cornerRadius: 60, style: .continuous)
+                    .stroke(Color.white.opacity(0.04), lineWidth: 1.5)
+                    .frame(width: 320, height: 120)
+                    .rotationEffect(.degrees(Double(i) * 45))
             }
         }
-        .frame(width: 400, height: 400)
+        .frame(width: 320, height: 320)
         .rotationEffect(.degrees(coreRotation * 0.15))
     }
 
@@ -175,68 +163,52 @@ struct AIChatView: View {
                 .blur(radius: 20)
                 .rotationEffect(.degrees(coreRotation * 0.4))
             
-            // 液体玻璃核心 (Liquid Glass Core)
+            // 液体玻璃核心极为关键的光影合成
             ZStack {
                 // 深邃底部
-                LinearGradient(
-                    colors: [Color(hex: 0x0900FF), Color(hex: 0x171B40)],
-                    startPoint: .topLeading, endPoint: .bottomTrailing
-                )
-
-                // 内部流动流体 (Fluid Blobs), 与屏幕叠加并缓缓旋转
-                ZStack {
-                    // Blob 1: 青色
-                    Circle()
-                        .fill(RadialGradient(colors: [Color.cyan.opacity(0.9), .clear], center: .center, startRadius: 0, endRadius: coreSize * 0.45))
-                        .frame(width: coreSize * 1.5, height: coreSize * 1.5)
-                        .offset(x: isAnimatingCore ? coreSize * 0.15 : -coreSize * 0.15, y: isAnimatingCore ? -coreSize * 0.15 : coreSize * 0.15)
-                        .blur(radius: 12)
-
-                    // Blob 2: 粉紫色
-                    Circle()
-                        .fill(RadialGradient(colors: [Color.pink.opacity(0.8), .clear], center: .center, startRadius: 0, endRadius: coreSize * 0.45))
-                        .frame(width: coreSize * 1.5, height: coreSize * 1.5)
-                        .offset(x: isAnimatingCore ? -coreSize * 0.15 : coreSize * 0.15, y: isAnimatingCore ? coreSize * 0.15 : -coreSize * 0.15)
-                        .blur(radius: 12)
-
-                    // Blob 3: 珊瑚橙
-                    Circle()
-                        .fill(RadialGradient(colors: [Color(hex: 0xFF6B6B).opacity(0.95), .clear], center: .center, startRadius: 0, endRadius: coreSize * 0.35))
-                        .frame(width: coreSize * 1.2, height: coreSize * 1.2)
-                        .offset(x: 0, y: isAnimatingCore ? -coreSize * 0.25 : coreSize * 0.1)
-                        .blur(radius: 12)
-                }
-                .blendMode(.screen)
-                .rotationEffect(.degrees(isAnimatingCore ? 360 : 0))
-                .animation(.linear(duration: 15).repeatForever(autoreverses: false), value: isAnimatingCore)
-
-                // 静态表面几何高光片 (Glass Specular Reflection)
-                Ellipse()
+                Circle()
                     .fill(
                         LinearGradient(
-                            colors: [Color.white.opacity(0.8), .clear],
-                            startPoint: .top, endPoint: .bottom
+                            colors: [Color(hex: 0x0900FF), Color(hex: 0x171B40)],
+                            startPoint: .topLeading, endPoint: .bottomTrailing
                         )
                     )
-                    .frame(width: coreSize * 0.45, height: coreSize * 0.35)
-                    .rotationEffect(.degrees(-25))
-                    .offset(x: -coreSize * 0.15, y: -coreSize * 0.25)
-                    .blendMode(.overlay)
+
+                // 流体内光 (内部光源) - 避免使用 mix-blend-mode 以防在视图层中异常变白
+                Circle()
+                    .fill(RadialGradient(colors: [Color.cyan.opacity(0.8), .clear], center: .topLeading, startRadius: 0, endRadius: coreSize * 0.5))
+                    .frame(width: coreSize, height: coreSize)
+                    .offset(x: isAnimatingCore ? 10 : -10, y: isAnimatingCore ? -10 : 10)
                 
-                // 强烈的内外边缘折射（模拟内阴影营造物理厚度）
-                Circle().stroke(Color.white.opacity(0.6), lineWidth: 4).blur(radius: 8).offset(x: -6, y: -6)
-                Circle().stroke(Color.black.opacity(0.8), lineWidth: 6).blur(radius: 10).offset(x: 8, y: 8)
-                Circle().stroke(Color.pink.opacity(0.7), lineWidth: 5).blur(radius: 12).offset(x: 10, y: -10)
-                Circle().stroke(Color.cyan.opacity(0.8), lineWidth: 5).blur(radius: 12).offset(x: -10, y: 10)
+                Circle()
+                    .fill(RadialGradient(colors: [Color.pink.opacity(0.8), .clear], center: .bottomTrailing, startRadius: 0, endRadius: coreSize * 0.5))
+                    .frame(width: coreSize, height: coreSize)
+                    .offset(x: isAnimatingCore ? -10 : 10, y: isAnimatingCore ? 10 : -10)
                 
-                // 极细的玻璃边缘包边
-                Circle().stroke(Color.white.opacity(0.3), lineWidth: 0.5)
+                // 静态表面高光反射片
+                GeometryReader { geo in
+                    Path { path in
+                        let w = geo.size.width
+                        let h = geo.size.height
+                        path.move(to: CGPoint(x: w * 0.15, y: h * 0.25))
+                        path.addQuadCurve(to: CGPoint(x: w * 0.85, y: h * 0.25), control: CGPoint(x: w * 0.5, y: -h * 0.1))
+                        path.addQuadCurve(to: CGPoint(x: w * 0.15, y: h * 0.25), control: CGPoint(x: w * 0.5, y: h * 0.15))
+                    }
+                    .fill(LinearGradient(colors: [Color.white.opacity(0.6), .clear], startPoint: .top, endPoint: .bottom))
+                }
+                
+                // 完美的玻璃体积感（内阴影效果替代手法）：偏移遮罩线条
+                Circle().stroke(Color.white, lineWidth: 6).blur(radius: 5).offset(x: -6, y: -6)
+                Circle().stroke(Color.black.opacity(0.8), lineWidth: 12).blur(radius: 10).offset(x: 8, y: 8)
+                Circle().stroke(Color.pink.opacity(0.6), lineWidth: 8).blur(radius: 10).offset(x: 10, y: -5)
+                Circle().stroke(Color.cyan.opacity(0.7), lineWidth: 8).blur(radius: 10).offset(x: -10, y: 5)
             }
             .clipShape(Circle())
-            // 使用非均匀缩放模拟液态 blob 的微小形变蠕动效果
-            .scaleEffect(x: isAnimatingCore ? 1.03 : 0.97, y: isAnimatingCore ? 0.97 : 1.03)
-            .shadow(color: Color.cyan.opacity(0.4), radius: 20, x: 0, y: 0)
-            .shadow(color: Color.purple.opacity(0.3), radius: 40, x: 0, y: 0)
+            // 极细物理包边
+            .overlay(Circle().stroke(Color.white.opacity(0.3), lineWidth: 0.5))
+            .scaleEffect(x: isAnimatingCore ? 1.02 : 0.98, y: isAnimatingCore ? 0.98 : 1.02)
+            .shadow(color: Color.cyan.opacity(0.3), radius: 20, x: 0, y: 0)
+            .shadow(color: Color.purple.opacity(0.2), radius: 40, x: 0, y: 0)
             .animation(.easeInOut(duration: 4).repeatForever(autoreverses: true), value: isAnimatingCore)
             .frame(width: coreSize, height: coreSize)
         }
@@ -249,17 +221,17 @@ struct AIChatView: View {
             // Book a flight (左上)
             if let t = viewModel.suggestedPrompts[safe: 0] {
                 promptCapsule(t, index: 0)
-                    .offset(x: -coreSize * 0.75, y: -coreSize * 0.3)
+                    .offset(x: -coreSize * 1.0, y: -coreSize * 0.5)
             }
             // Order a meal package (左下)
             if let t = viewModel.suggestedPrompts[safe: 1] {
                 promptCapsule(t, index: 1)
-                    .offset(x: -coreSize * 0.55, y: coreSize * 0.4)
+                    .offset(x: -coreSize * 0.9, y: coreSize * 0.5)
             }
             // Check the weather (右中)
             if let t = viewModel.suggestedPrompts[safe: 2] {
                 promptCapsule(t, index: 2)
-                    .offset(x: coreSize * 0.85, y: coreSize * 0.1)
+                    .offset(x: coreSize * 1.1, y: coreSize * 0.1)
             }
         }
     }
@@ -269,18 +241,20 @@ struct AIChatView: View {
             viewModel.sendSuggestedPrompt(text)
         } label: {
             Text(text)
-                .font(.du(14, weight: .regular))
+                .font(.du(13, weight: .regular))
                 .foregroundColor(.white)
                 .multilineTextAlignment(.center)
-                .lineLimit(2)
-                .minimumScaleFactor(0.82)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 8) // 稍微变薄一点
+                .lineSpacing(2)
+                .lineLimit(3)
+                .minimumScaleFactor(0.85)
+                .frame(maxWidth: 120) // 强制折行保证不变成横向面条
+                .padding(.horizontal, 14)
+                .padding(.vertical, 8)
                 .background(.ultraThinMaterial)
                 .background(Color.white.opacity(0.05))
-                .clipShape(Capsule())
-                .overlay(Capsule().stroke(Color.white.opacity(0.3), lineWidth: 1))
-                .shadow(color: Color.black.opacity(0.1), radius: 12, x: 0, y: 4)
+                .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+                .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).stroke(Color.white.opacity(0.3), lineWidth: 1))
+                .shadow(color: Color.black.opacity(0.2), radius: 10, x: 0, y: 4)
         }
         .buttonStyle(.plain)
         .opacity(promptOpacities[safe: index] ?? 1)
