@@ -23,6 +23,7 @@ final class OffersViewModel: ObservableObject {
     @Published var isOrderFilterPresented = false
     @Published var filterSheetPresentationID = UUID()
     @Published var orderFilter = OffersOrderFilter.empty
+    @Published private(set) var orderEntrySource: OffersOrderEntrySource = .standard
     @Published var selectedResourceType: OffersResourceType = .all
     @Published var selectedCategoryID: String?
     @Published var selectedCategoryRootID: String?
@@ -147,7 +148,8 @@ final class OffersViewModel: ObservableObject {
         isPurchaseListPresented = true
     }
 
-    func openOrderList() {
+    func openOrderList(entry: OffersOrderEntrySource = .standard) {
+        orderEntrySource = entry
         isOrderListPresented = true
     }
 

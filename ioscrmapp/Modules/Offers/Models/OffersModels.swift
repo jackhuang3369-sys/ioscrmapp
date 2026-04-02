@@ -159,6 +159,119 @@ enum OffersOperationType: String, Sendable {
     }
 }
 
+enum OffersOrderEntrySource: String, Equatable, Sendable {
+    case standard
+    case diy
+}
+
+enum DIYOfferResourceKind: Equatable, Sendable {
+    case data
+    case sms
+    case unit
+    case custom(String)
+
+    init(attrCode: String) {
+        let normalized = attrCode.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        if normalized == "mb" {
+            self = .data
+        } else if normalized.contains("sms") {
+            self = .sms
+        } else if normalized.contains("unit") {
+            self = .unit
+        } else {
+            self = .custom(attrCode)
+        }
+    }
+}
+
+struct DIYOfferResource: Identifiable, Equatable, Sendable {
+    let id: String
+    let crmOfferingId: String
+    let offeringId: String
+    let attrName: String
+    let attrCode: String
+    let unit: String
+    let minValue: Int
+    let maxValue: Int
+    let defaultValue: Int
+    let feeCode: String?
+    let rateAmount: String?
+    let kind: DIYOfferResourceKind
+}
+
+struct DIYOfferPeriod: Identifiable, Equatable, Sendable {
+    let id: String
+    let title: String
+    let sortOrder: Int
+    let resources: [DIYOfferResource]
+}
+
+struct DIYOfferBootstrap: Equatable, Sendable {
+    let periods: [DIYOfferPeriod]
+    let currencyCode: String
+    let currencyName: String
+    let cbsAccuracy: Int
+}
+
+struct DIYOfferSelectedResource: Identifiable, Equatable, Sendable {
+    let resource: DIYOfferResource
+    let value: Int
+
+    var id: String { resource.id }
+}
+
+struct DIYOfferPricingItem: Identifiable, Equatable, Sendable {
+    let id: String
+    let offeringId: String
+    let title: String
+    let quantity: Int
+    let unit: String
+    let unitPriceAmount: String
+    let subtotalAmount: String
+}
+
+struct DIYOfferPricing: Equatable, Sendable {
+    let totalAmount: String
+    let currencyName: String
+    let items: [DIYOfferPricingItem]
+
+    var totalDisplayText: String {
+        "\(totalAmount) \(currencyName)"
+    }
+}
+
+struct DIYOfferPricingRequest: Equatable, Sendable {
+    let period: DIYOfferPeriod
+    let resources: [DIYOfferSelectedResource]
+    let currencyName: String
+}
+
+struct DIYOfferFeeQuotation: Equatable, Sendable {
+    let chargeAmount: String
+    let currencyCode: String
+    let traceId: String?
+}
+
+struct DIYOfferSubmissionRequest: Equatable, Sendable {
+    let period: DIYOfferPeriod
+    let resources: [DIYOfferSelectedResource]
+    let pricing: DIYOfferPricing
+}
+
+struct DIYOfferFailureResult: Identifiable, Equatable, Sendable {
+    let message: String
+    let traceId: String?
+
+    var id: String {
+        [message, traceId ?? ""].joined(separator: "|")
+    }
+}
+
+enum DIYOfferSubmissionError: Error, Equatable, Sendable {
+    case quotationRejected(LocalizedTextValue)
+    case submissionFailed(DIYOfferFailureResult)
+}
+
 struct PrimaryOfferSummary: Equatable, Sendable {
     let offerId: String
     let offerCode: String

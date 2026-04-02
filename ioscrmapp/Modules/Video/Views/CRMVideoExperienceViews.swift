@@ -1690,16 +1690,16 @@ final class CRMVideoPlayerPresentationCoordinator: ObservableObject {
     let pictureInPictureCoordinator = CRMVideoPictureInPictureCoordinator()
 
     init() {
-        pictureInPictureCoordinator.onRestorePresentation = { [weak self] in
-            guard let self else {
-                return
-            }
-
-            isRestoringFromPictureInPicture = true
-            shouldForceFullscreenOnNextAppear = true
-            isPlayerPresented = true
-        }
-    }
+	        pictureInPictureCoordinator.onRestorePresentation = { [weak self] in
+	            guard let self else {
+	                return
+	            }
+	
+	            self.isRestoringFromPictureInPicture = true
+	            self.shouldForceFullscreenOnNextAppear = true
+	            self.isPlayerPresented = true
+	        }
+	    }
 
     func retainPlayback(
         player: AVPlayer?,

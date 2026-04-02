@@ -515,9 +515,63 @@
       "subtitle": "打开订购列表，查看可订购优惠、分类和筛选条件。",
       "cta": "订购优惠"
     },
+    "diy": {
+      "entry": "DIY Offer",
+      "title": "DIY Offer",
+      "hero": {
+        "eyebrow": "附属优惠",
+        "title": "自定义你的附加包",
+        "subtitle": "按后端返回的资源动态配置，经过防抖计价后查看总价，并在确认后提交。"
+      },
+      "viewOrders": "查看订单",
+      "backToDIY": "返回 DIY",
+      "backToOffers": "返回优惠页",
+      "periods": {
+        "title": "可配置周期",
+        "subtitle": "默认选中 getDIYOffer 返回的第一个周期；如果该周期没有资源，会自动切到下一个有资源的周期。"
+      },
+      "switchNotice": "%@ 没有可配置资源，已自动切换到 %@。",
+      "empty": {
+        "title": "当前没有可配置的 DIY Offer",
+        "subtitle": "当前号码没有可配置的 DIY 资源。提交按钮保持禁用，但仍可查看订单。"
+      },
+      "value": {
+        "label": "配置值"
+      },
+      "range": {
+        "min": "最小 %@ %@",
+        "max": "最大 %@ %@"
+      },
+      "validation": {
+        "range": "请输入 %@ 到 %@ 之间的整数。"
+      },
+      "pricing": {
+        "title": "实时计价",
+        "loading": "计价中...",
+        "debounce": "300ms 防抖"
+      },
+      "priceDetail": "价格明细",
+      "detail": {
+        "title": "价格明细",
+        "quantity": "数量",
+        "unitPrice": "单价",
+        "subtotal": "小计"
+      },
+      "confirm": {
+        "title": "确认 DIY Offer",
+        "period": "优惠周期",
+        "effective": "生效方式",
+        "total": "总价"
+      },
+      "submit": "提交 DIY Offer",
+      "accepted": {
+        "subtitle": "订单已异步受理。你可以直接跳转到优惠订单列表，或返回 DIY 页面。"
+      }
+    },
     "orders": {
       "entry": "订单列表",
       "title": "优惠订单",
+      "entryFromDIY": "当前从 DIY Offer 入口直接进入订单列表",
       "filterSummary": "订单筛选",
       "summary": "已加载 %@ / %@ 条订单",
       "createdTime": "创建时间",
@@ -560,7 +614,8 @@
         "created": "创建时间",
         "number": "当前号码",
         "status": "状态",
-        "statusCode": "状态码"
+        "statusCode": "状态码",
+        "traceId": "追踪 ID"
       }
     },
     "unsubscribe": {
@@ -668,7 +723,8 @@
     },
     "failure": {
       "title": "提交失败",
-      "body": "订单系统未接受该请求。你可以返回详情页重试，或返回上一页。"
+      "body": "订单系统未接受该请求。你可以返回详情页重试，或返回上一页。",
+      "reason": "失败原因"
     }
   },
   "billing": {

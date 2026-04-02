@@ -13,6 +13,15 @@ protocol OffersServicing: Sendable {
     func fetchLanding(session: CustSubInfo) async throws -> OffersLandingSnapshot
     func fetchSubscribedOffers(session: CustSubInfo) async throws -> [SubscribedOfferItem]
     func fetchCategories(session: CustSubInfo) async throws -> [OfferCategoryItem]
+    func fetchDIYBootstrap(session: CustSubInfo) async throws -> DIYOfferBootstrap
+    func calculateDIYPrice(
+        _ request: DIYOfferPricingRequest,
+        session: CustSubInfo
+    ) async throws -> DIYOfferPricing
+    func submitDIYOffer(
+        _ request: DIYOfferSubmissionRequest,
+        session: CustSubInfo
+    ) async throws -> OfferAcceptedResult
     func fetchOrders(
         session: CustSubInfo,
         filter: OffersOrderFilter,
@@ -46,6 +55,15 @@ enum OffersServiceError: Error {
             return .literal(message)
         }
     }
+
+    var textValueLiteralFallback: String {
+        switch self.textValue {
+        case let .literal(text):
+            return text
+        case let .localized(key, _):
+            return key
+        }
+    }
 }
 
 actor MockOffersService: OffersServicing {
@@ -72,6 +90,132 @@ actor MockOffersService: OffersServicing {
             OfferCategoryItem(id: "social", name: "Social packs", parentId: nil, sortOrder: 1),
             OfferCategoryItem(id: "streaming", name: "Streaming", parentId: nil, sortOrder: 2),
         ]
+    }
+
+    func fetchDIYBootstrap(session: CustSubInfo) async throws -> DIYOfferBootstrap {
+        DIYOfferBootstrap(
+            periods: [
+                DIYOfferPeriod(
+                    id: "daily",
+                    title: "Daily",
+                    sortOrder: 0,
+                    resources: [
+                        DIYOfferResource(
+                            id: "daily-data",
+                            crmOfferingId: "OFFER:b380fc3d-63a9-4340-9de0-36bc2365c875",
+                            offeringId: "OFFER:b380fc3d-63a9-4340-9de0-36bc2365c875",
+                            attrName: "Data",
+                            attrCode: "MB",
+                            unit: "MB",
+                            minValue: 20,
+                            maxValue: 200,
+                            defaultValue: 85,
+                            feeCode: "DATA_DAY",
+                            rateAmount: "10.00",
+                            kind: .data
+                        ),
+                        DIYOfferResource(
+                            id: "daily-sms",
+                            crmOfferingId: "OFFER:da116e34-cc02-4bde-b88e-d2f7f378b0be",
+                            offeringId: "OFFER:da116e34-cc02-4bde-b88e-d2f7f378b0be",
+                            attrName: "SMS",
+                            attrCode: "items(SMS)",
+                            unit: "SMS",
+                            minValue: 0,
+                            maxValue: 200,
+                            defaultValue: 46,
+                            feeCode: "SMS_DAY",
+                            rateAmount: "5.00",
+                            kind: .sms
+                        ),
+                        DIYOfferResource(
+                            id: "daily-unit",
+                            crmOfferingId: "OFFER:c800eb7c-f472-41a3-af93-38e411ef40fc",
+                            offeringId: "OFFER:c800eb7c-f472-41a3-af93-38e411ef40fc",
+                            attrName: "Units",
+                            attrCode: "items(Unit)",
+                            unit: "Unit",
+                            minValue: 0,
+                            maxValue: 200,
+                            defaultValue: 52,
+                            feeCode: "UNIT_DAY",
+                            rateAmount: "1.00",
+                            kind: .unit
+                        ),
+                    ]
+                ),
+                DIYOfferPeriod(
+                    id: "weekly",
+                    title: "Weekly",
+                    sortOrder: 1,
+                    resources: [
+                        DIYOfferResource(
+                            id: "weekly-data",
+                            crmOfferingId: "OFFER:8cf2a35d-d4f8-4273-b607-0fc8cce6baf6",
+                            offeringId: "OFFER:8cf2a35d-d4f8-4273-b607-0fc8cce6baf6",
+                            attrName: "Data",
+                            attrCode: "MB",
+                            unit: "MB",
+                            minValue: 0,
+                            maxValue: 200,
+                            defaultValue: 120,
+                            feeCode: "DATA_WEEK",
+                            rateAmount: "10.00",
+                            kind: .data
+                        )
+                    ]
+                ),
+                DIYOfferPeriod(
+                    id: "monthly",
+                    title: "Monthly",
+                    sortOrder: 2,
+                    resources: []
+                )
+            ],
+            currencyCode: "SDG",
+            currencyName: "SDG",
+            cbsAccuracy: 100
+        )
+    }
+
+    func calculateDIYPrice(
+        _ request: DIYOfferPricingRequest,
+        session: CustSubInfo
+    ) async throws -> DIYOfferPricing {
+        let items = request.resources.map { selected -> DIYOfferPricingItem in
+            let rate = OffersPriceParser.decimal(selected.resource.rateAmount) ?? .zero
+            let subtotal = rate * Decimal(selected.value)
+            return DIYOfferPricingItem(
+                id: selected.resource.id,
+                offeringId: selected.resource.crmOfferingId,
+                title: selected.resource.attrName,
+                quantity: selected.value,
+                unit: selected.resource.unit,
+                unitPriceAmount: OffersPriceParser.string(rate),
+                subtotalAmount: OffersPriceParser.string(subtotal)
+            )
+        }
+
+        let total = items.reduce(Decimal.zero) { partialResult, item in
+            partialResult + (OffersPriceParser.decimal(item.subtotalAmount) ?? .zero)
+        }
+
+        return DIYOfferPricing(
+            totalAmount: OffersPriceParser.string(total),
+            currencyName: request.currencyName,
+            items: items
+        )
+    }
+
+    func submitDIYOffer(
+        _ request: DIYOfferSubmissionRequest,
+        session: CustSubInfo
+    ) async throws -> OfferAcceptedResult {
+        OfferAcceptedResult(
+            orderId: "OC\(Int.random(in: 202603250000 ... 202603259999))",
+            offerName: "DIY Offer \(request.period.title)",
+            operationType: .subscribe
+        )
     }
 
     func fetchOrders(
@@ -309,6 +453,85 @@ struct RemoteOffersService: OffersServicing {
                 }
         } catch {
             throw mapError(error)
+        }
+    }
+
+    func fetchDIYBootstrap(session: CustSubInfo) async throws -> DIYOfferBootstrap {
+        let context = try await fetchContext(session: session)
+        async let periods = fetchDIYPeriods(context: context)
+        async let currencyCode = fetchCurrencyCode()
+        async let currencyName = fetchCurrencyName()
+        async let cbsAccuracy = fetchCBSAccuracy()
+        let resolvedPeriods = try await periods
+        let resolvedCurrencyCode = try await currencyCode
+        let resolvedCurrencyName = try await currencyName
+        let resolvedCBSAccuracy = try await cbsAccuracy
+
+        return DIYOfferBootstrap(
+            periods: resolvedPeriods,
+            currencyCode: resolvedCurrencyCode,
+            currencyName: resolvedCurrencyName,
+            cbsAccuracy: resolvedCBSAccuracy
+        )
+    }
+
+    func calculateDIYPrice(
+        _ request: DIYOfferPricingRequest,
+        session: CustSubInfo
+    ) async throws -> DIYOfferPricing {
+        let context = try await fetchContext(session: session)
+        let body = diyPricingBody(
+            context: context,
+            period: request.period,
+            resources: request.resources
+        )
+
+        do {
+            let response = try await client.post(OffersAPI.diyOfferTotalFee, body: body)
+            return mapDIYPricing(
+                from: response,
+                request: request
+            )
+        } catch {
+            throw mapError(error)
+        }
+    }
+
+    func submitDIYOffer(
+        _ request: DIYOfferSubmissionRequest,
+        session: CustSubInfo
+    ) async throws -> OfferAcceptedResult {
+        let context = try await fetchContext(session: session)
+        let quotation = try await quoteDIYOffer(request, context: context)
+        let transactionId = UUID().uuidString.replacingOccurrences(of: "-", with: "")
+        let body = diySubmitBody(
+            context: context,
+            request: request,
+            quotation: quotation,
+            transactionId: transactionId
+        )
+
+        do {
+            let response = try await client.post(OffersAPI.changeOffer, body: body)
+            guard let object = response.objectValue,
+                  let orderId = OffersResponseValue.string(in: object, keys: ["orderId"]),
+                  !orderId.isEmpty else {
+                throw OffersServiceError.featureUnavailable(message: "Missing orderId from DIY offer change response.")
+            }
+
+            return OfferAcceptedResult(
+                orderId: orderId,
+                offerName: "DIY Offer \(request.period.title)",
+                operationType: .subscribe
+            )
+        } catch {
+            let mapped = mapError(error)
+            throw DIYOfferSubmissionError.submissionFailed(
+                DIYOfferFailureResult(
+                    message: mapped.textValueLiteralFallback,
+                    traceId: OffersServiceTraceID.extract(from: error)
+                )
+            )
         }
     }
 
@@ -569,6 +792,296 @@ struct RemoteOffersService: OffersServicing {
         }
     }
 
+    private func fetchDIYPeriods(context: OffersRequestContext) async throws -> [DIYOfferPeriod] {
+        do {
+            let response = try await client.post(
+                OffersAPI.diyOfferConfig,
+                body: [
+                    "userId": context.identity.userId,
+                    "serviceNumber": context.identity.serviceNumber,
+                    "subscriberKey": context.subscriberKey,
+                    "lang": OffersRequestLanguage.currentCode(),
+                    "paymentType": context.paymentTypeInt,
+                    "customerType": context.customerType,
+                    "mainOfferCode": context.mainOfferCode,
+                ]
+            )
+
+            let rawPeriods: [HTTPClient.ResponseData]
+            if let array = response.arrayValue {
+                rawPeriods = array
+            } else if let object = response.objectValue {
+                rawPeriods =
+                    object["periods"]?.arrayValue ??
+                    object["records"]?.arrayValue ??
+                    object["list"]?.arrayValue ??
+                    object["data"]?.arrayValue ??
+                    []
+            } else {
+                rawPeriods = []
+            }
+
+            return rawPeriods.enumerated().map { index, period in
+                let object = period.objectValue ?? [:]
+                let title = OffersResponseValue.string(in: object, keys: ["periodName", "period", "validity", "title"]) ?? "Period \(index + 1)"
+                let resourceNodes =
+                    object["resources"]?.arrayValue ??
+                    object["productOffering"]?.arrayValue ??
+                    object["productOfferingList"]?.arrayValue ??
+                    object["offerList"]?.arrayValue ??
+                    []
+
+                let resources = resourceNodes.enumerated().map { resourceIndex, node in
+                    let resourceObject = node.objectValue ?? [:]
+                    let offeringId = OffersResponseValue.string(in: resourceObject, keys: ["crmOfferingId", "offeringId", "id"]) ?? UUID().uuidString
+                    let attrCode = OffersResponseValue.string(in: resourceObject, keys: ["attrCode", "featureCode", "code"]) ?? ""
+                    let attrName = OffersResponseValue.string(in: resourceObject, keys: ["attrName", "offerName", "name"]) ?? "Resource \(resourceIndex + 1)"
+                    return DIYOfferResource(
+                        id: "\(title)-\(resourceIndex)-\(offeringId)",
+                        crmOfferingId: OffersResponseValue.string(in: resourceObject, keys: ["crmOfferingId", "offeringId", "id"]) ?? offeringId,
+                        offeringId: OffersResponseValue.string(in: resourceObject, keys: ["offeringId", "crmOfferingId", "id"]) ?? offeringId,
+                        attrName: attrName,
+                        attrCode: attrCode,
+                        unit: OffersResponseValue.string(in: resourceObject, keys: ["attrUnit", "unit"]) ?? defaultUnit(for: attrCode),
+                        minValue: OffersResponseValue.int(in: resourceObject, keys: ["attrMinValue", "minValue"]) ?? 0,
+                        maxValue: OffersResponseValue.int(in: resourceObject, keys: ["attrMaxValue", "maxValue"]) ?? 0,
+                        defaultValue: OffersResponseValue.int(in: resourceObject, keys: ["defaultValue", "attrDefaultValue", "attrMinValue"]) ?? 0,
+                        feeCode: OffersResponseValue.string(in: resourceObject, keys: ["feeCode"]),
+                        rateAmount: OffersResponseValue.string(in: resourceObject, keys: ["price", "attrPrice", "unitPrice"]),
+                        kind: DIYOfferResourceKind(attrCode: attrCode)
+                    )
+                }
+
+                return DIYOfferPeriod(
+                    id: title.lowercased(),
+                    title: title,
+                    sortOrder: index,
+                    resources: resources
+                )
+            }
+            .sorted { lhs, rhs in lhs.sortOrder < rhs.sortOrder }
+        } catch {
+            throw mapError(error)
+        }
+    }
+
+    private func fetchCBSAccuracy() async throws -> Int {
+        do {
+            let response = try await client.post(
+                OffersAPI.queryConfig,
+                body: ["paramCode": "CBS_ACCURACY"]
+            )
+
+            guard let object = response.objectValue else {
+                return 100
+            }
+
+            return OffersResponseValue.int(in: object, keys: ["paramValue", "value"]) ?? 100
+        } catch {
+            throw mapError(error)
+        }
+    }
+
+    private func fetchCurrencyCode() async throws -> String {
+        do {
+            let response = try await client.post(
+                OffersAPI.queryConfig,
+                body: ["paramCode": "CURRENCY"]
+            )
+
+            guard let object = response.objectValue else {
+                return "SDG"
+            }
+
+            return OffersResponseValue.string(in: object, keys: ["paramValue", "value"]) ?? "SDG"
+        } catch {
+            throw mapError(error)
+        }
+    }
+
+    private func fetchCurrencyName() async throws -> String {
+        let fallbackCode = (try? await fetchCurrencyCode()) ?? "SDG"
+
+        do {
+            let response = try await client.post(
+                OffersAPI.queryDictItems,
+                body: [
+                    "dictCode": "CURRENCY",
+                    "lang": OffersRequestLanguage.currentCode(),
+                ]
+            )
+
+            let items = response.arrayValue ?? []
+            for item in items {
+                guard let object = item.objectValue else {
+                    continue
+                }
+                let code = OffersResponseValue.string(in: object, keys: ["itemCode", "dictItemCode", "code"]) ?? ""
+                if code == fallbackCode {
+                    return OffersResponseValue.string(in: object, keys: ["itemName", "dictItemName", "name"]) ?? fallbackCode
+                }
+            }
+
+            return fallbackCode
+        } catch {
+            return fallbackCode
+        }
+    }
+
+    private func diyPricingBody(
+        context: OffersRequestContext,
+        period: DIYOfferPeriod,
+        resources: [DIYOfferSelectedResource]
+    ) -> [String: Any] {
+        [
+            "userId": context.identity.userId,
+            "serviceNumber": context.identity.serviceNumber,
+            "subscriberKey": context.subscriberKey,
+            "lang": OffersRequestLanguage.currentCode(),
+            "period": period.title,
+            "productOffering": diyProductOfferingPayload(from: resources)
+        ]
+    }
+
+    private func mapDIYPricing(
+        from response: HTTPClient.ResponseData,
+        request: DIYOfferPricingRequest
+    ) -> DIYOfferPricing {
+        let object = response.objectValue ?? [:]
+        let itemNodes =
+            object["calcOneOffFeeList"]?.arrayValue ??
+            object["feeDetailList"]?.arrayValue ??
+            object["items"]?.arrayValue ??
+            []
+
+        let totalAmount =
+            normalizedAmount(OffersResponseValue.string(in: object, keys: ["calculateFee", "totalFee", "chargeAmt"]))
+            ?? localDIYTotal(from: request.resources)
+
+        let items = request.resources.map { selected in
+            let matched = itemNodes.first { item in
+                let itemObject = item.objectValue ?? [:]
+                let candidate = OffersResponseValue.string(in: itemObject, keys: ["offeringId", "crmOfferingId", "feeItemCode"])
+                return candidate == selected.resource.crmOfferingId || candidate == selected.resource.offeringId || candidate == selected.resource.feeCode
+            }?.objectValue
+
+            let localRate = selected.resource.rateAmount ?? "0"
+            let localSubtotal = localDIYSubtotal(resource: selected.resource, value: selected.value)
+
+            return DIYOfferPricingItem(
+                id: selected.resource.id,
+                offeringId: selected.resource.crmOfferingId,
+                title: OffersResponseValue.string(in: matched ?? [:], keys: ["feeItemName", "itemName", "offerName"]) ?? selected.resource.attrName,
+                quantity: selected.value,
+                unit: selected.resource.unit,
+                unitPriceAmount: normalizedAmount(OffersResponseValue.string(in: matched ?? [:], keys: ["unitPrice", "price"])) ?? localRate,
+                subtotalAmount: normalizedAmount(OffersResponseValue.string(in: matched ?? [:], keys: ["calculateFee", "subtotal", "chargeAmt"])) ?? localSubtotal
+            )
+        }
+
+        return DIYOfferPricing(
+            totalAmount: totalAmount,
+            currencyName: request.currencyName,
+            items: items
+        )
+    }
+
+    private func quoteDIYOffer(
+        _ request: DIYOfferSubmissionRequest,
+        context: OffersRequestContext
+    ) async throws -> DIYOfferFeeQuotation {
+        let accuracy = try await fetchCBSAccuracy()
+        let total = OffersPriceParser.decimal(request.pricing.totalAmount) ?? .zero
+        let scaled = total * Decimal(accuracy)
+        let body: [String: Any] = [
+            "userId": context.identity.userId,
+            "serviceNumber": context.identity.serviceNumber,
+            "subscriberKey": context.subscriberKey,
+            "lang": OffersRequestLanguage.currentCode(),
+            "chargeAmt": OffersPriceParser.string(scaled),
+            "currencyCode": request.pricing.currencyName,
+            "productOffering": diyProductOfferingPayload(from: request.resources)
+        ]
+
+        do {
+            let response = try await client.post(OffersAPI.feeQuotation, body: body)
+            let object = response.objectValue ?? [:]
+            return DIYOfferFeeQuotation(
+                chargeAmount: OffersResponseValue.string(in: object, keys: ["chargeAmt", "amount"]) ?? OffersPriceParser.string(scaled),
+                currencyCode: OffersResponseValue.string(in: object, keys: ["currencyCode", "currency"]) ?? request.pricing.currencyName,
+                traceId: OffersResponseValue.string(in: object, keys: ["traceId"])
+            )
+        } catch {
+            let mapped = mapError(error)
+            throw DIYOfferSubmissionError.quotationRejected(.literal(mapped.textValueLiteralFallback))
+        }
+    }
+
+    private func diySubmitBody(
+        context: OffersRequestContext,
+        request: DIYOfferSubmissionRequest,
+        quotation: DIYOfferFeeQuotation,
+        transactionId: String
+    ) -> [String: Any] {
+        [
+            "userId": context.identity.userId,
+            "serviceNumber": context.identity.serviceNumber,
+            "subscriberKey": context.subscriberKey,
+            "businessCode": "ChangeSupplementOffering",
+            "transactionId": transactionId,
+            "deviceBrand": OffersDeviceContext.currentDeviceBrand,
+            "deviceModel": OffersDeviceContext.currentDeviceModel,
+            "offerName": "DIY Offer \(request.period.title)",
+            "offerType": "DIY",
+            "feeQuotation": [
+                "chargeAmt": quotation.chargeAmount,
+                "currencyCode": quotation.currencyCode
+            ],
+            "productOrderItem": [
+                [
+                    "action": "add",
+                    "productOffering": [
+                        "id": "DIY-\(request.period.id)",
+                        "name": "DIY Offer \(request.period.title)",
+                        "itemTerm": [
+                            ["effectMode": "I"]
+                        ],
+                        "productCharacteristic": diyCharacteristicsPayload(from: request.resources)
+                    ]
+                ]
+            ]
+        ]
+    }
+
+    private func diyProductOfferingPayload(from resources: [DIYOfferSelectedResource]) -> [[String: Any]] {
+        resources.map { selected in
+            [
+                "id": selected.resource.offeringId,
+                "crmOfferingId": selected.resource.crmOfferingId,
+                "feeCode": selected.resource.feeCode ?? "",
+                "productCharacteristic": [
+                    [
+                        "name": selected.resource.attrName,
+                        "code": selected.resource.attrCode,
+                        "value": selected.value,
+                        "unitOfMeasure": selected.resource.unit
+                    ]
+                ]
+            ]
+        }
+    }
+
+    private func diyCharacteristicsPayload(from resources: [DIYOfferSelectedResource]) -> [[String: Any]] {
+        resources.map { selected in
+            [
+                "name": selected.resource.attrName,
+                "code": selected.resource.attrCode,
+                "value": "\(selected.value)",
+                "unitOfMeasure": selected.resource.unit
+            ]
+        }
+    }
+
     private func flattenCategories(_ nodes: [HTTPClient.ResponseData], parentId: String? = nil) -> [OfferCategoryItem] {
         var flattened: [OfferCategoryItem] = []
 
@@ -631,6 +1144,38 @@ struct RemoteOffersService: OffersServicing {
             offerType: OffersResponseValue.string(in: object, keys: ["offerType"]),
             effectiveMode: OffersResponseValue.string(in: object, keys: ["effectiveMode"])
         )
+    }
+
+    private func defaultUnit(for attrCode: String) -> String {
+        switch DIYOfferResourceKind(attrCode: attrCode) {
+        case .data:
+            return "MB"
+        case .sms:
+            return "SMS"
+        case .unit:
+            return "Unit"
+        case let .custom(rawValue):
+            return rawValue
+        }
+    }
+
+    private func normalizedAmount(_ rawValue: String?) -> String? {
+        guard let decimal = OffersPriceParser.decimal(rawValue) else {
+            return nil
+        }
+        return OffersPriceParser.string(decimal)
+    }
+
+    private func localDIYTotal(from resources: [DIYOfferSelectedResource]) -> String {
+        let total = resources.reduce(Decimal.zero) { partialResult, selected in
+            partialResult + (OffersPriceParser.decimal(localDIYSubtotal(resource: selected.resource, value: selected.value)) ?? .zero)
+        }
+        return OffersPriceParser.string(total)
+    }
+
+    private func localDIYSubtotal(resource: DIYOfferResource, value: Int) -> String {
+        let rate = OffersPriceParser.decimal(resource.rateAmount) ?? .zero
+        return OffersPriceParser.string(rate * Decimal(value))
     }
 
     private func mapError(_ error: Error) -> OffersServiceError {
@@ -782,6 +1327,10 @@ private enum OffersPriceParser {
 
         return Decimal(string: normalized, locale: Locale(identifier: "en_US_POSIX"))
     }
+
+    static func string(_ value: Decimal) -> String {
+        NSDecimalNumber(decimal: value).stringValue
+    }
 }
 
 private enum OffersDeviceContext {
@@ -893,6 +1442,15 @@ private enum OffersResponseValue {
         formatter.timeZone = TimeZone(secondsFromGMT: 0)
         formatter.dateFormat = format
         return formatter
+    }
+}
+
+private enum OffersServiceTraceID {
+    static func extract(from error: Error) -> String? {
+        guard case let HTTPClient.ClientError.business(_, _, traceID) = error else {
+            return nil
+        }
+        return traceID
     }
 }
 

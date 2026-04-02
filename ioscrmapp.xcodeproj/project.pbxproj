@@ -90,6 +90,8 @@
 		D10000000000000000000004 /* OffersViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D20000000000000000000004 /* OffersViewModel.swift */; };
 		D10000000000000000000005 /* OffersContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D20000000000000000000005 /* OffersContainerView.swift */; };
 		D10000000000000000000006 /* OffersViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = D20000000000000000000006 /* OffersViews.swift */; };
+		D10000000000000000000007 /* DIYOfferViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D20000000000000000000007 /* DIYOfferViewModel.swift */; };
+		D10000000000000000000008 /* DIYOfferViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = D20000000000000000000008 /* DIYOfferViews.swift */; };
 		B10000000000000000000001 /* BillingAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000001 /* BillingAPI.swift */; };
 		B10000000000000000000002 /* BillingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000002 /* BillingService.swift */; };
 		B10000000000000000000003 /* BillingModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000003 /* BillingModels.swift */; };
@@ -195,6 +197,8 @@
 		D20000000000000000000004 /* OffersViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OffersViewModel.swift; sourceTree = "<group>"; };
 		D20000000000000000000005 /* OffersContainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OffersContainerView.swift; sourceTree = "<group>"; };
 		D20000000000000000000006 /* OffersViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OffersViews.swift; sourceTree = "<group>"; };
+		D20000000000000000000007 /* DIYOfferViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DIYOfferViewModel.swift; sourceTree = "<group>"; };
+		D20000000000000000000008 /* DIYOfferViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DIYOfferViews.swift; sourceTree = "<group>"; };
 		B20000000000000000000001 /* BillingAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BillingAPI.swift; sourceTree = "<group>"; };
 		B20000000000000000000002 /* BillingService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BillingService.swift; sourceTree = "<group>"; };
 		B20000000000000000000003 /* BillingModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BillingModels.swift; sourceTree = "<group>"; };
@@ -824,6 +828,7 @@
 		D30000000000000000000003 /* ViewModels */ = {
 			isa = PBXGroup;
 			children = (
+				D20000000000000000000007 /* DIYOfferViewModel.swift */,
 				D20000000000000000000004 /* OffersViewModel.swift */,
 			);
 			path = ViewModels;
@@ -832,6 +837,7 @@
 		D30000000000000000000004 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				D20000000000000000000008 /* DIYOfferViews.swift */,
 				D20000000000000000000005 /* OffersContainerView.swift */,
 				D20000000000000000000006 /* OffersViews.swift */,
 			);
@@ -925,8 +931,10 @@
 				A10000000000000000000045 /* BadgeCenterAPI.swift in Sources */,
 				C10000000000000000000004 /* BadgeCenterView.swift in Sources */,
 				A10000000000000000000044 /* MallAPI.swift in Sources */,
+				D10000000000000000000008 /* DIYOfferViews.swift in Sources */,
 				D10000000000000000000006 /* OffersViews.swift in Sources */,
 				D10000000000000000000005 /* OffersContainerView.swift in Sources */,
+				D10000000000000000000007 /* DIYOfferViewModel.swift in Sources */,
 				D10000000000000000000004 /* OffersViewModel.swift in Sources */,
 				D10000000000000000000003 /* OffersModels.swift in Sources */,
 				D10000000000000000000002 /* OffersService.swift in Sources */,

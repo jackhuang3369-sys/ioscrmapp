@@ -515,9 +515,63 @@
       "subtitle": "Open the purchase list to browse eligible offers, categories, and filters.",
       "cta": "Subscribe offers"
     },
+    "diy": {
+      "entry": "DIY Offer",
+      "title": "DIY Offer",
+      "hero": {
+        "eyebrow": "Supplementary offer",
+        "title": "Build your own add-on",
+        "subtitle": "Configure resources returned by the backend, review the total after debounce pricing, and submit after confirmation."
+      },
+      "viewOrders": "View order",
+      "backToDIY": "Back to DIY",
+      "backToOffers": "Back to offers",
+      "periods": {
+        "title": "Configurable periods",
+        "subtitle": "The first period returned by getDIYOffer is selected by default. If it has no resources, the next available period is selected automatically."
+      },
+      "switchNotice": "%@ has no configurable resources. Switched to %@.",
+      "empty": {
+        "title": "No configurable DIY offers",
+        "subtitle": "The current number does not expose any DIY resources. Submission stays disabled, but order review remains available."
+      },
+      "value": {
+        "label": "Configured value"
+      },
+      "range": {
+        "min": "Min %@ %@",
+        "max": "Max %@ %@"
+      },
+      "validation": {
+        "range": "Enter an integer between %@ and %@."
+      },
+      "pricing": {
+        "title": "Real-time pricing",
+        "loading": "Pricing...",
+        "debounce": "300ms debounce"
+      },
+      "priceDetail": "Price detail",
+      "detail": {
+        "title": "Price detail",
+        "quantity": "Quantity",
+        "unitPrice": "Unit price",
+        "subtotal": "Subtotal"
+      },
+      "confirm": {
+        "title": "Confirm DIY Offer",
+        "period": "Offer period",
+        "effective": "Effective mode",
+        "total": "Total"
+      },
+      "submit": "Submit DIY Offer",
+      "accepted": {
+        "subtitle": "The order has been accepted asynchronously. You can jump directly to the offer order list or return to the DIY builder."
+      }
+    },
     "orders": {
       "entry": "Order history",
       "title": "Offer orders",
+      "entryFromDIY": "Opened from DIY Offer order entry",
       "filterSummary": "Order filters",
       "summary": "Loaded %@ of %@ orders",
       "createdTime": "Created time",
@@ -560,7 +614,8 @@
         "created": "Created time",
         "number": "Current number",
         "status": "Status",
-        "statusCode": "Status code"
+        "statusCode": "Status code",
+        "traceId": "Trace ID"
       }
     },
     "unsubscribe": {
@@ -668,7 +723,8 @@
     },
     "failure": {
       "title": "We could not submit this request",
-      "body": "The order system did not accept the request. You can retry from the detail page or return to the previous screen."
+      "body": "The order system did not accept the request. You can retry from the detail page or return to the previous screen.",
+      "reason": "Failure reason"
     }
   },
   "billing": {

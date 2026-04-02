@@ -461,8 +461,13 @@ private struct AIChatHTMLWebView: UIViewRepresentable {
             }
 
             sizeObservation = webView.scrollView.observe(\.contentSize, options: [.new]) { [weak self] scrollView, _ in
-                Task { @MainActor in
-                    self?.updateHeight(scrollView.contentSize.height)
+                let measuredHeight = scrollView.contentSize.height
+                guard let self else {
+                    return
+                }
+
+                Task { @MainActor [self, measuredHeight] in
+                    self.updateHeight(measuredHeight)
                 }
             }
         }
@@ -501,8 +506,12 @@ private struct AIChatHTMLWebView: UIViewRepresentable {
                     resolvedHeight = webView?.scrollView.contentSize.height ?? 1
                 }
 
-                Task { @MainActor in
-                    self?.updateHeight(resolvedHeight)
+                guard let self else {
+                    return
+                }
+
+                Task { @MainActor [self, resolvedHeight] in
+                    self.updateHeight(resolvedHeight)
                 }
             }
         }

@@ -4,17 +4,28 @@ struct OffersContainerView: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var languageStore: AppLanguageStore
     @StateObject private var viewModel: OffersViewModel
+    @StateObject private var diyViewModel: DIYOfferViewModel
+    @State private var isDIYPresented = false
 
     init(session: CustSubInfo, offersService: any OffersServicing) {
         _viewModel = StateObject(
             wrappedValue: OffersViewModel(session: session, offersService: offersService)
         )
+        _diyViewModel = StateObject(
+            wrappedValue: DIYOfferViewModel(session: session, offersService: offersService)
+        )
     }
 
     var body: some View {
         NavigationView {
-            OffersLandingView(viewModel: viewModel)
+            OffersLandingView(
+                viewModel: viewModel,
+                onOpenDIY: {
+                    isDIYPresented = true
+                }
+            )
                 .background(purchaseNavigationLink)
+                .background(diyNavigationLink)
                 .background(orderNavigationLink)
                 .navigationTitle(localized("offers.title"))
                 .navigationBarTitleDisplayMode(.inline)
@@ -60,6 +71,27 @@ struct OffersContainerView: View {
         NavigationLink(
             destination: OffersPurchaseListView(viewModel: viewModel),
             isActive: $viewModel.isPurchaseListPresented
+        ) {
+            EmptyView()
+        }
+        .hidden()
+    }
+
+    private var diyNavigationLink: some View {
+        NavigationLink(
+            destination: DIYOfferBuilderView(
+                viewModel: diyViewModel,
+                onViewOrders: {
+                    isDIYPresented = false
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                        viewModel.openOrderList(entry: .diy)
+                    }
+                },
+                onBackToOffers: {
+                    isDIYPresented = false
+                }
+            ),
+            isActive: $isDIYPresented
         ) {
             EmptyView()
         }

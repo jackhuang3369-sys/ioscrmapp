@@ -3,6 +3,7 @@ import SwiftUI
 struct OffersLandingView: View {
     @EnvironmentObject private var languageStore: AppLanguageStore
     @ObservedObject var viewModel: OffersViewModel
+    let onOpenDIY: () -> Void
 
     var body: some View {
         Group {
@@ -165,6 +166,10 @@ struct OffersLandingView: View {
         DUSectionCard(title: localized("offers.subscribeEntry.title")) {
             HStack(alignment: .center, spacing: DUSpacing.md) {
                 VStack(alignment: .leading, spacing: DUSpacing.md) {
+                    DUButton(title: localized("offers.diy.entry"), style: .primary) {
+                        onOpenDIY()
+                    }
+
                     DUButton(title: localized("offers.subscribeEntry.cta"), style: .primary) {
                         viewModel.openPurchaseList()
                     }
@@ -655,6 +660,21 @@ struct OffersOrdersView: View {
             LazyVStack(spacing: 0, pinnedViews: [.sectionHeaders]) {
                 Section {
                     VStack(spacing: DUSpacing.lg) {
+                        if viewModel.orderEntrySource == .diy {
+                            HStack(spacing: DUSpacing.sm) {
+                                Image(systemName: "arrowshape.turn.up.forward.fill")
+                                    .foregroundColor(DUTheme.cyan)
+                                Text(localized("offers.orders.entryFromDIY"))
+                                    .font(.du(13, weight: .bold))
+                                    .foregroundColor(DUTheme.cyan)
+                                Spacer()
+                            }
+                            .padding(DUSpacing.md)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .background(DUTheme.cyanBackground)
+                            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+                        }
+
                         if let snapshot = viewModel.ordersSnapshot, snapshot.records.isEmpty {
                             DUStateView(
                                 systemImage: "clock.arrow.circlepath",
