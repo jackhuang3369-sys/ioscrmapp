@@ -314,6 +314,7 @@ struct AIChatView: View {
                 let gen = UIImpactFeedbackGenerator(style: .medium)
                 gen.impactOccurred()
             } label: {
+                ZStack {
                     // 更细更多彩的动态圆环对标 HTML conic-gradient
                     Circle()
                         .stroke(
