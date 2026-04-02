@@ -4,10 +4,16 @@ import WebKit
 struct AIChatView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.openURL) private var openURL
-
     @StateObject private var viewModel: AIChatViewModel
-
     let onNavigate: (AIChatNavigationTarget) -> Void
+    
+    // Animation states
+    @State private var isAnimatingCore = false
+    @State private var rippleScale: CGFloat = 1.0
+    @State private var rippleOpacity: Double = 0.8
+    @State private var coreRotation: Double = 0
+    @State private var promptOffsets: [CGFloat] = [50, 50, 50, 50]
+    @State private var promptOpacities: [Double] = [0, 0, 0, 0]
 
     init(
         custSubInfo: CustSubInfo,
@@ -26,503 +32,275 @@ struct AIChatView: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            header
+        ZStack {
+            // 1. Futuristic Space Gradient Background
+            LinearGradient(
+                gradient: Gradient(colors: [Color(hex: 0x0B0F19), Color(hex: 0x1A1025), Color(hex: 0x0F1B2A)]),
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            .ignoresSafeArea()
+            
+            // Subtle animated backglow
+            RadialGradient(
+                gradient: Gradient(colors: [DUTheme.indigo.opacity(0.15), .clear]),
+                center: .center,
+                startRadius: 100,
+                endRadius: 400
+            )
+            .scaleEffect(isAnimatingCore ? 1.1 : 0.9)
+            .animation(.easeInOut(duration: 4).repeatForever(autoreverses: true), value: isAnimatingCore)
+            .ignoresSafeArea()
 
-            Divider()
-                .overlay(DUTheme.line)
+            VStack(spacing: 0) {
+                // Header (Minimalist)
+                header
+                
+                Spacer()
 
-            ScrollViewReader { proxy in
-                ScrollView(showsIndicators: false) {
-                    VStack(alignment: .leading, spacing: DUSpacing.lg) {
-                        welcomeBlock
-
-                        ForEach(viewModel.messages) { message in
-                            messageBubble(message)
-                                .id(message.id)
-                        }
+                // Center AI Core Sphere
+                aiCoreFeature
+                
+                Spacer()
+                
+                // Greeting and Capsule Prompts
+                VStack(spacing: DUSpacing.xl) {
+                    VStack(spacing: DUSpacing.xs) {
+                        Text(viewModel.title)
+                            .font(.du(28, weight: .bold))
+                            .foregroundColor(.white)
+                            .shadow(color: DUTheme.cyanLight.opacity(0.3), radius: 8, x: 0, y: 0)
+                            
+                        Text(viewModel.subtitle)
+                            .font(.du(14, weight: .medium))
+                            .foregroundColor(.white.opacity(0.6))
                     }
-                    .padding(.horizontal, DUSpacing.lg)
-                    .padding(.top, DUSpacing.lg)
-                    .padding(.bottom, DUSpacing.xxl)
+                    .padding(.bottom, DUSpacing.sm)
+                    
+                    capsulePrompts
                 }
-                .background(DUTheme.background)
-                .onChange(of: viewModel.messages.map(\.id)) { _ in
-                    guard let lastID = viewModel.messages.last?.id else {
-                        return
-                    }
-
-                    DispatchQueue.main.async {
-                        withAnimation(.easeOut(duration: 0.2)) {
-                            proxy.scrollTo(lastID, anchor: .bottom)
-                        }
-                    }
-                }
+                .padding(.horizontal, DUSpacing.xl)
+                
+                Spacer()
+                
+                // Bottom Voice Action
+                voiceActionBar
+            }
+            .safeAreaInset(edge: .bottom) {
+                Color.clear.frame(height: 20)
             }
         }
-        .background(DUTheme.background.ignoresSafeArea())
-        .safeAreaInset(edge: .bottom) {
-            inputBar
-                .background(DUTheme.panel)
-        }
-        .alert(
-            AIChatLocalizedCopy.newChatTitle(for: viewModel.language),
-            isPresented: $viewModel.confirmResetPresented
-        ) {
-            Button(AIChatLocalizedCopy.newChatTitle(for: viewModel.language), role: .destructive) {
-                viewModel.confirmNewChat()
+        .onAppear {
+            isAnimatingCore = true
+            withAnimation(.linear(duration: 20).repeatForever(autoreverses: false)) {
+                coreRotation = 360
             }
-            Button(AIChatLocalizedCopy.closeTitle(for: viewModel.language), role: .cancel) {}
-        } message: {
-            Text(viewModel.subtitle)
+            animatePrompts()
         }
     }
 
     private var header: some View {
-        HStack(spacing: DUSpacing.md) {
-            ZStack {
-                Circle()
-                    .fill(DUTheme.brandGradient)
-                    .frame(width: 42, height: 42)
-
-                Image(systemName: "sparkles")
-                    .font(.du(18, weight: .bold))
-                    .foregroundColor(.white)
-            }
-
-            VStack(alignment: .leading, spacing: 2) {
-                Text(viewModel.title)
-                    .font(.du(18, weight: .bold))
-                    .foregroundColor(DUTheme.ink)
-
-                Text(viewModel.subtitle)
-                    .font(.du(12, weight: .medium))
-                    .foregroundColor(DUTheme.inkSecondary)
-                    .lineLimit(2)
-            }
-
+        HStack {
+            Image(systemName: "sparkle")
+                .font(.du(20, weight: .semibold))
+                .foregroundColor(.white.opacity(0.9))
+                
+            Text("AI Assistant")
+                .font(.du(16, weight: .bold))
+                .foregroundColor(.white.opacity(0.9))
+                .tracking(2)
+            
             Spacer()
-
-            Button {
-                viewModel.requestNewChat()
-            } label: {
-                Image(systemName: "plus.bubble")
-                    .font(.du(16, weight: .semibold))
-                    .foregroundColor(DUTheme.ink)
-                    .frame(width: 40, height: 40)
-                    .background(DUTheme.backgroundSecondary)
-                    .clipShape(Circle())
-            }
-            .buttonStyle(.plain)
-
+            
             Button {
                 dismiss()
             } label: {
                 Image(systemName: "xmark")
-                    .font(.du(16, weight: .bold))
-                    .foregroundColor(DUTheme.ink)
+                    .font(.du(16, weight: .semibold))
+                    .foregroundColor(.white.opacity(0.8))
                     .frame(width: 40, height: 40)
-                    .background(DUTheme.backgroundSecondary)
+                    .background(Color.white.opacity(0.1))
                     .clipShape(Circle())
+                    .overlay(Circle().stroke(Color.white.opacity(0.15), lineWidth: 1))
             }
             .buttonStyle(.plain)
         }
-        .padding(.horizontal, DUSpacing.lg)
-        .padding(.vertical, DUSpacing.md)
-        .background(DUTheme.panel)
+        .padding(.horizontal, DUSpacing.xl)
+        .padding(.top, DUSpacing.md)
     }
 
-    private var welcomeBlock: some View {
-        VStack(alignment: .leading, spacing: DUSpacing.lg) {
-            VStack(alignment: .leading, spacing: DUSpacing.sm) {
-                Text(viewModel.title)
-                    .font(.du(26, weight: .bold))
-                    .foregroundColor(DUTheme.ink)
-
-                Text(viewModel.subtitle)
-                    .font(.du(14, weight: .medium))
-                    .foregroundColor(DUTheme.inkSecondary)
-                    .fixedSize(horizontal: false, vertical: true)
+    private var aiCoreFeature: some View {
+        ZStack {
+            // Outermost glowing aura
+            Circle()
+                .fill(RadialGradient(gradient: Gradient(colors: [DUTheme.magenta.opacity(0.3), .clear]), center: .center, startRadius: 20, endRadius: 150))
+                .frame(width: 300, height: 300)
+                .scaleEffect(isAnimatingCore ? 1.05 : 0.95)
+                .animation(.easeInOut(duration: 3).repeatForever(autoreverses: true), value: isAnimatingCore)
+            
+            // Rotating mesh-like rings
+            ZStack {
+                Circle().stroke(DUTheme.cyanLight.opacity(0.2), lineWidth: 1)
+                    .frame(width: 200, height: 200)
+                    .rotation3DEffect(.degrees(75), axis: (x: 1, y: 0.5, z: 0))
+                    .rotationEffect(.degrees(coreRotation))
+                
+                Circle().stroke(DUTheme.indigo.opacity(0.3), lineWidth: 2)
+                    .frame(width: 220, height: 220)
+                    .rotation3DEffect(.degrees(65), axis: (x: 0, y: 1, z: 0.5))
+                    .rotationEffect(.degrees(-coreRotation * 0.8))
             }
-
-            VStack(alignment: .leading, spacing: DUSpacing.md) {
-                Text(AIChatLocalizedCopy.recommendedTitle(for: viewModel.language))
-                    .font(.du(14, weight: .semibold))
-                    .foregroundColor(DUTheme.inkSecondary)
-
-                ForEach(viewModel.suggestedPrompts, id: \.self) { prompt in
-                    Button {
-                        viewModel.sendSuggestedPrompt(prompt)
-                    } label: {
-                        HStack(spacing: DUSpacing.md) {
-                            Image(systemName: "arrow.up.left.circle.fill")
-                                .foregroundColor(DUTheme.cyan)
-
-                            Text(prompt)
-                                .font(.du(14, weight: .medium))
-                                .foregroundColor(DUTheme.ink)
-                                .multilineTextAlignment(.leading)
-
-                            Spacer()
-                        }
-                        .padding(.horizontal, DUSpacing.lg)
-                        .padding(.vertical, DUSpacing.md)
-                        .background(DUTheme.panel)
-                        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                                .stroke(DUTheme.lineLight, lineWidth: 1)
-                        )
-                    }
-                    .buttonStyle(.plain)
-                }
-            }
+            
+            // Core Sphere (Code-drawn glass orb)
+            Circle()
+                .fill(
+                    LinearGradient(
+                        gradient: Gradient(colors: [DUTheme.cyanLight, DUTheme.blue, DUTheme.magenta]),
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .frame(width: 140, height: 140)
+                .overlay(
+                    // Inner glow
+                    Circle()
+                        .stroke(Color.white.opacity(0.8), lineWidth: 2)
+                        .blur(radius: 4)
+                        .padding(2)
+                )
+                .overlay(
+                    // Tech grid pattern/glare overlay
+                    Circle()
+                        .fill(LinearGradient(gradient: Gradient(colors: [.white.opacity(0.4), .clear]), startPoint: .topLeading, endPoint: .bottomTrailing))
+                        .mask(Circle().padding(2))
+                )
+                .shadow(color: DUTheme.blue.opacity(0.6), radius: 20, x: 0, y: 10)
+                .scaleEffect(isAnimatingCore ? 1.02 : 0.98)
+                .animation(.easeInOut(duration: 2).repeatForever(autoreverses: true), value: isAnimatingCore)
         }
-        .padding(DUSpacing.xl)
-        .background(
-            LinearGradient(
-                gradient: Gradient(colors: [DUTheme.cyanBackground, Color.white]),
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-        )
-        .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
     }
 
-    private func messageBubble(_ message: AIChatMessage) -> some View {
-        HStack(alignment: .top, spacing: DUSpacing.sm) {
-            if message.sender == .assistant {
-                avatarView(systemName: "sparkles")
-            }
-
-            VStack(alignment: message.sender == .user ? .trailing : .leading, spacing: DUSpacing.sm) {
-                if message.sender == .assistant, !message.thinkingText.isEmpty {
-                    DisclosureGroup(AIChatLocalizedCopy.thinkingTitle(for: viewModel.language)) {
-                        Text(message.thinkingText)
-                            .font(.du(12))
-                            .foregroundColor(DUTheme.inkSecondary)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding(.top, DUSpacing.xs)
-                    }
-                    .font(.du(12, weight: .semibold))
-                    .foregroundColor(DUTheme.blue)
-                    .padding(DUSpacing.md)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(DUTheme.cyanBackground)
-                    .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-                }
-
-                if shouldShowMessageContentBubble(message) {
-                    Group {
-                        if message.isLoading {
-                            HStack(spacing: DUSpacing.sm) {
-                                ProgressView()
-                                    .progressViewStyle(.circular)
-                                Text(AIChatLocalizedCopy.loadingTitle(for: viewModel.language))
-                                    .font(.du(13, weight: .medium))
-                                    .foregroundColor(DUTheme.inkSecondary)
-                            }
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                        } else if message.sender == .assistant,
-                                  let htmlContent = message.htmlContent,
-                                  !htmlContent.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                            assistantHTMLView(htmlContent)
-                        } else if message.sender == .assistant,
-                                  let richText = message.richText,
-                                  !normalizedDisplayText(String(richText.characters)).isEmpty {
-                            assistantRichTextView(richText)
-                        } else {
-                            Text(message.text)
-                                .font(.du(14, weight: .medium))
-                                .foregroundColor(message.sender == .user ? .white : DUTheme.ink)
-                                .multilineTextAlignment(.leading)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                        }
+    private var capsulePrompts: some View {
+        VStack(spacing: DUSpacing.md) {
+            ForEach(Array(viewModel.suggestedPrompts.prefix(4).enumerated()), id: \.element) { index, prompt in
+                Button {
+                    // Send prompt action
+                    viewModel.sendSuggestedPrompt(prompt)
+                } label: {
+                    HStack(spacing: DUSpacing.sm) {
+                        Image(systemName: "waveform")
+                            .font(.du(12, weight: .bold))
+                            .foregroundColor(DUTheme.cyanLight)
+                        
+                        Text(prompt)
+                            .font(.du(14, weight: .medium))
+                            .foregroundColor(.white.opacity(0.9))
+                            .multilineTextAlignment(.leading)
+                            .lineLimit(2)
+                        
+                        Spacer(minLength: 0)
                     }
                     .padding(.horizontal, DUSpacing.lg)
                     .padding(.vertical, DUSpacing.md)
-                    .background(message.sender == .user ? AnyShapeStyle(DUTheme.brandGradient) : AnyShapeStyle(DUTheme.panel))
-                    .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+                    .background(.ultraThinMaterial)
+                    // Customize ultraThinMaterial dark tint fallback
+                    .background(Color.black.opacity(0.2))
+                    .clipShape(Capsule())
                     .overlay(
-                        RoundedRectangle(cornerRadius: 20, style: .continuous)
-                            .stroke(message.sender == .user ? Color.clear : DUTheme.lineLight, lineWidth: 1)
+                        Capsule().stroke(Color.white.opacity(0.15), lineWidth: 1)
                     )
                 }
-
-                if !message.actions.isEmpty {
-                    VStack(alignment: .leading, spacing: DUSpacing.sm) {
-                        ForEach(message.actions) { action in
-                            Button {
-                                handleAction(action)
-                            } label: {
-                                HStack {
-                                    Text(action.title)
-                                        .font(.du(13, weight: .semibold))
-                                        .foregroundColor(DUTheme.blue)
-                                        .multilineTextAlignment(.leading)
-                                    Spacer()
-                                    Image(systemName: "arrow.right")
-                                        .font(.du(12, weight: .bold))
-                                        .foregroundColor(DUTheme.blue)
-                                }
-                                .padding(.horizontal, DUSpacing.lg)
-                                .padding(.vertical, DUSpacing.md)
-                                .background(Color.white)
-                                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 16, style: .continuous)
-                                        .stroke(DUTheme.lineLight, lineWidth: 1)
-                                )
-                            }
-                            .buttonStyle(.plain)
-                        }
-                    }
-                }
-
-                Text(message.createdAt.formatted(date: .omitted, time: .shortened))
-                    .font(.du(11, weight: .medium))
-                    .foregroundColor(DUTheme.inkDisabled)
-            }
-            .frame(maxWidth: .infinity, alignment: message.sender == .user ? .trailing : .leading)
-
-            if message.sender == .user {
-                avatarView(systemName: "person.fill")
+                .buttonStyle(.plain)
+                .offset(y: promptOffsets[safe: index] ?? 0)
+                .opacity(promptOpacities[safe: index] ?? 0)
             }
         }
-        .frame(maxWidth: .infinity, alignment: message.sender == .user ? .trailing : .leading)
     }
 
-    private func assistantRichTextView(_ richText: AttributedString) -> some View {
-        Text(richText)
-            .font(.du(14, weight: .medium))
-            .foregroundColor(DUTheme.ink)
-            .multilineTextAlignment(.leading)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .fixedSize(horizontal: false, vertical: true)
-    }
-
-    private func assistantHTMLView(_ htmlContent: String) -> some View {
-        AIChatHTMLContentView(html: htmlContent)
-            .frame(maxWidth: .infinity, alignment: .leading)
-    }
-
-    private func shouldShowMessageContentBubble(_ message: AIChatMessage) -> Bool {
-        if message.isLoading {
-            return true
-        }
-
-        if let htmlContent = message.htmlContent,
-           !htmlContent.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            return true
-        }
-
-        if let richText = message.richText,
-           !normalizedDisplayText(String(richText.characters)).isEmpty {
-            return true
-        }
-
-        return !normalizedDisplayText(message.text).isEmpty
-    }
-
-    private func normalizedDisplayText(_ text: String) -> String {
-        let replacements = [
-            ("\u{00A0}", " "),
-            ("\u{200B}", ""),
-            ("\u{200C}", ""),
-            ("\u{200D}", ""),
-            ("\u{2060}", ""),
-            ("\u{FEFF}", ""),
-            ("\u{FFFC}", "")
-        ]
-
-        let normalized = replacements.reduce(text) { partialResult, replacement in
-            partialResult.replacingOccurrences(of: replacement.0, with: replacement.1)
-        }
-
-        return normalized.trimmingCharacters(in: .whitespacesAndNewlines)
-    }
-
-    private func avatarView(systemName: String) -> some View {
+    private var voiceActionBar: some View {
         ZStack {
+            // Ripple effects
             Circle()
-                .fill(DUTheme.subtleGradient)
-                .frame(width: 38, height: 38)
-
-            Image(systemName: systemName)
-                .font(.du(14, weight: .bold))
-                .foregroundColor(.white)
-        }
-    }
-
-    private var inputBar: some View {
-        HStack(spacing: DUSpacing.md) {
-            TextField(
-                AIChatLocalizedCopy.inputPlaceholder(for: viewModel.language),
-                text: $viewModel.draft
-            )
-            .font(.du(14, weight: .medium))
-            .foregroundColor(DUTheme.ink)
-            .padding(.horizontal, DUSpacing.lg)
-            .padding(.vertical, DUSpacing.md)
-            .background(DUTheme.background)
-            .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
-
+                .stroke(DUTheme.cyanLight.opacity(rippleOpacity), lineWidth: 1)
+                .frame(width: 80, height: 80)
+                .scaleEffect(rippleScale)
+            
+            Circle()
+                .fill(DUTheme.cyanLight.opacity(rippleOpacity * 0.2))
+                .frame(width: 80, height: 80)
+                .scaleEffect(rippleScale)
+            
+            // Main Voice Button
             Button {
-                viewModel.sendDraft()
+                triggerVoiceAnimation()
             } label: {
-                Text(AIChatLocalizedCopy.sendButtonTitle(for: viewModel.language))
-                    .font(.du(14, weight: .bold))
-                    .foregroundColor(.white)
-                    .padding(.horizontal, DUSpacing.lg)
-                    .frame(height: 48)
-                    .background(viewModel.canSend ? AnyShapeStyle(DUTheme.brandGradient) : AnyShapeStyle(DUTheme.inkDisabled))
-                    .clipShape(Capsule())
+                ZStack {
+                    Circle()
+                        .fill(
+                            LinearGradient(
+                                gradient: Gradient(colors: [DUTheme.cyan, DUTheme.blue]),
+                                startPoint: .top,
+                                endPoint: .bottom
+                            )
+                        )
+                        .frame(width: 72, height: 72)
+                        .shadow(color: DUTheme.cyan.opacity(0.5), radius: 15, x: 0, y: 8)
+                    
+                    Image(systemName: "mic.fill")
+                        .font(.du(28, weight: .semibold))
+                        .foregroundColor(.white)
+                }
             }
             .buttonStyle(.plain)
-            .disabled(!viewModel.canSend)
         }
-        .padding(.horizontal, DUSpacing.lg)
-        .padding(.top, DUSpacing.md)
-        .padding(.bottom, DUSpacing.md)
+        .onAppear {
+            startRippleAnimation()
+        }
     }
 
-    private func handleAction(_ action: AIChatAction) {
-        guard let target = action.target else {
-            return
+    // MARK: - Animations
+    private func animatePrompts() {
+        for index in 0..<viewModel.suggestedPrompts.count {
+            guard index < 4 else { break }
+            withAnimation(.spring(response: 0.6, dampingFraction: 0.7).delay(Double(index) * 0.1 + 0.2)) {
+                promptOffsets[index] = 0
+                promptOpacities[index] = 1
+            }
         }
+    }
 
-        switch target {
-        case let .external(url):
-            openURL(url)
-        default:
-            onNavigate(target)
+    private func startRippleAnimation() {
+        withAnimation(.easeOut(duration: 2).repeatForever(autoreverses: false)) {
+            rippleScale = 2.0
+            rippleOpacity = 0.0
+        }
+    }
+    
+    private func triggerVoiceAnimation() {
+        let generator = UIImpactFeedbackGenerator(style: .medium)
+        generator.impactOccurred()
+        
+        // Reset and trigger a fast pulse
+        rippleScale = 1.0
+        rippleOpacity = 0.8
+        withAnimation(.easeOut(duration: 0.5)) {
+            rippleScale = 2.5
+            rippleOpacity = 0.0
+        }
+        
+        // Resume normal idle animation after
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+            self.rippleScale = 1.0
+            self.rippleOpacity = 0.8
+            self.startRippleAnimation()
         }
     }
 }
 
-private struct AIChatHTMLContentView: View {
-    let html: String
-
-    @State private var contentHeight: CGFloat = 1
-
-    var body: some View {
-        AIChatHTMLWebView(html: html, contentHeight: $contentHeight)
-            .frame(height: max(contentHeight, 1))
+// Helper for safe array access
+extension Array {
+    subscript(safe index: Int) -> Element? {
+        return indices.contains(index) ? self[index] : nil
     }
 }
 
-private struct AIChatHTMLWebView: UIViewRepresentable {
-    let html: String
-    @Binding var contentHeight: CGFloat
-
-    func makeCoordinator() -> Coordinator {
-        Coordinator(contentHeight: $contentHeight)
-    }
-
-    func makeUIView(context: Context) -> WKWebView {
-        let configuration = WKWebViewConfiguration()
-        configuration.defaultWebpagePreferences.allowsContentJavaScript = true
-
-        let webView = WKWebView(frame: .zero, configuration: configuration)
-        webView.navigationDelegate = context.coordinator
-        webView.isOpaque = false
-        webView.backgroundColor = .clear
-        webView.scrollView.backgroundColor = .clear
-        webView.scrollView.isScrollEnabled = false
-        webView.scrollView.bounces = false
-        webView.scrollView.contentInsetAdjustmentBehavior = .never
-
-        context.coordinator.attach(to: webView)
-        context.coordinator.load(html, in: webView)
-        return webView
-    }
-
-    func updateUIView(_ webView: WKWebView, context: Context) {
-        context.coordinator.load(html, in: webView)
-    }
-
-    final class Coordinator: NSObject, WKNavigationDelegate {
-        @Binding private var contentHeight: CGFloat
-
-        private var currentHTML: String?
-        private var sizeObservation: NSKeyValueObservation?
-
-        init(contentHeight: Binding<CGFloat>) {
-            _contentHeight = contentHeight
-        }
-
-        deinit {
-            sizeObservation?.invalidate()
-        }
-
-        func attach(to webView: WKWebView) {
-            guard sizeObservation == nil else {
-                return
-            }
-
-            sizeObservation = webView.scrollView.observe(\.contentSize, options: [.new]) { [weak self] scrollView, _ in
-                let measuredHeight = scrollView.contentSize.height
-                guard let self else {
-                    return
-                }
-
-                Task { @MainActor [self, measuredHeight] in
-                    self.updateHeight(measuredHeight)
-                }
-            }
-        }
-
-        func load(_ html: String, in webView: WKWebView) {
-            guard currentHTML != html else {
-                return
-            }
-
-            currentHTML = html
-            webView.loadHTMLString(html, baseURL: nil)
-        }
-
-        func webView(
-            _ webView: WKWebView,
-            didFinish navigation: WKNavigation!
-        ) {
-            measureHeight(in: webView)
-        }
-
-        private func measureHeight(in webView: WKWebView) {
-            let script = """
-            Math.max(
-                document.body.scrollHeight,
-                document.documentElement.scrollHeight,
-                document.body.offsetHeight,
-                document.documentElement.offsetHeight
-            )
-            """
-
-            webView.evaluateJavaScript(script) { [weak self, weak webView] result, _ in
-                let resolvedHeight: CGFloat
-                if let number = result as? NSNumber {
-                    resolvedHeight = CGFloat(truncating: number)
-                } else {
-                    resolvedHeight = webView?.scrollView.contentSize.height ?? 1
-                }
-
-                guard let self else {
-                    return
-                }
-
-                Task { @MainActor [self, resolvedHeight] in
-                    self.updateHeight(resolvedHeight)
-                }
-            }
-        }
-
-        @MainActor
-        private func updateHeight(_ height: CGFloat) {
-            let resolved = max(height.rounded(.up), 1)
-            guard abs(contentHeight - resolved) > 0.5 else {
-                return
-            }
-            contentHeight = resolved
-        }
-    }
-}
