@@ -166,6 +166,7 @@
     "tab": {
       "home": "首页",
       "service": "服务",
+      "aiAgent": "AI 助手",
       "mall": "商城",
       "video": "视频",
       "me": "我的"
@@ -200,6 +201,10 @@
     "placeholder": {
       "search": "搜索功能即将上线。",
       "notifications": "通知功能即将上线。"
+    },
+    "profile": {
+      "pointsLabel": "我的积分：%@",
+      "advanced": "高级"
     },
     "quick": {
       "recharge": "充值",

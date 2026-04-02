@@ -166,6 +166,7 @@
     "tab": {
       "home": "Home",
       "service": "Service",
+      "aiAgent": "AI Agent",
       "mall": "Mall",
       "video": "Video",
       "me": "Me"
@@ -200,6 +201,10 @@
     "placeholder": {
       "search": "Search is coming soon.",
       "notifications": "Notifications are coming soon."
+    },
+    "profile": {
+      "pointsLabel": "My Points: %@",
+      "advanced": "Advanced"
     },
     "quick": {
       "recharge": "Recharge",

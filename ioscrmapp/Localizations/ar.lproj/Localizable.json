@@ -166,6 +166,7 @@
     "tab": {
       "home": "الرئيسية",
       "service": "الخدمات",
+      "aiAgent": "وكيل AI",
       "mall": "المتجر",
       "video": "الفيديو",
       "me": "أنا"
@@ -200,6 +201,10 @@
     "placeholder": {
       "search": "ميزة البحث قادمة قريبًا.",
       "notifications": "ميزة الإشعارات قادمة قريبًا."
+    },
+    "profile": {
+      "pointsLabel": "نقاطي: %@",
+      "advanced": "متقدم"
     },
     "quick": {
       "recharge": "إعادة شحن",

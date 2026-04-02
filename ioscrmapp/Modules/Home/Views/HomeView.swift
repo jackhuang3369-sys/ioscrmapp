@@ -1,5 +1,8 @@
 import SwiftUI
 import WebKit
+#if canImport(UIKit)
+import UIKit
+#endif
 
 struct HomeView: View {
     @EnvironmentObject private var languageStore: AppLanguageStore
@@ -28,46 +31,23 @@ struct HomeView: View {
     @State private var isOffersPresented = false
     @State private var isTicketsPresented = false
     @State private var isSigningOut = false
+    @State private var isCreditLimitExpanded = false
     @State private var signOutFailureMessageKey: String?
 
-    private let pageHorizontalPadding: CGFloat = DUSpacing.md
+    private let pageHorizontalPadding: CGFloat = 8
+
     private let quickActions: [HomeItem] = [
-        .init(title: .key("home.quick.recharge"), assetName: "QuickRechargeIcon", action: .recharge),
-        .init(title: .key("home.quick.payBill"), assetName: "ServiceBillsIcon", action: .billing),
-        .init(title: .key("home.quick.offers"), assetName: "QuickOffersIcon", action: .offers),
-        .init(title: .key("home.quick.mall"), assetName: "QuickMallIcon", action: .mall),
+        .init(title: .key("home.quick.recharge"), assetName: "HomeQuickRechargeDesignIcon", action: .recharge),
+        .init(title: .key("home.quick.payBill"), assetName: "HomeQuickPayBillDesignIcon", action: .billing),
+        .init(title: .key("home.quick.offers"), assetName: "HomeQuickOffersDesignIcon", action: .offers),
+        .init(title: .key("home.quick.mall"), assetName: "HomeQuickMallDesignIcon", action: .mall),
     ]
 
     private let services: [HomeItem] = [
-        .init(title: .key("home.service.dataPack"), assetName: "ServiceDataPackIcon"),
-        .init(title: .key("home.service.voicePack"), assetName: "ServiceVoicePackIcon"),
-        .init(title: .key("home.service.roaming"), assetName: "ServiceRoamingIcon"),
-        .init(title: .key("home.service.tickets"), assetName: "ServiceTicketsIcon", action: .tickets),
-        .init(title: .key("home.service.bills"), assetName: "ServiceBillsIcon", action: .billing),
-        .init(title: .key("home.service.points"), assetName: "ServicePointsIcon"),
-        .init(title: .key("home.service.mail"), assetName: "ServiceMailIcon"),
-        .init(title: .key("home.service.support"), assetName: "ServiceSupportIcon"),
-    ]
-
-    private let products: [HomeProduct] = [
-        .init(
-            name: .key("home.product.iphone.name"),
-            price: .key("home.product.iphone.price"),
-            oldPrice: .key("home.product.iphone.oldPrice"),
-            assetName: "ProductIPhoneImage"
-        ),
-        .init(
-            name: .key("home.product.airpods.name"),
-            price: .key("home.product.airpods.price"),
-            oldPrice: nil,
-            assetName: "ProductAirPodsImage"
-        ),
-        .init(
-            name: .key("home.product.watch.name"),
-            price: .key("home.product.watch.price"),
-            oldPrice: nil,
-            assetName: "ProductWatchImage"
-        ),
+        .init(title: .key("home.service.dataPack"), assetName: "HomeServiceDataPackDesignIcon"),
+        .init(title: .key("home.service.tickets"), assetName: "HomeServiceTicketsDesignIcon", action: .tickets),
+        .init(title: .key("home.service.roaming"), assetName: "HomeServiceRoamingDesignIcon"),
+        .init(title: .key("home.service.voicePack"), assetName: "HomeServiceVoicePackDesignIcon"),
     ]
 
     private let featuredCarouselAssetNames: [String] = [
@@ -76,6 +56,7 @@ struct HomeView: View {
         "HomeCarouselSnowMountains",
         "HomeCarouselCliffDawn",
     ]
+
     init(
         custSubInfo: CustSubInfo,
         sessionStore: SessionStore,
@@ -114,18 +95,124 @@ struct HomeView: View {
                 }
             )
         )
+#if canImport(UIKit)
+        UITabBar.appearance().isHidden = true
+#endif
     }
 
     var body: some View {
         ZStack {
-            TabView(selection: $selectedTab) {
-            homeDashboard
-            .tabItem {
-                Image(HomeTab.home.assetName)
-                    .renderingMode(.original)
-                Text(localized(HomeTab.home.title))
+            tabScaffold
+                .task {
+                    await viewModel.loadIfNeeded()
+                }
+                .background(homePageBackground.ignoresSafeArea())
+                .alert(isPresented: placeholderAlertIsPresented) {
+                    Alert(
+                        title: Text(localized("common.comingSoon.title")),
+                        message: Text(localized(placeholderMessage)),
+                        dismissButton: .default(Text(localized("common.ok"))) {
+                            placeholderMessage = nil
+                        }
+                    )
+                }
+                .fullScreenCover(isPresented: $isMessageCenterPresented) {
+                    MessageCenterView(
+                        session: custSubInfo,
+                        notificationService: notificationService
+                    )
+                }
+                .fullScreenCover(isPresented: $isBillingPresented) {
+                    BillingContainerView(session: custSubInfo, billingService: billingService)
+                }
+                .fullScreenCover(isPresented: $isRechargePresented) {
+                    RechargeContainerView(session: custSubInfo, rechargeService: rechargeService)
+                }
+                .fullScreenCover(isPresented: $isOffersPresented) {
+                    OffersContainerView(session: custSubInfo, offersService: offersService)
+                }
+                .fullScreenCover(isPresented: $isTicketsPresented) {
+                    TicketsModalContainerView(ticketsService: ticketsService)
+                }
+                .confirmationDialog(
+                    localized("me.signOut.failure.title"),
+                    isPresented: signOutFailureDialogPresented,
+                    titleVisibility: .visible
+                ) {
+                    Button(localized("common.retry")) {
+                        startSignOut()
+                    }
+                    Button(localized("me.signOut.failure.localOnly"), role: .destructive) {
+                        sessionStore.signOut()
+                    }
+                    Button(localized("common.cancel"), role: .cancel) {
+                        signOutFailureMessageKey = nil
+                    }
+                } message: {
+                    Text(localized(signOutFailureMessageKey))
+                }
+
+            if isAIChatPresented {
+                GeometryReader { proxy in
+                    let sheetHeight = min(max(proxy.size.height * 0.85, 600), 850)
+
+                    ZStack(alignment: .bottom) {
+                        Color.black.opacity(0.3)
+                            .background(.ultraThinMaterial)
+                            .ignoresSafeArea()
+                            .onTapGesture {
+                                withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
+                                    isAIChatPresented = false
+                                }
+                            }
+
+                        AIChatView(
+                            custSubInfo: custSubInfo,
+                            language: languageStore.currentLanguage,
+                            aiChatService: aiChatService
+                        ) { target in
+                            withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
+                                isAIChatPresented = false
+                            }
+                            handleAIChatNavigation(target)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .frame(height: sheetHeight)
+                        .clipShape(RoundedRectangle(cornerRadius: 36, style: .continuous))
+                        .ignoresSafeArea(edges: .bottom)
+                        .shadow(color: Color.black.opacity(0.3), radius: 40, x: 0, y: -10)
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                }
+                .zIndex(100)
+                .transition(.move(edge: .bottom).combined(with: .opacity))
             }
-            .tag(HomeTab.home)
+        }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            homeTabBar
+        }
+        .background(homePageBackground.ignoresSafeArea())
+    }
+
+    @ViewBuilder
+    private var tabScaffold: some View {
+        if #available(iOS 16.0, *) {
+            rootTabView
+                .toolbar(.hidden, for: .tabBar)
+        } else {
+            rootTabView
+        }
+    }
+
+    private var rootTabView: some View {
+        TabView(selection: $selectedTab) {
+            homeDashboard
+                .tabItem {
+                    Image(HomeTab.home.assetName)
+                        .renderingMode(.original)
+                    Text(localized(HomeTab.home.title))
+                }
+                .tag(HomeTab.home)
 
             DUFeaturePlaceholderView(
                 title: HomeTab.service.title,
@@ -180,92 +267,6 @@ struct HomeView: View {
             }
             .tag(HomeTab.me)
         }
-        .task {
-            await viewModel.loadIfNeeded()
-        }
-        .background(DUTheme.background.ignoresSafeArea())
-        .alert(isPresented: placeholderAlertIsPresented) {
-            Alert(
-                title: Text(localized("common.comingSoon.title")),
-                message: Text(localized(placeholderMessage)),
-                dismissButton: .default(Text(localized("common.ok"))) {
-                    placeholderMessage = nil
-                }
-            )
-        }
-        .fullScreenCover(isPresented: $isMessageCenterPresented) {
-            MessageCenterView(
-                session: custSubInfo,
-                notificationService: notificationService
-            )
-        }
-        .fullScreenCover(isPresented: $isBillingPresented) {
-            BillingContainerView(session: custSubInfo, billingService: billingService)
-        }
-        .fullScreenCover(isPresented: $isRechargePresented) {
-            RechargeContainerView(session: custSubInfo, rechargeService: rechargeService)
-        }
-        .fullScreenCover(isPresented: $isOffersPresented) {
-            OffersContainerView(session: custSubInfo, offersService: offersService)
-        }
-        .fullScreenCover(isPresented: $isTicketsPresented) {
-            TicketsModalContainerView(ticketsService: ticketsService)
-        }
-        .confirmationDialog(
-            localized("me.signOut.failure.title"),
-            isPresented: signOutFailureDialogPresented,
-            titleVisibility: .visible
-        ) {
-            Button(localized("common.retry")) {
-                startSignOut()
-            }
-            Button(localized("me.signOut.failure.localOnly"), role: .destructive) {
-                sessionStore.signOut()
-            }
-            Button(localized("common.cancel"), role: .cancel) {
-                signOutFailureMessageKey = nil
-            }
-        } message: {
-            Text(localized(signOutFailureMessageKey))
-        }
-
-            // AI Assistant Bottom Sheet
-            if isAIChatPresented {
-                GeometryReader { proxy in
-                    let sheetHeight = min(max(proxy.size.height * 0.85, 600), 850)
-
-                    ZStack(alignment: .bottom) {
-                        Color.black.opacity(0.3)
-                            .background(.ultraThinMaterial)
-                            .ignoresSafeArea()
-                            .onTapGesture {
-                                withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
-                                    isAIChatPresented = false
-                                }
-                            }
-
-                        AIChatView(
-                            custSubInfo: custSubInfo,
-                            language: languageStore.currentLanguage,
-                            aiChatService: aiChatService
-                        ) { target in
-                            withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
-                                isAIChatPresented = false
-                            }
-                            handleAIChatNavigation(target)
-                        }
-                        .frame(maxWidth: .infinity)
-                        .frame(height: sheetHeight)
-                        .clipShape(RoundedRectangle(cornerRadius: 36, style: .continuous))
-                        .ignoresSafeArea(edges: .bottom)
-                        .shadow(color: Color.black.opacity(0.3), radius: 40, x: 0, y: -10)
-                    }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                }
-                .zIndex(100)
-                .transition(.move(edge: .bottom).combined(with: .opacity))
-            }
-        } // End of ZStack body
     }
 
     @ViewBuilder
@@ -273,7 +274,7 @@ struct HomeView: View {
         if let dashboard = viewModel.dashboard {
             GeometryReader { proxy in
                 ScrollView(showsIndicators: false) {
-                    VStack(spacing: DUSpacing.md) {
+                    VStack(spacing: 12) {
                         header(
                             topInset: proxy.safeAreaInsets.top,
                             dashboard: dashboard
@@ -286,15 +287,14 @@ struct HomeView: View {
                         quickActionsSection
                         featuredCarouselSection
                         servicesSection
-                        productsSection
                     }
-                    .padding(.bottom, DUSpacing.xl)
+                    .padding(.bottom, DUSpacing.lg)
                 }
                 .refreshable {
                     await viewModel.refresh()
                 }
                 .ignoresSafeArea(edges: .top)
-                .background(DUTheme.background.ignoresSafeArea())
+                .background(homePageBackground.ignoresSafeArea())
             }
         } else {
             homeLoadingState
@@ -317,17 +317,17 @@ struct HomeView: View {
                     await viewModel.reload()
                 }
             }
-            .background(DUTheme.background.ignoresSafeArea())
+            .background(homePageBackground.ignoresSafeArea())
         case .idle, .loading, .loaded:
             VStack(spacing: DUSpacing.lg) {
                 ProgressView()
                     .progressViewStyle(.circular)
                 Text(localized("home.state.loadingTitle"))
-                    .font(.du(15, weight: .semibold))
+                    .font(homeFont(15, weight: .semibold))
                     .foregroundColor(DUTheme.inkSecondary)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(DUTheme.background.ignoresSafeArea())
+            .background(homePageBackground.ignoresSafeArea())
         }
     }
 
@@ -335,242 +335,340 @@ struct HomeView: View {
         topInset: CGFloat,
         dashboard: HomeDashboardSnapshot
     ) -> some View {
-        VStack(spacing: DUSpacing.lg) {
-            HStack(alignment: .top) {
-                HStack(spacing: DUSpacing.md) {
-                    Circle()
-                        .fill(.white.opacity(0.2))
-                        .frame(width: 44, height: 44)
-                        .overlay(
-                            Image(systemName: "person.fill")
-                                .foregroundColor(.white)
-                        )
+        VStack(spacing: 14) {
+            HStack(alignment: .center) {
+                HStack(spacing: 6) {
+                    Image(systemName: "sun.max.fill")
+                        .font(homeFont(13, weight: .semibold))
+                        .foregroundColor(Color(hex: 0xFFD351))
+                        .shadow(color: Color(hex: 0xFFD351, opacity: 0.34), radius: 6)
 
-                    VStack(alignment: .leading, spacing: DUSpacing.xs) {
-                        Text(localized("home.greeting.morning"))
-                            .font(.du(11, weight: .medium))
-                            .foregroundColor(.white.opacity(0.8))
-
-                        Text(dashboard.profile.displayName)
-                            .font(.du(18, weight: .bold))
-                            .foregroundColor(.white)
-
-                        if let packageName = localizedPackageName(for: dashboard.profile.packageName) {
-                            Text(packageName)
-                                .font(.du(12, weight: .medium))
-                                .foregroundColor(.white.opacity(0.92))
-                        }
-
-                        Text(profileMetadata(for: dashboard.profile))
-                            .font(.du(11, weight: .medium))
-                            .foregroundColor(.white.opacity(0.78))
-                    }
+                    Text(localized("home.greeting.morning"))
+                        .font(homeFont(13, weight: .medium))
+                        .foregroundColor(.white.opacity(0.86))
                 }
 
                 Spacer()
 
-                HStack(spacing: DUSpacing.sm) {
-                    CircleAction(symbol: "magnifyingglass") {
+                HStack(spacing: 10) {
+                    HomeHeaderActionButton(assetName: "HomeSearchButtonIcon") {
                         placeholderMessage = .key("home.placeholder.search")
                     }
-                    AIHeaderAction {
-                        withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
-                            isAIChatPresented = true
-                        }
-                    }
-                    CircleAction(symbol: "bell.fill") {
+                    HomeHeaderActionButton(assetName: "HomeNotificationButtonIcon") {
                         isMessageCenterPresented = true
                     }
                 }
             }
 
-            dashboardCard(
+            HStack(alignment: .center, spacing: 12) {
+                HStack(spacing: 12) {
+                    Image("HomeHeroAvatar")
+                        .renderingMode(.original)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 56, height: 56)
+                        .clipShape(Circle())
+
+                    VStack(alignment: .leading, spacing: 0) {
+                        Text(dashboard.profile.displayName)
+                            .font(homeFont(15, weight: .semibold))
+                            .foregroundColor(.white)
+                            .lineLimit(1)
+
+                        HStack(spacing: 6) {
+                            if let packageName = localizedPackageName(for: dashboard.profile.packageName) {
+                                Text(packageName)
+                                    .lineLimit(1)
+                            }
+
+                            if localizedPackageName(for: dashboard.profile.packageName) != nil,
+                               profilePointsText != nil {
+                                Text("|")
+                                    .opacity(0.62)
+                            }
+
+                            if let profilePointsText {
+                                Text(profilePointsText)
+                                    .lineLimit(1)
+                            }
+                        }
+                        .font(homeFont(11, weight: .medium))
+                        .foregroundColor(.white.opacity(0.84))
+                        .padding(.top, 5)
+
+                        HStack(spacing: 8) {
+                            Text(dashboard.profile.serviceNumber)
+                                .font(homeFont(10, weight: .medium))
+                                .foregroundColor(.white.opacity(0.92))
+                                .padding(.horizontal, 7)
+                                .padding(.vertical, 2)
+                                .background(
+                                    Capsule()
+                                        .fill(.white.opacity(0.14))
+                                )
+
+                            if let networkStatus = dashboard.profile.networkStatus {
+                                Text(localized(networkStatus.textValue))
+                                    .font(homeFont(10, weight: .medium))
+                                    .foregroundColor(.white.opacity(0.72))
+                                    .lineLimit(1)
+                            }
+                        }
+                        .padding(.top, 8)
+                    }
+                }
+
+                Spacer(minLength: 8)
+
+                HStack(spacing: 6) {
+                    Image("HomeHeroBadgeIcon")
+                        .renderingMode(.original)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 18, height: 18)
+
+                    Text(localized("home.profile.advanced"))
+                        .font(homeFont(9, weight: .medium))
+                        .foregroundColor(.white.opacity(0.82))
+                }
+            }
+
+            accountCard(
                 summary: dashboard.summary,
                 usage: dashboard.usage
             )
         }
-        .padding(.horizontal, DUSpacing.lg)
-        .padding(.top, max(topInset, DUSpacing.xl) + DUSpacing.md)
-        .padding(.bottom, DUSpacing.xxl)
-        .background(DUTheme.brandGradient)
-        .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
+        .padding(.horizontal, 14)
+        .padding(.top, max(topInset, 8) + 6)
+        .padding(.bottom, 18)
+        .background(
+            Image("HomeHeroBackground")
+                .renderingMode(.original)
+                .resizable()
+                .scaledToFill()
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .clipped()
+        )
     }
 
-    private func dashboardCard(
+    private func accountCard(
         summary: HomeSummarySection,
         usage: HomeUsageSection
     ) -> some View {
-        VStack(alignment: .leading, spacing: DUSpacing.md) {
-            HStack(alignment: .top, spacing: DUSpacing.md) {
-                VStack(alignment: .leading, spacing: DUSpacing.xs) {
-                    Text(localized(summary.primaryTitleKey))
-                        .font(.du(11, weight: .medium))
-                        .foregroundColor(.white.opacity(0.8))
+        VStack(alignment: .leading, spacing: 0) {
+            HStack(alignment: .top, spacing: 10) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(localized("home.header.accountBalanceTitle"))
+                        .font(homeFont(12, weight: .semibold))
+                        .foregroundColor(Color(hex: 0x4C5A75))
 
                     metricValueText(
-                        summary.primaryValue,
-                        amountFontSize: 28,
+                        summary.balanceValue,
+                        amountFontSize: 20,
                         amountWeight: .bold,
-                        amountColor: .white,
-                        currencyFontSize: 17,
+                        amountColor: Color(hex: 0x167DFF),
+                        currencyFontSize: 12,
                         currencyWeight: .semibold,
-                        currencyColor: .white.opacity(0.72)
+                        currencyColor: Color(hex: 0x6F7F99)
                     )
                 }
 
                 Spacer()
 
-                dashboardActions(for: summary)
+                accountActionButton(for: summary)
             }
 
-            summarySecondaryDetails(summary)
+            if summary.showsPostpaidDetails || summary.creditLimit != nil {
+                HStack(alignment: .top, spacing: 12) {
+                    billMeta(
+                        titleKey: "home.header.currentBillTitle",
+                        value: summary.currentBillValue
+                    )
 
-            if let creditLimit = summary.creditLimit {
-                creditLimitSection(creditLimit)
-            }
+                    billMeta(
+                        titleKey: "home.header.dueDateTitle",
+                        value: summary.dueDateValue
+                    )
 
-            if let inlineMessage = summary.inlineMessage {
-                inlineMessageText(inlineMessage)
-            }
-
-            Divider()
-                .overlay(.white.opacity(0.12))
-                .padding(.top, 2)
-                .padding(.bottom, 2)
-
-            VStack(alignment: .leading, spacing: DUSpacing.md) {
-                HStack(spacing: DUSpacing.lg) {
-                    ForEach(usage.cards) { card in
-                        usageMetric(card)
+                    if summary.creditLimit != nil {
+                        Button {
+                            withAnimation(.easeInOut(duration: 0.22)) {
+                                isCreditLimitExpanded.toggle()
+                            }
+                        } label: {
+                            Circle()
+                                .fill(.white.opacity(0.18))
+                                .frame(width: 24, height: 24)
+                                .overlay(
+                                    Circle()
+                                        .stroke(.white.opacity(0.5), lineWidth: 1)
+                                )
+                                .overlay(
+                                    Image(systemName: "chevron.down")
+                                        .font(homeFont(10, weight: .semibold))
+                                        .foregroundColor(.white.opacity(0.92))
+                                        .rotationEffect(.degrees(isCreditLimitExpanded ? 180 : 0))
+                                )
+                        }
+                        .buttonStyle(.plain)
+                        .padding(.top, 12)
+                        .accessibilityLabel(localized("home.header.creditLimitTitle"))
                     }
                 }
+                .padding(.top, 10)
+            }
 
-                if let inlineMessage = usage.inlineMessage {
-                    inlineMessageText(inlineMessage)
+            if let creditLimit = summary.creditLimit, isCreditLimitExpanded {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(localized("home.header.creditLimitTitle"))
+                        .font(homeFont(11, weight: .semibold))
+                        .foregroundColor(Color(hex: 0x50596D))
+
+                    HStack(spacing: 8) {
+                        creditLimitCard(
+                            titleKey: "home.header.creditTotalTitle",
+                            value: creditLimit.totalValue,
+                            backgroundColor: Color(red: 199 / 255, green: 219 / 255, blue: 255 / 255, opacity: 0.76)
+                        )
+                        creditLimitCard(
+                            titleKey: "home.header.creditUsedTitle",
+                            value: creditLimit.usedValue,
+                            backgroundColor: Color(red: 245 / 255, green: 214 / 255, blue: 224 / 255, opacity: 0.82)
+                        )
+                        creditLimitCard(
+                            titleKey: "home.header.creditRemainingTitle",
+                            value: creditLimit.remainingValue,
+                            backgroundColor: Color(red: 208 / 255, green: 236 / 255, blue: 229 / 255, opacity: 0.84)
+                        )
+                    }
                 }
+                .padding(.top, 10)
+                .transition(
+                    .asymmetric(
+                        insertion: .move(edge: .top).combined(with: .opacity),
+                        removal: .move(edge: .top).combined(with: .opacity)
+                    )
+                )
             }
-            .padding(.top, -DUSpacing.xs)
+
+            usageMetricsRow(usage.cards)
+                .padding(.top, 12)
         }
-        .padding(DUSpacing.lg)
-        .background(Color.white.opacity(0.14))
-        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+        .padding(.top, 15)
+        .padding(.horizontal, 14)
+        .padding(.bottom, 14)
+        .background(
+            LinearGradient(
+                colors: [
+                    Color(red: 232 / 255, green: 236 / 255, blue: 255 / 255, opacity: 0.88),
+                    Color.white.opacity(0.96)
+                ],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 28, style: .continuous)
+                .stroke(.white.opacity(0.22), lineWidth: 1)
+        )
+        .shadow(color: Color(red: 29 / 255, green: 46 / 255, blue: 122 / 255, opacity: 0.18), radius: 15, x: 0, y: 10)
     }
 
-    @ViewBuilder
-    private func summarySecondaryDetails(
-        _ summary: HomeSummarySection
-    ) -> some View {
-        switch summary.paymentType {
-        case .prepaid, .unknown:
-            EmptyView()
-        case .postpaid:
-            HStack(spacing: DUSpacing.lg) {
-                summaryMetric(
-                    titleKey: "home.header.dueDateTitle",
-                    value: summary.dueDateValue
-                )
-            }
-        case .hybrid:
-            HStack(spacing: DUSpacing.lg) {
-                summaryMetric(
-                    titleKey: "home.header.currentBillTitle",
-                    value: summary.currentBillValue
-                )
-                summaryMetric(
-                    titleKey: "home.header.dueDateTitle",
-                    value: summary.dueDateValue
-                )
-            }
-        }
-    }
-
-    private func summaryMetric(
+    private func billMeta(
         titleKey: String,
         value: LocalizedTextValue
     ) -> some View {
-        VStack(alignment: .leading, spacing: DUSpacing.xs) {
+        VStack(alignment: .leading, spacing: 4) {
             Text(localized(titleKey))
-                .font(.du(10, weight: .medium))
-                .foregroundColor(.white.opacity(0.7))
+                .font(homeFont(11, weight: .regular))
+                .foregroundColor(Color(hex: 0x7F89A3))
 
-            metricValueText(
-                value,
-                amountFontSize: 13,
-                amountWeight: .semibold,
-                amountColor: .white,
-                currencyFontSize: 11,
-                currencyWeight: .medium,
-                currencyColor: .white.opacity(0.72)
-            )
+            Text(normalizedMetricValue(localized(value)))
+                .font(homeFont(12, weight: .semibold))
+                .foregroundColor(Color(hex: 0x414A5C))
+                .lineLimit(1)
+                .minimumScaleFactor(0.85)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    private func creditLimitSection(
-        _ creditLimit: HomeCreditLimitSection
-    ) -> some View {
-        VStack(alignment: .leading, spacing: DUSpacing.sm) {
-            Text(localized("home.header.creditLimitTitle"))
-                .font(.du(11, weight: .medium))
-                .foregroundColor(.white.opacity(0.78))
-
-            HStack(spacing: DUSpacing.md) {
-                creditLimitMetric(
-                    titleKey: "home.header.creditTotalTitle",
-                    value: creditLimit.totalValue
-                )
-                creditLimitMetric(
-                    titleKey: "home.header.creditUsedTitle",
-                    value: creditLimit.usedValue
-                )
-                creditLimitMetric(
-                    titleKey: "home.header.creditRemainingTitle",
-                    value: creditLimit.remainingValue
-                )
-            }
-        }
-    }
-
-    private func creditLimitMetric(
+    private func creditLimitCard(
         titleKey: String,
-        value: LocalizedTextValue
+        value: LocalizedTextValue,
+        backgroundColor: Color
     ) -> some View {
-        VStack(alignment: .leading, spacing: DUSpacing.xs) {
+        VStack(alignment: .leading, spacing: 5) {
             Text(localized(titleKey))
-                .font(.du(10, weight: .medium))
-                .foregroundColor(.white.opacity(0.7))
+                .font(homeFont(10, weight: .regular))
+                .foregroundColor(Color(hex: 0x7D88A2))
 
             metricValueText(
                 value,
-                amountFontSize: 13,
-                amountWeight: .semibold,
-                amountColor: .white,
+                amountFontSize: 11,
+                amountWeight: .bold,
+                amountColor: Color(hex: 0x3F4857),
                 currencyFontSize: 11,
-                currencyWeight: .medium,
-                currencyColor: .white.opacity(0.68)
+                currencyWeight: .semibold,
+                currencyColor: Color(hex: 0x3F4857)
             )
             .lineLimit(1)
             .minimumScaleFactor(0.8)
         }
-        .padding(DUSpacing.md)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 9)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.white.opacity(0.08))
-        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .background(backgroundColor)
+        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+    }
+
+    private func usageMetricsRow(_ cards: [HomeUsageCard]) -> some View {
+        HStack(spacing: 12) {
+            ForEach(cards) { card in
+                usageMetric(card)
+            }
+        }
+        .padding(.top, 12)
+        .overlay(alignment: .top) {
+            Rectangle()
+                .fill(Color(red: 72 / 255, green: 88 / 255, blue: 124 / 255, opacity: 0.12))
+                .frame(height: 1)
+        }
     }
 
     private func usageMetric(_ card: HomeUsageCard) -> some View {
-        VStack(alignment: .leading, spacing: DUSpacing.xs) {
-            Text(localized(card.title))
-                .font(.du(10, weight: .medium))
-                .foregroundColor(.white.opacity(0.7))
+        let design = usageDesign(for: card.kind)
 
-            Text(localized(card.value))
-                .font(.du(13, weight: .semibold))
-                .foregroundColor(.white)
-                .lineLimit(2)
+        return VStack(alignment: .leading, spacing: 0) {
+            HStack(spacing: 4) {
+                Image(systemName: design.systemName)
+                    .font(homeFont(13, weight: .semibold))
+                    .foregroundColor(design.tintColor)
 
-            ProgressView(value: card.progress)
-                .tint(.white)
+                Text(localized(card.title))
+                    .font(homeFont(11, weight: .medium))
+                    .foregroundColor(Color(hex: 0x67748F))
+            }
+
+            usageValueText(
+                card.value,
+                primaryColor: Color(hex: 0x435065),
+                secondaryColor: Color(hex: 0x74839E)
+            )
+            .padding(.top, 5)
+
+            GeometryReader { proxy in
+                ZStack(alignment: .leading) {
+                    Capsule()
+                        .fill(Color(hex: 0xE0E7F1))
+
+                    Capsule()
+                        .fill(design.tintColor)
+                        .frame(width: proxy.size.width * min(max(card.progress, 0), 1))
+                }
+            }
+            .frame(height: 4)
+            .padding(.top, 6)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -579,8 +677,8 @@ struct HomeView: View {
         _ value: LocalizedTextValue
     ) -> some View {
         Text(localized(value))
-            .font(.du(11, weight: .medium))
-            .foregroundColor(.white.opacity(0.82))
+            .font(homeFont(11, weight: .medium))
+            .foregroundColor(Color(hex: 0x6E7B97))
     }
 
     private func inlineBanner(
@@ -588,180 +686,177 @@ struct HomeView: View {
     ) -> some View {
         HStack(spacing: DUSpacing.sm) {
             Image(systemName: "arrow.triangle.2.circlepath")
-                .font(.du(13, weight: .semibold))
-                .foregroundColor(DUTheme.cyan)
+                .font(homeFont(13, weight: .semibold))
+                .foregroundColor(Color(hex: 0x2B80FF))
 
             Text(localized(message))
-                .font(.du(12, weight: .medium))
-                .foregroundColor(DUTheme.inkSecondary)
+                .font(homeFont(12, weight: .medium))
+                .foregroundColor(Color(hex: 0x4A5568))
 
             Spacer()
         }
-        .padding(.horizontal, DUSpacing.lg)
-        .padding(.vertical, DUSpacing.md)
-        .background(DUTheme.panel)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .background(Color.white)
         .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .stroke(DUTheme.lineLight, lineWidth: 1)
+                .stroke(Color(hex: 0xE8EEF4), lineWidth: 1)
         )
         .padding(.horizontal, pageHorizontalPadding)
     }
 
     private var quickActionsSection: some View {
-        DUSectionCard(title: nil, spacing: 0) {
+        VStack {
             LazyVGrid(
-                columns: Array(repeating: GridItem(.flexible(), spacing: DUSpacing.md), count: 4),
-                spacing: DUSpacing.md
+                columns: Array(repeating: GridItem(.flexible(), spacing: 2), count: 4),
+                spacing: 2
             ) {
                 ForEach(filteredQuickActions) { item in
-                    Button {
+                    HomeIconGridButton(
+                        title: localized(item.title),
+                        assetName: item.assetName,
+                        iconSize: 48,
+                        titleFontSize: 11,
+                        titleWeight: .semibold
+                    ) {
                         handleAction(item)
-                    } label: {
-                        VStack(spacing: DUSpacing.sm) {
-                            ZStack {
-                                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                                    .fill(DUTheme.backgroundSecondary)
-                                    .frame(height: 64)
-
-                                Image(item.assetName)
-                                    .renderingMode(.original)
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(width: 48, height: 48)
-                            }
-
-                            Text(localized(item.title))
-                                .font(.du(12, weight: .medium))
-                                .foregroundColor(DUTheme.ink)
-                        }
                     }
-                    .buttonStyle(.plain)
                 }
             }
         }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 12)
+        .background(Color.white)
+        .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+        .shadow(color: Color.black.opacity(0.08), radius: 14, x: 0, y: 8)
         .padding(.horizontal, pageHorizontalPadding)
-        .offset(y: -8)
-        .padding(.bottom, -8)
     }
 
     private var featuredCarouselSection: some View {
-        // Featured carousel with a premium card treatment that matches the home dashboard.
         HomeFeatureCarouselView(assetNames: featuredCarouselAssetNames)
-            // Keep the carousel visually consistent with the surrounding cards and spacing.
-            .padding(.vertical, DUSpacing.lg)
-            .overlay(
-                RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .stroke(DUTheme.lineLight, lineWidth: 1)
-            )
-            .duCardStyle()
+            .padding(.horizontal, 12)
+            .padding(.top, 16)
+            .padding(.bottom, 14)
+            .background(Color.white)
+            .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+            .shadow(color: Color.black.opacity(0.08), radius: 14, x: 0, y: 8)
             .padding(.horizontal, pageHorizontalPadding)
     }
 
     private var servicesSection: some View {
-        DUSectionCard(
-            title: localized("home.section.popularServices"),
-            trailingTitle: localized("home.section.viewAll"),
-            trailingAction: {
-                showComingSoon(for: .key("home.section.popularServices"))
+        VStack(alignment: .leading, spacing: 14) {
+            HStack {
+                Text(localized("home.section.popularServices"))
+                    .font(homeFont(15, weight: .bold))
+                    .foregroundColor(Color(hex: 0x485064))
+
+                Spacer()
+
+                Button {
+                    selectedTab = .service
+                } label: {
+                    Text(localized("home.section.viewAll"))
+                        .font(homeFont(11, weight: .semibold))
+                        .foregroundColor(Color(hex: 0x549EFF))
+                }
+                .buttonStyle(.plain)
             }
-        ) {
+
             LazyVGrid(
-                columns: Array(repeating: GridItem(.flexible(), spacing: DUSpacing.md), count: 4),
-                spacing: DUSpacing.md
+                columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 4),
+                spacing: 8
             ) {
                 ForEach(services) { item in
-                    Button {
+                    HomeIconGridButton(
+                        title: localized(item.title),
+                        assetName: item.assetName,
+                        iconSize: 46,
+                        titleFontSize: 10,
+                        titleWeight: .medium
+                    ) {
                         handleAction(item)
-                    } label: {
-                        VStack(spacing: DUSpacing.sm) {
-                            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                                .fill(DUTheme.backgroundSecondary)
-                                .frame(height: 64)
-                                .overlay(
-                                    Image(item.assetName)
-                                        .renderingMode(.original)
-                                        .resizable()
-                                        .scaledToFit()
-                                        .frame(width: 48, height: 48)
-                                )
-
-                            Text(localized(item.title))
-                                .font(.du(11, weight: .medium))
-                                .foregroundColor(DUTheme.ink)
-                                .multilineTextAlignment(.center)
-                        }
                     }
-                    .buttonStyle(.plain)
                 }
             }
         }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 16)
+        .background(Color.white)
+        .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+        .shadow(color: Color.black.opacity(0.08), radius: 14, x: 0, y: 8)
         .padding(.horizontal, pageHorizontalPadding)
     }
 
-    private var productsSection: some View {
-        DUSectionCard(
-            title: localized("home.section.trendingProducts"),
-            trailingTitle: localized("home.section.viewAll"),
-            trailingAction: {
-                showComingSoon(for: .key("home.section.trendingProducts"))
+    private var homeTabBar: some View {
+        HStack(alignment: .bottom, spacing: 2) {
+            HomeBottomTabBarButton(
+                title: localized(HomeTab.home.title),
+                inactiveAssetName: "HomeTabHomeDesignIcon",
+                activeAssetName: "HomeTabHomeActiveDesignIcon",
+                isActive: selectedTab == .home
+            ) {
+                selectedTab = .home
             }
-        ) {
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: DUSpacing.md) {
-                    ForEach(products) { product in
-                        Button {
-                            showComingSoon(for: product.name)
-                        } label: {
-                            VStack(alignment: .leading, spacing: DUSpacing.md) {
-                                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                                    .fill(DUTheme.backgroundSecondary)
-                                    .frame(height: 116)
-                                    .overlay(
-                                        Image(product.assetName)
-                                            .renderingMode(.original)
-                                            .resizable()
-                                            .scaledToFit()
-                                            .frame(width: 76, height: 76)
-                                    )
 
-                                VStack(alignment: .leading, spacing: DUSpacing.sm) {
-                                    Text(localized(product.name))
-                                        .font(.du(14, weight: .semibold))
-                                        .foregroundColor(DUTheme.ink)
-                                        .lineLimit(2)
-                                        .multilineTextAlignment(.leading)
+            HomeBottomTabBarButton(
+                title: localized(HomeTab.service.title),
+                inactiveAssetName: "HomeTabServiceDesignIcon",
+                activeAssetName: "HomeTabServiceActiveDesignIcon",
+                isActive: selectedTab == .service
+            ) {
+                selectedTab = .service
+            }
 
-                                    HStack(spacing: DUSpacing.sm) {
-                                        Text(localized(product.price))
-                                            .font(.du(15, weight: .bold))
-                                            .foregroundColor(DUTheme.cyan)
-
-                                        if let oldPrice = product.oldPrice {
-                                            Text(localized(oldPrice))
-                                                .font(.du(12, weight: .medium))
-                                                .foregroundColor(DUTheme.inkDisabled)
-                                                .strikethrough()
-                                        }
-                                    }
-                                }
-                            }
-                            .padding(DUSpacing.lg)
-                            .frame(width: 196, alignment: .leading)
-                            .background(DUTheme.panel)
-                            .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 22, style: .continuous)
-                                    .stroke(DUTheme.lineLight, lineWidth: 1)
-                            )
-                        }
-                        .buttonStyle(.plain)
-                    }
+            HomeAIAgentTabButton(title: localized("home.tab.aiAgent")) {
+                withAnimation(.spring(response: 0.45, dampingFraction: 0.82)) {
+                    isAIChatPresented = true
                 }
-                .padding(.vertical, 1)
+            }
+
+            HomeBottomTabBarButton(
+                title: localized(HomeTab.video.title),
+                inactiveAssetName: "HomeTabVideoDesignIcon",
+                activeAssetName: "HomeTabVideoActiveDesignIcon",
+                isActive: selectedTab == .video
+            ) {
+                selectedTab = .video
+            }
+
+            HomeBottomTabBarButton(
+                title: localized(HomeTab.me.title),
+                inactiveAssetName: "HomeTabMeDesignIcon",
+                activeAssetName: "HomeTabMeActiveDesignIcon",
+                isActive: selectedTab == .me
+            ) {
+                selectedTab = .me
             }
         }
-        .padding(.horizontal, pageHorizontalPadding)
+        .padding(.horizontal, 10)
+        .padding(.top, 10)
+        .padding(.bottom, 12)
+        .background(
+            Color.white.opacity(0.98)
+                .overlay(alignment: .top) {
+                    Rectangle()
+                        .fill(Color(red: 223 / 255, green: 228 / 255, blue: 238 / 255, opacity: 0.9))
+                        .frame(height: 1)
+                }
+                .shadow(color: Color.black.opacity(0.1), radius: 16, x: 0, y: -8)
+        )
+        .overlay(alignment: .top) {
+            LinearGradient(
+                colors: [
+                    Color.white.opacity(0),
+                    Color.white.opacity(0.75)
+                ],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .frame(height: 18)
+            .offset(y: -18)
+            .allowsHitTesting(false)
+        }
     }
 
     private var placeholderAlertIsPresented: Binding<Bool> {
@@ -786,11 +881,13 @@ struct HomeView: View {
         return resolved.isEmpty ? nil : resolved
     }
 
-    private func profileMetadata(
-        for profile: HomeProfileSection
-    ) -> String {
-        let networkValue = localized(profile.networkStatus?.textValue ?? HomeDisplayValue.unavailable)
-        return "\(profile.serviceNumber)  |  \(networkValue)"
+    private var profilePointsText: String? {
+        let pointsValue = localized("me.value.points")
+        guard !pointsValue.isEmpty else {
+            return nil
+        }
+
+        return localized("home.profile.pointsLabel", arguments: [pointsValue])
     }
 
     private func showComingSoon(for title: LocalizedTextValue) {
@@ -798,31 +895,18 @@ struct HomeView: View {
     }
 
     @ViewBuilder
-    private func dashboardActions(for summary: HomeSummarySection) -> some View {
-        HStack(spacing: DUSpacing.sm) {
-            if summary.paymentType == .prepaid {
-                Button(localized("home.header.recharge")) {
-                    isRechargePresented = true
-                }
-                .font(.du(13, weight: .semibold))
-                .foregroundColor(DUTheme.ink)
-                .padding(.horizontal, DUSpacing.lg)
-                .frame(height: 36)
-                .background(Color.white.opacity(0.95))
-                .clipShape(Capsule())
+    private func accountActionButton(for summary: HomeSummarySection) -> some View {
+        switch summary.paymentType {
+        case .prepaid:
+            Button(localized("home.header.recharge")) {
+                isRechargePresented = true
             }
-
-            if summary.paymentType == .postpaid || summary.paymentType == .hybrid {
-                Button(localized("home.header.payBill")) {
-                    isBillingPresented = true
-                }
-                .font(.du(13, weight: .semibold))
-                .foregroundColor(DUTheme.cyan)
-                .padding(.horizontal, DUSpacing.lg)
-                .frame(height: 36)
-                .background(Color.white)
-                .clipShape(Capsule())
+            .buttonStyle(HomePrimaryPillButtonStyle())
+        case .postpaid, .hybrid, .unknown:
+            Button(localized("home.header.payBill")) {
+                isBillingPresented = true
             }
+            .buttonStyle(HomePrimaryPillButtonStyle())
         }
     }
 
@@ -911,18 +995,48 @@ struct HomeView: View {
         if let moneyParts = splitMoneyValue(resolvedValue) {
             HStack(alignment: .firstTextBaseline, spacing: 4) {
                 Text(moneyParts.amount)
-                    .font(.du(amountFontSize, weight: amountWeight))
+                    .font(homeFont(amountFontSize, weight: amountWeight))
                     .foregroundColor(amountColor)
 
                 Text(moneyParts.currency)
-                    .font(.du(currencyFontSize, weight: currencyWeight))
+                    .font(homeFont(currencyFontSize, weight: currencyWeight))
                     .foregroundColor(currencyColor)
             }
             .environment(\.layoutDirection, .leftToRight)
         } else {
             Text(resolvedValue)
-                .font(.du(amountFontSize, weight: amountWeight))
+                .font(homeFont(amountFontSize, weight: amountWeight))
                 .foregroundColor(amountColor)
+        }
+    }
+
+    @ViewBuilder
+    private func usageValueText(
+        _ value: LocalizedTextValue,
+        primaryColor: Color,
+        secondaryColor: Color
+    ) -> some View {
+        let resolvedValue = normalizedMetricValue(localized(value))
+
+        if let usageParts = splitUsageValue(resolvedValue) {
+            HStack(alignment: .firstTextBaseline, spacing: 0) {
+                Text(usageParts.primary)
+                    .font(homeFont(15, weight: .bold))
+                    .foregroundColor(primaryColor)
+
+                Text(usageParts.secondary)
+                    .font(homeFont(11, weight: .semibold))
+                    .foregroundColor(secondaryColor)
+            }
+            .environment(\.layoutDirection, .leftToRight)
+            .lineLimit(1)
+            .minimumScaleFactor(0.8)
+        } else {
+            Text(resolvedValue)
+                .font(homeFont(15, weight: .bold))
+                .foregroundColor(primaryColor)
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
         }
     }
 
@@ -951,6 +1065,42 @@ struct HomeView: View {
         }
 
         return (amount, currency)
+    }
+
+    private func splitUsageValue(_ value: String) -> (primary: String, secondary: String)? {
+        let normalized = value
+            .replacingOccurrences(of: " / ", with: "/")
+            .replacingOccurrences(of: " /", with: "/")
+            .replacingOccurrences(of: "/ ", with: "/")
+
+        guard let slashIndex = normalized.firstIndex(of: "/") else {
+            return nil
+        }
+
+        let primary = String(normalized[..<slashIndex]).trimmingCharacters(in: .whitespacesAndNewlines)
+        var secondary = String(normalized[slashIndex...]).trimmingCharacters(in: .whitespacesAndNewlines)
+        if !secondary.hasPrefix("/") {
+            secondary = "/\(secondary)"
+        }
+
+        guard !primary.isEmpty, !secondary.isEmpty else {
+            return nil
+        }
+
+        return (primary, secondary)
+    }
+
+    private func usageDesign(
+        for kind: HomeUsageCard.Kind
+    ) -> HomeUsageMetricDesign {
+        switch kind {
+        case .data:
+            return .init(systemName: "waveform.path.ecg", tintColor: Color(hex: 0x177DFF))
+        case .voice:
+            return .init(systemName: "phone.fill", tintColor: Color(hex: 0xFF8B1A))
+        case .sms:
+            return .init(systemName: "envelope.fill", tintColor: Color(hex: 0x27B654))
+        }
     }
 
     private func localized(_ key: String?) -> String {
@@ -1000,6 +1150,295 @@ struct HomeView: View {
             }
         }
     }
+}
+
+private let homePageBackground = Color(hex: 0xF3F5F8)
+
+private func homeFont(
+    _ size: CGFloat,
+    weight: Font.Weight = .regular
+) -> Font {
+    .system(size: size, weight: weight, design: .default)
+}
+
+private struct HomeHeaderActionButton: View {
+    let assetName: String
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Circle()
+                .fill(.white.opacity(0.18))
+                .frame(width: 34, height: 34)
+                .overlay(
+                    Image(assetName)
+                        .renderingMode(.original)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 17, height: 17)
+                )
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+private struct HomeIconGridButton: View {
+    let title: String
+    let assetName: String
+    let iconSize: CGFloat
+    let titleFontSize: CGFloat
+    let titleWeight: Font.Weight
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            VStack(spacing: iconSize >= 48 ? 8 : 7) {
+                Image(assetName)
+                    .renderingMode(.original)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: iconSize, height: iconSize)
+
+                Text(title)
+                    .font(homeFont(titleFontSize, weight: titleWeight))
+                    .foregroundColor(Color(hex: 0x4D5568))
+                    .multilineTextAlignment(.center)
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.82)
+            }
+            .frame(maxWidth: .infinity)
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+private struct HomeBottomTabBarButton: View {
+    let title: String
+    let inactiveAssetName: String
+    let activeAssetName: String
+    let isActive: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            VStack(spacing: 4) {
+                ZStack {
+                    if isActive {
+                        Capsule()
+                            .fill(
+                                LinearGradient(
+                                    colors: [
+                                        Color(hex: 0x33A3FF),
+                                        Color(hex: 0x1176FF)
+                                    ],
+                                    startPoint: .top,
+                                    endPoint: .bottom
+                                )
+                            )
+                            .frame(width: 50, height: 30)
+                            .shadow(color: Color(hex: 0x1176FF, opacity: 0.32), radius: 10, x: 0, y: 6)
+                    }
+
+                    Image(isActive ? activeAssetName : inactiveAssetName)
+                        .renderingMode(.original)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 20, height: 20)
+                }
+                .frame(height: 30)
+
+                Text(title)
+                    .font(homeFont(10, weight: isActive ? .semibold : .medium))
+                    .foregroundColor(isActive ? Color(hex: 0x2088FF) : Color(hex: 0xA0AAC8))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
+            }
+            .frame(maxWidth: .infinity)
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+private struct HomeAIAgentTabButton: View {
+    let title: String
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            VStack(spacing: 4) {
+                HomeAIAgentOrbitalIcon()
+                    .frame(width: 70, height: 70)
+
+                Text(title)
+                    .font(homeFont(10, weight: .medium))
+                    .foregroundColor(Color(hex: 0x7D82AC))
+                    .lineLimit(1)
+            }
+            .frame(maxWidth: .infinity)
+        }
+        .buttonStyle(.plain)
+        .padding(.top, -26)
+    }
+}
+
+private struct HomeAIAgentOrbitalIcon: View {
+    var body: some View {
+        TimelineView(.animation(minimumInterval: 1.0 / 30.0)) { context in
+            let time = context.date.timeIntervalSinceReferenceDate
+            let colorRotation = Angle.degrees((time * 58).truncatingRemainder(dividingBy: 360))
+            let whiteRotation = Angle.degrees((time * -72).truncatingRemainder(dividingBy: 360))
+
+            ZStack {
+                Circle()
+                    .fill(
+                        RadialGradient(
+                            colors: [
+                                Color(hex: 0xAB7BFF, opacity: 0.28),
+                                Color(hex: 0xAB7BFF, opacity: 0)
+                            ],
+                            center: .center,
+                            startRadius: 6,
+                            endRadius: 34
+                        )
+                    )
+                    .frame(width: 70, height: 70)
+
+                Circle()
+                    .stroke(
+                        AngularGradient(
+                            gradient: Gradient(
+                                colors: [
+                                    Color(hex: 0x2ED8FF),
+                                    Color(hex: 0x7A72FF),
+                                    Color(hex: 0xFF6FE5),
+                                    Color(hex: 0xFFD05E),
+                                    Color(hex: 0x2ED8FF)
+                                ]
+                            ),
+                            center: .center
+                        ),
+                        lineWidth: 3
+                    )
+                    .frame(width: 58, height: 58)
+                    .rotationEffect(colorRotation)
+
+                ZStack {
+                    Circle()
+                        .stroke(Color.white.opacity(0.92), lineWidth: 2)
+                        .frame(width: 42, height: 42)
+
+                    Circle()
+                        .fill(Color.white)
+                        .frame(width: 8, height: 8)
+                        .shadow(color: Color.white.opacity(0.75), radius: 10)
+                        .offset(y: -21)
+                        .rotationEffect(whiteRotation)
+                }
+
+                ZStack {
+                    Circle()
+                        .fill(
+                            RadialGradient(
+                                colors: [
+                                    .white,
+                                    Color(hex: 0x79DFFF),
+                                    Color(hex: 0x5B9DFF),
+                                    Color(hex: 0x7D65FF),
+                                    Color(hex: 0xFF7BDF)
+                                ],
+                                center: .init(x: 0.35, y: 0.3),
+                                startRadius: 2,
+                                endRadius: 28
+                            )
+                        )
+                        .frame(width: 52, height: 52)
+                        .shadow(color: Color(hex: 0x6E68FF, opacity: 0.34), radius: 12, x: 0, y: 8)
+
+                    Circle()
+                        .fill(
+                            RadialGradient(
+                                colors: [
+                                    .white,
+                                    Color(hex: 0xB9F0FF),
+                                    Color(hex: 0x8DD2FF),
+                                    Color(hex: 0xB874FF),
+                                    Color(hex: 0xFF96E8)
+                                ],
+                                center: .init(x: 0.32, y: 0.28),
+                                startRadius: 2,
+                                endRadius: 20
+                            )
+                        )
+                        .frame(width: 32, height: 32)
+
+                    ForEach(0..<3, id: \.self) { index in
+                        let phase = time * 2.2 + Double(index) * 0.75
+                        Text("✦")
+                            .font(homeFont(starSize(for: index), weight: .semibold))
+                            .foregroundColor(.white)
+                            .shadow(color: Color.white.opacity(0.85), radius: 12)
+                            .opacity(0.35 + (0.65 * max(0, sin(phase))))
+                            .scaleEffect(0.75 + (0.4 * max(0, sin(phase))))
+                            .offset(starOffset(for: index))
+                    }
+                }
+            }
+        }
+    }
+
+    private func starSize(for index: Int) -> CGFloat {
+        switch index {
+        case 0:
+            return 9
+        case 1:
+            return 11
+        default:
+            return 8
+        }
+    }
+
+    private func starOffset(for index: Int) -> CGSize {
+        switch index {
+        case 0:
+            return CGSize(width: -8, height: -12)
+        case 1:
+            return CGSize(width: 10, height: -4)
+        default:
+            return CGSize(width: -1, height: 12)
+        }
+    }
+}
+
+private struct HomePrimaryPillButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .font(homeFont(13, weight: .semibold))
+            .foregroundColor(.white)
+            .padding(.horizontal, 18)
+            .frame(height: 40)
+            .background(
+                LinearGradient(
+                    colors: [
+                        Color(hex: 0x48A9FF),
+                        Color(hex: 0x2B80FF)
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+            )
+            .clipShape(Capsule())
+            .overlay(
+                Capsule()
+                    .stroke(.white.opacity(0.65), lineWidth: 1)
+            )
+            .shadow(color: Color(hex: 0x287FFF, opacity: configuration.isPressed ? 0.22 : 0.38), radius: 10, x: 0, y: 8)
+            .scaleEffect(configuration.isPressed ? 0.98 : 1)
+    }
+}
+
+private struct HomeUsageMetricDesign {
+    let systemName: String
+    let tintColor: Color
 }
 
 private struct TicketsModalContainerView: View {
@@ -1095,172 +1534,6 @@ private struct HomeItem: Identifiable {
         self.title = title
         self.assetName = assetName
         self.action = action
-    }
-}
-
-private struct HomeProduct: Identifiable {
-    let id = UUID()
-    let name: LocalizedTextValue
-    let price: LocalizedTextValue
-    let oldPrice: LocalizedTextValue?
-    let assetName: String
-}
-
-private struct CircleAction: View {
-    let symbol: String
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            Circle()
-                .fill(.white.opacity(0.16))
-                .frame(width: 38, height: 38)
-                .overlay(
-                    Image(systemName: symbol)
-                        .font(.du(15, weight: .semibold))
-                        .foregroundColor(.white)
-                )
-        }
-        .buttonStyle(.plain)
-    }
-}
-
-private struct AIHeaderAction: View {
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            TimelineView(.animation(minimumInterval: 1.0 / 30.0)) { context in
-                let time = context.date.timeIntervalSinceReferenceDate
-                let rotation = Angle.degrees((time * 52).truncatingRemainder(dividingBy: 360) * 1.0)
-                let pulse = 0.92 + 0.08 * sin(time * 2.4)
-
-                ZStack {
-                    Circle()
-                        .fill(Color.white.opacity(0.1))
-                        .frame(width: 42, height: 42)
-
-                    Circle()
-                        .fill(
-                            RadialGradient(
-                                colors: [
-                                    Color.white.opacity(0.34),
-                                    Color.clear
-                                ],
-                                center: .center,
-                                startRadius: 2,
-                                endRadius: 20
-                            )
-                        )
-                        .scaleEffect(pulse)
-                        .blur(radius: 2)
-
-                    Circle()
-                        .stroke(
-                            AngularGradient(
-                                colors: [
-                                    Color.cyan.opacity(0.95),
-                                    Color.white.opacity(0.9),
-                                    Color.pink.opacity(0.92),
-                                    Color.cyan.opacity(0.95)
-                                ],
-                                center: .center,
-                                angle: rotation
-                            ),
-                            lineWidth: 1.4
-                        )
-                        .frame(width: 38, height: 38)
-
-                    orbitDots(time: time)
-
-                    Circle()
-                        .fill(
-                            RadialGradient(
-                                colors: [
-                                    Color.white.opacity(0.98),
-                                    Color.white.opacity(0.08)
-                                ],
-                                center: .topLeading,
-                                startRadius: 1,
-                                endRadius: 16
-                            )
-                        )
-                        .frame(width: 24, height: 24)
-                        .overlay(
-                            Circle()
-                                .fill(
-                                    LinearGradient(
-                                        colors: [
-                                            Color(red: 0.15, green: 0.82, blue: 0.95),
-                                            Color(red: 0.22, green: 0.43, blue: 0.96),
-                                            Color(red: 0.83, green: 0.23, blue: 0.84)
-                                        ],
-                                        startPoint: .topLeading,
-                                        endPoint: .bottomTrailing
-                                    )
-                                )
-                                .padding(1.5)
-                        )
-                        .overlay(
-                            Image(systemName: "sparkles")
-                                .font(.du(11, weight: .bold))
-                                .foregroundColor(.white)
-                                .scaleEffect(0.94 + 0.06 * sin(time * 2.1 + 0.6))
-                        )
-
-                    aiBadge
-                        .offset(x: 10, y: 12)
-                }
-                .frame(width: 46, height: 46)
-            }
-        }
-        .buttonStyle(.plain)
-        .accessibilityLabel("AI Assistant")
-    }
-
-    @ViewBuilder
-    private func orbitDots(time: TimeInterval) -> some View {
-        ZStack {
-            ForEach(0..<3, id: \.self) { index in
-                let phase = time * 1.3 + Double(index) * 2.1
-                let radius: CGFloat = index == 1 ? 11 : 9
-                let size: CGFloat = index == 2 ? 4.5 : 3.5
-                let x = cos(phase) * radius
-                let y = sin(phase) * radius
-
-                Circle()
-                    .fill(index == 0 ? Color.cyan : (index == 1 ? Color.white : Color.pink.opacity(0.95)))
-                    .frame(width: size, height: size)
-                    .offset(x: x, y: y)
-                    .shadow(color: Color.white.opacity(0.35), radius: 3, x: 0, y: 0)
-            }
-        }
-    }
-
-    private var aiBadge: some View {
-        Text("AI")
-            .font(.du(8, weight: .bold))
-            .foregroundColor(.white)
-            .padding(.horizontal, 6)
-            .frame(height: 14)
-            .background(
-                Capsule()
-                    .fill(
-                        LinearGradient(
-                            colors: [
-                                Color(red: 0.16, green: 0.77, blue: 0.96),
-                                Color(red: 0.61, green: 0.25, blue: 0.88)
-                            ],
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        )
-                    )
-            )
-            .overlay(
-                Capsule()
-                    .stroke(Color.white.opacity(0.55), lineWidth: 0.6)
-            )
-            .shadow(color: Color.black.opacity(0.14), radius: 4, x: 0, y: 2)
     }
 }
 
@@ -1571,6 +1844,7 @@ private struct TicketsWebView: UIViewRepresentable {
         }
     }
 }
+
 struct HomeView_Previews: PreviewProvider {
     static var previews: some View {
         HomeView(
