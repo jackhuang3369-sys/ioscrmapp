@@ -35,18 +35,18 @@ struct AIChatView: View {
 
             ZStack {
                 deepBackground
-                waveLines.opacity(0.15)
 
                 VStack(spacing: 0) {
                     headerBar
                         .padding(.top, 8)
 
                     Text(viewModel.title)
-                        .font(.du(proxy.size.height < 500 ? 24 : 28, weight: .bold))
+                        .font(.du(proxy.size.height < 500 ? 28 : 32, weight: .semibold))
                         .foregroundColor(.white)
                         .multilineTextAlignment(.leading)
                         .lineLimit(3)
                         .minimumScaleFactor(0.82)
+                        .shadow(color: Color.black.opacity(0.15), radius: 2, x: 0, y: 2)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.top, DUSpacing.md)
                         .padding(.horizontal, hPad + 4)
@@ -54,11 +54,13 @@ struct AIChatView: View {
                     Spacer(minLength: 8)
 
                     ZStack {
+                        orbMesh
                         aiCoreOrb(coreSize: coreSize)
                         scatteredPrompts(coreSize: coreSize)
                     }
                     .frame(maxWidth: .infinity)
                     .frame(height: coreSize * 2.6)
+                    .offset(y: -20)
 
                     Spacer(minLength: 8)
 
@@ -102,30 +104,31 @@ struct AIChatView: View {
         }
     }
 
-    // MARK: - Wave Lines
+    // MARK: - Orb Mesh Background
 
-    private var waveLines: some View {
-        GeometryReader { geo in
-            let w = geo.size.width
-            let h = geo.size.height
-            ZStack {
-                wavePath(w: w, h: h, y0: 0.50, y1: 0.30, cy: 0.60, cx: 0.50)
-                    .stroke(Color.white.opacity(0.08), lineWidth: 0.8)
-                wavePath(w: w, h: h, y0: 0.58, y1: 0.38, cy: 0.68, cx: 0.55)
-                    .stroke(Color.white.opacity(0.06), lineWidth: 0.6)
-                wavePath(w: w, h: h, y0: 0.66, y1: 0.46, cy: 0.76, cx: 0.45)
-                    .stroke(Color.white.opacity(0.05), lineWidth: 0.5)
-                wavePath(w: w, h: h, y0: 0.74, y1: 0.54, cy: 0.84, cx: 0.50)
-                    .stroke(Color.white.opacity(0.04), lineWidth: 0.4)
+    private var orbMesh: some View {
+        ZStack {
+            ForEach(0..<3, id: \.self) { i in
+                Ellipse()
+                    .stroke(Color.cyan.opacity(0.12), style: StrokeStyle(lineWidth: 1.5))
+                    .frame(width: 350, height: 120)
+                    .rotationEffect(.degrees(Double(i) * 60))
+            }
+            ForEach(0..<2, id: \.self) { i in
+                Ellipse()
+                    .stroke(Color.pink.opacity(0.12), lineWidth: 1.5)
+                    .frame(width: 380, height: 100)
+                    .rotationEffect(.degrees(Double(i) * 90 + 20))
+            }
+            ForEach(0..<2, id: \.self) { i in
+                Ellipse()
+                    .stroke(Color.white.opacity(0.1), style: StrokeStyle(lineWidth: 1, dash: [4, 4]))
+                    .frame(width: 300, height: 160)
+                    .rotationEffect(.degrees(Double(i) * 90 + 45))
             }
         }
-    }
-
-    private func wavePath(w: CGFloat, h: CGFloat, y0: CGFloat, y1: CGFloat, cy: CGFloat, cx: CGFloat) -> Path {
-        Path { p in
-            p.move(to: CGPoint(x: 0, y: h * y0))
-            p.addQuadCurve(to: CGPoint(x: w, y: h * y1), control: CGPoint(x: w * cx, y: h * cy))
-        }
+        .frame(width: 400, height: 400)
+        .rotationEffect(.degrees(coreRotation * 0.15))
     }
 
     // MARK: - Header
@@ -266,7 +269,7 @@ struct AIChatView: View {
             viewModel.sendSuggestedPrompt(text)
         } label: {
             Text(text)
-                .font(.du(13, weight: .medium))
+                .font(.du(14, weight: .regular))
                 .foregroundColor(.white)
                 .multilineTextAlignment(.center)
                 .lineLimit(2)
@@ -276,8 +279,8 @@ struct AIChatView: View {
                 .background(.ultraThinMaterial)
                 .background(Color.white.opacity(0.05))
                 .clipShape(Capsule())
-                .overlay(Capsule().stroke(Color.white.opacity(0.3), lineWidth: 0.5))
-                .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 2)
+                .overlay(Capsule().stroke(Color.white.opacity(0.3), lineWidth: 1))
+                .shadow(color: Color.black.opacity(0.1), radius: 12, x: 0, y: 4)
         }
         .buttonStyle(.plain)
         .opacity(promptOpacities[safe: index] ?? 1)
