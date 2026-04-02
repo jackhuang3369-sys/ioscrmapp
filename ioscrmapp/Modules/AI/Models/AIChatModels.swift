@@ -5,6 +5,13 @@ enum AIChatSender: String, Equatable {
     case assistant
 }
 
+enum AIChatViewStep: Equatable {
+    case home
+    case offersList
+    case offerDetails(AIChatOffer)
+    case success
+}
+
 enum AIChatNavigationTarget: Equatable {
     case home
     case service
@@ -14,6 +21,34 @@ enum AIChatNavigationTarget: Equatable {
     case recharge
     case me
     case external(URL)
+}
+
+struct AIChatOffer: Identifiable, Equatable {
+    let id: UUID
+    let name: String
+    let price: String
+    let dataAmount: String
+    let validity: String
+    let currency: String
+    let unit: String
+
+    init(
+        id: UUID = UUID(),
+        name: String,
+        price: String,
+        dataAmount: String,
+        validity: String,
+        currency: String = "SDG",
+        unit: String = "Month"
+    ) {
+        self.id = id
+        self.name = name
+        self.price = price
+        self.dataAmount = dataAmount
+        self.validity = validity
+        self.currency = currency
+        self.unit = unit
+    }
 }
 
 struct AIChatAction: Identifiable, Equatable {
