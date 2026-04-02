@@ -33,227 +33,262 @@ struct AIChatView: View {
 
     var body: some View {
         ZStack {
-            // 1. Futuristic Space Gradient Background
+            // 1. Brighter Futuristic background (Blue - Purple - Deep Violet)
             LinearGradient(
-                gradient: Gradient(colors: [Color(hex: 0x0B0F19), Color(hex: 0x1A1025), Color(hex: 0x0F1B2A)]),
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
+                gradient: Gradient(colors: [
+                    Color(red: 0.1, green: 0.35, blue: 0.8),
+                    Color(red: 0.35, green: 0.15, blue: 0.75),
+                    Color(red: 0.25, green: 0.1, blue: 0.6)
+                ]),
+                startPoint: .top,
+                endPoint: .bottom
             )
             .ignoresSafeArea()
             
-            // Subtle animated backglow
-            RadialGradient(
-                gradient: Gradient(colors: [DUTheme.indigo.opacity(0.15), .clear]),
-                center: .center,
-                startRadius: 100,
-                endRadius: 400
-            )
-            .scaleEffect(isAnimatingCore ? 1.1 : 0.9)
-            .animation(.easeInOut(duration: 4).repeatForever(autoreverses: true), value: isAnimatingCore)
-            .ignoresSafeArea()
+            // Abstract technology mesh / background paths
+            backgroundMesh
 
             VStack(spacing: 0) {
-                // Header (Minimalist)
+                // Header (Action buttons)
                 header
+                
+                // Welcome Text at Top
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(localized("How may I help\nyou today?").replacingOccurrences(of: "\\n", with: "\n"))
+                        .font(.du(34, weight: .semibold))
+                        .foregroundColor(.white)
+                        .multilineTextAlignment(.leading)
+                        .lineSpacing(2)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, DUSpacing.xxl)
+                .padding(.top, DUSpacing.xxl)
                 
                 Spacer()
 
-                // Center AI Core Sphere
-                aiCoreFeature
-                
-                Spacer()
-                
-                // Greeting and Capsule Prompts
-                VStack(spacing: DUSpacing.xl) {
-                    VStack(spacing: DUSpacing.xs) {
-                        Text(viewModel.title)
-                            .font(.du(28, weight: .bold))
-                            .foregroundColor(.white)
-                            .shadow(color: DUTheme.cyanLight.opacity(0.3), radius: 8, x: 0, y: 0)
-                            
-                        Text(viewModel.subtitle)
-                            .font(.du(14, weight: .medium))
-                            .foregroundColor(.white.opacity(0.6))
-                    }
-                    .padding(.bottom, DUSpacing.sm)
+                // Center Element with scattered Prompts
+                ZStack {
+                    // Magical Floating Orb
+                    aiCoreFeature
                     
-                    capsulePrompts
+                    // Scattered Prompt Capsules (absolute positioning)
+                    scatteredPrompts
                 }
-                .padding(.horizontal, DUSpacing.xl)
+                .frame(height: 300)
                 
                 Spacer()
                 
                 // Bottom Voice Action
                 voiceActionBar
             }
-            .padding(.top, 16)
             .safeAreaInset(edge: .bottom) {
-                Color.clear.frame(height: 20)
+                Color.clear.frame(height: 10)
             }
         }
         .onAppear {
             isAnimatingCore = true
-            withAnimation(.linear(duration: 20).repeatForever(autoreverses: false)) {
+            withAnimation(.linear(duration: 25).repeatForever(autoreverses: false)) {
                 coreRotation = 360
             }
             animatePrompts()
         }
     }
 
+    private var backgroundMesh: some View {
+        ZStack {
+            // Fluid abstract lines simulating voice waves or network
+            ForEach(0..<6, id: \.self) { i in
+                RoundedRectangle(cornerRadius: 150)
+                    .stroke(Color.white.opacity(0.04 - Double(i) * 0.005), lineWidth: 1)
+                    .frame(width: 300 + CGFloat(i) * 30, height: 200 + CGFloat(i) * 40)
+                    .rotationEffect(.degrees(isAnimatingCore ? 45 + Double(i) * 10 : 0 + Double(i) * 20))
+                    .offset(x: isAnimatingCore ? 20 : -10, y: isAnimatingCore ? -20 : 10)
+                    .animation(.easeInOut(duration: 8 + Double(i)).repeatForever(autoreverses: true), value: isAnimatingCore)
+            }
+            
+            ForEach(0..<4, id: \.self) { i in
+                Circle()
+                    .stroke(Color.cyan.opacity(0.03), lineWidth: 2)
+                    .frame(width: 400 + CGFloat(i) * 80)
+                    .offset(y: 100)
+            }
+        }
+    }
+
     private var header: some View {
         HStack {
-            Image(systemName: "sparkle")
-                .font(.du(20, weight: .semibold))
-                .foregroundColor(.white.opacity(0.9))
-                
-            Text("AI Assistant")
-                .font(.du(16, weight: .bold))
-                .foregroundColor(.white.opacity(0.9))
-                .tracking(2)
-            
             Spacer()
-            
-            Button {
-                dismiss()
-            } label: {
-                Image(systemName: "xmark")
-                    .font(.du(16, weight: .semibold))
-                    .foregroundColor(.white.opacity(0.8))
-                    .frame(width: 40, height: 40)
-                    .background(Color.white.opacity(0.1))
-                    .clipShape(Circle())
-                    .overlay(Circle().stroke(Color.white.opacity(0.15), lineWidth: 1))
+            HStack(spacing: DUSpacing.xl) {
+                Button {
+                    // History/Message log placeholder mapping
+                    dismiss()
+                } label: {
+                    Image(systemName: "rectangle.3.group.bubble.left")
+                        .font(.du(22, weight: .medium))
+                        .foregroundColor(.white.opacity(0.85))
+                }
+                
+                Button {
+                    dismiss()
+                } label: {
+                    Image(systemName: "xmark")
+                        .font(.du(24, weight: .light))
+                        .foregroundColor(.white.opacity(0.85))
+                }
             }
-            .buttonStyle(.plain)
+            .padding(.trailing, DUSpacing.xl)
+            .padding(.top, DUSpacing.lg)
         }
-        .padding(.horizontal, DUSpacing.xl)
-        .padding(.top, DUSpacing.md)
     }
 
     private var aiCoreFeature: some View {
         ZStack {
-            // Outermost glowing aura
+            // Bright aura
             Circle()
-                .fill(RadialGradient(gradient: Gradient(colors: [DUTheme.magenta.opacity(0.3), .clear]), center: .center, startRadius: 20, endRadius: 150))
-                .frame(width: 300, height: 300)
-                .scaleEffect(isAnimatingCore ? 1.05 : 0.95)
+                .fill(RadialGradient(gradient: Gradient(colors: [Color(red: 0.4, green: 0.1, blue: 0.9).opacity(0.7), .clear]), center: .center, startRadius: 40, endRadius: 180))
+                .frame(width: 360, height: 360)
+                .scaleEffect(isAnimatingCore ? 1.08 : 0.92)
                 .animation(.easeInOut(duration: 3).repeatForever(autoreverses: true), value: isAnimatingCore)
             
-            // Rotating mesh-like rings
+            // Core Magical Sphere (simulating colorful liquid glass)
             ZStack {
-                Circle().stroke(DUTheme.cyanLight.opacity(0.2), lineWidth: 1)
-                    .frame(width: 200, height: 200)
-                    .rotation3DEffect(.degrees(75), axis: (x: 1, y: 0.5, z: 0))
-                    .rotationEffect(.degrees(coreRotation))
-                
-                Circle().stroke(DUTheme.indigo.opacity(0.3), lineWidth: 2)
-                    .frame(width: 220, height: 220)
-                    .rotation3DEffect(.degrees(65), axis: (x: 0, y: 1, z: 0.5))
-                    .rotationEffect(.degrees(-coreRotation * 0.8))
-            }
-            
-            // Core Sphere (Code-drawn glass orb)
-            Circle()
-                .fill(
-                    LinearGradient(
-                        gradient: Gradient(colors: [DUTheme.cyanLight, DUTheme.blue, DUTheme.magenta]),
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
+                Circle()
+                    .fill(
+                        LinearGradient(
+                            gradient: Gradient(colors: [Color.cyan, Color.blue, Color.purple]),
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
                     )
-                )
-                .frame(width: 140, height: 140)
-                .overlay(
-                    // Inner glow
-                    Circle()
-                        .stroke(Color.white.opacity(0.8), lineWidth: 2)
-                        .blur(radius: 4)
-                        .padding(2)
-                )
-                .overlay(
-                    // Tech grid pattern/glare overlay
-                    Circle()
-                        .fill(LinearGradient(gradient: Gradient(colors: [.white.opacity(0.4), .clear]), startPoint: .topLeading, endPoint: .bottomTrailing))
-                        .mask(Circle().padding(2))
-                )
-                .shadow(color: DUTheme.blue.opacity(0.6), radius: 20, x: 0, y: 10)
-                .scaleEffect(isAnimatingCore ? 1.02 : 0.98)
-                .animation(.easeInOut(duration: 2).repeatForever(autoreverses: true), value: isAnimatingCore)
+                
+                // Vibrant color blobs to simulate thick gradient mesh
+                Circle()
+                    .fill(Color.pink)
+                    .frame(width: 90, height: 90)
+                    .blur(radius: 20)
+                    .offset(x: isAnimatingCore ? -30 : 20, y: isAnimatingCore ? -40 : 10)
+                
+                Circle()
+                    .fill(Color(red: 0.1, green: 0.9, blue: 0.8))
+                    .frame(width: 80, height: 80)
+                    .blur(radius: 25)
+                    .offset(x: isAnimatingCore ? 30 : -20, y: isAnimatingCore ? 30 : -10)
+
+                Circle()
+                    .fill(Color.orange)
+                    .frame(width: 60, height: 60)
+                    .blur(radius: 20)
+                    .offset(x: 10, y: -40)
+            }
+            .frame(width: 170, height: 170)
+            .clipShape(Circle())
+            // Top specular highlight
+            .overlay(
+                Circle()
+                    .fill(
+                        LinearGradient(
+                            gradient: Gradient(colors: [.white.opacity(0.8), .clear, .clear]),
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    )
+                    .padding(2)
+            )
+            .shadow(color: Color.purple.opacity(0.4), radius: 30, x: 0, y: 10)
+            .scaleEffect(isAnimatingCore ? 1.03 : 0.97)
+            .animation(.easeInOut(duration: 2.5).repeatForever(autoreverses: true), value: isAnimatingCore)
         }
     }
 
-    private var capsulePrompts: some View {
-        VStack(spacing: DUSpacing.md) {
-            ForEach(Array(viewModel.suggestedPrompts.prefix(4).enumerated()), id: \.element) { index, prompt in
-                Button {
-                    // Send prompt action
-                    viewModel.sendSuggestedPrompt(prompt)
-                } label: {
-                    HStack(spacing: DUSpacing.sm) {
-                        Image(systemName: "waveform")
-                            .font(.du(12, weight: .bold))
-                            .foregroundColor(DUTheme.cyanLight)
-                        
-                        Text(prompt)
-                            .font(.du(14, weight: .medium))
-                            .foregroundColor(.white.opacity(0.9))
-                            .multilineTextAlignment(.leading)
-                            .lineLimit(2)
-                        
-                        Spacer(minLength: 0)
-                    }
-                    .padding(.horizontal, DUSpacing.lg)
-                    .padding(.vertical, DUSpacing.md)
-                    .background(.ultraThinMaterial)
-                    // Customize ultraThinMaterial dark tint fallback
-                    .background(Color.black.opacity(0.2))
-                    .clipShape(Capsule())
-                    .overlay(
-                        Capsule().stroke(Color.white.opacity(0.15), lineWidth: 1)
-                    )
-                }
-                .buttonStyle(.plain)
-                .offset(y: promptOffsets[safe: index] ?? 0)
-                .opacity(promptOpacities[safe: index] ?? 0)
+    private var scatteredPrompts: some View {
+        Group {
+            if viewModel.suggestedPrompts.count >= 1 {
+                promptCapsule(viewModel.suggestedPrompts[0])
+                    .offset(x: -80, y: -60)
+            }
+            if viewModel.suggestedPrompts.count >= 2 {
+                promptCapsule(viewModel.suggestedPrompts[1])
+                    .offset(x: 110, y: 20)
+            }
+            if viewModel.suggestedPrompts.count >= 3 {
+                promptCapsule(viewModel.suggestedPrompts[2])
+                    .offset(x: -60, y: 80)
             }
         }
+    }
+
+    private func promptCapsule(_ text: String) -> some View {
+        Button {
+            viewModel.sendSuggestedPrompt(text)
+        } label: {
+            Text(localized(text))
+                .font(.du(13, weight: .medium))
+                .foregroundColor(.white)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 10)
+                .background(.ultraThinMaterial)
+                .background(Color.white.opacity(0.1))
+                .clipShape(Capsule())
+                .overlay(
+                    Capsule().stroke(Color.white.opacity(0.3), lineWidth: 0.5)
+                )
+                .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 2)
+        }
+        .buttonStyle(.plain)
     }
 
     private var voiceActionBar: some View {
-        ZStack {
-            // Ripple effects
-            Circle()
-                .stroke(DUTheme.cyanLight.opacity(rippleOpacity), lineWidth: 1)
-                .frame(width: 80, height: 80)
-                .scaleEffect(rippleScale)
+        VStack(spacing: DUSpacing.sm) {
+            Text(localized("Hold to Talk ~"))
+                .font(.du(14, weight: .regular))
+                .foregroundColor(.white.opacity(0.75))
             
-            Circle()
-                .fill(DUTheme.cyanLight.opacity(rippleOpacity * 0.2))
-                .frame(width: 80, height: 80)
-                .scaleEffect(rippleScale)
-            
-            // Main Voice Button
-            Button {
-                triggerVoiceAnimation()
-            } label: {
-                ZStack {
-                    Circle()
-                        .fill(
-                            LinearGradient(
-                                gradient: Gradient(colors: [DUTheme.cyan, DUTheme.blue]),
-                                startPoint: .top,
-                                endPoint: .bottom
+            ZStack {
+                // Outer subtle rings 
+                Circle()
+                    .stroke(Color.white.opacity(0.08), lineWidth: 1)
+                    .frame(width: 130, height: 130)
+                
+                Circle()
+                    .fill(Color.white.opacity(0.04))
+                    .frame(width: 100, height: 100)
+                
+                // Ripple effect
+                Circle()
+                    .stroke(Color.cyan.opacity(rippleOpacity), lineWidth: 1.5)
+                    .frame(width: 76, height: 76)
+                    .scaleEffect(rippleScale)
+                
+                // Main Voice Button
+                Button {
+                    triggerVoiceAnimation()
+                } label: {
+                    ZStack {
+                        Circle()
+                            .fill(Color(hex: 0x2A1559)) // Base dark purple center
+                            .frame(width: 76, height: 76)
+                        
+                        Circle()
+                            // Colorful conic gradient border exactly like image
+                            .strokeBorder(
+                                AngularGradient(
+                                    gradient: Gradient(colors: [.cyan, .blue, .purple, .pink, .orange, .cyan]),
+                                    center: .center
+                                ),
+                                lineWidth: 4
                             )
-                        )
-                        .frame(width: 72, height: 72)
-                        .shadow(color: DUTheme.cyan.opacity(0.5), radius: 15, x: 0, y: 8)
-                    
-                    Image(systemName: "mic.fill")
-                        .font(.du(28, weight: .semibold))
-                        .foregroundColor(.white)
+                            .frame(width: 76, height: 76)
+                            .shadow(color: Color.purple.opacity(0.5), radius: 10, x: 0, y: 4)
+                        
+                        Image(systemName: "mic.fill")
+                            .font(.du(24, weight: .medium))
+                            .foregroundColor(.cyan)
+                    }
                 }
+                .buttonStyle(.plain)
             }
-            .buttonStyle(.plain)
         }
+        .padding(.bottom, DUSpacing.xl)
         .onAppear {
             startRippleAnimation()
         }

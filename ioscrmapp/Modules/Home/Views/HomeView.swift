@@ -117,7 +117,8 @@ struct HomeView: View {
     }
 
     var body: some View {
-        TabView(selection: $selectedTab) {
+        ZStack {
+            TabView(selection: $selectedTab) {
             homeDashboard
             .tabItem {
                 Image(HomeTab.home.assetName)
@@ -198,29 +199,6 @@ struct HomeView: View {
                 notificationService: notificationService
             )
         }
-        .sheet(isPresented: $isAIChatPresented) {
-            if #available(iOS 16.0, *) {
-                AIChatView(
-                    custSubInfo: custSubInfo,
-                    language: languageStore.currentLanguage,
-                    aiChatService: aiChatService
-                ) { target in
-                    isAIChatPresented = false
-                    handleAIChatNavigation(target)
-                }
-                .presentationDetents([.fraction(0.85)])
-                .presentationDragIndicator(.visible)
-            } else {
-                AIChatView(
-                    custSubInfo: custSubInfo,
-                    language: languageStore.currentLanguage,
-                    aiChatService: aiChatService
-                ) { target in
-                    isAIChatPresented = false
-                    handleAIChatNavigation(target)
-                }
-            }
-        }
         .fullScreenCover(isPresented: $isBillingPresented) {
             BillingContainerView(session: custSubInfo, billingService: billingService)
         }
@@ -250,6 +228,40 @@ struct HomeView: View {
         } message: {
             Text(localized(signOutFailureMessageKey))
         }
+
+            // Custom AI Assistant Overlay Card Popup
+            if isAIChatPresented {
+                ZStack(alignment: .bottom) {
+                    Color.black.opacity(0.55)
+                        .ignoresSafeArea()
+                        .onTapGesture {
+                            withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                                isAIChatPresented = false
+                            }
+                        }
+                    
+                    AIChatView(
+                        custSubInfo: custSubInfo,
+                        language: languageStore.currentLanguage,
+                        aiChatService: aiChatService
+                    ) { target in
+                        withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                            isAIChatPresented = false
+                        }
+                        handleAIChatNavigation(target)
+                    }
+                    .clipShape(RoundedRectangle(cornerRadius: 36, style: .continuous))
+                    .padding(.top, 60)
+                    .padding(.horizontal, 14)
+                    .padding(.bottom, 16)
+                    .shadow(color: Color.black.opacity(0.3), radius: 30, x: 0, y: 15)
+                    // Allows the overlay to go beneath bottom safe area and top
+                    .ignoresSafeArea(.keyboard, edges: .bottom)
+                }
+                .zIndex(100)
+                .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
+        } // End of ZStack body
     }
 
     @ViewBuilder
