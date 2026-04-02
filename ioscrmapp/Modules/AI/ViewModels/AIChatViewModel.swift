@@ -1,4 +1,5 @@
 import Foundation
+import SwiftUI
 
 @MainActor
 final class AIChatViewModel: ObservableObject {
@@ -6,6 +7,9 @@ final class AIChatViewModel: ObservableObject {
     @Published var draft = ""
     @Published var isSending = false
     @Published var confirmResetPresented = false
+    @Published var currentStep: AIChatViewStep = .home
+    @Published var selectedOffer: AIChatOffer?
+    @Published var offers: [AIChatOffer] = []
 
     let language: AppLanguage
     let title: String
@@ -27,6 +31,17 @@ final class AIChatViewModel: ObservableObject {
         title = AIChatLocalizedCopy.title(for: language)
         subtitle = AIChatLocalizedCopy.subtitle(for: language)
         suggestedPrompts = AIChatLocalizedCopy.suggestedPrompts(for: language)
+        setupMockOffers()
+    }
+
+    private func setupMockOffers() {
+        offers = [
+            AIChatOffer(name: "DataRoamingPrice (10 GB) KSA", price: "15.00", dataAmount: "10 GB", validity: "Monthly"),
+            AIChatOffer(name: "DataRoamingPrice (20 GB) KSA", price: "35.00", dataAmount: "20 GB", validity: "Monthly"),
+            AIChatOffer(name: "DataRoamingPrice (50 GB) KSA", price: "55.00", dataAmount: "50 GB", validity: "Monthly"),
+            AIChatOffer(name: "DataRoamingPrice (100 GB) KSA", price: "75.00", dataAmount: "100 GB", validity: "Monthly"),
+            AIChatOffer(name: "DataRoamingPrice (Unlimited) KSA", price: "120.00", dataAmount: "Unlimited", validity: "Monthly")
+        ]
     }
 
     var canSend: Bool {
@@ -48,6 +63,13 @@ final class AIChatViewModel: ObservableObject {
             return
         }
 
+        // 复刻 HTML 逻辑：点击推荐问题直接跳转列表
+        if currentStep == .home {
+            withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
+                currentStep = .offersList
+            }
+        }
+        
         send(prompt)
     }
 
@@ -69,6 +91,40 @@ final class AIChatViewModel: ObservableObject {
         messages.removeAll()
         draft = ""
         isSending = false
+        currentStep = .home
+        selectedOffer = nil
+    }
+
+    func selectOffer(_ offer: AIChatOffer) {
+        selectedOffer = offer
+        withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
+            currentStep = .offerDetails(offer)
+        }
+    }
+
+    func processImmediately() {
+        withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
+            currentStep = .success
+        }
+    }
+
+    func goBack() {
+        withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
+            switch currentStep {
+            case .success:
+                if let offer = selectedOffer {
+                    currentStep = .offerDetails(offer)
+                } else {
+                    currentStep = .offersList
+                }
+            case .offerDetails:
+                currentStep = .offersList
+            case .offersList:
+                currentStep = .home
+            case .home:
+                break
+            }
+        }
     }
 
     private func send(_ message: String) {

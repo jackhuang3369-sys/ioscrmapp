@@ -36,6 +36,7 @@ struct AIChatView: View {
             ZStack {
                 deepBackground
 
+                // --- Home Layer (Layer 1) ---
                 VStack(spacing: 0) {
                     headerBar
                         .padding(.top, 8)
@@ -66,6 +67,31 @@ struct AIChatView: View {
 
                     voiceSection
                         .padding(.bottom, bottomPad)
+                }
+                .blur(radius: viewModel.currentStep == .home ? 0 : 20)
+                .scaleEffect(viewModel.currentStep == .home ? 1.0 : 0.9)
+                .opacity(viewModel.currentStep == .home ? 1.0 : 0.5)
+                .animation(.spring(response: 0.5, dampingFraction: 0.8), value: viewModel.currentStep)
+
+                // --- Layer 2: Offers List ---
+                if viewModel.currentStep == .offersList {
+                    offersListLayer(hPad: hPad, bottomPad: bottomPad)
+                        .transition(.asymmetric(insertion: .move(edge: .trailing).combined(with: .opacity), removal: .move(edge: .leading).combined(with: .opacity)))
+                        .zIndex(2)
+                }
+
+                // --- Layer 3: Offer Details ---
+                if case .offerDetails(let offer) = viewModel.currentStep {
+                    offerDetailsLayer(offer: offer, hPad: hPad, bottomPad: bottomPad)
+                        .transition(.asymmetric(insertion: .move(edge: .trailing).combined(with: .opacity), removal: .move(edge: .leading).combined(with: .opacity)))
+                        .zIndex(3)
+                }
+
+                // --- Layer 4: Success ---
+                if viewModel.currentStep == .success {
+                    successLayer(hPad: hPad)
+                        .transition(.asymmetric(insertion: .scale(scale: 0.95).combined(with: .opacity), removal: .opacity))
+                        .zIndex(4)
                 }
             }
         }
@@ -123,9 +149,23 @@ struct AIChatView: View {
 
     private var headerBar: some View {
         HStack {
+            if viewModel.currentStep != .home {
+                Button { viewModel.goBack() } label: {
+                    Image(systemName: "chevron.left")
+                        .font(.du(20, weight: .semibold))
+                        .foregroundColor(.white.opacity(0.8))
+                        .frame(width: 36, height: 36)
+                        .background(Color.white.opacity(0.1))
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                }
+                .buttonStyle(.plain)
+                .transition(.opacity.combined(with: .move(edge: .leading)))
+            }
+            
             Spacer()
+            
             Button { viewModel.requestNewChat() } label: {
-                Image(systemName: "message") // 更简洁的对话图标
+                Image(systemName: "message")
                     .font(.du(18, weight: .regular))
                     .foregroundColor(.white.opacity(0.8))
                     .frame(width: 32, height: 32)
@@ -140,7 +180,8 @@ struct AIChatView: View {
             }
             .buttonStyle(.plain)
         }
-        .padding(.trailing, 16)
+        .padding(.horizontal, 16)
+        .animation(.spring(), value: viewModel.currentStep)
     }
 
     // MARK: - AI Core Orb
@@ -218,20 +259,20 @@ struct AIChatView: View {
 
     private func scatteredPrompts(coreSize: CGFloat) -> some View {
         ZStack {
-            // Book a flight (左上)
+            // tag-1: Book a flight (左上)
             if let t = viewModel.suggestedPrompts[safe: 0] {
                 promptCapsule(t, index: 0)
-                    .offset(x: -coreSize * 1.0, y: -coreSize * 0.5)
+                    .offset(x: -coreSize * 0.9, y: -coreSize * 0.6)
             }
-            // Order a meal package (左下)
+            // tag-2: Order a meal package (左下)
             if let t = viewModel.suggestedPrompts[safe: 1] {
                 promptCapsule(t, index: 1)
-                    .offset(x: -coreSize * 0.9, y: coreSize * 0.5)
+                    .offset(x: -coreSize * 0.7, y: coreSize * 0.6)
             }
-            // Check the weather (右中)
+            // tag-3: Check the weather (右中)
             if let t = viewModel.suggestedPrompts[safe: 2] {
                 promptCapsule(t, index: 2)
-                    .offset(x: coreSize * 1.1, y: coreSize * 0.1)
+                    .offset(x: coreSize * 0.9, y: coreSize * 0.2)
             }
         }
     }
@@ -273,18 +314,17 @@ struct AIChatView: View {
                 let gen = UIImpactFeedbackGenerator(style: .medium)
                 gen.impactOccurred()
             } label: {
-                ZStack {
-                    // 更细更多彩的动态圆环
+                    // 更细更多彩的动态圆环对标 HTML conic-gradient
                     Circle()
                         .stroke(
                             AngularGradient(
                                 colors: [
-                                    Color.cyan, Color.purple, Color.pink,
-                                    Color.orange, Color.yellow, Color.green, Color.cyan
+                                    Color(hex: 0x38bdf8), Color(hex: 0x818cf8), Color(hex: 0xc084fc), Color(hex: 0xf472b6),
+                                    Color(hex: 0xfb923c), Color(hex: 0xfcd34d), Color(hex: 0x34d399), Color(hex: 0x38bdf8)
                                 ],
                                 center: .center
                             ),
-                            lineWidth: 2.5
+                            lineWidth: 3
                         )
                         .frame(width: 72, height: 72)
                         .rotationEffect(.degrees(coreRotation))
@@ -302,6 +342,280 @@ struct AIChatView: View {
             }
             .buttonStyle(.plain)
         }
+    }
+
+    // MARK: - New UI Layers (Layer 2, 3, 4)
+
+    private func offersListLayer(hPad: CGFloat, bottomPad: CGFloat) -> some View {
+        VStack(alignment: .leading, spacing: 0) {
+            headerPlaceholder // 为了保持对齐
+            
+            Text("Here are the recommended package options for you~")
+                .font(.du(18, weight: .regular))
+                .foregroundColor(.white.opacity(0.9))
+                .padding(.horizontal, hPad + 4)
+                .padding(.top, 20)
+                .padding(.bottom, 20)
+
+            ScrollView {
+                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
+                    ForEach(viewModel.offers) { offer in
+                        offerCard(offer)
+                    }
+                }
+                .padding(.horizontal, hPad)
+                .padding(.bottom, bottomPad + 100) // 为语音按钮留白
+            }
+        }
+        .padding(.top, 8)
+    }
+
+    private func offerCard(_ offer: AIChatOffer) -> some View {
+        Button { viewModel.selectOffer(offer) } label: {
+            VStack(alignment: .leading, spacing: 0) {
+                Text(offer.name)
+                    .font(.du(18, weight: .semibold))
+                    .foregroundColor(.white)
+                    .lineLimit(2)
+                    .multilineTextAlignment(.leading)
+                    .frame(height: 48, alignment: .top)
+                    .padding(.bottom, 20)
+
+                HStack(spacing: 0) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("DATA")
+                            .font(.system(size: 10, weight: .bold))
+                            .foregroundColor(.white.opacity(0.4))
+                        Text(offer.dataAmount)
+                            .font(.du(15, weight: .semibold))
+                            .foregroundColor(.white)
+                    }
+                    
+                    Spacer()
+                    Divider()
+                        .background(Color.white.opacity(0.2))
+                        .frame(height: 30)
+                    Spacer()
+                    
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("VALIDITY")
+                            .font(.system(size: 10, weight: .bold))
+                            .foregroundColor(.white.opacity(0.4))
+                        Text(offer.validity)
+                            .font(.du(15, weight: .semibold))
+                            .foregroundColor(.white)
+                    }
+                }
+                .padding(.bottom, 24)
+
+                // Price Button Style
+                HStack(spacing: 4) {
+                    Text(offer.price)
+                        .font(.system(size: 20, weight: .heavy))
+                    Text("\(offer.currency)/\(offer.unit)")
+                        .font(.system(size: 10, weight: .bold))
+                        .padding(.top, 4)
+                }
+                .foregroundColor(.white)
+                .frame(maxWidth: .infinity)
+                .frame(height: 52)
+                .background(
+                    LinearGradient(colors: [Color(hex: 0x3cd1ff), Color(hex: 0xc349ff)], startPoint: .leading, endPoint: .trailing)
+                )
+                .clipShape(Capsule())
+                .shadow(color: Color(hex: 0x3cd1ff).opacity(0.3), radius: 10, x: 0, y: 5)
+            }
+            .padding(18)
+            .background(
+                ZStack {
+                    LinearGradient(colors: [Color(hex: 0x3b4eb7), Color(hex: 0x6c3fc4)], startPoint: .top, endPoint: .bottom)
+                    LinearGradient(colors: [Color(hex: 0x7dd3fc).opacity(0.08), .clear, Color(hex: 0xf472b6).opacity(0.05)], startPoint: .topLeading, endPoint: .bottomTrailing)
+                }
+            )
+            .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 28, style: .continuous)
+                    .stroke(Color.white.opacity(0.12), lineWidth: 1)
+            )
+            .shadow(color: Color(hex: 0x080f2d).opacity(0.2), radius: 20, x: 0, y: 16)
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func offerDetailsLayer(offer: AIChatOffer, hPad: CGFloat, bottomPad: CGFloat) -> some View {
+        VStack(alignment: .leading, spacing: 0) {
+            headerPlaceholder
+            
+            ScrollView {
+                VStack(alignment: .leading, spacing: 20) {
+                    // Selected Mini Card with Checkmark
+                    ZStack(alignment: .topTrailing) {
+                        offerCard(offer)
+                            .overlay(RoundedRectangle(cornerRadius: 28, style: .continuous).stroke(Color(hex: 0x38bdf8), lineWidth: 1.5))
+                            .background(Color(hex: 0x38bdf8).opacity(0.1).clipShape(RoundedRectangle(cornerRadius: 28)))
+                        
+                        ZStack {
+                            Circle().fill(Color(hex: 0x22c55e)).frame(width: 24, height: 24)
+                            Image(systemName: "checkmark")
+                                .font(.system(size: 12, weight: .bold))
+                                .foregroundColor(.white)
+                        }
+                        .padding(12)
+                    }
+                    .padding(.top, 10)
+                    
+                    Text("You have selected: ") + 
+                    Text(offer.name).foregroundColor(Color(hex: 0x38bdf8)).bold() +
+                    Text(", here are the package details.")
+                    
+                    VStack(spacing: 20) {
+                        // Info Card 1
+                        VStack(alignment: .leading, spacing: 16) {
+                            Text("基本信息")
+                                .font(.du(16, weight: .semibold))
+                                .foregroundColor(Color(hex: 0x38bdf8))
+                            
+                            detailRow(key: "Combo Name:", value: offer.name)
+                            detailRow(key: "Effective time:", value: "Effective immediately")
+                            detailRow(key: "Validity period:", value: "The current month")
+                        }
+                        .padding(24)
+                        .background(Color.white.opacity(0.05))
+                        .clipShape(RoundedRectangle(cornerRadius: 24))
+                        .overlay(RoundedRectangle(cornerRadius: 24).stroke(Color.white.opacity(0.1), lineWidth: 1))
+                        
+                        // Info Card 2
+                        VStack(alignment: .leading, spacing: 16) {
+                            Text("Business Details")
+                                .font(.du(16, weight: .semibold))
+                                .foregroundColor(Color(hex: 0x38bdf8))
+                            
+                            // Mock Image Placeholder -> HTML 真实网络图片链接
+                            AsyncImage(url: URL(string: "https://images.unsplash.com/photo-1543269865-cbf427effbad?auto=format&fit=crop&q=80&w=600")) { phase in
+                                if let image = phase.image {
+                                    image.resizable().aspectRatio(contentMode: .fill)
+                                } else {
+                                    LinearGradient(colors: [Color(hex: 0x1e3a8a), Color(hex: 0x1e1b4b)], startPoint: .topLeading, endPoint: .bottomTrailing)
+                                        .overlay(Image(systemName: "photo").foregroundColor(.white.opacity(0.3)).font(.system(size: 40)))
+                                }
+                            }
+                            .frame(height: 180)
+                            .clipShape(RoundedRectangle(cornerRadius: 20))
+                            .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color.white.opacity(0.1), lineWidth: 1))
+                            
+                            Text("This package offers high-speed data roaming services across KSA territories. Ensure data roaming is enabled on your device Settings.")
+                                .font(.system(size: 13))
+                                .foregroundColor(.white.opacity(0.6))
+                                .lineSpacing(4)
+                            
+                            Button {
+                                viewModel.processImmediately()
+                            } label: {
+                                Text("Process Immediately")
+                                    .font(.du(18, weight: .bold))
+                                    .foregroundColor(.white)
+                                    .frame(maxWidth: .infinity)
+                                    .frame(height: 60)
+                                    .background(LinearGradient(colors: [Color(hex: 0x38bdf8), Color(hex: 0xc148ff)], startPoint: .leading, endPoint: .trailing))
+                                    .clipShape(Capsule())
+                                    .shadow(color: Color(hex: 0xc148ff).opacity(0.4), radius: 15, x: 0, y: 8)
+                            }
+                            .buttonStyle(.plain)
+                            .padding(.top, 10)
+                        }
+                        .padding(24)
+                        .background(Color.white.opacity(0.05))
+                        .clipShape(RoundedRectangle(cornerRadius: 24))
+                        .overlay(RoundedRectangle(cornerRadius: 24).stroke(Color.white.opacity(0.1), lineWidth: 1))
+                    }
+                    .padding(.bottom, bottomPad + 40)
+                }
+                .padding(.horizontal, hPad)
+            }
+        }
+        .padding(.top, 8)
+    }
+
+    private func successLayer(hPad: CGFloat) -> some View {
+        VStack(spacing: 0) {
+            headerPlaceholder
+            
+            Spacer()
+            
+            VStack(spacing: 40) {
+                // Success Illustration 纯 SwiftUI Path 模拟 HTML 中的 SVG
+                ZStack {
+                    // Document Body
+                    RoundedRectangle(cornerRadius: 15)
+                        .fill(Color.white.opacity(0.1))
+                        .frame(width: 100, height: 130)
+                        .overlay(RoundedRectangle(cornerRadius: 15).stroke(Color.white.opacity(0.3), lineWidth: 2))
+                    
+                    // Document Layout Elements
+                    VStack(alignment: .leading, spacing: 10) {
+                        HStack(spacing: 10) {
+                            RoundedRectangle(cornerRadius: 6).fill(Color(hex: 0x38bdf8).opacity(0.4)).frame(width: 30, height: 30)
+                            VStack(alignment: .leading, spacing: 9) {
+                                RoundedRectangle(cornerRadius: 3).fill(Color.white.opacity(0.4)).frame(width: 30, height: 6)
+                                RoundedRectangle(cornerRadius: 3).fill(Color.white.opacity(0.2)).frame(width: 20, height: 6)
+                            }
+                        }
+                        Spacer()
+                    }
+                    .frame(width: 70, height: 100, alignment: .topLeading)
+                    .offset(y: 10)
+                    
+                    // Checkmark Bubble
+                    ZStack {
+                        Circle().fill(Color(hex: 0x38bdf8).opacity(0.2)).frame(width: 70, height: 70)
+                        Circle().fill(Color(hex: 0x38bdf8).opacity(0.8)).frame(width: 50, height: 50)
+                        Image(systemName: "checkmark")
+                            .font(.system(size: 20, weight: .bold))
+                            .foregroundColor(.white)
+                    }
+                    .offset(x: 35, y: 40)
+                    
+                    // Stars
+                    Image(systemName: "star.fill")
+                        .font(.system(size: 16))
+                        .foregroundColor(Color(hex: 0xfbbf24))
+                        .offset(x: 60, y: -40)
+                        
+                    Image(systemName: "star.fill")
+                        .font(.system(size: 12))
+                        .foregroundColor(Color(hex: 0xfbbf24))
+                        .offset(x: -45, y: 35)
+                }
+                .frame(width: 200, height: 200)
+                
+                Text("Congratulations on your successful application")
+                    .font(.du(26, weight: .semibold))
+                    .foregroundColor(.white)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 40)
+                    .shadow(color: .black.opacity(0.2), radius: 10, x: 0, y: 4)
+            }
+            .offset(y: -60)
+            
+            Spacer()
+        }
+    }
+
+    private func detailRow(key: String, value: String) -> some View {
+        HStack(alignment: .top) {
+            Text(key)
+                .font(.system(size: 14))
+                .foregroundColor(.white.opacity(0.4))
+            Spacer()
+            Text(value)
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundColor(.white)
+                .multilineTextAlignment(.trailing)
+        }
+    }
+
+    private var headerPlaceholder: some View {
+        Color.clear.frame(height: 48) // 与 HeaderBar 高度一致
     }
 
     // MARK: - Animations
