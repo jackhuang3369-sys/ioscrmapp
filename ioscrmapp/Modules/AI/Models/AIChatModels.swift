@@ -101,11 +101,11 @@ enum AIChatLocalizedCopy {
     static func title(for language: AppLanguage) -> String {
         switch language {
         case .english:
-            return "AI Assistant"
+            return "How may I help\nyou today?"
         case .simplifiedChinese:
-            return "AI 智能助理"
+            return "我能帮你\n做什么？"
         case .arabic:
-            return "المساعد الذكي"
+            return "كيف يمكنني\nمساعدتك اليوم؟"
         }
     }
 
