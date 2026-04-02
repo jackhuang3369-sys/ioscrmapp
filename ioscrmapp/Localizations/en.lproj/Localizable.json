@@ -218,6 +218,12 @@
       "trendingProducts": "Trending Products",
       "viewAll": "View all"
     },
+    "carousel": {
+      "greenHills": "SPITI VALLEY, HIMACHAL",
+      "goldenValley": "GOLDEN VALLEY, SUNSET TRAIL",
+      "snowMountains": "SNOW MOUNTAINS, QUIET RIDGE",
+      "cliffDawn": "CLIFF DAWN, COAST VIEW"
+    },
     "service": {
       "dataPack": "Data Pack",
       "voicePack": "Voice Pack",

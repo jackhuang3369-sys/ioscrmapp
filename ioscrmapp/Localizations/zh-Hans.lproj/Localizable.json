@@ -218,6 +218,12 @@
       "trendingProducts": "热门商品",
       "viewAll": "查看全部"
     },
+    "carousel": {
+      "greenHills": "斯皮提山谷，喜马偕尔邦",
+      "goldenValley": "金色山谷，落日小径",
+      "snowMountains": "雪山山脊，静谧远眺",
+      "cliffDawn": "悬崖晨曦，海岸景观"
+    },
     "service": {
       "dataPack": "流量包",
       "voicePack": "语音包",

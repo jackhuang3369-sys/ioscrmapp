@@ -218,6 +218,12 @@
       "trendingProducts": "المنتجات الرائجة",
       "viewAll": "عرض الكل"
     },
+    "carousel": {
+      "greenHills": "وادي سبيتي، هيماشال",
+      "goldenValley": "الوادي الذهبي، درب الغروب",
+      "snowMountains": "الجبال الثلجية، الحافة الهادئة",
+      "cliffDawn": "فجر الجرف، إطلالة الساحل"
+    },
     "service": {
       "dataPack": "باقة بيانات",
       "voicePack": "باقة دقائق",

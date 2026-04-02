@@ -7,7 +7,9 @@ import SwiftUI
 /// 两侧预备卡会提前停在轨道边缘，避免切换时出现突兀的闪现或消失。
 /// 两侧卡片继续保留灰度、透明度和尺寸差异，用来维持首页当前的层级感。
 struct HomeFeatureCarouselView: View {
-    let assetNames: [String]
+    @EnvironmentObject private var languageStore: AppLanguageStore
+
+    let items: [HomeFeatureCarouselItem]
 
     @State private var settledIndex = 0
     @State private var dragTranslation: CGFloat = 0
@@ -18,14 +20,14 @@ struct HomeFeatureCarouselView: View {
     private let autoAdvanceIntervalNanoseconds: UInt64 = 4_000_000_000
 
     var body: some View {
-        VStack(spacing: DUSpacing.md) {
+        VStack(spacing: 0) {
             GeometryReader { proxy in
                 let metrics = HomeFeatureCarouselMetrics(containerWidth: proxy.size.width)
 
                 ZStack {
                     ForEach(visibleLayouts(metrics: metrics)) { layout in
                         carouselCard(
-                            assetName: assetNames[layout.assetIndex],
+                            assetName: items[layout.assetIndex].assetName,
                             layout: layout,
                             metrics: metrics
                         )
@@ -40,14 +42,27 @@ struct HomeFeatureCarouselView: View {
             }
             .frame(height: 226)
 
-            if assetNames.count > 1 {
+            if let selectedItem {
+                Text(languageStore.string(selectedItem.title))
+                    .font(.du(15, weight: .semibold))
+                    .foregroundColor(DUTheme.ink)
+                    .multilineTextAlignment(.center)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.72)
+                    .padding(.top, 14)
+                    .padding(.horizontal, 20)
+            }
+
+            if items.count > 1 {
                 pageIndicator
+                    .padding(.top, 10)
+                    .padding(.bottom, 2)
             }
         }
         .task(id: autoAdvanceCycle) {
             await runAutoAdvanceCycle()
         }
-        .onChange(of: assetNames.count) { newCount in
+        .onChange(of: items.count) { newCount in
             guard newCount > 0 else {
                 settledIndex = 0
                 restartAutoAdvanceCycle()
@@ -60,23 +75,30 @@ struct HomeFeatureCarouselView: View {
     }
 
     private var pageIndicator: some View {
-        HStack(spacing: DUSpacing.xs) {
-            ForEach(assetNames.indices, id: \.self) { index in
-                Capsule()
-                    .fill(
-                        index == selectedAssetIndex
-                        ? DUTheme.cyan
-                        : DUTheme.inkDisabled.opacity(0.35)
-                    )
-                    .frame(width: index == selectedAssetIndex ? 18 : 6, height: 6)
+        HStack(spacing: 8) {
+            ForEach(items.indices, id: \.self) { index in
+                pageIndicatorDot(isSelected: index == selectedAssetIndex)
             }
+        }
+    }
+
+    @ViewBuilder
+    private func pageIndicatorDot(isSelected: Bool) -> some View {
+        if isSelected {
+            Capsule()
+                .fill(DUTheme.homeCarouselIndicatorGradient)
+                .frame(width: 40, height: 8)
+        } else {
+            Capsule()
+                .fill(DUTheme.homeCarouselIndicatorInactive)
+                .frame(width: 8, height: 8)
         }
     }
 
     private func visibleLayouts(
         metrics: HomeFeatureCarouselMetrics
     ) -> [HomeFeatureCarouselCardLayout] {
-        guard !assetNames.isEmpty else {
+        guard !items.isEmpty else {
             return []
         }
 
@@ -94,7 +116,7 @@ struct HomeFeatureCarouselView: View {
 
                 return HomeFeatureCarouselCardLayout(
                     virtualIndex: virtualIndex,
-                    assetIndex: wrappedIndex(virtualIndex, assetCount: assetNames.count),
+                    assetIndex: wrappedIndex(virtualIndex, assetCount: items.count),
                     position: position
                 )
             }
@@ -141,10 +163,10 @@ struct HomeFeatureCarouselView: View {
                 .stroke(Color.white.opacity(0.72), lineWidth: 1)
             )
             .shadow(
-                color: Color.black.opacity(0.14),
-                radius: 18,
+                color: Color.black.opacity(0.05),
+                radius: 8,
                 x: 0,
-                y: 10
+                y: 2
             )
             .offset(
                 x: metrics.cardOffset(for: layout.position)
@@ -158,7 +180,7 @@ struct HomeFeatureCarouselView: View {
     ) -> some Gesture {
         DragGesture(minimumDistance: 8)
             .onChanged { value in
-                guard assetNames.count > 1, shouldHandle(translation: value.translation) else {
+                guard items.count > 1, shouldHandle(translation: value.translation) else {
                     return
                 }
 
@@ -203,9 +225,17 @@ struct HomeFeatureCarouselView: View {
         wrappedIndex(settledIndex)
     }
 
+    private var selectedItem: HomeFeatureCarouselItem? {
+        guard !items.isEmpty else {
+            return nil
+        }
+
+        return items[selectedAssetIndex]
+    }
+
     @MainActor
     private func runAutoAdvanceCycle() async {
-        guard assetNames.count > 1 else {
+        guard items.count > 1 else {
             return
         }
 
@@ -219,7 +249,7 @@ struct HomeFeatureCarouselView: View {
             return
         }
 
-        guard assetNames.count > 1, !isDraggingHorizontally else {
+        guard items.count > 1, !isDraggingHorizontally else {
             restartAutoAdvanceCycle()
             return
         }
@@ -236,7 +266,7 @@ struct HomeFeatureCarouselView: View {
     }
 
     private func wrappedIndex(_ index: Int, assetCount: Int? = nil) -> Int {
-        let resolvedAssetCount = assetCount ?? assetNames.count
+        let resolvedAssetCount = assetCount ?? items.count
 
         guard resolvedAssetCount > 0 else {
             return 0
@@ -372,15 +402,28 @@ private struct HomeFeatureCarouselCardView: View {
 struct HomeFeatureCarouselView_Previews: PreviewProvider {
     static var previews: some View {
         HomeFeatureCarouselView(
-            assetNames: [
-                "HomeCarouselGreenHills",
-                "HomeCarouselGoldenValley",
-                "HomeCarouselSnowMountains",
-                "HomeCarouselCliffDawn",
+            items: [
+                .init(
+                    assetName: "HomeCarouselGreenHills",
+                    title: .literal("SPITI VALLEY, HIMACHAL")
+                ),
+                .init(
+                    assetName: "HomeCarouselGoldenValley",
+                    title: .literal("GOLDEN VALLEY, SUNSET TRAIL")
+                ),
+                .init(
+                    assetName: "HomeCarouselSnowMountains",
+                    title: .literal("SNOW MOUNTAINS, QUIET RIDGE")
+                ),
+                .init(
+                    assetName: "HomeCarouselCliffDawn",
+                    title: .literal("CLIFF DAWN, COAST VIEW")
+                ),
             ]
         )
         .padding()
         .background(DUTheme.background)
         .previewLayout(.sizeThatFits)
+        .environmentObject(AppLanguageStore(initialLanguage: .english))
     }
 }

@@ -50,11 +50,23 @@ struct HomeView: View {
         .init(title: .key("home.service.voicePack"), assetName: "HomeServiceVoicePackDesignIcon"),
     ]
 
-    private let featuredCarouselAssetNames: [String] = [
-        "HomeCarouselGreenHills",
-        "HomeCarouselGoldenValley",
-        "HomeCarouselSnowMountains",
-        "HomeCarouselCliffDawn",
+    private let featuredCarouselItems: [HomeFeatureCarouselItem] = [
+        .init(
+            assetName: "HomeCarouselGreenHills",
+            title: .key("home.carousel.greenHills")
+        ),
+        .init(
+            assetName: "HomeCarouselGoldenValley",
+            title: .key("home.carousel.goldenValley")
+        ),
+        .init(
+            assetName: "HomeCarouselSnowMountains",
+            title: .key("home.carousel.snowMountains")
+        ),
+        .init(
+            assetName: "HomeCarouselCliffDawn",
+            title: .key("home.carousel.cliffDawn")
+        ),
     ]
 
     init(
@@ -287,7 +299,7 @@ struct HomeView: View {
 
                             quickActionsSection
                             featuredCarouselSection
-                            servicesSection
+                            //servicesSection
                             Color.clear
                                 .frame(height: homeDashboardBottomPlaceholderHeight)
                                 .accessibilityHidden(true)
@@ -757,7 +769,7 @@ struct HomeView: View {
     }
 
     private var featuredCarouselSection: some View {
-        HomeFeatureCarouselView(assetNames: featuredCarouselAssetNames)
+        HomeFeatureCarouselView(items: featuredCarouselItems)
             .padding(.horizontal, 12)
             .padding(.top, 16)
             .padding(.bottom, 14)
@@ -835,20 +847,10 @@ struct HomeView: View {
 
             ZStack(alignment: .bottom) {
                 barShape
-                    .fill(.ultraThinMaterial)
+                    .fill(Color.white)
                     .overlay(
                         barShape
-                            .fill(
-                                LinearGradient(
-                                    colors: [
-                                        Color.white.opacity(0.90),
-                                        Color(hex: 0x9AC8FF, opacity: 0.16),
-                                        Color.white.opacity(0.68)
-                                    ],
-                                    startPoint: .top,
-                                    endPoint: .bottom
-                                )
-                            )
+                            .fill(DUTheme.homeTabBarBackgroundGradient)
                     )
                     .overlay(
                         barShape

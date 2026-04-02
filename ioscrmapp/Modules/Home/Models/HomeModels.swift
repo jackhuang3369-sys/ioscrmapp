@@ -147,6 +147,15 @@ struct HomeUsageSection: Equatable, Sendable {
     let inlineMessage: LocalizedTextValue?
 }
 
+struct HomeFeatureCarouselItem: Identifiable, Equatable, Sendable {
+    let assetName: String
+    let title: LocalizedTextValue
+
+    var id: String {
+        assetName
+    }
+}
+
 struct HomeDashboardSnapshot: Equatable, Sendable {
     let profile: HomeProfileSection
     let summary: HomeSummarySection
