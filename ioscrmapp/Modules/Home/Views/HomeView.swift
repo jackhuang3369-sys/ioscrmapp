@@ -280,13 +280,18 @@ struct HomeView: View {
                             dashboard: dashboard
                         )
 
-                        if let bannerMessage = viewModel.bannerMessage {
-                            inlineBanner(bannerMessage)
-                        }
+                        VStack(spacing: 12) {
+                            if let bannerMessage = viewModel.bannerMessage {
+                                inlineBanner(bannerMessage)
+                            }
 
-                        quickActionsSection
-                        featuredCarouselSection
-                        servicesSection
+                            quickActionsSection
+                            featuredCarouselSection
+                            servicesSection
+                            Color.clear
+                                .frame(height: homeDashboardBottomPlaceholderHeight)
+                                .accessibilityHidden(true)
+                        }
                     }
                     .padding(.bottom, DUSpacing.lg)
                 }
@@ -441,14 +446,6 @@ struct HomeView: View {
         .padding(.horizontal, 14)
         .padding(.top, max(topInset, 8) + 6)
         .padding(.bottom, 18)
-        .background(
-            Image("HomeHeroBackground")
-                .renderingMode(.original)
-                .resizable()
-                .scaledToFill()
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .clipped()
-        )
     }
 
     private func accountCard(
@@ -492,7 +489,11 @@ struct HomeView: View {
 
                     if summary.creditLimit != nil {
                         Button {
-                            withAnimation(.easeInOut(duration: 0.22)) {
+                            withAnimation(
+                                isCreditLimitExpanded
+                                ? homeCreditLimitCollapseAnimation
+                                : homeCreditLimitExpandAnimation
+                            ) {
                                 isCreditLimitExpanded.toggle()
                             }
                         } label: {
@@ -518,37 +519,14 @@ struct HomeView: View {
                 .padding(.top, 10)
             }
 
-            if let creditLimit = summary.creditLimit, isCreditLimitExpanded {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text(localized("home.header.creditLimitTitle"))
-                        .font(homeFont(11, weight: .semibold))
-                        .foregroundColor(Color(hex: 0x50596D))
-
-                    HStack(spacing: 8) {
-                        creditLimitCard(
-                            titleKey: "home.header.creditTotalTitle",
-                            value: creditLimit.totalValue,
-                            backgroundColor: Color(red: 199 / 255, green: 219 / 255, blue: 255 / 255, opacity: 0.76)
-                        )
-                        creditLimitCard(
-                            titleKey: "home.header.creditUsedTitle",
-                            value: creditLimit.usedValue,
-                            backgroundColor: Color(red: 245 / 255, green: 214 / 255, blue: 224 / 255, opacity: 0.82)
-                        )
-                        creditLimitCard(
-                            titleKey: "home.header.creditRemainingTitle",
-                            value: creditLimit.remainingValue,
-                            backgroundColor: Color(red: 208 / 255, green: 236 / 255, blue: 229 / 255, opacity: 0.84)
-                        )
-                    }
-                }
-                .padding(.top, 10)
-                .transition(
-                    .asymmetric(
-                        insertion: .move(edge: .top).combined(with: .opacity),
-                        removal: .move(edge: .top).combined(with: .opacity)
-                    )
-                )
+            if let creditLimit = summary.creditLimit {
+                creditLimitSection(creditLimit)
+                    .padding(.top, isCreditLimitExpanded ? 10 : 0)
+                    .frame(maxHeight: isCreditLimitExpanded ? 120 : 0, alignment: .top)
+                    .opacity(isCreditLimitExpanded ? 1 : 0)
+                    .scaleEffect(y: isCreditLimitExpanded ? 1 : 0.92, anchor: .top)
+                    .clipped()
+                    .allowsHitTesting(isCreditLimitExpanded)
             }
 
             usageMetricsRow(usage.cards)
@@ -573,6 +551,40 @@ struct HomeView: View {
                 .stroke(.white.opacity(0.22), lineWidth: 1)
         )
         .shadow(color: Color(red: 29 / 255, green: 46 / 255, blue: 122 / 255, opacity: 0.18), radius: 15, x: 0, y: 10)
+        .animation(
+            isCreditLimitExpanded
+            ? homeCreditLimitExpandAnimation
+            : homeCreditLimitCollapseAnimation,
+            value: isCreditLimitExpanded
+        )
+    }
+
+    private func creditLimitSection(
+        _ creditLimit: HomeCreditLimitSection
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(localized("home.header.creditLimitTitle"))
+                .font(homeFont(11, weight: .semibold))
+                .foregroundColor(Color(hex: 0x50596D))
+
+            HStack(spacing: 8) {
+                creditLimitCard(
+                    titleKey: "home.header.creditTotalTitle",
+                    value: creditLimit.totalValue,
+                    backgroundColor: Color(red: 199 / 255, green: 219 / 255, blue: 255 / 255, opacity: 0.76)
+                )
+                creditLimitCard(
+                    titleKey: "home.header.creditUsedTitle",
+                    value: creditLimit.usedValue,
+                    backgroundColor: Color(red: 245 / 255, green: 214 / 255, blue: 224 / 255, opacity: 0.82)
+                )
+                creditLimitCard(
+                    titleKey: "home.header.creditRemainingTitle",
+                    value: creditLimit.remainingValue,
+                    backgroundColor: Color(red: 208 / 255, green: 236 / 255, blue: 229 / 255, opacity: 0.84)
+                )
+            }
+        }
     }
 
     private func billMeta(
@@ -630,9 +642,20 @@ struct HomeView: View {
         }
         .padding(.top, 12)
         .overlay(alignment: .top) {
-            Rectangle()
-                .fill(Color(red: 72 / 255, green: 88 / 255, blue: 124 / 255, opacity: 0.12))
-                .frame(height: 1)
+            Capsule()
+                .fill(
+                    LinearGradient(
+                        colors: [
+                            Color.white.opacity(0),
+                            Color.white,
+                            Color.white.opacity(0)
+                        ],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                )
+                .frame(height: 2)
+                .padding(.horizontal, 2)
         }
     }
 
@@ -789,74 +812,119 @@ struct HomeView: View {
     }
 
     private var homeTabBar: some View {
-        HStack(alignment: .bottom, spacing: 2) {
-            HomeBottomTabBarButton(
-                title: localized(HomeTab.home.title),
-                inactiveAssetName: "HomeTabHomeDesignIcon",
-                activeAssetName: "HomeTabHomeActiveDesignIcon",
-                isActive: selectedTab == .home
-            ) {
-                selectedTab = .home
-            }
-
-            HomeBottomTabBarButton(
-                title: localized(HomeTab.service.title),
-                inactiveAssetName: "HomeTabServiceDesignIcon",
-                activeAssetName: "HomeTabServiceActiveDesignIcon",
-                isActive: selectedTab == .service
-            ) {
-                selectedTab = .service
-            }
-
-            HomeAIAgentTabButton(title: localized("home.tab.aiAgent")) {
-                withAnimation(.spring(response: 0.45, dampingFraction: 0.82)) {
-                    isAIChatPresented = true
-                }
-            }
-
-            HomeBottomTabBarButton(
-                title: localized(HomeTab.video.title),
-                inactiveAssetName: "HomeTabVideoDesignIcon",
-                activeAssetName: "HomeTabVideoActiveDesignIcon",
-                isActive: selectedTab == .video
-            ) {
-                selectedTab = .video
-            }
-
-            HomeBottomTabBarButton(
-                title: localized(HomeTab.me.title),
-                inactiveAssetName: "HomeTabMeDesignIcon",
-                activeAssetName: "HomeTabMeActiveDesignIcon",
-                isActive: selectedTab == .me
-            ) {
-                selectedTab = .me
-            }
-        }
-        .padding(.horizontal, 10)
-        .padding(.top, 10)
-        .padding(.bottom, 12)
-        .background(
-            Color.white.opacity(0.98)
-                .overlay(alignment: .top) {
-                    Rectangle()
-                        .fill(Color(red: 223 / 255, green: 228 / 255, blue: 238 / 255, opacity: 0.9))
-                        .frame(height: 1)
-                }
-                .shadow(color: Color.black.opacity(0.1), radius: 16, x: 0, y: -8)
-        )
-        .overlay(alignment: .top) {
-            LinearGradient(
-                colors: [
-                    Color.white.opacity(0),
-                    Color.white.opacity(0.75)
-                ],
-                startPoint: .top,
-                endPoint: .bottom
+        GeometryReader { proxy in
+            let sideCornerRadius: CGFloat = 34
+            let bumpRadius: CGFloat = 36
+            let bumpProtrusionHeight: CGFloat = 21
+            let baseBarHeight: CGFloat = sideCornerRadius * 2
+            let containerHeight: CGFloat = baseBarHeight + bumpProtrusionHeight
+            let contentHorizontalPadding: CGFloat = 16
+            let barVerticalOffset: CGFloat = 14
+            let barWidth = max(proxy.size.width - 20, 320)
+            let agentSlotWidth: CGFloat = 104
+            let sideWidth = max(
+                ((barWidth - (contentHorizontalPadding * 2)) - agentSlotWidth) / 4,
+                56
             )
-            .frame(height: 18)
-            .offset(y: -18)
-            .allowsHitTesting(false)
+            let barShape = HomeBottomTabBarShape(
+                sideRadius: sideCornerRadius,
+                bumpRadius: bumpRadius,
+                bumpProtrusionHeight: bumpProtrusionHeight,
+                baseHeight: baseBarHeight
+            )
+
+            ZStack(alignment: .bottom) {
+                barShape
+                    .fill(.ultraThinMaterial)
+                    .overlay(
+                        barShape
+                            .fill(
+                                LinearGradient(
+                                    colors: [
+                                        Color.white.opacity(0.90),
+                                        Color(hex: 0x9AC8FF, opacity: 0.16),
+                                        Color.white.opacity(0.68)
+                                    ],
+                                    startPoint: .top,
+                                    endPoint: .bottom
+                                )
+                            )
+                    )
+                    .overlay(
+                        barShape
+                            .stroke(Color.white.opacity(0.60), lineWidth: 1)
+                    )
+                    .overlay(
+                        HomeOrbitingBorderEffect(
+                            sideRadius: sideCornerRadius,
+                            bumpRadius: bumpRadius,
+                            bumpProtrusionHeight: bumpProtrusionHeight,
+                            baseHeight: baseBarHeight
+                        )
+                    )
+                    .shadow(color: Color.black.opacity(0.08), radius: 18, x: 0, y: 10)
+                    .frame(width: barWidth, height: containerHeight)
+
+                HStack(spacing: 0) {
+                    HomeBottomTabBarButton(
+                        title: localized(HomeTab.home.title),
+                        inactiveAssetName: "HomeTabHomeDesignIcon",
+                        activeAssetName: "HomeTabHomeActiveDesignIcon",
+                        isActive: selectedTab == .home
+                    ) {
+                        selectedTab = .home
+                    }
+                    .frame(width: sideWidth, height: baseBarHeight)
+
+                    HomeBottomTabBarButton(
+                        title: localized(HomeTab.service.title),
+                        inactiveAssetName: "HomeTabServiceDesignIcon",
+                        activeAssetName: "HomeTabServiceActiveDesignIcon",
+                        isActive: selectedTab == .service
+                    ) {
+                        selectedTab = .service
+                    }
+                    .frame(width: sideWidth, height: baseBarHeight)
+
+                    Spacer(minLength: agentSlotWidth)
+
+                    HomeBottomTabBarButton(
+                        title: localized(HomeTab.video.title),
+                        inactiveAssetName: "HomeTabVideoDesignIcon",
+                        activeAssetName: "HomeTabVideoActiveDesignIcon",
+                        isActive: selectedTab == .video
+                    ) {
+                        selectedTab = .video
+                    }
+                    .frame(width: sideWidth, height: baseBarHeight)
+
+                    HomeBottomTabBarButton(
+                        title: localized(HomeTab.me.title),
+                        inactiveAssetName: "HomeTabMeDesignIcon",
+                        activeAssetName: "HomeTabMeActiveDesignIcon",
+                        isActive: selectedTab == .me
+                    ) {
+                        selectedTab = .me
+                    }
+                    .frame(width: sideWidth, height: baseBarHeight)
+                }
+                .padding(.horizontal, contentHorizontalPadding)
+                .frame(width: barWidth, height: baseBarHeight)
+
+                HomeAIAgentTabButton(
+                    title: localized("home.tab.aiAgent"),
+                    labelBottomPadding: (baseBarHeight - 40) / 2
+                ) {
+                    withAnimation(.spring(response: 0.45, dampingFraction: 0.82)) {
+                        isAIChatPresented = true
+                    }
+                }
+                .frame(width: agentSlotWidth, height: containerHeight, alignment: .bottom)
+            }
+            .offset(y: barVerticalOffset)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
         }
+        .frame(height: 112)
     }
 
     private var placeholderAlertIsPresented: Binding<Bool> {
@@ -1152,13 +1220,99 @@ struct HomeView: View {
     }
 }
 
-private let homePageBackground = Color(hex: 0xF3F5F8)
+private let homeCreditLimitExpandAnimation = Animation.easeOut(duration: 0.4)
+private let homeCreditLimitCollapseAnimation = Animation.easeInOut(duration: 0.4)
+private let homeDashboardBottomPlaceholderHeight: CGFloat = 48
+
+private var homePageBackground: some View {
+    HomePageBackground()
+}
 
 private func homeFont(
     _ size: CGFloat,
     weight: Font.Weight = .regular
 ) -> Font {
-    .system(size: size, weight: weight, design: .default)
+    .custom(homeFontName(for: weight), size: size)
+}
+
+private func homeFontName(for weight: Font.Weight) -> String {
+    switch weight {
+    case .bold, .semibold, .heavy, .black:
+        return "PingFangSC-Semibold"
+    case .medium:
+        return "PingFangSC-Medium"
+    case .light, .thin, .ultraLight:
+        return "PingFangSC-Light"
+    default:
+        return "PingFangSC-Regular"
+    }
+}
+
+private struct HomePageBackground: View {
+    var body: some View {
+        GeometryReader { proxy in
+            ZStack(alignment: .top) {
+                Color(hex: 0xEFF7FF)
+
+                Image("HomeHeroBackground")
+                    .renderingMode(.original)
+                    .resizable()
+                    .scaledToFit()
+                    .saturation(1.04)
+                    .contrast(1.12)
+                    .overlay {
+                        LinearGradient(
+                            colors: [
+                                Color(hex: 0x1032FF, opacity: 0.18),
+                                Color(hex: 0x5E47FF, opacity: 0.10),
+                                Color.clear
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottom
+                        )
+                        .blendMode(.softLight)
+                    }
+                    .overlay {
+                        LinearGradient(
+                            colors: [
+                                Color.white.opacity(0.16),
+                                Color.clear,
+                                Color.white.opacity(0.08)
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                        .blendMode(.screen)
+                    }
+                    .frame(width: proxy.size.width, alignment: .top)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+
+                LinearGradient(
+                    colors: [
+                        Color(hex: 0x173BFA, opacity: 0.24),
+                        Color(hex: 0x2D4DF7, opacity: 0.14),
+                        Color(hex: 0x7457F5, opacity: 0.10),
+                        Color(hex: 0xEFF7FF, opacity: 0)
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottom
+                )
+                .frame(height: max(500, proxy.size.height * 0.62))
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+
+                LinearGradient(
+                    colors: [
+                        Color.clear,
+                        Color(hex: 0xEFF7FF, opacity: 0.10),
+                        Color(hex: 0xEFF7FF, opacity: 0.72),
+                        Color(hex: 0xEFF7FF)
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+            }
+        }
+    }
 }
 
 private struct HomeHeaderActionButton: View {
@@ -1220,40 +1374,42 @@ private struct HomeBottomTabBarButton: View {
     let action: () -> Void
 
     var body: some View {
-        Button(action: action) {
-            VStack(spacing: 4) {
-                ZStack {
-                    if isActive {
-                        Capsule()
-                            .fill(
-                                LinearGradient(
-                                    colors: [
-                                        Color(hex: 0x33A3FF),
-                                        Color(hex: 0x1176FF)
-                                    ],
-                                    startPoint: .top,
-                                    endPoint: .bottom
-                                )
-                            )
-                            .frame(width: 50, height: 30)
-                            .shadow(color: Color(hex: 0x1176FF, opacity: 0.32), radius: 10, x: 0, y: 6)
-                    }
+        let contentSize = CGSize(width: isActive ? 62 : 60, height: 40)
 
+        Button(action: action) {
+            ZStack {
+                if isActive {
+                    RoundedRectangle(cornerRadius: 20, style: .continuous)
+                        .fill(
+                            LinearGradient(
+                                colors: [
+                                    Color(hex: 0x1E9BFF),
+                                    Color(hex: 0x0E7BFF)
+                                ],
+                                startPoint: .top,
+                                endPoint: .bottom
+                            )
+                        )
+                        .frame(width: contentSize.width, height: contentSize.height)
+                        .shadow(color: Color(hex: 0x1176FF, opacity: 0.28), radius: 14, x: 0, y: 8)
+                }
+
+                VStack(spacing: 4) {
                     Image(isActive ? activeAssetName : inactiveAssetName)
                         .renderingMode(.original)
                         .resizable()
                         .scaledToFit()
                         .frame(width: 20, height: 20)
-                }
-                .frame(height: 30)
 
-                Text(title)
-                    .font(homeFont(10, weight: isActive ? .semibold : .medium))
-                    .foregroundColor(isActive ? Color(hex: 0x2088FF) : Color(hex: 0xA0AAC8))
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.8)
+                    Text(title)
+                        .font(homeFont(10, weight: .medium))
+                        .foregroundColor(isActive ? .white : Color(hex: 0x7D8DB9))
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.85)
+                }
+                .frame(width: contentSize.width, height: contentSize.height)
             }
-            .frame(maxWidth: .infinity)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
         }
         .buttonStyle(.plain)
     }
@@ -1261,23 +1417,30 @@ private struct HomeBottomTabBarButton: View {
 
 private struct HomeAIAgentTabButton: View {
     let title: String
+    let labelBottomPadding: CGFloat
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
-            VStack(spacing: 4) {
-                HomeAIAgentOrbitalIcon()
-                    .frame(width: 70, height: 70)
+            ZStack(alignment: .bottom) {
+                VStack(spacing: 0) {
+                    HomeAIAgentOrbitalIcon()
+                        .scaleEffect(0.84)
+                        .frame(width: 60, height: 60)
+
+                    Spacer(minLength: 0)
+                }
 
                 Text(title)
                     .font(homeFont(10, weight: .medium))
-                    .foregroundColor(Color(hex: 0x7D82AC))
+                    .foregroundColor(Color(hex: 0x7D8DB9))
                     .lineLimit(1)
+                    .minimumScaleFactor(0.85)
+                    .padding(.bottom, labelBottomPadding)
             }
-            .frame(maxWidth: .infinity)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
         }
         .buttonStyle(.plain)
-        .padding(.top, -26)
     }
 }
 
@@ -1298,10 +1461,10 @@ private struct HomeAIAgentOrbitalIcon: View {
                             ],
                             center: .center,
                             startRadius: 6,
-                            endRadius: 34
+                            endRadius: 38
                         )
                     )
-                    .frame(width: 70, height: 70)
+                    .frame(width: 72, height: 72)
 
                 Circle()
                     .stroke(
@@ -1319,19 +1482,20 @@ private struct HomeAIAgentOrbitalIcon: View {
                         ),
                         lineWidth: 3
                     )
-                    .frame(width: 58, height: 58)
+                    .frame(width: 60, height: 60)
                     .rotationEffect(colorRotation)
+                    .shadow(color: Color(hex: 0x7A72FF, opacity: 0.22), radius: 4)
 
                 ZStack {
                     Circle()
                         .stroke(Color.white.opacity(0.92), lineWidth: 2)
-                        .frame(width: 42, height: 42)
+                        .frame(width: 44, height: 44)
 
                     Circle()
                         .fill(Color.white)
                         .frame(width: 8, height: 8)
                         .shadow(color: Color.white.opacity(0.75), radius: 10)
-                        .offset(y: -21)
+                        .offset(y: -22)
                         .rotationEffect(whiteRotation)
                 }
 
@@ -1351,7 +1515,7 @@ private struct HomeAIAgentOrbitalIcon: View {
                                 endRadius: 28
                             )
                         )
-                        .frame(width: 52, height: 52)
+                        .frame(width: 54, height: 54)
                         .shadow(color: Color(hex: 0x6E68FF, opacity: 0.34), radius: 12, x: 0, y: 8)
 
                     Circle()
@@ -1369,7 +1533,7 @@ private struct HomeAIAgentOrbitalIcon: View {
                                 endRadius: 20
                             )
                         )
-                        .frame(width: 32, height: 32)
+                        .frame(width: 34, height: 34)
 
                     ForEach(0..<3, id: \.self) { index in
                         let phase = time * 2.2 + Double(index) * 0.75
@@ -1400,11 +1564,11 @@ private struct HomeAIAgentOrbitalIcon: View {
     private func starOffset(for index: Int) -> CGSize {
         switch index {
         case 0:
-            return CGSize(width: -8, height: -12)
+            return CGSize(width: -9, height: -13)
         case 1:
-            return CGSize(width: 10, height: -4)
+            return CGSize(width: 10, height: -5)
         default:
-            return CGSize(width: -1, height: 12)
+            return CGSize(width: -1, height: 13)
         }
     }
 }
@@ -1433,6 +1597,245 @@ private struct HomePrimaryPillButtonStyle: ButtonStyle {
             )
             .shadow(color: Color(hex: 0x287FFF, opacity: configuration.isPressed ? 0.22 : 0.38), radius: 10, x: 0, y: 8)
             .scaleEffect(configuration.isPressed ? 0.98 : 1)
+    }
+}
+
+private struct HomeBottomTabBarShape: Shape {
+    let sideRadius: CGFloat
+    let bumpRadius: CGFloat
+    let bumpProtrusionHeight: CGFloat
+    let baseHeight: CGFloat
+
+    func path(in rect: CGRect) -> Path {
+        HomeBottomTabBarOutline(
+            rect: rect,
+            sideRadius: sideRadius,
+            bumpRadius: bumpRadius,
+            bumpProtrusionHeight: bumpProtrusionHeight,
+            baseHeight: baseHeight
+        ).path
+    }
+}
+
+private struct HomeBottomTabBarOutline {
+    let rect: CGRect
+    let sideRadius: CGFloat
+    let bumpRadius: CGFloat
+    let bumpProtrusionHeight: CGFloat
+    let baseHeight: CGFloat
+
+    private var resolvedSideRadius: CGFloat {
+        min(sideRadius, baseHeight / 2, rect.width / 4)
+    }
+
+    private var resolvedBumpRadius: CGFloat {
+        min(bumpRadius, rect.width / 5, rect.height / 2)
+    }
+
+    private var topY: CGFloat {
+        rect.maxY - baseHeight
+    }
+
+    private var leftCapCenter: CGPoint {
+        CGPoint(x: rect.minX + resolvedSideRadius, y: topY + resolvedSideRadius)
+    }
+
+    private var rightCapCenter: CGPoint {
+        CGPoint(x: rect.maxX - resolvedSideRadius, y: topY + resolvedSideRadius)
+    }
+
+    private var bumpCenter: CGPoint {
+        CGPoint(x: rect.midX, y: resolvedBumpRadius)
+    }
+
+    private var bumpChordHalfWidth: CGFloat {
+        let verticalOffset = max(0, bumpCenter.y - topY)
+        return sqrt(max(0, (resolvedBumpRadius * resolvedBumpRadius) - (verticalOffset * verticalOffset)))
+    }
+
+    private var bumpLeftPoint: CGPoint {
+        CGPoint(x: rect.midX - bumpChordHalfWidth, y: topY)
+    }
+
+    private var bumpRightPoint: CGPoint {
+        CGPoint(x: rect.midX + bumpChordHalfWidth, y: topY)
+    }
+
+    private var bumpStartAngle: CGFloat {
+        atan2(bumpLeftPoint.y - bumpCenter.y, bumpLeftPoint.x - bumpCenter.x)
+    }
+
+    private var bumpEndAngle: CGFloat {
+        atan2(bumpRightPoint.y - bumpCenter.y, bumpRightPoint.x - bumpCenter.x)
+    }
+
+    private var topLeftLineLength: CGFloat {
+        max(0, bumpLeftPoint.x - (rect.minX + resolvedSideRadius))
+    }
+
+    private var topRightLineLength: CGFloat {
+        max(0, (rect.maxX - resolvedSideRadius) - bumpRightPoint.x)
+    }
+
+    private var bottomLineLength: CGFloat {
+        max(0, rect.width - (resolvedSideRadius * 2))
+    }
+
+    private var sideArcLength: CGFloat {
+        .pi * resolvedSideRadius
+    }
+
+    private var bumpArcLength: CGFloat {
+        resolvedBumpRadius * (bumpEndAngle - bumpStartAngle)
+    }
+
+    private var totalLength: CGFloat {
+        topLeftLineLength + topRightLineLength + bottomLineLength + (sideArcLength * 2) + bumpArcLength
+    }
+
+    var path: Path {
+        let sideRadius = resolvedSideRadius
+        let leftTop = CGPoint(x: rect.minX + sideRadius, y: topY)
+        let rightTop = CGPoint(x: rect.maxX - sideRadius, y: topY)
+        let leftBottom = CGPoint(x: rect.minX + sideRadius, y: rect.maxY)
+
+        var path = Path()
+        path.move(to: leftTop)
+        path.addLine(to: bumpLeftPoint)
+        path.addArc(
+            center: bumpCenter,
+            radius: resolvedBumpRadius,
+            startAngle: .radians(Double(bumpStartAngle)),
+            endAngle: .radians(Double(bumpEndAngle)),
+            clockwise: false
+        )
+        path.addLine(to: rightTop)
+        path.addArc(
+            center: rightCapCenter,
+            radius: sideRadius,
+            startAngle: .degrees(-90),
+            endAngle: .degrees(90),
+            clockwise: false
+        )
+        path.addLine(to: leftBottom)
+        path.addArc(
+            center: leftCapCenter,
+            radius: sideRadius,
+            startAngle: .degrees(90),
+            endAngle: .degrees(-90),
+            clockwise: false
+        )
+        path.closeSubpath()
+
+        return path
+    }
+
+    func point(at progress: Double) -> CGPoint {
+        guard totalLength > 0 else {
+            return CGPoint(x: rect.midX, y: rect.midY)
+        }
+
+        let normalizedProgress = progress - floor(progress)
+        var remaining = CGFloat(normalizedProgress) * totalLength
+
+        if remaining <= topLeftLineLength {
+            return CGPoint(x: rect.minX + resolvedSideRadius + remaining, y: topY)
+        }
+        remaining -= topLeftLineLength
+
+        if remaining <= bumpArcLength {
+            let angle = bumpStartAngle + (remaining / resolvedBumpRadius)
+            return CGPoint(
+                x: bumpCenter.x + (cos(angle) * resolvedBumpRadius),
+                y: bumpCenter.y + (sin(angle) * resolvedBumpRadius)
+            )
+        }
+        remaining -= bumpArcLength
+
+        if remaining <= topRightLineLength {
+            return CGPoint(x: bumpRightPoint.x + remaining, y: topY)
+        }
+        remaining -= topRightLineLength
+
+        if remaining <= sideArcLength {
+            let angle = (-.pi / 2) + (remaining / resolvedSideRadius)
+            return CGPoint(
+                x: rightCapCenter.x + (cos(angle) * resolvedSideRadius),
+                y: rightCapCenter.y + (sin(angle) * resolvedSideRadius)
+            )
+        }
+        remaining -= sideArcLength
+
+        if remaining <= bottomLineLength {
+            return CGPoint(x: rect.maxX - resolvedSideRadius - remaining, y: rect.maxY)
+        }
+        remaining -= bottomLineLength
+
+        let angle = (.pi / 2) + (remaining / resolvedSideRadius)
+        return CGPoint(
+            x: leftCapCenter.x + (cos(angle) * resolvedSideRadius),
+            y: leftCapCenter.y + (sin(angle) * resolvedSideRadius)
+        )
+    }
+}
+
+private struct HomeOrbitingBorderEffect: View {
+    let sideRadius: CGFloat
+    let bumpRadius: CGFloat
+    let bumpProtrusionHeight: CGFloat
+    let baseHeight: CGFloat
+
+    var body: some View {
+        GeometryReader { proxy in
+            TimelineView(.animation(minimumInterval: 1.0 / 30.0)) { context in
+                let time = context.date.timeIntervalSinceReferenceDate
+                let progress = (time * 0.072).truncatingRemainder(dividingBy: 1)
+                let rect = CGRect(origin: .zero, size: proxy.size).insetBy(dx: 1, dy: 1)
+                let outline = HomeBottomTabBarOutline(
+                    rect: rect,
+                    sideRadius: sideRadius,
+                    bumpRadius: bumpRadius,
+                    bumpProtrusionHeight: bumpProtrusionHeight,
+                    baseHeight: baseHeight
+                )
+
+                Canvas { graphicsContext, _ in
+                    let trailSegments = 20
+                    let trailStep = 0.009
+
+                    for index in 0..<trailSegments {
+                        let start = outline.point(at: progress - (Double(index) * trailStep))
+                        let end = outline.point(at: progress - (Double(index + 1) * trailStep))
+                        let lineWidth = max(0.35, 3.2 - (CGFloat(index) * 0.15))
+                        let opacity = max(0.04, 0.50 - (Double(index) * 0.022))
+
+                        var segment = Path()
+                        segment.move(to: start)
+                        segment.addLine(to: end)
+
+                        graphicsContext.stroke(
+                            segment,
+                            with: .color(.white.opacity(opacity)),
+                            style: StrokeStyle(lineWidth: lineWidth, lineCap: .round)
+                        )
+                    }
+
+                    let headPoint = outline.point(at: progress)
+                    let glowRect = CGRect(x: headPoint.x - 4, y: headPoint.y - 4, width: 8, height: 8)
+                    let dotRect = CGRect(x: headPoint.x - 2.8, y: headPoint.y - 2.8, width: 5.6, height: 5.6)
+
+                    graphicsContext.fill(
+                        Path(ellipseIn: glowRect),
+                        with: .color(.white.opacity(0.26))
+                    )
+                    graphicsContext.fill(
+                        Path(ellipseIn: dotRect),
+                        with: .color(.white)
+                    )
+                }
+            }
+        }
+        .allowsHitTesting(false)
     }
 }
 
