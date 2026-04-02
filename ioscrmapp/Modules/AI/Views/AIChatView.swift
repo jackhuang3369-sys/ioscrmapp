@@ -2,14 +2,11 @@ import SwiftUI
 import WebKit
 
 struct AIChatView: View {
-    @Environment(\.dismiss) private var dismiss
     @Environment(\.openURL) private var openURL
     @StateObject private var viewModel: AIChatViewModel
     let onNavigate: (AIChatNavigationTarget) -> Void
 
     @State private var isAnimatingCore = false
-    @State private var rippleScale: CGFloat = 1.0
-    @State private var rippleOpacity: Double = 0.8
     @State private var coreRotation: Double = 0
     @State private var promptOffsets: [CGFloat] = [50, 50, 50, 50]
     @State private var promptOpacities: [Double] = [0, 0, 0, 0]
@@ -32,52 +29,41 @@ struct AIChatView: View {
 
     var body: some View {
         GeometryReader { proxy in
-            let horizontalPadding = min(max(proxy.size.width * 0.06, 18), 28)
-            let titleTopPadding = max(proxy.size.height * 0.03, DUSpacing.md)
-            let coreSize = min(max(proxy.size.width * 0.42, 138), 176)
-            let voiceButtonSize = min(max(proxy.size.width * 0.2, 68), 80)
-            let contentBottomPadding = max(proxy.safeAreaInsets.bottom, 16) + 12
+            let coreSize = min(max(proxy.size.width * 0.34, 110), 150)
+            let hPad = min(max(proxy.size.width * 0.06, 18), 28)
+            let bottomPad = max(proxy.safeAreaInsets.bottom, 16) + 12
 
             ZStack {
-                auroraBackground
-
-                Rectangle()
-                    .fill(.ultraThinMaterial)
-                    .opacity(0.85)
+                deepBackground
+                waveLines.opacity(0.15)
 
                 VStack(spacing: 0) {
-                    header(topPadding: max(proxy.safeAreaInsets.top, 18))
+                    headerBar
+                        .padding(.top, 8)
 
-                    VStack(alignment: .center, spacing: 8) {
-                        Text("AI Assistant")
-                            .font(.du(13, weight: .semibold))
-                            .foregroundColor(Color.white.opacity(0.62))
-                            .tracking(3)
-                            .textCase(.uppercase)
+                    Text(viewModel.title)
+                        .font(.du(proxy.size.height < 500 ? 24 : 28, weight: .bold))
+                        .foregroundColor(.white)
+                        .multilineTextAlignment(.leading)
+                        .lineLimit(3)
+                        .minimumScaleFactor(0.82)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.top, DUSpacing.md)
+                        .padding(.horizontal, hPad + 4)
 
-                        Text(viewModel.title)
-                            .font(.du(proxy.size.height < 620 ? 24 : 26, weight: .bold))
-                            .foregroundColor(.white)
-                            .multilineTextAlignment(.center)
-                            .lineLimit(3)
-                            .minimumScaleFactor(0.82)
+                    Spacer(minLength: 8)
+
+                    ZStack {
+                        aiCoreOrb(coreSize: coreSize)
+                        scatteredPrompts(coreSize: coreSize)
                     }
-                    .padding(.top, titleTopPadding)
-                    .padding(.horizontal, horizontalPadding)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: coreSize * 2.6)
 
-                    Spacer(minLength: max(proxy.size.height * 0.035, 16))
+                    Spacer(minLength: 8)
 
-                    aiCoreFeature(coreSize: coreSize)
-
-                    Spacer(minLength: max(proxy.size.height * 0.05, 20))
-
-                    scatteredPrompts
-                        .padding(.horizontal, horizontalPadding)
-
-                    Spacer(minLength: max(proxy.size.height * 0.04, 16))
-
-                    voiceActionBar(buttonSize: voiceButtonSize)
-                        .padding(.bottom, contentBottomPadding)
+                    voiceSection
+                        .padding(.bottom, bottomPad)
                 }
             }
         }
@@ -90,55 +76,88 @@ struct AIChatView: View {
         }
     }
 
-    private var auroraBackground: some View {
+    // MARK: - Background
+
+    private var deepBackground: some View {
         ZStack {
-            Color.black.opacity(0.12)
+            LinearGradient(
+                gradient: Gradient(colors: [
+                    Color(hex: 0x0D1B3E),
+                    Color(hex: 0x162052),
+                    Color(hex: 0x1C1F64),
+                    Color(hex: 0x2D1B69)
+                ]),
+                startPoint: .top,
+                endPoint: .bottom
+            )
 
             Circle()
-                .fill(Color(hex: 0x4821FF))
-                .frame(width: 250, height: 250)
-                .blur(radius: 60)
-                .offset(x: isAnimatingCore ? -60 : 40, y: isAnimatingCore ? -120 : -80)
-
-            Circle()
-                .fill(Color(hex: 0x00E5FF))
-                .frame(width: 200, height: 200)
-                .blur(radius: 70)
-                .offset(x: isAnimatingCore ? 80 : -40, y: isAnimatingCore ? 60 : 120)
-
-            Circle()
-                .fill(Color(hex: 0xFF2180).opacity(0.6))
-                .frame(width: 180, height: 180)
+                .fill(Color(hex: 0x4821FF).opacity(0.2))
+                .frame(width: 220, height: 220)
                 .blur(radius: 80)
-                .offset(x: isAnimatingCore ? -30 : 60, y: isAnimatingCore ? 140 : 40)
+                .offset(x: -50, y: -80)
+
+            Circle()
+                .fill(Color(hex: 0x00E5FF).opacity(0.12))
+                .frame(width: 180, height: 180)
+                .blur(radius: 90)
+                .offset(x: 80, y: 60)
         }
-        .animation(.easeInOut(duration: 8).repeatForever(autoreverses: true), value: isAnimatingCore)
     }
 
-    private func header(topPadding: CGFloat) -> some View {
+    // MARK: - Wave Lines
+
+    private var waveLines: some View {
+        GeometryReader { geo in
+            let w = geo.size.width
+            let h = geo.size.height
+            ZStack {
+                wavePath(w: w, h: h, y0: 0.50, y1: 0.30, cy: 0.60, cx: 0.50)
+                    .stroke(Color.white.opacity(0.08), lineWidth: 0.8)
+                wavePath(w: w, h: h, y0: 0.58, y1: 0.38, cy: 0.68, cx: 0.55)
+                    .stroke(Color.white.opacity(0.06), lineWidth: 0.6)
+                wavePath(w: w, h: h, y0: 0.66, y1: 0.46, cy: 0.76, cx: 0.45)
+                    .stroke(Color.white.opacity(0.05), lineWidth: 0.5)
+                wavePath(w: w, h: h, y0: 0.74, y1: 0.54, cy: 0.84, cx: 0.50)
+                    .stroke(Color.white.opacity(0.04), lineWidth: 0.4)
+            }
+        }
+    }
+
+    private func wavePath(w: CGFloat, h: CGFloat, y0: CGFloat, y1: CGFloat, cy: CGFloat, cx: CGFloat) -> Path {
+        Path { p in
+            p.move(to: CGPoint(x: 0, y: h * y0))
+            p.addQuadCurve(to: CGPoint(x: w, y: h * y1), control: CGPoint(x: w * cx, y: h * cy))
+        }
+    }
+
+    // MARK: - Header
+
+    private var headerBar: some View {
         HStack {
             Spacer()
-            Button {
-                dismiss()
-            } label: {
-                Image(systemName: "xmark")
-                    .font(.du(16, weight: .bold))
-                    .foregroundColor(.white.opacity(0.8))
-                    .frame(width: 44, height: 44)
-                    .background(Color.white.opacity(0.15))
-                    .clipShape(Circle())
-                    .overlay(
-                        Circle()
-                            .stroke(Color.white.opacity(0.18), lineWidth: 0.5)
-                    )
+            Button { viewModel.requestNewChat() } label: {
+                Image(systemName: "rectangle.on.rectangle")
+                    .font(.du(15, weight: .medium))
+                    .foregroundColor(.white.opacity(0.7))
+                    .frame(width: 40, height: 40)
             }
             .buttonStyle(.plain)
-            .padding(.trailing, 20)
-            .padding(.top, topPadding)
+
+            Button { onNavigate(.home) } label: {
+                Image(systemName: "xmark")
+                    .font(.du(15, weight: .bold))
+                    .foregroundColor(.white.opacity(0.7))
+                    .frame(width: 40, height: 40)
+            }
+            .buttonStyle(.plain)
         }
+        .padding(.trailing, 16)
     }
 
-    private func aiCoreFeature(coreSize: CGFloat) -> some View {
+    // MARK: - AI Core Orb
+
+    private func aiCoreOrb(coreSize: CGFloat) -> some View {
         let haloSize = coreSize * 1.6
         let orbitSize = coreSize * 1.26
 
@@ -147,9 +166,7 @@ struct AIChatView: View {
                 .fill(
                     RadialGradient(
                         gradient: Gradient(colors: [Color.white.opacity(0.16), .clear]),
-                        center: .center,
-                        startRadius: 10,
-                        endRadius: haloSize / 2
+                        center: .center, startRadius: 10, endRadius: haloSize / 2
                     )
                 )
                 .frame(width: haloSize, height: haloSize)
@@ -158,13 +175,10 @@ struct AIChatView: View {
                 .stroke(
                     LinearGradient(
                         gradient: Gradient(colors: [
-                            Color.white.opacity(0.08),
-                            Color.cyan.opacity(0.35),
-                            Color.pink.opacity(0.24),
-                            Color.white.opacity(0.08)
+                            Color.white.opacity(0.08), Color.cyan.opacity(0.35),
+                            Color.pink.opacity(0.24), Color.white.opacity(0.08)
                         ]),
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
+                        startPoint: .topLeading, endPoint: .bottomTrailing
                     ),
                     lineWidth: 1
                 )
@@ -175,12 +189,7 @@ struct AIChatView: View {
                 .trim(from: 0.18, to: 0.92)
                 .stroke(
                     AngularGradient(
-                        colors: [
-                            Color.clear,
-                            Color.cyan.opacity(0.55),
-                            Color.pink.opacity(0.55),
-                            Color.clear
-                        ],
+                        colors: [.clear, Color.cyan.opacity(0.55), Color.pink.opacity(0.55), .clear],
                         center: .center
                     ),
                     style: StrokeStyle(lineWidth: 1.2, lineCap: .round)
@@ -192,18 +201,17 @@ struct AIChatView: View {
                 Circle()
                     .fill(
                         LinearGradient(
-                            gradient: Gradient(colors: [Color(hex: 0x00F0FF), Color(hex: 0x4B30FF), Color(hex: 0xFF2E93)]),
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
+                            gradient: Gradient(colors: [
+                                Color(hex: 0x00F0FF), Color(hex: 0x4B30FF), Color(hex: 0xFF2E93)
+                            ]),
+                            startPoint: .topLeading, endPoint: .bottomTrailing
                         )
                     )
-
                 Circle()
                     .fill(Color(hex: 0xFFBDE6))
                     .frame(width: coreSize * 0.53, height: coreSize * 0.53)
                     .blur(radius: 15)
                     .offset(x: isAnimatingCore ? -20 : 15, y: isAnimatingCore ? -25 : 10)
-
                 Circle()
                     .fill(Color(hex: 0x82FFF0))
                     .frame(width: coreSize * 0.46, height: coreSize * 0.46)
@@ -217,8 +225,7 @@ struct AIChatView: View {
                     .fill(
                         LinearGradient(
                             gradient: Gradient(colors: [Color.white.opacity(0.6), .clear, .clear]),
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
+                            startPoint: .topLeading, endPoint: .bottomTrailing
                         )
                     )
                     .padding(1)
@@ -229,25 +236,30 @@ struct AIChatView: View {
         }
     }
 
-    private var scatteredPrompts: some View {
-        VStack(spacing: 12) {
-            if let firstPrompt = viewModel.suggestedPrompts[safe: 0] {
-                promptCapsule(firstPrompt, index: 0, isFullWidth: true)
+    // MARK: - Scattered Prompts
+
+    private func scatteredPrompts(coreSize: CGFloat) -> some View {
+        ZStack {
+            if let t = viewModel.suggestedPrompts[safe: 0] {
+                promptCapsule(t, index: 0)
+                    .offset(x: -coreSize * 0.55, y: -coreSize * 0.65)
             }
-            HStack(alignment: .top, spacing: 12) {
-                if let secondPrompt = viewModel.suggestedPrompts[safe: 1] {
-                    promptCapsule(secondPrompt, index: 1)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                }
-                if let thirdPrompt = viewModel.suggestedPrompts[safe: 2] {
-                    promptCapsule(thirdPrompt, index: 2)
-                        .frame(maxWidth: .infinity, alignment: .trailing)
-                }
+            if let t = viewModel.suggestedPrompts[safe: 1] {
+                promptCapsule(t, index: 1)
+                    .offset(x: coreSize * 0.50, y: -coreSize * 0.10)
+            }
+            if let t = viewModel.suggestedPrompts[safe: 2] {
+                promptCapsule(t, index: 2)
+                    .offset(x: -coreSize * 0.45, y: coreSize * 0.60)
+            }
+            if let t = viewModel.suggestedPrompts[safe: 3] {
+                promptCapsule(t, index: 3)
+                    .offset(x: coreSize * 0.35, y: coreSize * 0.55)
             }
         }
     }
 
-    private func promptCapsule(_ text: String, index: Int, isFullWidth: Bool = false) -> some View {
+    private func promptCapsule(_ text: String, index: Int) -> some View {
         Button {
             viewModel.sendSuggestedPrompt(text)
         } label: {
@@ -259,13 +271,10 @@ struct AIChatView: View {
                 .minimumScaleFactor(0.82)
                 .padding(.horizontal, 16)
                 .padding(.vertical, 10)
-                .frame(maxWidth: isFullWidth ? .infinity : nil)
                 .background(.ultraThinMaterial)
                 .background(Color.white.opacity(0.1))
                 .clipShape(Capsule())
-                .overlay(
-                    Capsule().stroke(Color.white.opacity(0.3), lineWidth: 0.5)
-                )
+                .overlay(Capsule().stroke(Color.white.opacity(0.3), lineWidth: 0.5))
                 .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 2)
         }
         .buttonStyle(.plain)
@@ -273,45 +282,50 @@ struct AIChatView: View {
         .offset(y: promptOffsets[safe: index] ?? 0)
     }
 
-    private func voiceActionBar(buttonSize: CGFloat) -> some View {
-        VStack(spacing: DUSpacing.sm) {
-            Text("Hold to Talk")
-                .font(.du(12, weight: .regular))
+    // MARK: - Voice Section
+
+    private var voiceSection: some View {
+        VStack(spacing: DUSpacing.md) {
+            Text("Hold to Talk ~")
+                .font(.du(13, weight: .regular))
                 .foregroundColor(.white.opacity(0.5))
 
-            ZStack {
-                Circle()
-                    .stroke(Color.white.opacity(rippleOpacity * 0.5), lineWidth: 1)
-                    .frame(width: buttonSize + 10, height: buttonSize + 10)
-                    .scaleEffect(rippleScale)
+            Button {
+                let gen = UIImpactFeedbackGenerator(style: .medium)
+                gen.impactOccurred()
+            } label: {
+                ZStack {
+                    Circle()
+                        .stroke(
+                            AngularGradient(
+                                colors: [
+                                    Color(hex: 0xFF8C42), Color(hex: 0xFF6B8A),
+                                    Color(hex: 0xC97DFF), Color(hex: 0x00D4FF),
+                                    Color(hex: 0x00E5C3), Color(hex: 0xFF8C42)
+                                ],
+                                center: .center
+                            ),
+                            lineWidth: 2.5
+                        )
+                        .frame(width: 64, height: 64)
 
-                Button {
-                    triggerVoiceAnimation()
-                } label: {
-                    ZStack {
-                        Circle()
-                            .fill(Color.white.opacity(0.1))
-                            .frame(width: buttonSize, height: buttonSize)
-                            .background(.ultraThinMaterial)
-                            .clipShape(Circle())
-                            .overlay(
-                                Circle().stroke(Color.white.opacity(0.3), lineWidth: 0.5)
-                            )
-                            .shadow(color: Color.cyan.opacity(0.18), radius: 16, x: 0, y: 0)
+                    Circle()
+                        .fill(Color.white.opacity(0.08))
+                        .frame(width: 56, height: 56)
+                        .background(.ultraThinMaterial)
+                        .clipShape(Circle())
 
-                        Image(systemName: "mic.fill")
-                            .font(.du(buttonSize > 72 ? 22 : 20, weight: .semibold))
-                            .foregroundColor(.white)
-                            .shadow(color: Color.cyan.opacity(0.8), radius: 6, x: 0, y: 0)
-                    }
+                    Image(systemName: "mic.fill")
+                        .font(.du(20, weight: .semibold))
+                        .foregroundColor(.white)
+                        .shadow(color: Color.cyan.opacity(0.8), radius: 6)
                 }
-                .buttonStyle(.plain)
             }
-        }
-        .onAppear {
-            startRippleAnimation()
+            .buttonStyle(.plain)
         }
     }
+
+    // MARK: - Animations
 
     private func animatePrompts() {
         for index in 0..<viewModel.suggestedPrompts.count {
@@ -320,31 +334,6 @@ struct AIChatView: View {
                 promptOffsets[index] = 0
                 promptOpacities[index] = 1
             }
-        }
-    }
-
-    private func startRippleAnimation() {
-        withAnimation(.easeOut(duration: 2).repeatForever(autoreverses: false)) {
-            rippleScale = 2.0
-            rippleOpacity = 0.0
-        }
-    }
-
-    private func triggerVoiceAnimation() {
-        let generator = UIImpactFeedbackGenerator(style: .medium)
-        generator.impactOccurred()
-
-        rippleScale = 1.0
-        rippleOpacity = 0.8
-        withAnimation(.easeOut(duration: 0.5)) {
-            rippleScale = 2.5
-            rippleOpacity = 0.0
-        }
-
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
-            self.rippleScale = 1.0
-            self.rippleOpacity = 0.8
-            self.startRippleAnimation()
         }
     }
 }

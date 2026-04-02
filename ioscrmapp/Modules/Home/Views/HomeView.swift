@@ -229,17 +229,12 @@ struct HomeView: View {
             Text(localized(signOutFailureMessageKey))
         }
 
-            // Custom AI Assistant Premium Floating Card Popup
+            // AI Assistant Bottom Sheet
             if isAIChatPresented {
                 GeometryReader { proxy in
-                    let availableWidth = max(proxy.size.width - 32, 240)
-                    let availableHeight = max(proxy.size.height - 48, 320)
-                    let cardWidth = min(availableWidth, 380)
-                    let preferredHeight = min(availableHeight * 0.9, 620)
-                    let cardHeight = min(max(preferredHeight, 420), availableHeight)
+                    let sheetHeight = min(max(proxy.size.height * 0.62, 420), 600)
 
-                    ZStack(alignment: .center) {
-                        // Extreme deep blur background for premium feel
+                    ZStack(alignment: .bottom) {
                         Color.black.opacity(0.3)
                             .background(.ultraThinMaterial)
                             .ignoresSafeArea()
@@ -259,22 +254,16 @@ struct HomeView: View {
                             }
                             handleAIChatNavigation(target)
                         }
-                        .frame(
-                            width: cardWidth,
-                            height: cardHeight
-                        )
-                        .clipShape(RoundedRectangle(cornerRadius: 36, style: .continuous))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 36, style: .continuous)
-                                .stroke(Color.white.opacity(0.2), lineWidth: 0.5)
-                        )
-                        .shadow(color: DUTheme.magenta.opacity(0.2), radius: 40, x: 0, y: 20)
-                        .shadow(color: Color.black.opacity(0.4), radius: 20, x: 0, y: 10)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: sheetHeight + proxy.safeAreaInsets.bottom)
+                        .clipShape(RoundedRectangle(cornerRadius: 32, style: .continuous))
+                        .ignoresSafeArea(edges: .bottom)
+                        .shadow(color: Color(hex: 0x4B30FF).opacity(0.3), radius: 30, x: 0, y: -10)
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
                 .zIndex(100)
-                .transition(.scale(scale: 0.85).combined(with: .opacity))
+                .transition(.move(edge: .bottom).combined(with: .opacity))
             }
         } // End of ZStack body
     }
@@ -385,7 +374,9 @@ struct HomeView: View {
                         placeholderMessage = .key("home.placeholder.search")
                     }
                     AIHeaderAction {
-                        isAIChatPresented = true
+                        withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
+                            isAIChatPresented = true
+                        }
                     }
                     CircleAction(symbol: "bell.fill") {
                         isMessageCenterPresented = true
