@@ -276,8 +276,6 @@ struct HomeView: View {
                 .zIndex(100)
                 .transition(.scale(scale: 0.85).combined(with: .opacity))
             }
-                .transition(.scale(scale: 0.85).combined(with: .opacity))
-            }
         } // End of ZStack body
     }
 
@@ -657,9 +655,9 @@ struct HomeView: View {
     }
 
     private var featuredCarouselSection: some View {
-        // 婵☆偓绲鹃悧鐘诲Υ婢舵劕鐭楁い蹇撳闊剟寮堕埡鍌滄噰闁革綁顥撶槐鎾诲冀閵娿儳鐟╅柡澶屽剱閸犳骞愰柆宥呯闁告繂瀚崑銉╂煥濞戞瑧顬兼い銉ユ瀹曟粓顢旈崶鑸电秺閻庣懓澹婇崰鎾诲焵椤戞寧绁伴柛銈嗙矒瀹曟繈濡搁妸褎鐎梺鍦檸閸樺ジ骞忔导鏉戠閻庯綆浜滈埣銏ゆ煕濮橆厽鍊愭俊缁㈠櫍閺屽牓鎸婃径灞绢唸闁荤喍绀侀幊搴★耿?Home 濠碘槅鍨埀顒冩珪閸嬨儵鎮橀悙鈺佷壕闂備緡鍠撻崝搴ｅ垝瀹ュ棛顩烽柡鍫滅祷閸橆剟鏌?
+        // Featured carousel with a premium card treatment that matches the home dashboard.
         HomeFeatureCarouselView(assetNames: featuredCarouselAssetNames)
-            // 婵炴垶鎸堕崐鎾诲疾閸洖纭€闁挎稑瀚。濠氭⒒閸ワ絽浜鹃柣鐔告磻閼宠泛煤閸ф绠抽柕澶堝妼閸ㄩ亶鏌涢幒鎾寸凡妞ゆ梹鍔欏畷鎶藉Ω閵娧呭骄缂傚倸鍊归敃顐ゆ濠靛鐐婇柣妯诲墯閸斿啴寮堕埡鍌滄噰闁革綁鏀辩粙澶婎吋閸涱厽娅冩俊顐ゅ缁诲倿藝缂佹ɑ娅犻柣鎰絻椤絿鈧綊娼荤粻鎴ｃ亹閹间焦鍋╂繛鍡樺灦椤忋倝鏌?
+            // Keep the carousel visually consistent with the surrounding cards and spacing.
             .padding(.vertical, DUSpacing.lg)
             .overlay(
                 RoundedRectangle(cornerRadius: 20, style: .continuous)
@@ -801,7 +799,7 @@ struct HomeView: View {
         for profile: HomeProfileSection
     ) -> String {
         let networkValue = localized(profile.networkStatus?.textValue ?? HomeDisplayValue.unavailable)
-        return "\(profile.serviceNumber)  闂? \(networkValue)"
+        return "\(profile.serviceNumber)  |  \(networkValue)"
     }
 
     private func showComingSoon(for title: LocalizedTextValue) {
@@ -1044,15 +1042,15 @@ private enum HomeTab: Hashable {
     var emoji: String {
         switch self {
         case .home:
-            return "濡絽鍟紞?
+            return "H"
         case .service:
-            return "濡絽鍟幊?
+            return "S"
         case .mall:
-            return "濡絽鍟壕?
+            return "M"
         case .video:
-            return "濡絽鍟粻?
+            return "V"
         case .me:
-            return "濡絽鍟崳?
+            return "ME"
         }
     }
 
