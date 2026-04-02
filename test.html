@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Assistant 复刻</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: linear-gradient(180deg, #1e40af 0%, #1e1b4b 100%);
+            /* 更新为更贴近原图的颜色 */
+            --accent-blue: #00E5FF;
+            --accent-pink: #FF2180;
+            --accent-purple: #4821FF;
+            --text-white: #ffffff;
+            --text-dim: rgba(255, 255, 255, 0.6);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+            /* 原图背景：深蓝色 */
+            background: linear-gradient(180deg, #1a235a 0%, #171b40 100%);
+        }
+
+        .show-btn {
+            padding: 12px 24px;
+            background: var(--accent-blue);
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+            box-shadow: 0 4px 14px rgba(0, 229, 255, 0.4);
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+            z-index: 10;
+        }
+
+        .show-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* 弹窗层 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(8px);
+            display: none;
+            justify-content: center;
+            align-items: flex-end;
+            z-index: 1000;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        /* AI 卡片样式 */
+        .ai-card {
+            width: 100%;
+            max-width: 450px;
+            /* 高度更接近原图比例 */
+            height: 85vh;
+            /* 渐变背景调整，偏亮蓝色调底部渐变至深紫 */
+            background: linear-gradient(180deg, #184cc2 0%, #1a1e50 40%, #151336 100%);
+            border-top-left-radius: 36px;
+            border-top-right-radius: 36px;
+            position: relative;
+            padding: 24px 20px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        /* 底部紫色网格/曲线背景 - 模拟原图中底部的紫色波浪 */
+        .ai-card::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 50%;
+            background: radial-gradient(circle at 50% 100%, rgba(147, 51, 234, 0.4), transparent 70%);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(100%);
+            }
+
+            to {
+                transform: translateY(0);
+            }
+        }
+
+        /* 顶部按钮 */
+        .header-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 16px;
+            margin-bottom: 24px;
+            z-index: 1;
+            position: relative;
+            padding-top: 10px;
+        }
+
+        .icon-btn {
+            background: transparent;
+            border: none;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            color: rgba(255, 255, 255, 0.8);
+            transition: color 0.2s;
+        }
+
+        .icon-btn:hover {
+            color: white;
+        }
+
+        /* 标题 */
+        .title {
+            color: var(--text-white);
+            font-size: 32px;
+            font-weight: 600;
+            line-height: 1.2;
+            margin-bottom: 40px;
+            max-width: 250px;
+            z-index: 1;
+            position: relative;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .core-container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            z-index: 1;
+            margin-top: -20px;
+        }
+
+        /* 图一中类似三角形涟漪的线条背景 */
+        .orb-mesh {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 400px;
+            height: 400px;
+            opacity: 0.8;
+            pointer-events: none;
+            z-index: 0;
+            background-image: url("data:image/svg+xml,%3Csvg width='400' height='400' viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M200 40 Q300 0, 360 120 T200 360 T40 120 T200 40' fill='none' stroke='rgba(56,189,248,0.2)' stroke-width='1.5'/%3E%3Cpath d='M200 60 Q280 30, 330 130 T200 330 T70 130 T200 60' fill='none' stroke='rgba(72,33,255,0.2)' stroke-width='1.5'/%3E%3Cpath d='M200 80 Q260 60, 300 140 T200 300 T100 140 T200 80' fill='none' stroke='rgba(236,72,153,0.2)' stroke-width='1.5'/%3E%3Cpath d='M200 100 Q240 90, 270 150 T200 270 T130 150 T200 100' fill='none' stroke='rgba(56,189,248,0.2)' stroke-width='1'/%3E%3Cpath d='M200 120 Q220 120, 240 160 T200 240 T160 160 T200 120' fill='none' stroke='rgba(72,33,255,0.2)' stroke-width='1'/%3E%3C/svg%3E");
+            background-position: center;
+            background-repeat: no-repeat;
+            animation: spin-slow 30s linear infinite;
+        }
+
+        @keyframes spin-slow {
+            0% {
+                transform: translate(-50%, -50%) rotate(0deg);
+            }
+
+            100% {
+                transform: translate(-50%, -50%) rotate(360deg);
+            }
+        }
+
+        .orb-outer {
+            width: 170px;
+            height: 170px;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* 增加外围柔和发光和轻微旋转光环 */
+        .orb-outer::before {
+            content: '';
+            position: absolute;
+            top: -15%;
+            left: -15%;
+            right: -15%;
+            bottom: -15%;
+            background: conic-gradient(from 0deg, transparent, rgba(56, 189, 248, 0.4), rgba(236, 72, 153, 0.5), rgba(139, 92, 246, 0.4), transparent);
+            border-radius: 50%;
+            animation: spin-slow 15s linear infinite;
+            z-index: -1;
+            filter: blur(20px);
+            opacity: 0.8;
+        }
+
+        /* 核心球体重绘，liquid glass 材质 */
+        .orb-core {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0900ff 0%, #171b40 100%);
+            position: absolute;
+            top: 0;
+            left: 0;
+            /* 外发光和强烈的内阴影营造玻璃体积感 */
+            box-shadow:
+                inset 15px 15px 30px rgba(255, 255, 255, 0.6),
+                /* 顶部左侧超亮高光 */
+                inset -20px -20px 40px rgba(0, 0, 0, 0.8),
+                /* 底部暗灰深度 */
+                inset -10px 10px 30px rgba(236, 72, 153, 0.7),
+                /* 粉色内部折射 */
+                inset 10px -10px 30px rgba(0, 229, 255, 0.8),
+                /* 青色内部折射 */
+                0 0 40px rgba(0, 229, 255, 0.4),
+                /* 外层青色光晕 */
+                0 0 80px rgba(139, 92, 246, 0.3);
+            /* 外层紫色光晕 */
+            border-radius: 46% 54% 50% 50% / 46% 50% 50% 54%;
+            animation: blob-float 8s infinite ease-in-out;
+            overflow: hidden;
+            /* 裁剪内部流体 */
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            /* 边缘高光线 */
+        }
+
+        /* 内部流动的液体色块公用样式 */
+        .orb-fluid {
+            position: absolute;
+            width: 150%;
+            height: 150%;
+            top: -25%;
+            left: -25%;
+            filter: blur(15px);
+            mix-blend-mode: screen;
+            /* 叠加提亮 */
+        }
+
+        .orb-fluid-1 {
+            background: radial-gradient(circle at 40% 40%, rgba(0, 229, 255, 0.9) 0%, rgba(0, 229, 255, 0) 60%);
+            animation: fluid-spin 10s linear infinite;
+        }
+
+        .orb-fluid-2 {
+            background: radial-gradient(circle at 60% 60%, rgba(236, 72, 153, 0.8) 0%, rgba(236, 72, 153, 0) 60%);
+            animation: fluid-spin 13s linear infinite reverse;
+        }
+
+        .orb-fluid-3 {
+            background: radial-gradient(circle at 50% 20%, rgba(255, 107, 107, 0.95) 0%, rgba(255, 107, 107, 0) 50%);
+            animation: fluid-spin 8s ease-in-out infinite alternate;
+        }
+
+        /* 表面静态玻璃反射高光 */
+        .glass-reflection {
+            position: absolute;
+            top: 5%;
+            left: 15%;
+            width: 45%;
+            height: 35%;
+            background: linear-gradient(160deg, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0) 100%);
+            border-radius: 40% 60% 60% 40% / 50% 50% 50% 50%;
+            transform: rotate(-25deg);
+            pointer-events: none;
+            mix-blend-mode: overlay;
+        }
+
+        @keyframes fluid-spin {
+            0% {
+                transform: rotate(0deg) scale(1) translate(0, 0);
+            }
+
+            33% {
+                transform: rotate(120deg) scale(1.1) translate(15px, -15px);
+            }
+
+            66% {
+                transform: rotate(240deg) scale(0.9) translate(-15px, 15px);
+            }
+
+            100% {
+                transform: rotate(360deg) scale(1) translate(0, 0);
+            }
+        }
+
+        @keyframes blob-float {
+
+            0%,
+            100% {
+                transform: translate(0, 0) rotate(0deg) scale(1);
+                border-radius: 46% 54% 50% 50% / 46% 50% 50% 54%;
+            }
+
+            33% {
+                transform: translate(0, -2%) rotate(5deg) scale(1.02);
+                border-radius: 54% 46% 52% 48% / 50% 54% 46% 50%;
+            }
+
+            66% {
+                transform: translate(-50%, -48%) rotate(-5deg) scale(0.98);
+                border-radius: 48% 52% 48% 52% / 54% 46% 50% 46%;
+            }
+        }
+
+        /* 散布提示词更贴近图一 */
+        .prompt-tag {
+            position: absolute;
+            padding: 8px 16px;
+            /* 边框是非常细的白色半透明，背景带一点点光晕 */
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 24px;
+            color: white;
+            font-size: 14px;
+            font-weight: 400;
+            letter-spacing: 0.3px;
+            white-space: nowrap;
+            /* 仔细看图一，边框是一圈细线 */
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s;
+            z-index: 10;
+        }
+
+        .prompt-tag:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: scale(1.05);
+        }
+
+        /* 调整位置匹配图一 */
+        .tag-1 {
+            top: -20px;
+            left: -140px;
+        }
+
+        /* Book a flight - 在左上 */
+        .tag-2 {
+            bottom: -20px;
+            left: -110px;
+        }
+
+        /* Order a meal package - 在左下 */
+        .tag-3 {
+            top: 40px;
+            right: -150px;
+        }
+
+        /* Check the weather - 在右侧中间 */
+
+        /* 底部语音区域 */
+        .footer {
+            margin-top: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            padding-bottom: 30px;
+            z-index: 2;
+            position: relative;
+        }
+
+        .hold-text {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 14px;
+            font-weight: 300;
+        }
+
+        /* 图一的麦克风按钮是大圆环，不是实心边框 */
+        .mic-btn-outer {
+            width: 76px;
+            height: 76px;
+            border-radius: 50%;
+            /* 细圆环渐变模拟 */
+            background: transparent;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .mic-btn-outer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border-radius: 50%;
+            padding: 3px;
+            /* border thickness */
+            /* 圆环渐变色：橙 - 粉 - 紫 - 青 - 绿 - 黄 */
+            background: conic-gradient(from 0deg, #38bdf8, #818cf8, #c084fc, #f472b6, #fb923c, #fcd34d, #34d399, #38bdf8);
+            -webkit-mask:
+                linear-gradient(#fff 0 0) content-box,
+                linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            animation: rotate-gradient 4s linear infinite;
+        }
+
+        @keyframes rotate-gradient {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .mic-btn-inner {
+            width: 58px;
+            height: 58px;
+            background: rgba(30, 27, 75, 0.4);
+            backdrop-filter: blur(4px);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: none;
+            color: white;
+            cursor: pointer;
+            z-index: 2;
+        }
+
+        .mic-icon {
+            width: 26px;
+            height: 26px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2.5;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        /* 外圈光晕 */
+        .mic-btn-outer::after {
+            content: '';
+            position: absolute;
+            width: 120%;
+            height: 120%;
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 0;
+        }
+
+        .show-offers .title {
+            opacity: 0;
+            transform: translateY(-20px);
+            pointer-events: none;
+        }
+
+        .offers-view {
+            position: absolute;
+            top: 60px;
+            left: 0;
+            width: 100%;
+            /* 将原本的 180px 加大到 220px，彻底解决遮挡问题 */
+            height: calc(100% - 220px);
+            padding: 0 20px;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+            pointer-events: none;
+            z-index: 5;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .show-offers .offers-view {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: all;
+        }
+
+        .show-offers .core-container {
+            opacity: 0;
+            transform: scale(0.85);
+            /* 稍微大一点，作为背景 */
+            filter: blur(15px);
+            pointer-events: none;
+        }
+
+        .offers-title {
+            color: var(--accent-blue);
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .offer-list {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            /* 底部多留一点内边距，确保最后一张卡片能完整滚动上来 */
+            padding-bottom: 40px;
+
+            /* 核心视觉优化：上下边缘渐隐，告别生硬裁剪 */
+            -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 5%, black 90%, transparent 100%);
+            mask-image: linear-gradient(to bottom, transparent 0%, black 5%, black 90%, transparent 100%);
+        }
+
+        /* 3. 新增：深度定制滚动条样式 */
+        .offer-list::-webkit-scrollbar {
+            width: 4px;
+            /* 极细设计 */
+        }
+
+        .offer-list::-webkit-scrollbar-track {
+            background: transparent;
+            /* 轨道全透明 */
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+
+        .offer-list::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.15);
+            /* 半透明指示器 */
+            border-radius: 10px;
+        }
+
+        .offer-list::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.4);
+            /* 交互反馈 */
+        }
+
+        .offer-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border-radius: 24px;
+            padding: 22px;
+            /* 增加内边距 */
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            min-height: 90px;
+        }
+
+        .offer-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
+            transform: translateX(-100%);
+            transition: transform 0.6s;
+        }
+
+        .offer-card:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-3px);
+            border-color: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+        }
+
+        .offer-card:hover::after {
+            transform: translateX(100%);
+        }
+
+        .offer-info h3 {
+            color: white;
+            font-size: 17px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .offer-details {
+            display: flex;
+            gap: 12px;
+            font-size: 13px;
+            color: var(--text-dim);
+        }
+
+        .offer-price-box {
+            text-align: right;
+        }
+
+        .offer-price {
+            display: block;
+            color: var(--accent-blue);
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .offer-period {
+            font-size: 11px;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .back-btn {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-dim);
+            padding: 8px 16px;
+            border-radius: 12px;
+            font-size: 13px;
+            cursor: pointer;
+            margin-bottom: 24px;
+            width: fit-content;
+            display: none;
+            transition: all 0.2s;
+            backdrop-filter: blur(10px);
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+        }
+
+        .show-offers .back-btn {
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+
+    <button class="show-btn" id="openBtn">Preview AI Assistant</button>
+
+    <div class="modal-overlay" id="overlay">
+        <div class="ai-card">
+
+            <div class="header-actions">
+                <!-- 对话图标 (更简洁的矩形对话框) -->
+                <button class="icon-btn">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path
+                            d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z">
+                        </path>
+                    </svg>
+                </button>
+                <!-- 关闭图标 -->
+                <button class="icon-btn" id="closeBtn">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+
+            <h1 class="title">How may I help<br>you today?</h1>
+
+            <div class="core-container">
+                <div class="orb-mesh"></div>
+                <div class="orb-outer">
+                    <div class="orb-core">
+                        <!-- 内部流体色块，制造液体流动的高级感 -->
+                        <div class="orb-fluid orb-fluid-1"></div>
+                        <div class="orb-fluid orb-fluid-2"></div>
+                        <div class="orb-fluid orb-fluid-3"></div>
+                        <!-- 静态极光玻璃反射高光片 -->
+                        <div class="glass-reflection"></div>
+                    </div>
+                    <!-- 提示标签：位置、样式已调整 -->
+                    <div class="prompt-tag tag-1">Book a flight</div>
+                    <div class="prompt-tag tag-2" id="offerTrigger">Refill data plan</div>
+                    <div class="prompt-tag tag-3">Check the weather</div>
+                </div>
+            </div>
+
+            <!-- 新增：订购 Offer 场景视图 -->
+            <div class="offers-view">
+                <button class="back-btn" id="backToOrb">← DASHBOARD</button>
+                <div class="offers-title">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path
+                            d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z">
+                        </path>
+                    </svg>
+                    Recommended for You
+                </div>
+                <div class="offer-list">
+                    <div class="offer-card">
+                        <div class="offer-info">
+                            <h3>Data Speed Pack Gold</h3>
+                            <div class="offer-details">
+                                <span>100GB Data</span>
+                                <span>Next Month</span>
+                            </div>
+                        </div>
+                        <div class="offer-price-box">
+                            <span class="offer-price">¥49.00</span>
+                            <span class="offer-period">Per Month</span>
+                        </div>
+                    </div>
+                    <div class="offer-card">
+                        <div class="offer-info">
+                            <h3>Smooth Flow Plus</h3>
+                            <div class="offer-details">
+                                <span>50GB Data</span>
+                                <span>Immediately</span>
+                            </div>
+                        </div>
+                        <div class="offer-price-box">
+                            <span class="offer-price">¥29.00</span>
+                            <span class="offer-period">Per Month</span>
+                        </div>
+                    </div>
+                    <div class="offer-card">
+                        <div class="offer-info">
+                            <h3>Weekend Unlimited</h3>
+                            <div class="offer-details">
+                                <span>Unlimited Data</span>
+                                <span>Sat - Sun</span>
+                            </div>
+                        </div>
+                        <div class="offer-price-box">
+                            <span class="offer-price">¥9.90</span>
+                            <span class="offer-period">Per Weekend</span>
+                        </div>
+                    </div>
+                    <div class="offer-card">
+                        <div class="offer-info">
+                            <h3>Global Roaming</h3>
+                            <div class="offer-details">
+                                <span>10GB Global</span>
+                                <span>7 Days</span>
+                            </div>
+                        </div>
+                        <div class="offer-price-box">
+                            <span class="offer-price">¥88.00</span>
+                            <span class="offer-period">Once</span>
+                        </div>
+                    </div>
+                    <div class="offer-card">
+                        <div class="offer-info">
+                            <h3>Night Owl Pack</h3>
+                            <div class="offer-details">
+                                <span>30GB Data</span>
+                                <span>23:00 - 07:00</span>
+                            </div>
+                        </div>
+                        <div class="offer-price-box">
+                            <span class="offer-price">¥5.00</span>
+                            <span class="offer-period">Per Month</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer">
+                <p class="hold-text">Hold to Talk ~</p>
+                <div class="mic-btn-outer">
+                    <button class="mic-btn-inner">
+                        <svg class="mic-icon" viewBox="0 0 24 24">
+                            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                            <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                            <line x1="12" y1="19" x2="12" y2="23"></line>
+                            <line x1="8" y1="23" x2="16" y2="23"></line>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const openBtn = document.getElementById('openBtn');
+        const closeBtn = document.getElementById('closeBtn');
+        const overlay = document.getElementById('overlay');
+
+        // 默认直接打开方便预览
+        setTimeout(() => {
+            overlay.classList.add('active');
+        }, 300);
+
+        openBtn.addEventListener('click', () => {
+            overlay.classList.add('active');
+        });
+
+        closeBtn.addEventListener('click', () => {
+            overlay.classList.remove('active');
+        });
+
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) {
+                overlay.classList.remove('active');
+                card.classList.remove('show-offers'); // 关闭弹窗时重置状态
+            }
+        });
+
+        // Offer 场景交互
+        const offerTrigger = document.getElementById('offerTrigger');
+        const backToOrb = document.getElementById('backToOrb');
+        const card = document.querySelector('.ai-card');
+
+        offerTrigger.addEventListener('click', () => {
+            // 模拟 AI 处理动画
+            offerTrigger.style.borderColor = 'var(--accent-blue)';
+            offerTrigger.innerHTML = 'Analyzing your usage...';
+
+            setTimeout(() => {
+                card.classList.add('show-offers');
+                offerTrigger.innerHTML = 'Refill data plan';
+                offerTrigger.style.borderColor = 'rgba(255, 255, 255, 0.3)';
+            }, 800);
+        });
+
+        backToOrb.addEventListener('click', () => {
+            card.classList.remove('show-offers');
+        });
+    </script>
+</body>
+
+</html>
