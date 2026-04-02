@@ -54,7 +54,7 @@ struct AIChatView: View {
                 
                 // Welcome Text at Top
                 VStack(alignment: .leading, spacing: 8) {
-                    Text(localized("How may I help\nyou today?").replacingOccurrences(of: "\\n", with: "\n"))
+                    Text(viewModel.title.replacingOccurrences(of: "\\n", with: "\n"))
                         .font(.du(34, weight: .semibold))
                         .foregroundColor(.white)
                         .multilineTextAlignment(.leading)
@@ -221,7 +221,7 @@ struct AIChatView: View {
         Button {
             viewModel.sendSuggestedPrompt(text)
         } label: {
-            Text(localized(text))
+            Text(text)
                 .font(.du(13, weight: .medium))
                 .foregroundColor(.white)
                 .padding(.horizontal, 16)
@@ -239,7 +239,7 @@ struct AIChatView: View {
 
     private var voiceActionBar: some View {
         VStack(spacing: DUSpacing.sm) {
-            Text(localized("Hold to Talk ~"))
+            Text("Hold to Talk ~")
                 .font(.du(14, weight: .regular))
                 .foregroundColor(.white.opacity(0.75))
             
