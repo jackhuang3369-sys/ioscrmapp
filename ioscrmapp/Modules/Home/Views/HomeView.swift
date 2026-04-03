@@ -30,6 +30,7 @@ struct HomeView: View {
     @State private var isRechargePresented = false
     @State private var isOffersPresented = false
     @State private var isTicketsPresented = false
+    @State private var isWeatherPresented = false
     @State private var requestedVideoID: String?
     @State private var isSigningOut = false
     @State private var isCreditLimitExpanded = false
@@ -53,13 +54,18 @@ struct HomeView: View {
 
     private let featuredCarouselItems: [HomeFeatureCarouselItem] = [
         .init(
-            assetName: "HomeCarouselWeather3D",
+            assetName: "HomeCarouselTelecomEco",
             title: .key("home.carousel.telecomEco")
         ),
         .init(
-            assetName: "HomeCarouselTelecomEco",
-            title: .key("home.carousel.weather3D"),
+            assetName: "HomeCarouselWeather3D",
+            title: .key("home.carousel.movie3D"),
             action: .tickets
+        ),
+        .init(
+            assetName: "HomeCarouselWeatherForecast",
+            title: .key("home.carousel.weatherForecast"),
+            action: .weather
         ),
         .init(
             assetName: "HomeCarouselIPhone17",
@@ -149,6 +155,9 @@ struct HomeView: View {
                 }
                 .fullScreenCover(isPresented: $isTicketsPresented) {
                     TicketsModalContainerView(ticketsService: ticketsService)
+                }
+                .fullScreenCover(isPresented: $isWeatherPresented) {
+                    WeatherMainView()
                 }
                 .confirmationDialog(
                     localized("me.signOut.failure.title"),
@@ -1021,6 +1030,8 @@ struct HomeView: View {
         case let .videoDetail(videoID):
             selectedTab = .video
             requestedVideoID = videoID
+        case .weather:
+            isWeatherPresented = true
         }
     }
 
