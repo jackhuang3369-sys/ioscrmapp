@@ -134,21 +134,24 @@ struct AIChatView: View {
 
     private var orbMesh: some View {
         ZStack {
-            // 对标 HTML SVG 路径的三角形涟漪线条背景
-            ForEach(0..<5, id: \.self) { i in
-                TriangleRipplePath()
+            // 对标 HTML 图二中的心形/折叠涟漪背景
+            ForEach(0..<6, id: \.self) { i in
+                HeartRipplePath()
                     .stroke(
-                        [Color.cyan, Color.purple, Color.pink, Color.cyan, Color.purple][i % 5].opacity(0.2),
-                        lineWidth: i < 3 ? 1.5 : 1.0
+                        LinearGradient(colors: [
+                            Color(hex: 0x38bdf8).opacity(0.4), 
+                            Color(hex: 0x4821FF).opacity(0.3), 
+                            Color(hex: 0xEC4899).opacity(0.3)
+                        ], startPoint: .topLeading, endPoint: .bottomTrailing),
+                        lineWidth: 1.2
                     )
-                    .frame(width: 400, height: 400)
-                    .scaleEffect(1.0 - CGFloat(i) * 0.15)
-                    .rotationEffect(.degrees(Double(i) * 15))
+                    .frame(width: 420, height: 420)
+                    .scaleEffect(0.9 + CGFloat(i) * 0.1)
+                    .rotationEffect(.degrees(Double(i) * 12 + coreRotation * 0.1))
             }
         }
-        .frame(width: 400, height: 400)
-        .rotationEffect(.degrees(coreRotation * 0.2))
-        .opacity(0.8)
+        .frame(width: 420, height: 420)
+        .opacity(0.7)
     }
 
     // MARK: - Header
@@ -170,9 +173,17 @@ struct AIChatView: View {
             
             Spacer()
             
+            Button { /* 全屏逻辑 */ } label: {
+                Image(systemName: "arrow.up.left.and.arrow.down.right")
+                    .font(.system(size: 16, weight: .regular))
+                    .foregroundColor(.white.opacity(0.8))
+                    .frame(width: 32, height: 32)
+            }
+            .buttonStyle(.plain)
+
             Button { viewModel.requestNewChat() } label: {
-                Image(systemName: "message")
-                    .font(.du(18, weight: .regular))
+                Image(systemName: "bubble.left") // 对标 HTML 的对话图标
+                    .font(.system(size: 18, weight: .regular))
                     .foregroundColor(.white.opacity(0.8))
                     .frame(width: 32, height: 32)
             }
@@ -180,7 +191,7 @@ struct AIChatView: View {
 
             Button { onNavigate(.home) } label: {
                 Image(systemName: "xmark")
-                    .font(.du(20, weight: .regular))
+                    .font(.system(size: 20, weight: .regular))
                     .foregroundColor(.white.opacity(0.8))
                     .frame(width: 32, height: 32)
             }
@@ -193,60 +204,63 @@ struct AIChatView: View {
     // MARK: - AI Core Orb
 
     private func aiCoreOrb(coreSize: CGFloat) -> some View {
-        let auraSize = coreSize * 1.8
+        let auraSize = coreSize * 1.9
         
         return ZStack {
-            // 背景慢速旋转的多彩光环 (Aura) - 对标 HTML conic-gradient
+            // 背景慢速旋转的多彩光晕 - 对标 HTML 图二
             Circle()
                 .fill(
                     AngularGradient(
-                        colors: [.clear, Color.cyan.opacity(0.4), Color.pink.opacity(0.5), Color.purple.opacity(0.4), .clear],
+                        colors: [.clear, Color(hex: 0x38bdf8).opacity(0.5), Color(hex: 0xf472b6).opacity(0.6), Color(hex: 0x818cf8).opacity(0.5), .clear],
                         center: .center,
                         startAngle: .degrees(0),
                         endAngle: .degrees(360)
                     )
                 )
                 .frame(width: auraSize, height: auraSize)
-                .blur(radius: 25)
-                .rotationEffect(.degrees(coreRotation * 0.5))
+                .blur(radius: 30)
+                .rotationEffect(.degrees(coreRotation * 0.4))
             
             // 液体玻璃核心极为关键的光影合成
             ZStack {
-                // 深邃底部
+                // 深邃底部 - 改用更亮的蓝紫色对标图二
                 FluidBlobShape(offset: isAnimatingCore ? 1 : 0)
                     .fill(
                         LinearGradient(
-                            colors: [Color(hex: 0x0900FF), Color(hex: 0x171B40)],
+                            colors: [Color(hex: 0x1E40AF), Color(hex: 0x1E1B4B)],
                             startPoint: .topLeading, endPoint: .bottomTrailing
                         )
                     )
 
-                // 内部流动液体 (Orb Fluid)
+                // 内部流动液体 (Orb Fluid) - 增加亮度
                 OrbInternalFluid(isAnimating: isAnimatingCore)
                     .mask(FluidBlobShape(offset: isAnimatingCore ? 1 : 0))
                 
-                // 表面静态反射
+                // 完美的玻璃体积感：多层漫反射和折射叠加
+                Group {
+                    // 底部粉紫色晕光 (Refraction)
+                    RadialGradient(colors: [Color(hex: 0xEC4899).opacity(0.6), .clear], center: .bottomTrailing, startRadius: 0, endRadius: coreSize * 0.8)
+                    
+                    // 中间青色充盈感
+                    RadialGradient(colors: [Color(hex: 0x22D3EE).opacity(0.4), .clear], center: .center, startRadius: 0, endRadius: coreSize * 0.7)
+                }
+                .mask(FluidBlobShape(offset: isAnimatingCore ? 1 : 0))
+                .blendMode(.plusLighter)
+
+                // 核心表面极亮高亮 (Primary Highlight) - 对标图二左上
                 GlassReflection()
-                    .opacity(0.6)
+                    .scaleEffect(1.2)
+                    .offset(x: -coreSize * 0.05, y: -coreSize * 0.05)
                 
-                // 完美的玻璃体积感：多层内阴影模拟
+                // 物理微光边缘
                 FluidBlobShape(offset: isAnimatingCore ? 1 : 0)
-                    .stroke(Color.white.opacity(0.8), lineWidth: 10)
-                    .blur(radius: 8)
-                    .offset(x: -8, y: -8)
-                    .mask(FluidBlobShape(offset: isAnimatingCore ? 1 : 0))
-                
-                FluidBlobShape(offset: isAnimatingCore ? 1 : 0)
-                    .stroke(Color.black.opacity(0.9), lineWidth: 15)
-                    .blur(radius: 12)
-                    .offset(x: 10, y: 10)
-                    .mask(FluidBlobShape(offset: isAnimatingCore ? 1 : 0))
+                    .stroke(Color.white.opacity(0.4), lineWidth: 0.5)
             }
             .frame(width: coreSize, height: coreSize)
-            .shadow(color: Color.cyan.opacity(0.4), radius: 30, x: 0, y: 0)
-            .shadow(color: Color.purple.opacity(0.3), radius: 50, x: 0, y: 0)
-            .scaleEffect(isAnimatingCore ? 1.03 : 0.97)
-            .animation(.easeInOut(duration: 5).repeatForever(autoreverses: true), value: isAnimatingCore)
+            .shadow(color: Color(hex: 0x38bdf8).opacity(0.5), radius: 40, x: 0, y: 0)
+            .shadow(color: Color(hex: 0xEC4899).opacity(0.3), radius: 60, x: 0, y: 0)
+            .scaleEffect(isAnimatingCore ? 1.02 : 0.98)
+            .animation(.easeInOut(duration: 6).repeatForever(autoreverses: true), value: isAnimatingCore)
         }
     }
 
@@ -254,20 +268,20 @@ struct AIChatView: View {
 
     private func scatteredPrompts(coreSize: CGFloat) -> some View {
         ZStack {
-            // tag-1: Book a flight (左上) - 对标 HTML tag-1: top -20, left -140
+            // tag-1: Book a flight (左上) - 严格复刻图二位置
             if let t = viewModel.suggestedPrompts[safe: 0] {
                 promptCapsule(t, index: 0)
-                    .offset(x: -coreSize * 0.95, y: -coreSize * 0.8)
+                    .offset(x: -coreSize * 1.05, y: -coreSize * 0.75)
             }
-            // tag-2: Order a meal package (左下) - 对标 HTML tag-2: bottom -20, left -110
+            // tag-2: Order a meal package (左下) - 严格复刻图二位置
             if let t = viewModel.suggestedPrompts[safe: 1] {
                 promptCapsule(t, index: 1)
-                    .offset(x: -coreSize * 0.85, y: coreSize * 0.8)
+                    .offset(x: -coreSize * 0.65, y: coreSize * 0.9)
             }
-            // tag-3: Check the weather (右中) - 对标 HTML tag-3: top 40, right -150
+            // tag-3: Check the weather (右中) - 严格复刻图二位置
             if let t = viewModel.suggestedPrompts[safe: 2] {
                 promptCapsule(t, index: 2)
-                    .offset(x: coreSize * 1.0, y: coreSize * 0.3)
+                    .offset(x: coreSize * 1.05, y: coreSize * 0.25)
             }
         }
     }
@@ -629,7 +643,6 @@ struct AIChatView: View {
     }
 }
 
-}
 
 extension Array {
     subscript(safe index: Int) -> Element? {
@@ -714,32 +727,46 @@ struct GlassReflection: View {
             let w = geo.size.width
             let h = geo.size.height
             
+            // 更大、更亮的顶部月牙反射，对标图二
             Path { path in
-                path.move(to: CGPoint(x: w * 0.15, y: h * 0.2))
-                path.addQuadCurve(to: CGPoint(x: w * 0.6, y: h * 0.1), control: CGPoint(x: w * 0.35, y: h * 0.05))
-                path.addQuadCurve(to: CGPoint(x: w * 0.15, y: h * 0.2), control: CGPoint(x: w * 0.2, y: h * 0.15))
+                path.move(to: CGPoint(x: w * 0.1, y: h * 0.3))
+                path.addQuadCurve(to: CGPoint(x: w * 0.6, y: h * 0.15), control: CGPoint(x: w * 0.3, y: h * 0.05))
+                path.addQuadCurve(to: CGPoint(x: w * 0.1, y: h * 0.3), control: CGPoint(x: w * 0.25, y: h * 0.25))
             }
-            .fill(LinearGradient(colors: [.white.opacity(0.8), .clear], startPoint: .top, endPoint: .bottom))
-            .rotationEffect(.degrees(-25))
-            .blendMode(.overlay)
+            .fill(
+                LinearGradient(
+                    colors: [.white, .white.opacity(0.1)], 
+                    startPoint: .topLeading, 
+                    endPoint: .bottomTrailing
+                )
+            )
+            .blur(radius: 2)
+            .rotationEffect(.degrees(-15))
+            .blendMode(.plusLighter)
         }
     }
 }
 
-struct TriangleRipplePath: Shape {
+struct HeartRipplePath: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         let w = rect.width
         let h = rect.height
-        let center = CGPoint(x: w/2, y: h/2)
         
-        // 模拟 HTML 中的三角形波纹路径
-        // M200 40 Q300 0, 360 120 T200 360 T40 120 T200 40
-        path.move(to: CGPoint(x: w * 0.5, y: h * 0.1))
-        path.addQuadCurve(to: CGPoint(x: w * 0.9, y: h * 0.3), control: CGPoint(x: w * 0.75, y: 0))
-        path.addCurve(to: CGPoint(x: w * 0.5, y: h * 0.9), control1: CGPoint(x: w, y: h * 0.6), control2: CGPoint(x: w * 0.7, y: h))
-        path.addCurve(to: CGPoint(x: w * 0.1, y: h * 0.3), control1: CGPoint(x: w * 0.3, y: h), control2: CGPoint(x: 0, y: h * 0.6))
-        path.addQuadCurve(to: CGPoint(x: w * 0.5, y: h * 0.1), control: CGPoint(x: w * 0.25, y: 0))
+        // 基于图二中那种具有特定褶皱感的有机环线 (类似心形或折叠纸感)
+        path.move(to: CGPoint(x: w * 0.5, y: h * 0.25))
+        path.addCurve(to: CGPoint(x: w * 0.8, y: h * 0.45), 
+                      control1: CGPoint(x: w * 0.7, y: h * 0.15), 
+                      control2: CGPoint(x: w * 0.9, y: h * 0.35))
+        path.addCurve(to: CGPoint(x: w * 0.5, y: h * 0.85), 
+                      control1: CGPoint(x: w * 0.7, y: h * 0.65), 
+                      control2: CGPoint(x: w * 0.6, y: h * 0.8))
+        path.addCurve(to: CGPoint(x: w * 0.2, y: h * 0.45), 
+                      control1: CGPoint(x: w * 0.4, y: h * 0.8), 
+                      control2: CGPoint(x: w * 0.3, y: h * 0.65))
+        path.addCurve(to: CGPoint(x: w * 0.5, y: h * 0.25), 
+                      control1: CGPoint(x: w * 0.1, y: h * 0.35), 
+                      control2: CGPoint(x: w * 0.3, y: h * 0.15))
         
         return path
     }
