@@ -10,6 +10,7 @@ struct HomeFeatureCarouselView: View {
     @EnvironmentObject private var languageStore: AppLanguageStore
 
     let items: [HomeFeatureCarouselItem]
+    let onSelectItem: (HomeFeatureCarouselItem) -> Void
 
     @State private var settledIndex = 0
     @State private var dragTranslation: CGFloat = 0
@@ -39,6 +40,11 @@ struct HomeFeatureCarouselView: View {
                 .simultaneousGesture(
                     dragGesture(metrics: metrics)
                 )
+                .onTapGesture {
+                    if let selectedItem {
+                        onSelectItem(selectedItem)
+                    }
+                }
             }
             .frame(height: 226)
 
@@ -48,7 +54,7 @@ struct HomeFeatureCarouselView: View {
                     .foregroundColor(DUTheme.ink)
                     .multilineTextAlignment(.center)
                     .lineLimit(1)
-                    .minimumScaleFactor(0.72)
+                    .truncationMode(.tail)
                     .padding(.top, 14)
                     .padding(.horizontal, 20)
             }
@@ -404,23 +410,26 @@ struct HomeFeatureCarouselView_Previews: PreviewProvider {
         HomeFeatureCarouselView(
             items: [
                 .init(
-                    assetName: "HomeCarouselGreenHills",
-                    title: .literal("SPITI VALLEY, HIMACHAL")
+                    assetName: "HomeCarouselWeather3D",
+                    title: .literal("One DU ecosystem for every screen")
                 ),
                 .init(
-                    assetName: "HomeCarouselGoldenValley",
-                    title: .literal("GOLDEN VALLEY, SUNSET TRAIL")
+                    assetName: "HomeCarouselTelecomEco",
+                    title: .literal("3D weather, your day at a glance"),
+                    action: .tickets
                 ),
                 .init(
-                    assetName: "HomeCarouselSnowMountains",
-                    title: .literal("SNOW MOUNTAINS, QUIET RIDGE")
+                    assetName: "HomeCarouselIPhone17",
+                    title: .literal("iPhone 17 Slim, lighter than ever"),
+                    action: .mall
                 ),
                 .init(
-                    assetName: "HomeCarouselCliffDawn",
-                    title: .literal("CLIFF DAWN, COAST VIEW")
+                    assetName: "HomeCarouselSpiderMovie",
+                    title: .literal("SPIDER-MAN: BRAND NEW DAY"),
+                    action: .videoDetail("spiderman_2026")
                 ),
             ]
-        )
+        ) { _ in }
         .padding()
         .background(DUTheme.background)
         .previewLayout(.sizeThatFits)

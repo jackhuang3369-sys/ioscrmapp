@@ -943,7 +943,7 @@ private enum CRMReferenceRemoteResource {
         "\(baseURL)/audios/\(fileName)"
     }
 
-    static let spidermanCoverURL = "\(baseURL)"
+    static let spidermanCoverURL = "\(baseURL)/videos/f5126fdc84b8248c7f7c3b448e68fde6.jpeg"
 }
 
 private enum CRMReferenceMockData {

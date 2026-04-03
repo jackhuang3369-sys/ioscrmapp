@@ -147,12 +147,30 @@ struct HomeUsageSection: Equatable, Sendable {
     let inlineMessage: LocalizedTextValue?
 }
 
+enum HomeFeatureCarouselAction: Equatable, Sendable {
+    case none
+    case tickets
+    case mall
+    case videoDetail(String)
+}
+
 struct HomeFeatureCarouselItem: Identifiable, Equatable, Sendable {
     let assetName: String
     let title: LocalizedTextValue
+    let action: HomeFeatureCarouselAction
 
     var id: String {
         assetName
+    }
+
+    init(
+        assetName: String,
+        title: LocalizedTextValue,
+        action: HomeFeatureCarouselAction = .none
+    ) {
+        self.assetName = assetName
+        self.title = title
+        self.action = action
     }
 }
 

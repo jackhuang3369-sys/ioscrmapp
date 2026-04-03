@@ -5,10 +5,13 @@ struct VideoHomeView: View {
     @EnvironmentObject private var languageStore: AppLanguageStore
 
     @ObservedObject var viewModel: VideoViewModel
+    @Binding var requestedVideoID: String?
+    let isActive: Bool
 
     @State private var isSearchPresented = false
     @State private var selectedVideoID: String?
     @State private var selectedCarouselIndex = 0
+    @State private var queuedRequestedVideoID: String?
 
     private let timer = Timer.publish(every: 3, on: .main, in: .common).autoconnect()
 
@@ -89,6 +92,24 @@ struct VideoHomeView: View {
         }
         .onChange(of: viewModel.carouselItems.count) { _ in
             selectedCarouselIndex = 0
+        }
+        .onAppear {
+            queueRequestedVideoIDIfNeeded()
+            consumeRequestedVideoIDIfNeeded()
+        }
+        .onChange(of: isActive) { value in
+            guard value else {
+                return
+            }
+
+            consumeRequestedVideoIDIfNeeded()
+        }
+        .onChange(of: requestedVideoID) { _ in
+            queueRequestedVideoIDIfNeeded()
+            consumeRequestedVideoIDIfNeeded()
+        }
+        .onChange(of: viewModel.screenState) { _ in
+            consumeRequestedVideoIDIfNeeded()
         }
     }
 
@@ -401,6 +422,29 @@ struct VideoHomeView: View {
         if let videoID = await viewModel.handleSelection(of: content) {
             selectedVideoID = videoID
         }
+    }
+
+    private func queueRequestedVideoIDIfNeeded() {
+        guard let requestedVideoID, !requestedVideoID.isEmpty else {
+            return
+        }
+
+        queuedRequestedVideoID = requestedVideoID
+    }
+
+    private func consumeRequestedVideoIDIfNeeded() {
+        guard isActive, viewModel.screenState == .loaded else {
+            return
+        }
+
+        let resolvedVideoID = queuedRequestedVideoID ?? requestedVideoID
+        guard let resolvedVideoID, !resolvedVideoID.isEmpty else {
+            return
+        }
+
+        selectedVideoID = resolvedVideoID
+        queuedRequestedVideoID = nil
+        self.requestedVideoID = nil
     }
 }
 
