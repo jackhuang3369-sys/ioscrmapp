@@ -124,7 +124,6 @@ struct AIChatView: View {
 
             homeHeroSection(coreSize: coreSize, layout: layout)
                 .frame(width: layout.heroStageWidth, height: layout.heroHeight)
-                .padding(.top, layout.heroTopPadding)
                 .frame(maxWidth: .infinity)
 
             Spacer(minLength: 0)
@@ -134,7 +133,6 @@ struct AIChatView: View {
                 .padding(.bottom, layout.bottomPadding)
                 .frame(maxWidth: .infinity)
         }
-        .padding(.top, layout.topPadding)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
     }
 
