@@ -659,94 +659,155 @@ struct AIChatView: View {
     }
 
     private func offerDetailsLayer(offer: AIChatOffer, hPad: CGFloat, bottomPad: CGFloat) -> some View {
-        VStack(alignment: .leading, spacing: 0) {
-            headerPlaceholder
-            
-            ScrollView {
-                VStack(alignment: .leading, spacing: 20) {
-                    // Selected Mini Card with Checkmark
-                    ZStack(alignment: .topTrailing) {
-                        offerCard(offer)
-                            .overlay(RoundedRectangle(cornerRadius: 28, style: .continuous).stroke(Color(hex: 0x38bdf8), lineWidth: 1.5))
-                            .background(Color(hex: 0x38bdf8).opacity(0.1).clipShape(RoundedRectangle(cornerRadius: 28)))
-                        
+        VStack(spacing: 0) {
+            headerBar
+
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 16) {
+                    // 选中套餐摘要条
+                    HStack(spacing: 12) {
                         ZStack {
-                            Circle().fill(Color(hex: 0x22c55e)).frame(width: 24, height: 24)
+                            Circle()
+                                .fill(Color(hex: 0x22c55e))
+                                .frame(width: 28, height: 28)
                             Image(systemName: "checkmark")
-                                .font(.system(size: 12, weight: .bold))
+                                .font(.system(size: 13, weight: .bold))
                                 .foregroundColor(.white)
                         }
-                        .padding(12)
-                    }
-                    .padding(.top, 10)
-                    
-                    Text("You have selected: ") +
-                    Text(offer.name).foregroundColor(Color(hex: 0x38bdf8)).bold() +
-                    Text(", here are the package details.")
-                    
-                    VStack(spacing: 20) {
-                        // Info Card 1
-                        VStack(alignment: .leading, spacing: 16) {
-                            Text("\u{57FA}\u{672C}\u{4FE1}\u{606F}")
-                                .font(.du(16, weight: .semibold))
-                                .foregroundColor(Color(hex: 0x38bdf8))
-                            
-                            detailRow(key: "Combo Name:", value: offer.name)
-                            detailRow(key: "Effective time:", value: "Effective immediately")
-                            detailRow(key: "Validity period:", value: "The current month")
+
+                        VStack(alignment: .leading, spacing: 3) {
+                            Text(offer.name)
+                                .font(.system(size: 15, weight: .semibold))
+                                .foregroundColor(.white)
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.8)
+                            Text("\(offer.price) \(offer.currency)/\(offer.unit) \u00B7 \(offer.dataAmount) \u00B7 \(offer.validity)")
+                                .font(.system(size: 12, weight: .medium))
+                                .foregroundColor(.white.opacity(0.55))
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.75)
                         }
-                        .padding(24)
-                        .background(Color.white.opacity(0.05))
-                        .clipShape(RoundedRectangle(cornerRadius: 24))
-                        .overlay(RoundedRectangle(cornerRadius: 24).stroke(Color.white.opacity(0.1), lineWidth: 1))
-                        
-                        // Info Card 2
-                        VStack(alignment: .leading, spacing: 16) {
+
+                        Spacer()
+
+                        Image(systemName: "chevron.down")
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundColor(.white.opacity(0.4))
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 14)
+                    .background(
+                        RoundedRectangle(cornerRadius: 18, style: .continuous)
+                            .fill(.ultraThinMaterial)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                                    .fill(
+                                        LinearGradient(colors: [Color(hex: 0x38bdf8).opacity(0.08), Color(hex: 0x6c3fc4).opacity(0.06)], startPoint: .leading, endPoint: .trailing)
+                                    )
+                            )
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 18, style: .continuous)
+                            .stroke(Color(hex: 0x38bdf8).opacity(0.3), lineWidth: 0.5)
+                    )
+
+                    // 基本信息卡片
+                    VStack(alignment: .leading, spacing: 0) {
+                        HStack {
+                            Image(systemName: "info.circle.fill")
+                                .font(.system(size: 14))
+                                .foregroundColor(Color(hex: 0x38bdf8))
+                            Text("\u57FA\u672C\u4FE1\u606F")
+                                .font(.system(size: 15, weight: .semibold))
+                                .foregroundColor(.white)
+                        }
+                        .padding(.bottom, 16)
+
+                        detailRow(key: "Combo Name", value: offer.name)
+                        detailRow(key: "Effective time", value: "Effective immediately")
+                        detailRow(key: "Validity period", value: "The current month")
+                    }
+                    .padding(18)
+                    .background(
+                        RoundedRectangle(cornerRadius: 20, style: .continuous)
+                            .fill(.ultraThinMaterial)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                                    .fill(Color.white.opacity(0.04))
+                            )
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 20, style: .continuous)
+                            .stroke(Color.white.opacity(0.1), lineWidth: 0.5)
+                    )
+
+                    // 业务详情卡片
+                    VStack(alignment: .leading, spacing: 0) {
+                        HStack {
+                            Image(systemName: "doc.text.fill")
+                                .font(.system(size: 14))
+                                .foregroundColor(Color(hex: 0x38bdf8))
                             Text("Business Details")
-                                .font(.du(16, weight: .semibold))
-                                .foregroundColor(Color(hex: 0x38bdf8))
-                            
-                            // Mock image placeholder -> HTML network image URL
-                            AsyncImage(url: URL(string: "https://images.unsplash.com/photo-1543269865-cbf427effbad?auto=format&fit=crop&q=80&w=600")) { phase in
-                                if let image = phase.image {
-                                    image.resizable().aspectRatio(contentMode: .fill)
-                                } else {
-                                    LinearGradient(colors: [Color(hex: 0x1e3a8a), Color(hex: 0x1e1b4b)], startPoint: .topLeading, endPoint: .bottomTrailing)
-                                        .overlay(Image(systemName: "photo").foregroundColor(.white.opacity(0.3)).font(.system(size: 40)))
-                                }
-                            }
-                            .frame(height: 180)
-                            .clipShape(RoundedRectangle(cornerRadius: 20))
-                            .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color.white.opacity(0.1), lineWidth: 1))
-                            
-                            Text("This package offers high-speed data roaming services across KSA territories. Ensure data roaming is enabled on your device Settings.")
-                                .font(.system(size: 13))
-                                .foregroundColor(.white.opacity(0.6))
-                                .lineSpacing(4)
-                            
-                            Button {
-                                viewModel.processImmediately()
-                            } label: {
-                                Text("Process Immediately")
-                                    .font(.du(18, weight: .bold))
-                                    .foregroundColor(.white)
-                                    .frame(maxWidth: .infinity)
-                                    .frame(height: 60)
-                                    .background(LinearGradient(colors: [Color(hex: 0x38bdf8), Color(hex: 0xc148ff)], startPoint: .leading, endPoint: .trailing))
-                                    .clipShape(Capsule())
-                                    .shadow(color: Color(hex: 0xc148ff).opacity(0.4), radius: 15, x: 0, y: 8)
-                            }
-                            .buttonStyle(.plain)
-                            .padding(.top, 10)
+                                .font(.system(size: 15, weight: .semibold))
+                                .foregroundColor(.white)
                         }
-                        .padding(24)
-                        .background(Color.white.opacity(0.05))
-                        .clipShape(RoundedRectangle(cornerRadius: 24))
-                        .overlay(RoundedRectangle(cornerRadius: 24).stroke(Color.white.opacity(0.1), lineWidth: 1))
+                        .padding(.bottom, 16)
+
+                        // 图片
+                        AsyncImage(url: URL(string: "https://images.unsplash.com/photo-1543269865-cbf427effbad?auto=format&fit=crop&q=80&w=600")) { phase in
+                            if let image = phase.image {
+                                image.resizable().aspectRatio(contentMode: .fill)
+                            } else {
+                                LinearGradient(colors: [Color(hex: 0x1e3a8a), Color(hex: 0x1e1b4b)], startPoint: .topLeading, endPoint: .bottomTrailing)
+                                    .overlay(Image(systemName: "photo").foregroundColor(.white.opacity(0.3)).font(.system(size: 32)))
+                            }
+                        }
+                        .frame(height: 160)
+                        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                        .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(Color.white.opacity(0.1), lineWidth: 0.5))
+                        .padding(.bottom, 14)
+
+                        Text("This package offers high-speed data roaming services across KSA territories. Ensure data roaming is enabled on your device Settings.")
+                            .font(.system(size: 13, weight: .regular))
+                            .foregroundColor(.white.opacity(0.55))
+                            .lineSpacing(5)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
-                    .padding(.bottom, bottomPad + 40)
+                    .padding(18)
+                    .background(
+                        RoundedRectangle(cornerRadius: 20, style: .continuous)
+                            .fill(.ultraThinMaterial)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                                    .fill(Color.white.opacity(0.04))
+                            )
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 20, style: .continuous)
+                            .stroke(Color.white.opacity(0.1), lineWidth: 0.5)
+                    )
+
+                    // 立即办理按钮
+                    Button {
+                        viewModel.processImmediately()
+                    } label: {
+                        Text("Process Immediately")
+                            .font(.system(size: 17, weight: .bold))
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 54)
+                            .background(
+                                LinearGradient(colors: [Color(hex: 0x38bdf8), Color(hex: 0xc148ff)], startPoint: .leading, endPoint: .trailing)
+                            )
+                            .clipShape(Capsule())
+                            .shadow(color: Color(hex: 0xc148ff).opacity(0.35), radius: 12, x: 0, y: 6)
+                    }
+                    .buttonStyle(.plain)
+                    .padding(.top, 4)
                 }
-                .padding(.horizontal, hPad)
+                .padding(.horizontal, hPad + 6)
+                .padding(.top, 8)
+                .padding(.bottom, bottomPad + 30)
             }
         }
         .padding(.top, 8)
@@ -818,15 +879,21 @@ struct AIChatView: View {
     }
 
     private func detailRow(key: String, value: String) -> some View {
-        HStack(alignment: .top) {
+        VStack(alignment: .leading, spacing: 4) {
             Text(key)
-                .font(.system(size: 14))
+                .font(.system(size: 12, weight: .medium))
                 .foregroundColor(.white.opacity(0.4))
-            Spacer()
             Text(value)
                 .font(.system(size: 14, weight: .semibold))
-                .foregroundColor(.white)
-                .multilineTextAlignment(.trailing)
+                .foregroundColor(.white.opacity(0.9))
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.vertical, 8)
+        .overlay(alignment: .bottom) {
+            Rectangle()
+                .fill(Color.white.opacity(0.06))
+                .frame(height: 0.5)
         }
     }
 
