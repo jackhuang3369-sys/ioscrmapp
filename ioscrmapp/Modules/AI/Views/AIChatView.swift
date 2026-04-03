@@ -554,24 +554,28 @@ struct AIChatView: View {
     // MARK: - New UI Layers (Layer 2, 3, 4)
 
     private func offersListLayer(hPad: CGFloat, bottomPad: CGFloat) -> some View {
-        VStack(alignment: .leading, spacing: 0) {
-            headerPlaceholder // Keep header height alignment
-            
-            Text("Here are the recommended package options for you~")
-                .font(.du(18, weight: .regular))
-                .foregroundColor(.white.opacity(0.9))
-                .padding(.horizontal, hPad + 4)
-                .padding(.top, 20)
-                .padding(.bottom, 20)
+        VStack(spacing: 0) {
+            headerBar
 
-            ScrollView {
-                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
+            Text("Here are the recommended package options for you~")
+                .font(.system(size: 16, weight: .regular, design: .rounded))
+                .foregroundColor(.white.opacity(0.85))
+                .multilineTextAlignment(.center)
+                .lineLimit(2)
+                .minimumScaleFactor(0.85)
+                .padding(.horizontal, hPad + 12)
+                .padding(.top, 16)
+                .padding(.bottom, 16)
+                .frame(maxWidth: .infinity)
+
+            ScrollView(showsIndicators: false) {
+                LazyVGrid(columns: [GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10)], spacing: 10) {
                     ForEach(viewModel.offers) { offer in
                         offerCard(offer)
                     }
                 }
-                .padding(.horizontal, hPad)
-                .padding(.bottom, bottomPad + 100)
+                .padding(.horizontal, hPad + 6)
+                .padding(.bottom, bottomPad + 60)
             }
         }
         .padding(.top, 8)
@@ -581,70 +585,75 @@ struct AIChatView: View {
         Button { viewModel.selectOffer(offer) } label: {
             VStack(alignment: .leading, spacing: 0) {
                 Text(offer.name)
-                    .font(.du(18, weight: .semibold))
+                    .font(.system(size: 15, weight: .semibold))
                     .foregroundColor(.white)
                     .lineLimit(2)
                     .multilineTextAlignment(.leading)
-                    .frame(height: 48, alignment: .top)
-                    .padding(.bottom, 20)
+                    .minimumScaleFactor(0.85)
+                    .frame(height: 40, alignment: .top)
+                    .padding(.bottom, 12)
 
                 HStack(spacing: 0) {
-                    VStack(alignment: .leading, spacing: 4) {
+                    VStack(alignment: .leading, spacing: 3) {
                         Text("DATA")
-                            .font(.system(size: 10, weight: .bold))
+                            .font(.system(size: 9, weight: .bold))
                             .foregroundColor(.white.opacity(0.4))
                         Text(offer.dataAmount)
-                            .font(.du(15, weight: .semibold))
+                            .font(.system(size: 13, weight: .semibold))
                             .foregroundColor(.white)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.75)
                     }
-                    
-                    Spacer()
+
+                    Spacer(minLength: 4)
                     Divider()
                         .background(Color.white.opacity(0.2))
-                        .frame(height: 30)
-                    Spacer()
-                    
-                    VStack(alignment: .leading, spacing: 4) {
+                        .frame(height: 26)
+                    Spacer(minLength: 4)
+
+                    VStack(alignment: .leading, spacing: 3) {
                         Text("VALIDITY")
-                            .font(.system(size: 10, weight: .bold))
+                            .font(.system(size: 9, weight: .bold))
                             .foregroundColor(.white.opacity(0.4))
                         Text(offer.validity)
-                            .font(.du(15, weight: .semibold))
+                            .font(.system(size: 13, weight: .semibold))
                             .foregroundColor(.white)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.75)
                     }
                 }
-                .padding(.bottom, 24)
+                .padding(.bottom, 14)
 
-                // Price Button Style
-                HStack(spacing: 4) {
+                // Price Button
+                HStack(spacing: 3) {
                     Text(offer.price)
-                        .font(.system(size: 20, weight: .heavy))
+                        .font(.system(size: 17, weight: .heavy))
                     Text("\(offer.currency)/\(offer.unit)")
-                        .font(.system(size: 10, weight: .bold))
-                        .padding(.top, 4)
+                        .font(.system(size: 9, weight: .bold))
+                        .padding(.top, 3)
                 }
                 .foregroundColor(.white)
                 .frame(maxWidth: .infinity)
-                .frame(height: 52)
+                .frame(height: 44)
                 .background(
                     LinearGradient(colors: [Color(hex: 0x3cd1ff), Color(hex: 0xc349ff)], startPoint: .leading, endPoint: .trailing)
                 )
                 .clipShape(Capsule())
-                .shadow(color: Color(hex: 0x3cd1ff).opacity(0.3), radius: 10, x: 0, y: 5)
+                .shadow(color: Color(hex: 0x3cd1ff).opacity(0.3), radius: 8, x: 0, y: 4)
             }
-            .padding(18)
+            .padding(12)
             .background(
                 ZStack {
                     LinearGradient(colors: [Color(hex: 0x3b4eb7), Color(hex: 0x6c3fc4)], startPoint: .top, endPoint: .bottom)
                     LinearGradient(colors: [Color(hex: 0x7dd3fc).opacity(0.08), .clear, Color(hex: 0xf472b6).opacity(0.05)], startPoint: .topLeading, endPoint: .bottomTrailing)
                 }
             )
-            .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
+            .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
             .overlay(
-                RoundedRectangle(cornerRadius: 28, style: .continuous)
+                RoundedRectangle(cornerRadius: 22, style: .continuous)
                     .stroke(Color.white.opacity(0.12), lineWidth: 1)
             )
-            .shadow(color: Color(hex: 0x080f2d).opacity(0.2), radius: 20, x: 0, y: 16)
+            .shadow(color: Color(hex: 0x080f2d).opacity(0.15), radius: 12, x: 0, y: 8)
         }
         .buttonStyle(.plain)
     }
