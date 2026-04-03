@@ -145,15 +145,15 @@ struct HomeFeatureCarouselView: View {
     ) -> some View {
         let distance = min(abs(layout.position), 1)
         let cardSize = metrics.cardSize(for: distance)
-        let grayscaleAmount = grayscaleAmount(for: layout.position)
         let opacityValue = opacity(for: layout.position)
+        let cardEffect = cardEffect(for: layout.position)
+        let imageMotion = imageMotion(for: layout.position, cardSize: cardSize)
 
-        // 卡片整体沿轨道移动，图片保持居中承载，避免出现额外的漂移感。
+        // 卡片整体沿轨道移动；图片层再叠加“横向掠过 + 轻微透视”效果。
         return HomeFeatureCarouselCardView(
             assetName: assetName,
             cardSize: cardSize,
-            grayscaleAmount: grayscaleAmount,
-            metrics: metrics
+            imageMotion: imageMotion
         )
             .clipShape(
                 RoundedRectangle(
@@ -169,10 +169,17 @@ struct HomeFeatureCarouselView: View {
                 .stroke(Color.white.opacity(0.72), lineWidth: 1)
             )
             .shadow(
-                color: Color.black.opacity(0.05),
-                radius: 8,
+                color: Color.black.opacity(cardEffect.shadowOpacity),
+                radius: cardEffect.shadowRadius,
                 x: 0,
-                y: 2
+                y: cardEffect.shadowYOffset
+            )
+            .scaleEffect(cardEffect.scale)
+            .rotation3DEffect(
+                .degrees(cardEffect.rotationDegrees),
+                axis: (x: 0.14, y: 1, z: 0),
+                anchor: layout.position < 0 ? .trailing : .leading,
+                perspective: 0.82
             )
             .offset(
                 x: metrics.cardOffset(for: layout.position)
@@ -298,13 +305,42 @@ struct HomeFeatureCarouselView: View {
         return sideCardMinimumOpacity * (1 - offscreenFadeProgress)
     }
 
-    private func grayscaleAmount(for position: CGFloat) -> CGFloat {
-        let distance = abs(position)
-        guard distance > 0.2 else {
-            return 0
-        }
+    private func cardEffect(for position: CGFloat) -> HomeFeatureCarouselCardEffect {
+        let clampedPosition = min(max(position, -1), 1)
+        let sweepProgress = lensSweepProgress(for: clampedPosition)
 
-        return smoothStep((distance - 0.2) / 0.55)
+        return HomeFeatureCarouselCardEffect(
+            scale: 1 + (0.038 * sweepProgress),
+            rotationDegrees: Double(-clampedPosition) * Double(8 + (4 * sweepProgress)),
+            shadowOpacity: 0.05 + (0.08 * sweepProgress),
+            shadowRadius: 8 + (10 * sweepProgress),
+            shadowYOffset: 2 + (8 * sweepProgress)
+        )
+    }
+
+    private func imageMotion(
+        for position: CGFloat,
+        cardSize: CGSize
+    ) -> HomeFeatureCarouselImageMotion {
+        let clampedPosition = min(max(position, -1), 1)
+        let distance = abs(clampedPosition)
+        let sweepProgress = lensSweepProgress(for: clampedPosition)
+        let horizontalOffset = -clampedPosition * cardSize.width * (2.0 / 3.0)
+        let canvasWidth = cardSize.width + (abs(horizontalOffset) * 2)
+        let canvasHeight = cardSize.height * (1.06 + (0.08 * distance))
+        let imageScale = 1 + (0.12 * sweepProgress) + (0.05 * distance)
+
+        return HomeFeatureCarouselImageMotion(
+            canvasSize: CGSize(width: canvasWidth, height: canvasHeight),
+            horizontalOffset: horizontalOffset,
+            scale: imageScale
+        )
+    }
+
+    private func lensSweepProgress(for position: CGFloat) -> CGFloat {
+        let distance = min(max(abs(position), 0), 1)
+        let centeredDistance = abs(distance - 0.5) / 0.5
+        return 1 - smoothStep(centeredDistance)
     }
 
     private func smoothStep(_ value: CGFloat) -> CGFloat {
@@ -385,21 +421,37 @@ private struct HomeFeatureCarouselCardLayout: Identifiable {
     }
 }
 
+private struct HomeFeatureCarouselCardEffect {
+    let scale: CGFloat
+    let rotationDegrees: Double
+    let shadowOpacity: CGFloat
+    let shadowRadius: CGFloat
+    let shadowYOffset: CGFloat
+}
+
+private struct HomeFeatureCarouselImageMotion {
+    let canvasSize: CGSize
+    let horizontalOffset: CGFloat
+    let scale: CGFloat
+}
+
 private struct HomeFeatureCarouselCardView: View {
     let assetName: String
     let cardSize: CGSize
-    let grayscaleAmount: CGFloat
-    let metrics: HomeFeatureCarouselMetrics
+    let imageMotion: HomeFeatureCarouselImageMotion
 
     var body: some View {
-        // 图片保持居中承载，卡片本身负责切换时的滑动。
-        // 如果要改“实际怎么裁剪”，优先看 `scaledToFill + frame + clipped` 这一组。
+        // 图片内容跟随卡位方向一起平移，形成“镜头掠过”的跟手感。
         Image(assetName)
             .renderingMode(.original)
             .resizable()
             .scaledToFill()
-            .frame(width: metrics.imageWidth, height: metrics.imageHeight)
-            .grayscale(Double(grayscaleAmount))
+            .frame(
+                width: imageMotion.canvasSize.width,
+                height: imageMotion.canvasSize.height
+            )
+            .scaleEffect(imageMotion.scale)
+            .offset(x: imageMotion.horizontalOffset)
             .frame(width: cardSize.width, height: cardSize.height)
             .clipped()
     }
