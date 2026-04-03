@@ -730,7 +730,6 @@ struct AIChatView: View {
                                     .fill(Color.white.opacity(0.04))
                             )
                     )
-                    )
                     .overlay(
                         RoundedRectangle(cornerRadius: 20, style: .continuous)
                             .stroke(
@@ -788,7 +787,6 @@ struct AIChatView: View {
                                 RoundedRectangle(cornerRadius: 20, style: .continuous)
                                     .fill(Color.white.opacity(0.04))
                             )
-                    )
                     )
                     .overlay(
                         RoundedRectangle(cornerRadius: 20, style: .continuous)
@@ -886,7 +884,7 @@ struct AIChatView: View {
                 .frame(width: 200, height: 200)
                 
                 Text("Congratulations on your successful application")
-                    .font(.du(26, weight: .semibold))
+                    .font(.system(size: 26, weight: .semibold))
                     .foregroundColor(.white)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 40)
