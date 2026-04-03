@@ -48,7 +48,7 @@ struct AIChatView: View {
                         .lineLimit(3)
                         .minimumScaleFactor(0.82)
                         .shadow(color: Color.black.opacity(0.15), radius: 2, x: 0, y: 2)
-                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .frame(maxWidth: 250, alignment: .leading) // 对标 HTML max-width: 250px
                         .padding(.top, DUSpacing.md)
                         .padding(.horizontal, hPad + 4)
 
@@ -60,7 +60,7 @@ struct AIChatView: View {
                         scatteredPrompts(coreSize: coreSize)
                     }
                     .frame(maxWidth: .infinity)
-                    .frame(height: coreSize * 2.6)
+                    .frame(height: coreSize * 2.8) // 稍微增加高度适应更大的 OrbMesh
                     .offset(y: -20)
 
                     Spacer(minLength: 8)
@@ -68,10 +68,10 @@ struct AIChatView: View {
                     voiceSection
                         .padding(.bottom, bottomPad)
                 }
-                .blur(radius: viewModel.currentStep == .home ? 0 : 20)
-                .scaleEffect(viewModel.currentStep == .home ? 1.0 : 0.9)
-                .opacity(viewModel.currentStep == .home ? 1.0 : 0.5)
-                .animation(.spring(response: 0.5, dampingFraction: 0.8), value: viewModel.currentStep)
+                .blur(radius: viewModel.currentStep == .home ? 0 : 30) // 增加模糊度
+                .scaleEffect(viewModel.currentStep == .home ? 1.0 : 0.85) // 增加缩放感
+                .opacity(viewModel.currentStep == .home ? 1.0 : 0.0) // 隐藏以提升性能
+                .animation(.spring(response: 0.6, dampingFraction: 0.8), value: viewModel.currentStep)
 
                 // --- Layer 2: Offers List ---
                 if viewModel.currentStep == .offersList {
@@ -134,15 +134,24 @@ struct AIChatView: View {
 
     private var orbMesh: some View {
         ZStack {
-            ForEach(0..<4, id: \.self) { i in
-                RoundedRectangle(cornerRadius: 60, style: .continuous)
-                    .stroke(Color.white.opacity(0.04), lineWidth: 1.5)
-                    .frame(width: 320, height: 120)
-                    .rotationEffect(.degrees(Double(i) * 45))
+            // 对标 HTML 图二中的心形/折叠涟漪背景
+            ForEach(0..<6, id: \.self) { i in
+                HeartRipplePath()
+                    .stroke(
+                        LinearGradient(colors: [
+                            Color(hex: 0x38bdf8).opacity(0.4), 
+                            Color(hex: 0x4821FF).opacity(0.3), 
+                            Color(hex: 0xEC4899).opacity(0.3)
+                        ], startPoint: .topLeading, endPoint: .bottomTrailing),
+                        lineWidth: 1.2
+                    )
+                    .frame(width: 420, height: 420)
+                    .scaleEffect(0.9 + CGFloat(i) * 0.1)
+                    .rotationEffect(.degrees(Double(i) * 12 + coreRotation * 0.1))
             }
         }
-        .frame(width: 320, height: 320)
-        .rotationEffect(.degrees(coreRotation * 0.15))
+        .frame(width: 420, height: 420)
+        .opacity(0.7)
     }
 
     // MARK: - Header
@@ -164,9 +173,17 @@ struct AIChatView: View {
             
             Spacer()
             
+            Button { /* 全屏逻辑 */ } label: {
+                Image(systemName: "arrow.up.left.and.arrow.down.right")
+                    .font(.system(size: 16, weight: .regular))
+                    .foregroundColor(.white.opacity(0.8))
+                    .frame(width: 32, height: 32)
+            }
+            .buttonStyle(.plain)
+
             Button { viewModel.requestNewChat() } label: {
-                Image(systemName: "message")
-                    .font(.du(18, weight: .regular))
+                Image(systemName: "bubble.left") // 对标 HTML 的对话图标
+                    .font(.system(size: 18, weight: .regular))
                     .foregroundColor(.white.opacity(0.8))
                     .frame(width: 32, height: 32)
             }
@@ -174,7 +191,7 @@ struct AIChatView: View {
 
             Button { onNavigate(.home) } label: {
                 Image(systemName: "xmark")
-                    .font(.du(20, weight: .regular))
+                    .font(.system(size: 20, weight: .regular))
                     .foregroundColor(.white.opacity(0.8))
                     .frame(width: 32, height: 32)
             }
@@ -187,71 +204,63 @@ struct AIChatView: View {
     // MARK: - AI Core Orb
 
     private func aiCoreOrb(coreSize: CGFloat) -> some View {
-        let auraSize = coreSize * 1.6
+        let auraSize = coreSize * 1.9
         
         return ZStack {
-            // 背景慢速旋转的多彩光环 (Aura)
+            // 背景慢速旋转的多彩光晕 - 对标 HTML 图二
             Circle()
                 .fill(
                     AngularGradient(
-                        colors: [.clear, Color.cyan.opacity(0.4), Color.pink.opacity(0.5), Color.purple.opacity(0.4), .clear],
+                        colors: [.clear, Color(hex: 0x38bdf8).opacity(0.5), Color(hex: 0xf472b6).opacity(0.6), Color(hex: 0x818cf8).opacity(0.5), .clear],
                         center: .center,
                         startAngle: .degrees(0),
                         endAngle: .degrees(360)
                     )
                 )
                 .frame(width: auraSize, height: auraSize)
-                .blur(radius: 20)
+                .blur(radius: 30)
                 .rotationEffect(.degrees(coreRotation * 0.4))
             
             // 液体玻璃核心极为关键的光影合成
             ZStack {
-                // 深邃底部
-                Circle()
+                // 深邃底部 - 改用更亮的蓝紫色对标图二
+                FluidBlobShape(offset: isAnimatingCore ? 1 : 0)
                     .fill(
                         LinearGradient(
-                            colors: [Color(hex: 0x0900FF), Color(hex: 0x171B40)],
+                            colors: [Color(hex: 0x1E40AF), Color(hex: 0x1E1B4B)],
                             startPoint: .topLeading, endPoint: .bottomTrailing
                         )
                     )
 
-                // 流体内光 (内部光源) - 避免使用 mix-blend-mode 以防在视图层中异常变白
-                Circle()
-                    .fill(RadialGradient(colors: [Color.cyan.opacity(0.8), .clear], center: .topLeading, startRadius: 0, endRadius: coreSize * 0.5))
-                    .frame(width: coreSize, height: coreSize)
-                    .offset(x: isAnimatingCore ? 10 : -10, y: isAnimatingCore ? -10 : 10)
+                // 内部流动液体 (Orb Fluid) - 增加亮度
+                OrbInternalFluid(isAnimating: isAnimatingCore)
+                    .mask(FluidBlobShape(offset: isAnimatingCore ? 1 : 0))
                 
-                Circle()
-                    .fill(RadialGradient(colors: [Color.pink.opacity(0.8), .clear], center: .bottomTrailing, startRadius: 0, endRadius: coreSize * 0.5))
-                    .frame(width: coreSize, height: coreSize)
-                    .offset(x: isAnimatingCore ? -10 : 10, y: isAnimatingCore ? 10 : -10)
-                
-                // 静态表面高光反射片
-                GeometryReader { geo in
-                    Path { path in
-                        let w = geo.size.width
-                        let h = geo.size.height
-                        path.move(to: CGPoint(x: w * 0.15, y: h * 0.25))
-                        path.addQuadCurve(to: CGPoint(x: w * 0.85, y: h * 0.25), control: CGPoint(x: w * 0.5, y: -h * 0.1))
-                        path.addQuadCurve(to: CGPoint(x: w * 0.15, y: h * 0.25), control: CGPoint(x: w * 0.5, y: h * 0.15))
-                    }
-                    .fill(LinearGradient(colors: [Color.white.opacity(0.6), .clear], startPoint: .top, endPoint: .bottom))
+                // 完美的玻璃体积感：多层漫反射和折射叠加
+                Group {
+                    // 底部粉紫色晕光 (Refraction)
+                    RadialGradient(colors: [Color(hex: 0xEC4899).opacity(0.6), .clear], center: .bottomTrailing, startRadius: 0, endRadius: coreSize * 0.8)
+                    
+                    // 中间青色充盈感
+                    RadialGradient(colors: [Color(hex: 0x22D3EE).opacity(0.4), .clear], center: .center, startRadius: 0, endRadius: coreSize * 0.7)
                 }
+                .mask(FluidBlobShape(offset: isAnimatingCore ? 1 : 0))
+                .blendMode(.plusLighter)
+
+                // 核心表面极亮高亮 (Primary Highlight) - 对标图二左上
+                GlassReflection()
+                    .scaleEffect(1.2)
+                    .offset(x: -coreSize * 0.05, y: -coreSize * 0.05)
                 
-                // 完美的玻璃体积感（内阴影效果替代手法）：偏移遮罩线条
-                Circle().stroke(Color.white, lineWidth: 6).blur(radius: 5).offset(x: -6, y: -6)
-                Circle().stroke(Color.black.opacity(0.8), lineWidth: 12).blur(radius: 10).offset(x: 8, y: 8)
-                Circle().stroke(Color.pink.opacity(0.6), lineWidth: 8).blur(radius: 10).offset(x: 10, y: -5)
-                Circle().stroke(Color.cyan.opacity(0.7), lineWidth: 8).blur(radius: 10).offset(x: -10, y: 5)
+                // 物理微光边缘
+                FluidBlobShape(offset: isAnimatingCore ? 1 : 0)
+                    .stroke(Color.white.opacity(0.4), lineWidth: 0.5)
             }
-            .clipShape(Circle())
-            // 极细物理包边
-            .overlay(Circle().stroke(Color.white.opacity(0.3), lineWidth: 0.5))
-            .scaleEffect(x: isAnimatingCore ? 1.02 : 0.98, y: isAnimatingCore ? 0.98 : 1.02)
-            .shadow(color: Color.cyan.opacity(0.3), radius: 20, x: 0, y: 0)
-            .shadow(color: Color.purple.opacity(0.2), radius: 40, x: 0, y: 0)
-            .animation(.easeInOut(duration: 4).repeatForever(autoreverses: true), value: isAnimatingCore)
             .frame(width: coreSize, height: coreSize)
+            .shadow(color: Color(hex: 0x38bdf8).opacity(0.5), radius: 40, x: 0, y: 0)
+            .shadow(color: Color(hex: 0xEC4899).opacity(0.3), radius: 60, x: 0, y: 0)
+            .scaleEffect(isAnimatingCore ? 1.02 : 0.98)
+            .animation(.easeInOut(duration: 6).repeatForever(autoreverses: true), value: isAnimatingCore)
         }
     }
 
@@ -259,20 +268,20 @@ struct AIChatView: View {
 
     private func scatteredPrompts(coreSize: CGFloat) -> some View {
         ZStack {
-            // tag-1: Book a flight (左上)
+            // tag-1: Book a flight (左上) - 严格复刻图二位置
             if let t = viewModel.suggestedPrompts[safe: 0] {
                 promptCapsule(t, index: 0)
-                    .offset(x: -coreSize * 0.9, y: -coreSize * 0.6)
+                    .offset(x: -coreSize * 1.05, y: -coreSize * 0.75)
             }
-            // tag-2: Order a meal package (左下)
+            // tag-2: Order a meal package (左下) - 严格复刻图二位置
             if let t = viewModel.suggestedPrompts[safe: 1] {
                 promptCapsule(t, index: 1)
-                    .offset(x: -coreSize * 0.7, y: coreSize * 0.6)
+                    .offset(x: -coreSize * 0.65, y: coreSize * 0.9)
             }
-            // tag-3: Check the weather (右中)
+            // tag-3: Check the weather (右中) - 严格复刻图二位置
             if let t = viewModel.suggestedPrompts[safe: 2] {
                 promptCapsule(t, index: 2)
-                    .offset(x: coreSize * 0.9, y: coreSize * 0.2)
+                    .offset(x: coreSize * 1.05, y: coreSize * 0.25)
             }
         }
     }
@@ -307,8 +316,8 @@ struct AIChatView: View {
     private var voiceSection: some View {
         VStack(spacing: DUSpacing.md) {
             Text("Hold to Talk ~")
-                .font(.du(13, weight: .regular))
-                .foregroundColor(.white.opacity(0.5))
+                .font(.du(14, weight: .light))
+                .foregroundColor(.white.opacity(0.7))
 
             Button {
                 let gen = UIImpactFeedbackGenerator(style: .medium)
@@ -316,6 +325,7 @@ struct AIChatView: View {
             } label: {
                 ZStack {
                     // 更细更多彩的动态圆环对标 HTML conic-gradient
+                    // 橙-粉-紫-青-绿-黄-橙
                     Circle()
                         .stroke(
                             AngularGradient(
@@ -327,17 +337,18 @@ struct AIChatView: View {
                             ),
                             lineWidth: 3
                         )
-                        .frame(width: 72, height: 72)
+                        .frame(width: 76, height: 76) // 对标 HTML 76px
                         .rotationEffect(.degrees(coreRotation))
 
                     Circle()
                         .fill(Color(hex: 0x1E1B4B).opacity(0.4))
-                        .frame(width: 54, height: 54)
+                        .frame(width: 58, height: 58) // 对标 HTML 58px
                         .background(.ultraThinMaterial)
                         .clipShape(Circle())
+                        .overlay(Circle().stroke(Color.white.opacity(0.1), lineWidth: 0.5))
 
-                    Image(systemName: "mic") // 内部改为细线形话筒
-                        .font(.du(22, weight: .regular))
+                    Image(systemName: "mic")
+                        .font(.system(size: 24, weight: .regular))
                         .foregroundColor(.white)
                 }
             }
@@ -632,8 +643,131 @@ struct AIChatView: View {
     }
 }
 
+
 extension Array {
     subscript(safe index: Int) -> Element? {
         return indices.contains(index) ? self[index] : nil
+    }
+}
+
+// MARK: - Helper UI Components for Premium Orb
+
+struct FluidBlobShape: Shape {
+    var offset: Double
+    
+    var animatableData: Double {
+        get { offset }
+        set { offset = newValue }
+    }
+    
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        let w = rect.width
+        let h = rect.height
+        
+        // 动态计算 border-radius 的波动 (类似 HTML blob animation)
+        // 46% 54% 50% 50% / 46% 50% 50% 54%
+        let factor = 0.04 * offset
+        let r1 = w * (0.46 + factor)
+        let r2 = w * (0.54 - factor)
+        let r3 = w * (0.50 + factor)
+        let r4 = w * (0.50 - factor)
+        
+        path.addRoundedRect(in: rect, cornerSize: CGSize(width: r1, height: r2), style: .continuous)
+        
+        // 简单的 RoundedRect 效果不足以完全复刻 CSS 的不规则 border-radius 组合，
+        // 这里使用贝塞尔曲线精细模拟
+        var p = Path()
+        p.move(to: CGPoint(x: w * 0.5, y: 0))
+        p.addCurve(to: CGPoint(x: w, y: h * 0.5), 
+                   control1: CGPoint(x: w * (0.8 + factor), y: 0), 
+                   control2: CGPoint(x: w, y: h * (0.2 - factor)))
+        p.addCurve(to: CGPoint(x: w * 0.5, y: h), 
+                   control1: CGPoint(x: w, y: h * (0.8 + factor)), 
+                   control2: CGPoint(x: w * (0.8 - factor), y: h))
+        p.addCurve(to: CGPoint(x: 0, y: h * 0.5), 
+                   control1: CGPoint(x: w * (0.2 - factor), y: h), 
+                   control2: CGPoint(x: 0, y: h * (0.8 - factor)))
+        p.addCurve(to: CGPoint(x: w * 0.5, y: 0), 
+                   control1: CGPoint(x: 0, y: h * (0.2 + factor)), 
+                   control2: CGPoint(x: w * (0.2 + factor), y: 0))
+        
+        return p
+    }
+}
+
+struct OrbInternalFluid: View {
+    let isAnimating: Bool
+    
+    var body: some View {
+        ZStack {
+            // Fluid 1 (Cyan)
+            RadialGradient(colors: [Color.cyan.opacity(0.9), .clear], center: .topLeading, startRadius: 0, endRadius: 100)
+                .scaleEffect(isAnimating ? 1.2 : 0.8)
+                .offset(x: isAnimating ? 20 : -20, y: isAnimating ? -20 : 20)
+            
+            // Fluid 2 (Pink)
+            RadialGradient(colors: [Color.pink.opacity(0.8), .clear], center: .bottomTrailing, startRadius: 0, endRadius: 100)
+                .scaleEffect(isAnimating ? 0.8 : 1.2)
+                .offset(x: isAnimating ? -20 : 20, y: isAnimating ? 20 : -20)
+            
+            // Fluid 3 (Red/Orange)
+            RadialGradient(colors: [Color.orange.opacity(0.7), .clear], center: .topTrailing, startRadius: 0, endRadius: 80)
+                .offset(y: isAnimating ? 10 : -30)
+        }
+        .blur(radius: 15)
+        .blendMode(.screen)
+        .animation(.easeInOut(duration: 8).repeatForever(autoreverses: true), value: isAnimating)
+    }
+}
+
+struct GlassReflection: View {
+    var body: some View {
+        GeometryReader { geo in
+            let w = geo.size.width
+            let h = geo.size.height
+            
+            // 更大、更亮的顶部月牙反射，对标图二
+            Path { path in
+                path.move(to: CGPoint(x: w * 0.1, y: h * 0.3))
+                path.addQuadCurve(to: CGPoint(x: w * 0.6, y: h * 0.15), control: CGPoint(x: w * 0.3, y: h * 0.05))
+                path.addQuadCurve(to: CGPoint(x: w * 0.1, y: h * 0.3), control: CGPoint(x: w * 0.25, y: h * 0.25))
+            }
+            .fill(
+                LinearGradient(
+                    colors: [.white, .white.opacity(0.1)], 
+                    startPoint: .topLeading, 
+                    endPoint: .bottomTrailing
+                )
+            )
+            .blur(radius: 2)
+            .rotationEffect(.degrees(-15))
+            .blendMode(.plusLighter)
+        }
+    }
+}
+
+struct HeartRipplePath: Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        let w = rect.width
+        let h = rect.height
+        
+        // 基于图二中那种具有特定褶皱感的有机环线 (类似心形或折叠纸感)
+        path.move(to: CGPoint(x: w * 0.5, y: h * 0.25))
+        path.addCurve(to: CGPoint(x: w * 0.8, y: h * 0.45), 
+                      control1: CGPoint(x: w * 0.7, y: h * 0.15), 
+                      control2: CGPoint(x: w * 0.9, y: h * 0.35))
+        path.addCurve(to: CGPoint(x: w * 0.5, y: h * 0.85), 
+                      control1: CGPoint(x: w * 0.7, y: h * 0.65), 
+                      control2: CGPoint(x: w * 0.6, y: h * 0.8))
+        path.addCurve(to: CGPoint(x: w * 0.2, y: h * 0.45), 
+                      control1: CGPoint(x: w * 0.4, y: h * 0.8), 
+                      control2: CGPoint(x: w * 0.3, y: h * 0.65))
+        path.addCurve(to: CGPoint(x: w * 0.5, y: h * 0.25), 
+                      control1: CGPoint(x: w * 0.1, y: h * 0.35), 
+                      control2: CGPoint(x: w * 0.3, y: h * 0.15))
+        
+        return path
     }
 }
