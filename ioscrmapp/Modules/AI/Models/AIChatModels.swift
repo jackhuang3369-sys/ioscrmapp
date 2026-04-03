@@ -169,11 +169,55 @@ enum AIChatLocalizedCopy {
     static func inputPlaceholder(for language: AppLanguage) -> String {
         switch language {
         case .english:
-            return "Type your message..."
+            return "Enter the content you want to consult"
         case .simplifiedChinese:
-            return "请输入你的问题..."
+            return "请输入你想咨询的内容"
         case .arabic:
-            return "اكتب رسالتك..."
+            return "أدخل المحتوى الذي تريد الاستفسار عنه"
+        }
+    }
+
+    static func voiceHoldTitle(for language: AppLanguage) -> String {
+        switch language {
+        case .english:
+            return "Hold to Talk ~"
+        case .simplifiedChinese:
+            return "按住说话~"
+        case .arabic:
+            return "اضغط للتحدث ~"
+        }
+    }
+
+    static func voiceListeningTitle(for language: AppLanguage) -> String {
+        switch language {
+        case .english:
+            return "Listening..."
+        case .simplifiedChinese:
+            return "正在聆听..."
+        case .arabic:
+            return "جارٍ الاستماع..."
+        }
+    }
+
+    static func voiceEntryTitle(for language: AppLanguage) -> String {
+        switch language {
+        case .english:
+            return "Voice input"
+        case .simplifiedChinese:
+            return "语音输入"
+        case .arabic:
+            return "إدخال صوتي"
+        }
+    }
+
+    static func keyboardEntryTitle(for language: AppLanguage) -> String {
+        switch language {
+        case .english:
+            return "Keyboard input"
+        case .simplifiedChinese:
+            return "键盘输入"
+        case .arabic:
+            return "إدخال لوحة المفاتيح"
         }
     }
 
