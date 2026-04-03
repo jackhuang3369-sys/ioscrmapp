@@ -309,9 +309,11 @@ struct HomeFeatureCarouselView: View {
         let clampedPosition = min(max(position, -1), 1)
         let sweepProgress = lensSweepProgress(for: clampedPosition)
 
+//        这里的 scale: 1 + (0.038 * sweepProgress) 控制“整张卡片”的放大幅度。你觉得太猛，先把 0.038 改小，比如改成 0.02 或 0.015
+//        如果你想整体都柔和一点 rotationDegrees: Double(-clampedPosition) * Double(8 + (4 * sweepProgress)) 控制 3D 倾斜，8 和 4 越小越弱
         return HomeFeatureCarouselCardEffect(
-            scale: 1 + (0.038 * sweepProgress),
-            rotationDegrees: Double(-clampedPosition) * Double(8 + (4 * sweepProgress)),
+            scale: 1 + (0.015 * sweepProgress),
+            rotationDegrees: Double(-clampedPosition) * Double(4 + (2 * sweepProgress)),
             shadowOpacity: 0.05 + (0.08 * sweepProgress),
             shadowRadius: 8 + (10 * sweepProgress),
             shadowYOffset: 2 + (8 * sweepProgress)
@@ -328,7 +330,8 @@ struct HomeFeatureCarouselView: View {
         let horizontalOffset = -clampedPosition * cardSize.width * (2.0 / 3.0)
         let canvasWidth = cardSize.width + (abs(horizontalOffset) * 2)
         let canvasHeight = cardSize.height * (1.06 + (0.08 * distance))
-        let imageScale = 1 + (0.12 * sweepProgress) + (0.05 * distance)
+        let imageScale = 1 + (0.08 * sweepProgress) + (0.03 * distance)
+//        这里的 imageScale = 1 + (0.12 * sweepProgress) + (0.05 * distance) 控制“卡片内部图片”的放大感。最明显的是 0.12，可以先降到 0.06；0.05 是边缘区域附加放大，也可以一起降到 0.02
 
         return HomeFeatureCarouselImageMotion(
             canvasSize: CGSize(width: canvasWidth, height: canvasHeight),
@@ -462,13 +465,18 @@ struct HomeFeatureCarouselView_Previews: PreviewProvider {
         HomeFeatureCarouselView(
             items: [
                 .init(
-                    assetName: "HomeCarouselWeather3D",
+                    assetName: "HomeCarouselTelecomEco",
                     title: .literal("One DU ecosystem for every screen")
                 ),
                 .init(
-                    assetName: "HomeCarouselTelecomEco",
-                    title: .literal("3D weather, your day at a glance"),
+                    assetName: "HomeCarouselWeather3D",
+                    title: .literal("3D movie, leisure starts now"),
                     action: .tickets
+                ),
+                .init(
+                    assetName: "HomeCarouselWeatherForecast",
+                    title: .literal("Weather forecast, plan your day"),
+                    action: .weather
                 ),
                 .init(
                     assetName: "HomeCarouselIPhone17",

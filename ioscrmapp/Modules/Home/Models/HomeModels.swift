@@ -152,6 +152,7 @@ enum HomeFeatureCarouselAction: Equatable, Sendable {
     case tickets
     case mall
     case videoDetail(String)
+    case weather
 }
 
 struct HomeFeatureCarouselItem: Identifiable, Equatable, Sendable {
