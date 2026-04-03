@@ -681,7 +681,7 @@ struct AIChatView: View {
                                 .foregroundColor(.white)
                                 .lineLimit(1)
                                 .minimumScaleFactor(0.8)
-                            Text("\(offer.price) \(offer.currency)/\(offer.unit) \u00B7 \(offer.dataAmount) \u00B7 \(offer.validity)")
+                            Text("\(offer.price) \(offer.currency)/\(offer.unit) · \(offer.dataAmount) · \(offer.validity)")
                                 .font(.system(size: 12, weight: .medium))
                                 .foregroundColor(.white.opacity(0.55))
                                 .lineLimit(1)
@@ -717,7 +717,7 @@ struct AIChatView: View {
                             Image(systemName: "info.circle.fill")
                                 .font(.system(size: 14))
                                 .foregroundColor(Color(hex: 0x38bdf8))
-                            Text("\u57FA\u672C\u4FE1\u606F")
+                            Text("基本信息")
                                 .font(.system(size: 15, weight: .semibold))
                                 .foregroundColor(.white)
                         }
