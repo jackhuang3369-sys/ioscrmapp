@@ -1,4 +1,6 @@
+import SceneKit
 import SwiftUI
+import UIKit
 import WebKit
 
 struct AIChatView: View {
@@ -142,20 +144,19 @@ struct AIChatView: View {
 
     private func homeHeroSection(coreSize: CGFloat, layout: AIChatHomeLayout) -> some View {
         GeometryReader { proxy in
-            let meshSize = min(max(max(proxy.size.width, proxy.size.height) * 1.02, coreSize * 2.5), 420)
             let orbOffsetY: CGFloat = layout.isCompactHeight ? 10 : 18
 
             ZStack {
-                // 浮动光粒子
-                floatingParticles(in: proxy.size)
-
-                orbMesh(size: meshSize)
-                    .offset(y: orbOffsetY + 8)
-                    .rotation3DEffect(.degrees(tilt3D * 4), axis: (x: 0.3, y: 1, z: 0), perspective: 0.8)
-
-                aiCoreOrb(coreSize: coreSize)
-                    .offset(y: orbOffsetY)
-                    .rotation3DEffect(.degrees(tilt3D * 10), axis: (x: 0.2, y: 1, z: 0.1), perspective: 0.5)
+                AIOrbStageView(
+                    coreSize: coreSize,
+                    isAnimating: isAnimatingCore,
+                    tiltAmount: tilt3D
+                )
+                .frame(
+                    width: min(max(coreSize * 2.95, proxy.size.width * 0.9), proxy.size.width),
+                    height: min(max(coreSize * 2.35, proxy.size.height * 0.95), proxy.size.height)
+                )
+                .offset(y: orbOffsetY)
 
                 scatteredPrompts(
                     coreSize: coreSize,
@@ -1084,6 +1085,615 @@ struct HeartRipplePath: Shape {
                       control2: CGPoint(x: w * 0.3, y: h * 0.15))
         
         return path
+    }
+}
+
+private struct AIOrbStageView: View {
+    let coreSize: CGFloat
+    let isAnimating: Bool
+    let tiltAmount: CGFloat
+
+    var body: some View {
+        let stageWidth = coreSize * 2.9
+        let stageHeight = coreSize * 2.3
+
+        ZStack {
+            Circle()
+                .fill(Color(hex: 0x38BDF8).opacity(0.16))
+                .frame(width: coreSize * 2.3, height: coreSize * 2.3)
+                .blur(radius: coreSize * 0.24)
+                .scaleEffect(isAnimating ? 1.05 : 0.94)
+
+            Circle()
+                .fill(Color(hex: 0xC026D3).opacity(0.12))
+                .frame(width: coreSize * 1.95, height: coreSize * 1.95)
+                .blur(radius: coreSize * 0.20)
+                .offset(x: coreSize * 0.12, y: coreSize * 0.08)
+                .scaleEffect(isAnimating ? 0.98 : 1.06)
+
+            AIOrbSceneView()
+                .frame(width: stageWidth, height: stageHeight)
+                .allowsHitTesting(false)
+
+            Ellipse()
+                .stroke(
+                    LinearGradient(
+                        colors: [
+                            Color.white.opacity(0.20),
+                            Color(hex: 0x38BDF8).opacity(0.12),
+                            Color(hex: 0xEC4899).opacity(0.14),
+                            Color.white.opacity(0.10)
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    lineWidth: 0.8
+                )
+                .frame(width: coreSize * 2.45, height: coreSize * 1.84)
+                .blur(radius: 0.8)
+                .opacity(0.8)
+        }
+        .frame(width: stageWidth, height: stageHeight)
+        .scaleEffect(isAnimating ? 1.024 : 0.985)
+        .rotation3DEffect(
+            .degrees(tiltAmount * 6),
+            axis: (x: 0.24, y: 1, z: 0.12),
+            perspective: 0.72
+        )
+    }
+}
+
+private struct AIOrbSceneView: UIViewRepresentable {
+    func makeUIView(context: Context) -> SCNView {
+        let scnView = SCNView()
+        let scene = AIOrbSceneComposer.makeScene()
+
+        scnView.scene = scene
+        scnView.pointOfView = scene.rootNode.childNode(
+            withName: AIOrbSceneComposer.cameraNodeName,
+            recursively: false
+        )
+        scnView.backgroundColor = .clear
+        scnView.isOpaque = false
+        scnView.allowsCameraControl = false
+        scnView.autoenablesDefaultLighting = false
+        scnView.antialiasingMode = .multisampling4X
+        scnView.rendersContinuously = true
+        scnView.preferredFramesPerSecond = 60
+        scnView.isPlaying = true
+
+        return scnView
+    }
+
+    func updateUIView(_ uiView: SCNView, context: Context) {
+    }
+}
+
+private enum AIOrbSceneComposer {
+    static let cameraNodeName = "ai_orb_camera"
+
+    static func makeScene() -> SCNScene {
+        let scene = SCNScene()
+        scene.background.contents = UIColor.clear
+
+        let cameraNode = makeCameraNode()
+        scene.rootNode.addChildNode(cameraNode)
+        makeLightNodes().forEach { scene.rootNode.addChildNode($0) }
+        scene.rootNode.addChildNode(makeOrbRootNode())
+
+        return scene
+    }
+
+    private static func makeCameraNode() -> SCNNode {
+        let camera = SCNCamera()
+        camera.fieldOfView = 34
+        camera.zNear = 0.1
+        camera.zFar = 60
+        camera.wantsHDR = true
+        camera.wantsExposureAdaptation = false
+        camera.bloomIntensity = 0.82
+        camera.bloomThreshold = 0.22
+        camera.bloomBlurRadius = 16
+
+        let cameraNode = SCNNode()
+        cameraNode.name = cameraNodeName
+        cameraNode.camera = camera
+        cameraNode.position = SCNVector3(0, 0, 8.6)
+        return cameraNode
+    }
+
+    private static func makeLightNodes() -> [SCNNode] {
+        let ambient = SCNLight()
+        ambient.type = .ambient
+        ambient.intensity = 280
+        ambient.color = UIColor(hex: 0x8697FF, alpha: 1)
+
+        let ambientNode = SCNNode()
+        ambientNode.light = ambient
+
+        let key = SCNLight()
+        key.type = .omni
+        key.intensity = 1350
+        key.color = UIColor(hex: 0x67E8F9, alpha: 1)
+        key.attenuationStartDistance = 4
+        key.attenuationEndDistance = 18
+
+        let keyNode = SCNNode()
+        keyNode.light = key
+        keyNode.position = SCNVector3(-2.6, 2.0, 4.8)
+
+        let fill = SCNLight()
+        fill.type = .omni
+        fill.intensity = 1100
+        fill.color = UIColor(hex: 0xF472B6, alpha: 1)
+        fill.attenuationStartDistance = 4
+        fill.attenuationEndDistance = 20
+
+        let fillNode = SCNNode()
+        fillNode.light = fill
+        fillNode.position = SCNVector3(2.4, -1.8, 4.4)
+
+        let rim = SCNLight()
+        rim.type = .directional
+        rim.intensity = 820
+        rim.color = UIColor(hex: 0xC084FC, alpha: 1)
+
+        let rimNode = SCNNode()
+        rimNode.light = rim
+        rimNode.eulerAngles = SCNVector3(-0.28, .pi - 0.52, 0)
+
+        return [ambientNode, keyNode, fillNode, rimNode]
+    }
+
+    private static func makeOrbRootNode() -> SCNNode {
+        let root = SCNNode()
+
+        root.addChildNode(makeRibbonGroup())
+        root.addChildNode(makeCoreNode())
+        root.addChildNode(makeSparkCluster(count: 28))
+
+        let bobUp = SCNAction.moveBy(x: 0, y: 0.12, z: 0, duration: 3.4)
+        bobUp.timingMode = .easeInEaseOut
+        let bobDown = SCNAction.moveBy(x: 0, y: -0.12, z: 0, duration: 3.4)
+        bobDown.timingMode = .easeInEaseOut
+        root.runAction(.repeatForever(.sequence([bobUp, bobDown])))
+
+        let yaw = SCNAction.rotateBy(x: 0.05, y: CGFloat.pi * 2, z: 0.10, duration: 26)
+        root.runAction(.repeatForever(yaw))
+
+        return root
+    }
+
+    private static func makeCoreNode() -> SCNNode {
+        let core = SCNNode()
+
+        let shellSphere = SCNSphere(radius: 1.28)
+        shellSphere.segmentCount = 96
+        shellSphere.firstMaterial = makeShellMaterial()
+        let shellNode = SCNNode(geometry: shellSphere)
+
+        let energySphere = SCNSphere(radius: 1.10)
+        energySphere.segmentCount = 96
+        energySphere.firstMaterial = makeEnergyMaterial(opacity: 0.86)
+        let energyNode = SCNNode(geometry: energySphere)
+        energyNode.eulerAngles = SCNVector3(0.44, -0.28, 0.14)
+        energyNode.runAction(.repeatForever(.rotateBy(x: 0.18, y: CGFloat.pi * 2, z: 0.22, duration: 13)))
+
+        let secondarySphere = SCNSphere(radius: 0.88)
+        secondarySphere.segmentCount = 72
+        secondarySphere.firstMaterial = makeEnergyMaterial(opacity: 0.54)
+        let secondaryNode = SCNNode(geometry: secondarySphere)
+        secondaryNode.eulerAngles = SCNVector3(-0.32, 0.22, -0.46)
+        secondaryNode.runAction(.repeatForever(.rotateBy(x: -0.16, y: -CGFloat.pi * 2, z: 0.10, duration: 17)))
+
+        core.addChildNode(shellNode)
+        core.addChildNode(energyNode)
+        core.addChildNode(secondaryNode)
+        core.addChildNode(makeGlowBlob(
+            radius: 0.54,
+            color: UIColor(hex: 0x5EEAD4, alpha: 1),
+            position: SCNVector3(-0.26, 0.20, 0.12),
+            delta: SCNVector3(0.18, -0.14, -0.08),
+            duration: 4.8
+        ))
+        core.addChildNode(makeGlowBlob(
+            radius: 0.48,
+            color: UIColor(hex: 0xF472B6, alpha: 1),
+            position: SCNVector3(0.34, -0.18, -0.12),
+            delta: SCNVector3(-0.20, 0.16, 0.06),
+            duration: 5.4
+        ))
+        core.addChildNode(makeGlowBlob(
+            radius: 0.34,
+            color: UIColor(hex: 0x60A5FA, alpha: 1),
+            position: SCNVector3(0.06, 0.34, -0.18),
+            delta: SCNVector3(-0.10, -0.16, 0.10),
+            duration: 4.2
+        ))
+
+        let pulseOut = SCNAction.scale(to: 1.03, duration: 2.8)
+        pulseOut.timingMode = .easeInEaseOut
+        let pulseIn = SCNAction.scale(to: 0.98, duration: 2.8)
+        pulseIn.timingMode = .easeInEaseOut
+        core.runAction(.repeatForever(.sequence([pulseOut, pulseIn])))
+
+        return core
+    }
+
+    private static func makeShellMaterial() -> SCNMaterial {
+        let material = SCNMaterial()
+        material.lightingModel = .physicallyBased
+        material.diffuse.contents = UIColor(hex: 0x211A67, alpha: 0.90)
+        material.emission.contents = UIColor(hex: 0x332380, alpha: 0.34)
+        material.specular.contents = UIColor.white.withAlphaComponent(0.70)
+        material.metalness.contents = 0.08
+        material.roughness.contents = 0.18
+        material.transparency = 0.94
+        material.fresnelExponent = 1.65
+        return material
+    }
+
+    private static func makeEnergyMaterial(opacity: CGFloat) -> SCNMaterial {
+        let material = SCNMaterial()
+        material.lightingModel = .constant
+        material.diffuse.contents = AIOrbAssets.orbTexture
+        material.emission.contents = AIOrbAssets.orbTexture
+        material.transparent.contents = AIOrbAssets.orbMask
+        material.transparency = opacity
+        material.writesToDepthBuffer = false
+        return material
+    }
+
+    private static func makeGlowBlob(
+        radius: CGFloat,
+        color: UIColor,
+        position: SCNVector3,
+        delta: SCNVector3,
+        duration: TimeInterval
+    ) -> SCNNode {
+        let sphere = SCNSphere(radius: radius)
+        sphere.segmentCount = 48
+
+        let material = SCNMaterial()
+        material.lightingModel = .constant
+        material.diffuse.contents = color.withAlphaComponent(0.04)
+        material.emission.contents = color.withAlphaComponent(0.92)
+        material.transparent.contents = AIOrbAssets.blobMask
+        material.transparency = 0.18
+        material.writesToDepthBuffer = false
+        sphere.firstMaterial = material
+
+        let node = SCNNode(geometry: sphere)
+        node.position = position
+
+        let forward = SCNAction.moveBy(
+            x: CGFloat(delta.x),
+            y: CGFloat(delta.y),
+            z: CGFloat(delta.z),
+            duration: duration
+        )
+        forward.timingMode = .easeInEaseOut
+
+        let backward = SCNAction.moveBy(
+            x: -CGFloat(delta.x),
+            y: -CGFloat(delta.y),
+            z: -CGFloat(delta.z),
+            duration: duration
+        )
+        backward.timingMode = .easeInEaseOut
+
+        let grow = SCNAction.scale(to: 1.12, duration: duration * 0.5)
+        grow.timingMode = .easeInEaseOut
+        let shrink = SCNAction.scale(to: 0.92, duration: duration * 0.5)
+        shrink.timingMode = .easeInEaseOut
+
+        node.runAction(.repeatForever(.sequence([forward, backward])))
+        node.runAction(.repeatForever(.sequence([grow, shrink])))
+        return node
+    }
+
+    private static func makeSparkCluster(count: Int) -> SCNNode {
+        let cluster = SCNNode()
+
+        for index in 0..<count {
+            let orbit = SCNNode()
+            orbit.eulerAngles = SCNVector3(
+                Float.random(in: -0.9...0.9),
+                Float.random(in: 0...(Float.pi * 2)),
+                Float.random(in: -0.8...0.8)
+            )
+
+            let spark = SCNSphere(radius: CGFloat.random(in: 0.024...0.058))
+            spark.segmentCount = 20
+
+            let material = SCNMaterial()
+            material.lightingModel = .constant
+            material.diffuse.contents = UIColor.white.withAlphaComponent(0.04)
+            material.emission.contents = sparkColor(for: index).withAlphaComponent(0.94)
+            material.writesToDepthBuffer = false
+            spark.firstMaterial = material
+
+            let sparkNode = SCNNode(geometry: spark)
+            sparkNode.position = SCNVector3(
+                Float.random(in: 1.10...1.56),
+                Float.random(in: -0.10...0.10),
+                Float.random(in: -0.12...0.12)
+            )
+
+            let fadeIn = SCNAction.fadeOpacity(to: CGFloat.random(in: 0.75...1.0), duration: Double.random(in: 1.2...2.2))
+            fadeIn.timingMode = .easeInEaseOut
+            let fadeOut = SCNAction.fadeOpacity(to: CGFloat.random(in: 0.25...0.55), duration: Double.random(in: 1.2...2.2))
+            fadeOut.timingMode = .easeInEaseOut
+            sparkNode.opacity = CGFloat.random(in: 0.3...0.7)
+            sparkNode.runAction(.repeatForever(.sequence([fadeIn, fadeOut])))
+
+            let pulseOut = SCNAction.scale(to: CGFloat.random(in: 1.18...1.42), duration: Double.random(in: 1.4...2.4))
+            pulseOut.timingMode = .easeInEaseOut
+            let pulseIn = SCNAction.scale(to: CGFloat.random(in: 0.72...0.96), duration: Double.random(in: 1.4...2.4))
+            pulseIn.timingMode = .easeInEaseOut
+            sparkNode.runAction(.repeatForever(.sequence([pulseOut, pulseIn])))
+
+            orbit.addChildNode(sparkNode)
+            orbit.runAction(.repeatForever(
+                .rotateBy(
+                    x: CGFloat.random(in: -0.4...0.5),
+                    y: CGFloat.pi * 2,
+                    z: CGFloat.random(in: -0.8...0.8),
+                    duration: Double.random(in: 5.4...9.8)
+                )
+            ))
+            cluster.addChildNode(orbit)
+        }
+
+        return cluster
+    }
+
+    private static func sparkColor(for index: Int) -> UIColor {
+        switch index % 4 {
+        case 0:
+            return UIColor(hex: 0x67E8F9, alpha: 1)
+        case 1:
+            return UIColor(hex: 0xC084FC, alpha: 1)
+        case 2:
+            return UIColor(hex: 0xF472B6, alpha: 1)
+        default:
+            return UIColor(hex: 0xE0F2FE, alpha: 1)
+        }
+    }
+
+    private static func makeRibbonGroup() -> SCNNode {
+        let group = SCNNode()
+
+        group.addChildNode(makeRibbonRing(
+            ringRadius: 1.98,
+            pipeRadius: 0.015,
+            scale: SCNVector3(1.22, 0.86, 1.0),
+            eulerAngles: SCNVector3(0.50, 0.22, 0.38),
+            tint: UIColor(hex: 0x67E8F9, alpha: 1),
+            opacity: 0.52,
+            duration: 12
+        ))
+        group.addChildNode(makeRibbonRing(
+            ringRadius: 2.10,
+            pipeRadius: 0.012,
+            scale: SCNVector3(0.92, 1.34, 1.0),
+            eulerAngles: SCNVector3(-0.38, 0.40, -0.62),
+            tint: UIColor(hex: 0xA855F7, alpha: 1),
+            opacity: 0.42,
+            duration: 16
+        ))
+        group.addChildNode(makeRibbonRing(
+            ringRadius: 2.26,
+            pipeRadius: 0.011,
+            scale: SCNVector3(1.38, 0.82, 1.0),
+            eulerAngles: SCNVector3(0.18, -0.34, 0.92),
+            tint: UIColor(hex: 0xF472B6, alpha: 1),
+            opacity: 0.34,
+            duration: 19
+        ))
+        group.addChildNode(makeRibbonRing(
+            ringRadius: 2.42,
+            pipeRadius: 0.010,
+            scale: SCNVector3(1.14, 1.18, 1.0),
+            eulerAngles: SCNVector3(-0.70, -0.12, 0.28),
+            tint: UIColor(hex: 0x38BDF8, alpha: 1),
+            opacity: 0.22,
+            duration: 24
+        ))
+
+        let swayLeft = SCNAction.rotateTo(x: 0.10, y: 0.06, z: -0.10, duration: 3.6, usesShortestUnitArc: true)
+        swayLeft.timingMode = .easeInEaseOut
+        let swayRight = SCNAction.rotateTo(x: -0.08, y: -0.06, z: 0.08, duration: 3.6, usesShortestUnitArc: true)
+        swayRight.timingMode = .easeInEaseOut
+        group.runAction(.repeatForever(.sequence([swayLeft, swayRight])))
+
+        return group
+    }
+
+    private static func makeRibbonRing(
+        ringRadius: CGFloat,
+        pipeRadius: CGFloat,
+        scale: SCNVector3,
+        eulerAngles: SCNVector3,
+        tint: UIColor,
+        opacity: CGFloat,
+        duration: TimeInterval
+    ) -> SCNNode {
+        let torus = SCNTorus(ringRadius: ringRadius, pipeRadius: pipeRadius)
+        torus.ringSegmentCount = 220
+        torus.pipeSegmentCount = 24
+
+        let material = SCNMaterial()
+        material.lightingModel = .constant
+        material.diffuse.contents = tint.withAlphaComponent(0.10)
+        material.emission.contents = tint.withAlphaComponent(0.92)
+        material.blendMode = .add
+        material.isDoubleSided = true
+        material.writesToDepthBuffer = false
+        torus.firstMaterial = material
+
+        let node = SCNNode(geometry: torus)
+        node.scale = scale
+        node.eulerAngles = eulerAngles
+        node.opacity = opacity
+        node.runAction(.repeatForever(
+            .rotateBy(
+                x: CGFloat.random(in: -0.4...0.5),
+                y: CGFloat.random(in: 0.8...1.4),
+                z: CGFloat.pi * 2,
+                duration: duration
+            )
+        ))
+        return node
+    }
+
+}
+
+private enum AIOrbAssets {
+    static let orbTexture = AIOrbTextureFactory.makeOrbTexture()
+    static let orbMask = AIOrbTextureFactory.makeRadialMaskTexture()
+    static let blobMask = AIOrbTextureFactory.makeBlobMaskTexture()
+}
+
+private enum AIOrbTextureFactory {
+    static func makeOrbTexture(size: CGFloat = 768) -> UIImage {
+        let renderer = UIGraphicsImageRenderer(size: CGSize(width: size, height: size))
+        return renderer.image { context in
+            let rect = CGRect(origin: .zero, size: CGSize(width: size, height: size))
+            let cgContext = context.cgContext
+            cgContext.setFillColor(UIColor(hex: 0x100B33, alpha: 1).cgColor)
+            cgContext.fill(rect)
+
+            drawRadialGlow(
+                in: cgContext,
+                rect: rect,
+                center: CGPoint(x: size * 0.34, y: size * 0.32),
+                radius: size * 0.34,
+                colors: [
+                    UIColor(hex: 0x7DD3FC, alpha: 0.95),
+                    UIColor(hex: 0x38BDF8, alpha: 0.74),
+                    UIColor.clear
+                ]
+            )
+            drawRadialGlow(
+                in: cgContext,
+                rect: rect,
+                center: CGPoint(x: size * 0.66, y: size * 0.60),
+                radius: size * 0.36,
+                colors: [
+                    UIColor(hex: 0xF472B6, alpha: 0.88),
+                    UIColor(hex: 0xC026D3, alpha: 0.64),
+                    UIColor.clear
+                ]
+            )
+            drawRadialGlow(
+                in: cgContext,
+                rect: rect,
+                center: CGPoint(x: size * 0.53, y: size * 0.72),
+                radius: size * 0.30,
+                colors: [
+                    UIColor(hex: 0x4F46E5, alpha: 0.90),
+                    UIColor(hex: 0x3730A3, alpha: 0.52),
+                    UIColor.clear
+                ]
+            )
+
+            let highlightRect = rect.insetBy(dx: size * 0.18, dy: size * 0.20)
+            let highlightPath = UIBezierPath(roundedRect: highlightRect, cornerRadius: size * 0.26)
+            cgContext.saveGState()
+            cgContext.addPath(highlightPath.cgPath)
+            cgContext.clip()
+            let highlightColors = [
+                UIColor.white.withAlphaComponent(0.28).cgColor,
+                UIColor(hex: 0x7DD3FC, alpha: 0.04).cgColor,
+                UIColor.clear.cgColor
+            ] as CFArray
+            let gradient = CGGradient(
+                colorsSpace: CGColorSpaceCreateDeviceRGB(),
+                colors: highlightColors,
+                locations: [0, 0.35, 1]
+            )
+            cgContext.drawLinearGradient(
+                gradient!,
+                start: CGPoint(x: size * 0.18, y: size * 0.14),
+                end: CGPoint(x: size * 0.74, y: size * 0.56),
+                options: []
+            )
+            cgContext.restoreGState()
+        }
+    }
+
+    static func makeRadialMaskTexture(size: CGFloat = 768) -> UIImage {
+        let renderer = UIGraphicsImageRenderer(size: CGSize(width: size, height: size))
+        return renderer.image { context in
+            let rect = CGRect(origin: .zero, size: CGSize(width: size, height: size))
+            drawRadialGlow(
+                in: context.cgContext,
+                rect: rect,
+                center: CGPoint(x: size * 0.5, y: size * 0.5),
+                radius: size * 0.48,
+                colors: [
+                    UIColor.white,
+                    UIColor.white.withAlphaComponent(0.95),
+                    UIColor.white.withAlphaComponent(0.6),
+                    UIColor.clear
+                ]
+            )
+        }
+    }
+
+    static func makeBlobMaskTexture(size: CGFloat = 512) -> UIImage {
+        let renderer = UIGraphicsImageRenderer(size: CGSize(width: size, height: size))
+        return renderer.image { context in
+            let rect = CGRect(origin: .zero, size: CGSize(width: size, height: size))
+            let cgContext = context.cgContext
+            cgContext.setFillColor(UIColor.clear.cgColor)
+            cgContext.fill(rect)
+
+            drawRadialGlow(
+                in: cgContext,
+                rect: rect,
+                center: CGPoint(x: size * 0.46, y: size * 0.44),
+                radius: size * 0.38,
+                colors: [
+                    UIColor.white,
+                    UIColor.white.withAlphaComponent(0.9),
+                    UIColor.clear
+                ]
+            )
+        }
+    }
+
+    private static func drawRadialGlow(
+        in context: CGContext,
+        rect: CGRect,
+        center: CGPoint,
+        radius: CGFloat,
+        colors: [UIColor]
+    ) {
+        let locations = colors.indices.map { CGFloat($0) / CGFloat(max(colors.count - 1, 1)) }
+        let gradient = CGGradient(
+            colorsSpace: CGColorSpaceCreateDeviceRGB(),
+            colors: colors.map(\.cgColor) as CFArray,
+            locations: locations
+        )
+        context.drawRadialGradient(
+            gradient!,
+            startCenter: center,
+            startRadius: 0,
+            endCenter: center,
+            endRadius: radius,
+            options: [.drawsAfterEndLocation]
+        )
+    }
+}
+
+private extension UIColor {
+    convenience init(hex: UInt32, alpha: CGFloat = 1) {
+        let red = CGFloat((hex & 0xFF0000) >> 16) / 255
+        let green = CGFloat((hex & 0x00FF00) >> 8) / 255
+        let blue = CGFloat(hex & 0x0000FF) / 255
+        self.init(red: red, green: green, blue: blue, alpha: alpha)
     }
 }
 
