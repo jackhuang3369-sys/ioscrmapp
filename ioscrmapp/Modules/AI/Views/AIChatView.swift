@@ -11,6 +11,7 @@ struct AIChatView: View {
     @State private var tilt3D: CGFloat = 0
     @State private var promptOffsets: [CGFloat] = [50, 50, 50, 50]
     @State private var promptOpacities: [Double] = [0, 0, 0, 0]
+    @State private var glowOffset: CGFloat = -1.2 // 驱动详情页扫光效果
 
     init(
         custSubInfo: CustSubInfo,
@@ -90,6 +91,9 @@ struct AIChatView: View {
             }
             withAnimation(.easeInOut(duration: 6).repeatForever(autoreverses: true)) {
                 tilt3D = 1
+            }
+            withAnimation(.linear(duration: 3).repeatForever(autoreverses: false)) {
+                glowOffset = 1.2
             }
             animatePrompts()
         }
@@ -299,7 +303,8 @@ struct AIChatView: View {
             }
             .buttonStyle(.plain)
         }
-        .padding(.horizontal, 16)
+        .padding(.horizontal, 28)
+        .frame(height: 50)
         .animation(.spring(), value: viewModel.currentStep)
     }
 
@@ -706,7 +711,7 @@ struct AIChatView: View {
                             Image(systemName: "info.circle.fill")
                                 .font(.system(size: 14))
                                 .foregroundColor(Color(hex: 0x38bdf8))
-                            Text("基本信息")
+                            Text("Plan Information")
                                 .font(.system(size: 15, weight: .semibold))
                                 .foregroundColor(.white)
                         }
@@ -725,10 +730,23 @@ struct AIChatView: View {
                                     .fill(Color.white.opacity(0.04))
                             )
                     )
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 20, style: .continuous)
+                            .stroke(
+                                LinearGradient(
+                                    colors: [.clear, Color(hex: 0x38bdf8).opacity(0.35), .clear],
+                                    startPoint: UnitPoint(x: glowOffset - 0.2, y: glowOffset - 0.2),
+                                    endPoint: UnitPoint(x: glowOffset + 0.2, y: glowOffset + 0.2)
+                                ),
+                                lineWidth: 1.2
+                            )
+                    )
                     .overlay(
                         RoundedRectangle(cornerRadius: 20, style: .continuous)
                             .stroke(Color.white.opacity(0.1), lineWidth: 0.5)
                     )
+                    .shadow(color: Color(hex: 0x38bdf8).opacity(0.08), radius: 10, x: 0, y: 5)
 
                     // 业务详情卡片
                     VStack(alignment: .leading, spacing: 0) {
@@ -771,10 +789,23 @@ struct AIChatView: View {
                                     .fill(Color.white.opacity(0.04))
                             )
                     )
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 20, style: .continuous)
+                            .stroke(
+                                LinearGradient(
+                                    colors: [.clear, Color(hex: 0xc148ff).opacity(0.25), .clear],
+                                    startPoint: UnitPoint(x: 1 - glowOffset - 0.2, y: 1 - glowOffset - 0.2),
+                                    endPoint: UnitPoint(x: 1 - glowOffset + 0.2, y: 1 - glowOffset + 0.2)
+                                ),
+                                lineWidth: 1.2
+                            )
+                    )
                     .overlay(
                         RoundedRectangle(cornerRadius: 20, style: .continuous)
                             .stroke(Color.white.opacity(0.1), lineWidth: 0.5)
                     )
+                    .shadow(color: Color(hex: 0xc148ff).opacity(0.05), radius: 10, x: 0, y: 5)
 
                     // 立即办理按钮
                     Button {
@@ -804,7 +835,7 @@ struct AIChatView: View {
 
     private func successLayer(hPad: CGFloat) -> some View {
         VStack(spacing: 0) {
-            headerPlaceholder
+            headerBar
             
             Spacer()
             
