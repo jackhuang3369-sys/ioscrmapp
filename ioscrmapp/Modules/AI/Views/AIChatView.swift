@@ -40,7 +40,7 @@ struct AIChatView: View {
                 bottomPadding: bottomPad
             )
 
-            ZStack {
+            ZStack(alignment: .center) {
                 deepBackground
 
                 // --- Home Layer (Layer 1) ---
@@ -48,6 +48,7 @@ struct AIChatView: View {
                     coreSize: coreSize,
                     layout: homeLayout
                 )
+                .frame(maxWidth: .infinity)
                 .blur(radius: viewModel.currentStep == .home ? 0 : 15)
                 .scaleEffect(viewModel.currentStep == .home ? 1.0 : 0.85)
                 .opacity(viewModel.currentStep == .home ? 1.0 : 0.0)
@@ -56,6 +57,7 @@ struct AIChatView: View {
                 // --- Layer 2: Offers List ---
                 if viewModel.currentStep == .offersList {
                     offersListLayer(hPad: hPad, bottomPad: bottomPad)
+                        .frame(maxWidth: .infinity)
                         .transition(.asymmetric(insertion: .move(edge: .trailing).combined(with: .opacity), removal: .move(edge: .leading).combined(with: .opacity)))
                         .zIndex(2)
                 }
@@ -63,6 +65,7 @@ struct AIChatView: View {
                 // --- Layer 3: Offer Details ---
                 if case .offerDetails(let offer) = viewModel.currentStep {
                     offerDetailsLayer(offer: offer, hPad: hPad, bottomPad: bottomPad)
+                        .frame(maxWidth: .infinity)
                         .transition(.asymmetric(insertion: .move(edge: .trailing).combined(with: .opacity), removal: .move(edge: .leading).combined(with: .opacity)))
                         .zIndex(3)
                 }
@@ -70,10 +73,13 @@ struct AIChatView: View {
                 // --- Layer 4: Success ---
                 if viewModel.currentStep == .success {
                     successLayer(hPad: hPad)
+                        .frame(maxWidth: .infinity)
                         .transition(.asymmetric(insertion: .scale(scale: 0.95).combined(with: .opacity), removal: .opacity))
                         .zIndex(4)
                 }
             }
+            .frame(width: proxy.size.width)
+            .clipped()
         }
         .onAppear {
             withAnimation(.easeInOut(duration: 8).repeatForever(autoreverses: true)) {
@@ -100,8 +106,9 @@ struct AIChatView: View {
                     .multilineTextAlignment(.center)
                     .lineLimit(2)
                     .minimumScaleFactor(0.8)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .shadow(color: Color.black.opacity(0.15), radius: 8, x: 0, y: 4)
+                    .padding(.horizontal, 24)
+                    .frame(width: layout.titleWidth)
+                    .frame(maxWidth: .infinity)
 
                 // Optional: Subtitle line to add context or just a subtle visual line
                 RoundedRectangle(cornerRadius: 1)
@@ -111,9 +118,9 @@ struct AIChatView: View {
                     .frame(width: 120, height: 1)
                     .opacity(0.8)
             }
-            .frame(width: layout.titleWidth)
-            .padding(.top, layout.titleTopPadding)
             .frame(maxWidth: .infinity)
+            .padding(.top, 16)
+            .padding(.bottom, 12)
 
             homeHeroSection(coreSize: coreSize, layout: layout)
                 .frame(width: layout.heroStageWidth, height: layout.heroHeight)
@@ -166,28 +173,27 @@ struct AIChatView: View {
         bottomPadding: CGFloat
     ) -> AIChatHomeLayout {
         let isCompactHeight = size.height < 720
-        let contentWidth = min(max(size.width - (horizontalPadding * 2) - 12, 280), 344)
-        let heroStageWidth = min(max(size.width - (horizontalPadding * 2), 320), 420)
+        // 完全动态计算宽度，移除会导致溢出的 Min 最小值（320等）
+        let contentWidth = size.width - (horizontalPadding * 2)
+        let heroStageWidth = contentWidth
         let titleFontSize: CGFloat = size.height < 540 ? 26 : (isCompactHeight ? 28 : 32)
-        let titleWidth = min(max(contentWidth * 0.88, 260), 320)
+        let titleWidth = min(contentWidth * 0.95, 340)
         let reservedHeight = max(safeAreaInsets.top, DUSpacing.lg) + 44 + bottomPadding + 124 + (isCompactHeight ? 72 : 88)
         let heroHeight = min(max(size.height - reservedHeight, 250), 420)
-        let promptMaxWidth = min(max(heroStageWidth * 0.32, 120), 160)
+        let promptMaxWidth = min(heroStageWidth * 0.35, 160)
 
         return AIChatHomeLayout(
             contentWidth: contentWidth,
             heroStageWidth: heroStageWidth,
             horizontalPadding: horizontalPadding,
-            topPadding: max(safeAreaInsets.top, DUSpacing.lg),
-            titleTopPadding: isCompactHeight ? DUSpacing.md : DUSpacing.xl,
+            bottomPadding: bottomPadding,
+            isCompactHeight: isCompactHeight,
             titleFontSize: titleFontSize,
             titleWidth: titleWidth,
-            heroTopPadding: isCompactHeight ? DUSpacing.lg : DUSpacing.xxl,
             heroHeight: heroHeight,
-            voiceTopSpacing: isCompactHeight ? DUSpacing.md : DUSpacing.xl,
             promptMaxWidth: promptMaxWidth,
-            bottomPadding: bottomPadding,
-            isCompactHeight: isCompactHeight
+            titleTopPadding: max(safeAreaInsets.top, DUSpacing.lg),
+            safeAreaInsets: safeAreaInsets
         )
     }
 
@@ -195,7 +201,6 @@ struct AIChatView: View {
 
     private var deepBackground: some View {
         ZStack {
-            // 液态玻璃 - 半透明色调（底部 material 透出）
             LinearGradient(
                 gradient: Gradient(colors: [
                     Color(hex: 0x0F172A).opacity(0.65),
@@ -207,7 +212,6 @@ struct AIChatView: View {
                 endPoint: .bottomTrailing
             )
 
-            // 环境光：左上蓝色
             RadialGradient(
                 colors: [Color(hex: 0x38BDF8).opacity(0.18), .clear],
                 center: .topLeading,
@@ -215,7 +219,6 @@ struct AIChatView: View {
                 endRadius: 500
             )
 
-            // 环境光：底部粉紫色
             RadialGradient(
                 colors: [Color(hex: 0xEC4899).opacity(0.12), .clear],
                 center: .bottomTrailing,
@@ -223,14 +226,12 @@ struct AIChatView: View {
                 endRadius: 400
             )
 
-            // 中央微光
             Circle()
                 .fill(Color(hex: 0x818CF8).opacity(0.08))
                 .frame(width: 500, height: 500)
                 .blur(radius: 80)
                 .offset(y: 40)
 
-            // 动态光斑 - 随呼吸动画漂移
             Circle()
                 .fill(Color(hex: 0x38BDF8).opacity(0.06))
                 .frame(width: 300, height: 300)
@@ -250,7 +251,6 @@ struct AIChatView: View {
 
     private func orbMesh(size: CGFloat) -> some View {
         ZStack {
-            // Organic ripple mesh behind orb
             ForEach(0..<6, id: \.self) { i in
                 HeartRipplePath()
                     .stroke(
@@ -277,24 +277,14 @@ struct AIChatView: View {
             if viewModel.currentStep != .home {
                 Button { viewModel.goBack() } label: {
                     Image(systemName: "chevron.left")
-                        .font(.system(size: 22, weight: .semibold))
+                        .font(.system(size: 18, weight: .semibold))
                         .foregroundColor(.white.opacity(0.8))
-                        .frame(width: 32, height: 32)
+                        .frame(width: 40, height: 40)
+                        .background(.white.opacity(0.1))
+                        .clipShape(Circle())
                 }
-                .buttonStyle(.plain)
-                .transition(.opacity.combined(with: .move(edge: .leading)))
             }
-            
             Spacer()
-            
-            Button { /* 鍏ㄥ睆閫昏緫 */ } label: {
-                Image(systemName: "arrow.up.left.and.arrow.down.right")
-                    .font(.system(size: 16, weight: .regular))
-                    .foregroundColor(.white.opacity(0.8))
-                    .frame(width: 32, height: 32)
-            }
-            .buttonStyle(.plain)
-
             Button { viewModel.requestNewChat() } label: {
                 Image(systemName: "bubble.left")
                     .font(.system(size: 18, weight: .regular))
@@ -453,7 +443,7 @@ struct AIChatView: View {
                 .multilineTextAlignment(.center)
                 .lineLimit(2)
                 .minimumScaleFactor(0.85)
-                .padding(.horizontal, 20)
+                .padding(.horizontal, 18)
                 .padding(.vertical, 12)
                 .frame(width: width)
                 .frame(minHeight: 58)
@@ -574,9 +564,10 @@ struct AIChatView: View {
                         offerCard(offer)
                     }
                 }
-                .padding(.horizontal, hPad + 6)
-                .padding(.bottom, bottomPad + 60)
+                .padding(.horizontal, hPad)
+                .padding(.bottom, bottomPad + 50)
             }
+            .frame(maxWidth: .infinity)
         }
         .padding(.top, 8)
     }
@@ -1083,4 +1074,18 @@ struct HeartRipplePath: Shape {
         
         return path
     }
+}
+
+struct AIChatHomeLayout {
+    let contentWidth: CGFloat
+    let heroStageWidth: CGFloat
+    let horizontalPadding: CGFloat
+    let bottomPadding: CGFloat
+    let isCompactHeight: Bool
+    let titleFontSize: CGFloat
+    let titleWidth: CGFloat
+    let heroHeight: CGFloat
+    let promptMaxWidth: CGFloat
+    let titleTopPadding: CGFloat
+    let safeAreaInsets: EdgeInsets
 }
