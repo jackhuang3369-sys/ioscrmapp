@@ -206,9 +206,41 @@ struct HomeView: View {
                         .frame(maxWidth: .infinity)
                         .frame(height: sheetHeight)
                         .padding(.horizontal, horizontalInset)
+                        .background(
+                            ZStack {
+                                // 液态玻璃材质基底
+                                RoundedRectangle(cornerRadius: 36, style: .continuous)
+                                    .fill(.ultraThinMaterial)
+                                // 半透明蓝紫渐变叠加
+                                RoundedRectangle(cornerRadius: 36, style: .continuous)
+                                    .fill(
+                                        LinearGradient(
+                                            colors: [
+                                                Color(hex: 0x1E3A8A).opacity(0.25),
+                                                Color(hex: 0x312E81).opacity(0.15),
+                                                Color(hex: 0x1E1B4B).opacity(0.25)
+                                            ],
+                                            startPoint: .topLeading,
+                                            endPoint: .bottomTrailing
+                                        )
+                                    )
+                            }
+                        )
                         .clipShape(RoundedRectangle(cornerRadius: 36, style: .continuous))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 36, style: .continuous)
+                                .stroke(
+                                    LinearGradient(
+                                        colors: [.white.opacity(0.45), .white.opacity(0.08), .white.opacity(0.25)],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    ),
+                                    lineWidth: 0.5
+                                )
+                        )
                         .ignoresSafeArea(edges: .bottom)
-                        .shadow(color: Color.black.opacity(0.3), radius: 40, x: 0, y: -10)
+                        .shadow(color: Color(hex: 0x1E3A8A).opacity(0.4), radius: 50, x: 0, y: -12)
+                        .shadow(color: Color.black.opacity(0.25), radius: 20, x: 0, y: -5)
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }

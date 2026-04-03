@@ -8,6 +8,7 @@ struct AIChatView: View {
 
     @State private var isAnimatingCore = false
     @State private var coreRotation: Double = 0
+    @State private var tilt3D: CGFloat = 0
     @State private var promptOffsets: [CGFloat] = [50, 50, 50, 50]
     @State private var promptOpacities: [Double] = [0, 0, 0, 0]
 
@@ -75,13 +76,14 @@ struct AIChatView: View {
             }
         }
         .onAppear {
-            // SwiftUI 在复杂视图里有时会导致基于布尔值的连续动画失效（变静态）。
-            // 解决办法：采用一个大范围波动的 Double 类型配合 easeInOut 和极大 duration。
             withAnimation(.easeInOut(duration: 8).repeatForever(autoreverses: true)) {
                 isAnimatingCore = true
             }
             withAnimation(.linear(duration: 35).repeatForever(autoreverses: false)) {
                 coreRotation = 360
+            }
+            withAnimation(.easeInOut(duration: 6).repeatForever(autoreverses: true)) {
+                tilt3D = 1
             }
             animatePrompts()
         }
@@ -135,11 +137,16 @@ struct AIChatView: View {
             let orbOffsetY: CGFloat = layout.isCompactHeight ? 10 : 18
 
             ZStack {
+                // 浮动光粒子
+                floatingParticles(in: proxy.size)
+
                 orbMesh(size: meshSize)
                     .offset(y: orbOffsetY + 8)
+                    .rotation3DEffect(.degrees(tilt3D * 4), axis: (x: 0.3, y: 1, z: 0), perspective: 0.8)
 
                 aiCoreOrb(coreSize: coreSize)
                     .offset(y: orbOffsetY)
+                    .rotation3DEffect(.degrees(tilt3D * 10), axis: (x: 0.2, y: 1, z: 0.1), perspective: 0.5)
 
                 scatteredPrompts(
                     coreSize: coreSize,
@@ -161,11 +168,11 @@ struct AIChatView: View {
         let isCompactHeight = size.height < 720
         let contentWidth = min(max(size.width - (horizontalPadding * 2) - 12, 280), 344)
         let heroStageWidth = min(max(size.width - (horizontalPadding * 2), 320), 420)
-        let titleFontSize: CGFloat = size.height < 540 ? 28 : (isCompactHeight ? 30 : 34)
-        let titleWidth = min(max(contentWidth * 0.76, 216), 252)
+        let titleFontSize: CGFloat = size.height < 540 ? 26 : (isCompactHeight ? 28 : 32)
+        let titleWidth = min(max(contentWidth * 0.88, 260), 320)
         let reservedHeight = max(safeAreaInsets.top, DUSpacing.lg) + 44 + bottomPadding + 124 + (isCompactHeight ? 72 : 88)
         let heroHeight = min(max(size.height - reservedHeight, 250), 420)
-        let promptMaxWidth = min(max(heroStageWidth * 0.30, 108), 150)
+        let promptMaxWidth = min(max(heroStageWidth * 0.32, 120), 160)
 
         return AIChatHomeLayout(
             contentWidth: contentWidth,
@@ -188,40 +195,53 @@ struct AIChatView: View {
 
     private var deepBackground: some View {
         ZStack {
-            // 深邃的海蓝色与紫色渐变，增加 3D 深度感
+            // 液态玻璃 - 半透明色调（底部 material 透出）
             LinearGradient(
                 gradient: Gradient(colors: [
-                    Color(hex: 0x0F172A), // 极深蓝
-                    Color(hex: 0x1E3A8A), // 宝蓝
-                    Color(hex: 0x312E81), // 靛蓝
-                    Color(hex: 0x1E1B4B)  // 紫底
+                    Color(hex: 0x0F172A).opacity(0.65),
+                    Color(hex: 0x1E3A8A).opacity(0.55),
+                    Color(hex: 0x312E81).opacity(0.50),
+                    Color(hex: 0x1E1B4B).opacity(0.60)
                 ]),
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
 
-            // 环境光：左上深蓝色
+            // 环境光：左上蓝色
             RadialGradient(
-                colors: [Color(hex: 0x38BDF8).opacity(0.12), .clear],
+                colors: [Color(hex: 0x38BDF8).opacity(0.18), .clear],
                 center: .topLeading,
                 startRadius: 0,
-                endRadius: 600
+                endRadius: 500
             )
 
             // 环境光：底部粉紫色
             RadialGradient(
-                colors: [Color(hex: 0xEC4899).opacity(0.08), .clear],
+                colors: [Color(hex: 0xEC4899).opacity(0.12), .clear],
                 center: .bottomTrailing,
                 startRadius: 0,
-                endRadius: 500
+                endRadius: 400
             )
-            
-            // 环境光：中央微光，增加通透度
+
+            // 中央微光
             Circle()
-                .fill(Color(hex: 0x818CF8).opacity(0.1))
-                .frame(width: 600, height: 600)
-                .blur(radius: 100)
-                .offset(y: 50)
+                .fill(Color(hex: 0x818CF8).opacity(0.08))
+                .frame(width: 500, height: 500)
+                .blur(radius: 80)
+                .offset(y: 40)
+
+            // 动态光斑 - 随呼吸动画漂移
+            Circle()
+                .fill(Color(hex: 0x38BDF8).opacity(0.06))
+                .frame(width: 300, height: 300)
+                .blur(radius: 60)
+                .offset(x: isAnimatingCore ? 50 : -50, y: isAnimatingCore ? -30 : 30)
+
+            Circle()
+                .fill(Color(hex: 0xA855F7).opacity(0.05))
+                .frame(width: 250, height: 250)
+                .blur(radius: 50)
+                .offset(x: isAnimatingCore ? -40 : 40, y: isAnimatingCore ? 50 : -20)
         }
         .ignoresSafeArea()
     }
@@ -386,8 +406,8 @@ struct AIChatView: View {
         let promptHalfWidth = promptWidth * 0.5
         let promptHeight: CGFloat = 56
         let promptHalfHeight = promptHeight * 0.5
-        let horizontalMargin: CGFloat = 18
-        let verticalMargin: CGFloat = 14
+        let horizontalMargin: CGFloat = 32
+        let verticalMargin: CGFloat = 16
         let minX = promptHalfWidth + horizontalMargin
         let maxX = max(availableSize.width - promptHalfWidth - horizontalMargin, minX)
         let minY = promptHalfHeight + verticalMargin
@@ -395,16 +415,16 @@ struct AIChatView: View {
         let orbCenterX = availableSize.width * 0.5
         let orbCenterY = (availableSize.height * 0.5) + orbOffsetY
         let topLeftPoint = CGPoint(
-            x: min(max(orbCenterX - coreSize * 0.88, minX), maxX),
-            y: min(max(orbCenterY - coreSize * 0.80, minY), maxY)
+            x: min(max(orbCenterX - coreSize * 0.72, minX), maxX),
+            y: min(max(orbCenterY - coreSize * 0.78, minY), maxY)
         )
         let bottomLeftPoint = CGPoint(
-            x: min(max(orbCenterX - coreSize * 0.70, minX), maxX),
-            y: min(max(orbCenterY + coreSize * 0.92, minY), maxY)
+            x: min(max(orbCenterX - coreSize * 0.60, minX), maxX),
+            y: min(max(orbCenterY + coreSize * 0.85, minY), maxY)
         )
         let rightPoint = CGPoint(
-            x: min(max(orbCenterX + coreSize * 0.95, minX), maxX),
-            y: min(max(orbCenterY - coreSize * 0.26, minY), maxY)
+            x: min(max(orbCenterX + coreSize * 0.78, minX), maxX),
+            y: min(max(orbCenterY + coreSize * 0.15, minY), maxY)
         )
 
         return ZStack {
@@ -813,6 +833,37 @@ struct AIChatView: View {
             withAnimation(.spring(response: 0.6, dampingFraction: 0.7).delay(Double(index) * 0.1 + 0.2)) {
                 promptOffsets[index] = 0
                 promptOpacities[index] = 1
+            }
+        }
+    }
+
+    // MARK: - 3D 浮动光粒子
+
+    private func floatingParticles(in size: CGSize) -> some View {
+        ZStack {
+            ForEach(0..<10, id: \.self) { i in
+                let angle = Double(i) * .pi * 2.0 / 10.0
+                let radius = min(size.width, size.height) * 0.35
+                let baseX = CGFloat(cos(angle)) * radius
+                let baseY = CGFloat(sin(angle)) * radius
+                let dotSize: CGFloat = CGFloat(1.5 + Double(i % 3) * 1.2)
+                let drift: CGFloat = i % 2 == 0 ? 15 : -15
+
+                Circle()
+                    .fill(
+                        i % 3 == 0
+                            ? Color(hex: 0x38BDF8).opacity(0.6)
+                            : i % 3 == 1
+                                ? Color(hex: 0xA855F7).opacity(0.5)
+                                : Color.white.opacity(0.5)
+                    )
+                    .frame(width: dotSize, height: dotSize)
+                    .blur(radius: 1)
+                    .offset(
+                        x: baseX + (isAnimatingCore ? drift : -drift),
+                        y: baseY + (isAnimatingCore ? -drift * 0.6 : drift * 0.6)
+                    )
+                    .opacity(isAnimatingCore ? 0.7 : 0.15)
             }
         }
     }
