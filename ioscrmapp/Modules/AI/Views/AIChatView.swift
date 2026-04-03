@@ -29,7 +29,7 @@ struct AIChatView: View {
 
     var body: some View {
         GeometryReader { proxy in
-            let coreSize = min(max(proxy.size.width * 0.34, 110), 150)
+            let coreSize = min(max(proxy.size.width * 0.38, 150), 170)
             let hPad = min(max(proxy.size.width * 0.06, 18), 28)
             let bottomPad = max(proxy.safeAreaInsets.bottom, 16) + 12
 
@@ -39,7 +39,7 @@ struct AIChatView: View {
                 // --- Home Layer (Layer 1) ---
                 VStack(spacing: 0) {
                     headerBar
-                        .padding(.top, 8)
+                        .padding(.top, 10)
 
                     Text(viewModel.title)
                         .font(.du(proxy.size.height < 500 ? 28 : 32, weight: .semibold))
@@ -48,7 +48,7 @@ struct AIChatView: View {
                         .lineLimit(3)
                         .minimumScaleFactor(0.82)
                         .shadow(color: Color.black.opacity(0.15), radius: 2, x: 0, y: 2)
-                        .frame(maxWidth: 250, alignment: .leading) // 对标 HTML max-width: 250px
+                        .frame(maxWidth: 250, alignment: .leading) // Match HTML max width: 250px
                         .padding(.top, DUSpacing.md)
                         .padding(.horizontal, hPad + 4)
 
@@ -60,7 +60,7 @@ struct AIChatView: View {
                         scatteredPrompts(coreSize: coreSize)
                     }
                     .frame(maxWidth: .infinity)
-                    .frame(height: coreSize * 2.8) // 稍微增加高度适应更大的 OrbMesh
+                    .frame(height: coreSize * 2.8) // Increase height to fit larger orb mesh
                     .offset(y: -20)
 
                     Spacer(minLength: 8)
@@ -68,9 +68,9 @@ struct AIChatView: View {
                     voiceSection
                         .padding(.bottom, bottomPad)
                 }
-                .blur(radius: viewModel.currentStep == .home ? 0 : 30) // 增加模糊度
-                .scaleEffect(viewModel.currentStep == .home ? 1.0 : 0.85) // 增加缩放感
-                .opacity(viewModel.currentStep == .home ? 1.0 : 0.0) // 隐藏以提升性能
+                .blur(radius: viewModel.currentStep == .home ? 0 : 15)
+                .scaleEffect(viewModel.currentStep == .home ? 1.0 : 0.85)
+                .opacity(viewModel.currentStep == .home ? 1.0 : 0.0)
                 .animation(.spring(response: 0.6, dampingFraction: 0.8), value: viewModel.currentStep)
 
                 // --- Layer 2: Offers List ---
@@ -118,7 +118,7 @@ struct AIChatView: View {
                 endPoint: .bottom
             )
 
-            // 底部深紫色的朦胧背景光（模拟网格下方的背景）
+            // Bottom purple glow under the mesh
             VStack {
                 Spacer()
                 Circle()
@@ -134,7 +134,7 @@ struct AIChatView: View {
 
     private var orbMesh: some View {
         ZStack {
-            // 对标 HTML 图二中的心形/折叠涟漪背景
+            // Organic ripple mesh behind orb
             ForEach(0..<6, id: \.self) { i in
                 HeartRipplePath()
                     .stroke(
@@ -161,11 +161,9 @@ struct AIChatView: View {
             if viewModel.currentStep != .home {
                 Button { viewModel.goBack() } label: {
                     Image(systemName: "chevron.left")
-                        .font(.du(20, weight: .semibold))
+                        .font(.system(size: 22, weight: .semibold))
                         .foregroundColor(.white.opacity(0.8))
-                        .frame(width: 36, height: 36)
-                        .background(Color.white.opacity(0.1))
-                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                        .frame(width: 32, height: 32)
                 }
                 .buttonStyle(.plain)
                 .transition(.opacity.combined(with: .move(edge: .leading)))
@@ -173,7 +171,7 @@ struct AIChatView: View {
             
             Spacer()
             
-            Button { /* 全屏逻辑 */ } label: {
+            Button { /* 鍏ㄥ睆閫昏緫 */ } label: {
                 Image(systemName: "arrow.up.left.and.arrow.down.right")
                     .font(.system(size: 16, weight: .regular))
                     .foregroundColor(.white.opacity(0.8))
@@ -182,7 +180,7 @@ struct AIChatView: View {
             .buttonStyle(.plain)
 
             Button { viewModel.requestNewChat() } label: {
-                Image(systemName: "bubble.left") // 对标 HTML 的对话图标
+                Image(systemName: "bubble.left")
                     .font(.system(size: 18, weight: .regular))
                     .foregroundColor(.white.opacity(0.8))
                     .frame(width: 32, height: 32)
@@ -207,7 +205,7 @@ struct AIChatView: View {
         let auraSize = coreSize * 1.9
         
         return ZStack {
-            // 背景慢速旋转的多彩光晕 - 对标 HTML 图二
+            // Slowly rotating aura around core orb
             Circle()
                 .fill(
                     AngularGradient(
@@ -221,9 +219,8 @@ struct AIChatView: View {
                 .blur(radius: 30)
                 .rotationEffect(.degrees(coreRotation * 0.4))
             
-            // 液体玻璃核心极为关键的光影合成
             ZStack {
-                // 深邃底部 - 改用更亮的蓝紫色对标图二
+                // Core base gradient
                 FluidBlobShape(offset: isAnimatingCore ? 1 : 0)
                     .fill(
                         LinearGradient(
@@ -232,27 +229,25 @@ struct AIChatView: View {
                         )
                     )
 
-                // 内部流动液体 (Orb Fluid) - 增加亮度
+                // Internal fluid glow layers
                 OrbInternalFluid(isAnimating: isAnimatingCore)
                     .mask(FluidBlobShape(offset: isAnimatingCore ? 1 : 0))
                 
-                // 完美的玻璃体积感：多层漫反射和折射叠加
                 Group {
-                    // 底部粉紫色晕光 (Refraction)
+                    // Bottom pink refraction glow
                     RadialGradient(colors: [Color(hex: 0xEC4899).opacity(0.6), .clear], center: .bottomTrailing, startRadius: 0, endRadius: coreSize * 0.8)
                     
-                    // 中间青色充盈感
                     RadialGradient(colors: [Color(hex: 0x22D3EE).opacity(0.4), .clear], center: .center, startRadius: 0, endRadius: coreSize * 0.7)
                 }
                 .mask(FluidBlobShape(offset: isAnimatingCore ? 1 : 0))
                 .blendMode(.plusLighter)
 
-                // 核心表面极亮高亮 (Primary Highlight) - 对标图二左上
+                // Primary highlight on the top-left surface
                 GlassReflection()
                     .scaleEffect(1.2)
                     .offset(x: -coreSize * 0.05, y: -coreSize * 0.05)
                 
-                // 物理微光边缘
+                // Subtle edge rim light
                 FluidBlobShape(offset: isAnimatingCore ? 1 : 0)
                     .stroke(Color.white.opacity(0.4), lineWidth: 0.5)
             }
@@ -268,17 +263,17 @@ struct AIChatView: View {
 
     private func scatteredPrompts(coreSize: CGFloat) -> some View {
         ZStack {
-            // tag-1: Book a flight (左上) - 严格复刻图二位置
+            // tag-1: top-left
             if let t = viewModel.suggestedPrompts[safe: 0] {
                 promptCapsule(t, index: 0)
                     .offset(x: -coreSize * 1.05, y: -coreSize * 0.75)
             }
-            // tag-2: Order a meal package (左下) - 严格复刻图二位置
+            // tag-2: bottom-left
             if let t = viewModel.suggestedPrompts[safe: 1] {
                 promptCapsule(t, index: 1)
                     .offset(x: -coreSize * 0.65, y: coreSize * 0.9)
             }
-            // tag-3: Check the weather (右中) - 严格复刻图二位置
+            // tag-3: right-middle
             if let t = viewModel.suggestedPrompts[safe: 2] {
                 promptCapsule(t, index: 2)
                     .offset(x: coreSize * 1.05, y: coreSize * 0.25)
@@ -291,20 +286,18 @@ struct AIChatView: View {
             viewModel.sendSuggestedPrompt(text)
         } label: {
             Text(text)
-                .font(.du(13, weight: .regular))
+                .font(.system(size: 14, weight: .regular))
                 .foregroundColor(.white)
                 .multilineTextAlignment(.center)
-                .lineSpacing(2)
-                .lineLimit(3)
-                .minimumScaleFactor(0.85)
-                .frame(maxWidth: 120) // 强制折行保证不变成横向面条
+                .lineLimit(1)
+                .minimumScaleFactor(0.9)
                 .padding(.horizontal, 14)
                 .padding(.vertical, 8)
                 .background(.ultraThinMaterial)
                 .background(Color.white.opacity(0.05))
-                .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-                .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).stroke(Color.white.opacity(0.3), lineWidth: 1))
-                .shadow(color: Color.black.opacity(0.2), radius: 10, x: 0, y: 4)
+                .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+                .overlay(RoundedRectangle(cornerRadius: 24, style: .continuous).stroke(Color.white.opacity(0.3), lineWidth: 1))
+                .shadow(color: Color.black.opacity(0.1), radius: 10, x: 0, y: 4)
         }
         .buttonStyle(.plain)
         .opacity(promptOpacities[safe: index] ?? 1)
@@ -314,7 +307,7 @@ struct AIChatView: View {
     // MARK: - Voice Section
 
     private var voiceSection: some View {
-        VStack(spacing: DUSpacing.md) {
+        VStack(spacing: 12) {
             Text("Hold to Talk ~")
                 .font(.du(14, weight: .light))
                 .foregroundColor(.white.opacity(0.7))
@@ -324,8 +317,7 @@ struct AIChatView: View {
                 gen.impactOccurred()
             } label: {
                 ZStack {
-                    // 更细更多彩的动态圆环对标 HTML conic-gradient
-                    // 橙-粉-紫-青-绿-黄-橙
+                    // Rotating conic ring like HTML design
                     Circle()
                         .stroke(
                             AngularGradient(
@@ -337,12 +329,12 @@ struct AIChatView: View {
                             ),
                             lineWidth: 3
                         )
-                        .frame(width: 76, height: 76) // 对标 HTML 76px
+                        .frame(width: 76, height: 76) // Match HTML 76px
                         .rotationEffect(.degrees(coreRotation))
 
                     Circle()
                         .fill(Color(hex: 0x1E1B4B).opacity(0.4))
-                        .frame(width: 58, height: 58) // 对标 HTML 58px
+                        .frame(width: 58, height: 58) // Match HTML 58px
                         .background(.ultraThinMaterial)
                         .clipShape(Circle())
                         .overlay(Circle().stroke(Color.white.opacity(0.1), lineWidth: 0.5))
@@ -360,7 +352,7 @@ struct AIChatView: View {
 
     private func offersListLayer(hPad: CGFloat, bottomPad: CGFloat) -> some View {
         VStack(alignment: .leading, spacing: 0) {
-            headerPlaceholder // 为了保持对齐
+            headerPlaceholder // Keep header height alignment
             
             Text("Here are the recommended package options for you~")
                 .font(.du(18, weight: .regular))
@@ -376,7 +368,7 @@ struct AIChatView: View {
                     }
                 }
                 .padding(.horizontal, hPad)
-                .padding(.bottom, bottomPad + 100) // 为语音按钮留白
+                .padding(.bottom, bottomPad + 100)
             }
         }
         .padding(.top, 8)
@@ -476,14 +468,14 @@ struct AIChatView: View {
                     }
                     .padding(.top, 10)
                     
-                    Text("You have selected: ") + 
+                    Text("You have selected: ") +
                     Text(offer.name).foregroundColor(Color(hex: 0x38bdf8)).bold() +
                     Text(", here are the package details.")
                     
                     VStack(spacing: 20) {
                         // Info Card 1
                         VStack(alignment: .leading, spacing: 16) {
-                            Text("基本信息")
+                            Text("\u{57FA}\u{672C}\u{4FE1}\u{606F}")
                                 .font(.du(16, weight: .semibold))
                                 .foregroundColor(Color(hex: 0x38bdf8))
                             
@@ -502,7 +494,7 @@ struct AIChatView: View {
                                 .font(.du(16, weight: .semibold))
                                 .foregroundColor(Color(hex: 0x38bdf8))
                             
-                            // Mock Image Placeholder -> HTML 真实网络图片链接
+                            // Mock image placeholder -> HTML network image URL
                             AsyncImage(url: URL(string: "https://images.unsplash.com/photo-1543269865-cbf427effbad?auto=format&fit=crop&q=80&w=600")) { phase in
                                 if let image = phase.image {
                                     image.resizable().aspectRatio(contentMode: .fill)
@@ -555,7 +547,7 @@ struct AIChatView: View {
             Spacer()
             
             VStack(spacing: 40) {
-                // Success Illustration 纯 SwiftUI Path 模拟 HTML 中的 SVG
+                // Success illustration built with SwiftUI shapes
                 ZStack {
                     // Document Body
                     RoundedRectangle(cornerRadius: 15)
@@ -627,7 +619,7 @@ struct AIChatView: View {
     }
 
     private var headerPlaceholder: some View {
-        Color.clear.frame(height: 48) // 与 HeaderBar 高度一致
+        Color.clear.frame(height: 48)
     }
 
     // MARK: - Animations
@@ -665,7 +657,7 @@ struct FluidBlobShape: Shape {
         let w = rect.width
         let h = rect.height
         
-        // 动态计算 border-radius 的波动 (类似 HTML blob animation)
+        // Border-radius animation similar to HTML blob effect
         // 46% 54% 50% 50% / 46% 50% 50% 54%
         let factor = 0.04 * offset
         let r1 = w * (0.46 + factor)
@@ -675,8 +667,6 @@ struct FluidBlobShape: Shape {
         
         path.addRoundedRect(in: rect, cornerSize: CGSize(width: r1, height: r2), style: .continuous)
         
-        // 简单的 RoundedRect 效果不足以完全复刻 CSS 的不规则 border-radius 组合，
-        // 这里使用贝塞尔曲线精细模拟
         var p = Path()
         p.move(to: CGPoint(x: w * 0.5, y: 0))
         p.addCurve(to: CGPoint(x: w, y: h * 0.5), 
@@ -727,7 +717,6 @@ struct GlassReflection: View {
             let w = geo.size.width
             let h = geo.size.height
             
-            // 更大、更亮的顶部月牙反射，对标图二
             Path { path in
                 path.move(to: CGPoint(x: w * 0.1, y: h * 0.3))
                 path.addQuadCurve(to: CGPoint(x: w * 0.6, y: h * 0.15), control: CGPoint(x: w * 0.3, y: h * 0.05))
@@ -753,7 +742,7 @@ struct HeartRipplePath: Shape {
         let w = rect.width
         let h = rect.height
         
-        // 基于图二中那种具有特定褶皱感的有机环线 (类似心形或折叠纸感)
+        // Organic ripple path inspired by the HTML mock
         path.move(to: CGPoint(x: w * 0.5, y: h * 0.25))
         path.addCurve(to: CGPoint(x: w * 0.8, y: h * 0.45), 
                       control1: CGPoint(x: w * 0.7, y: h * 0.15), 
