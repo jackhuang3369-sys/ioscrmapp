@@ -29,46 +29,24 @@ struct AIChatView: View {
 
     var body: some View {
         GeometryReader { proxy in
-            let coreSize = min(max(proxy.size.width * 0.38, 150), 170)
+            let coreSize = min(max(min(proxy.size.width * 0.38, proxy.size.height * 0.28), 144), 172)
             let hPad = min(max(proxy.size.width * 0.06, 18), 28)
             let bottomPad = max(proxy.safeAreaInsets.bottom, 16) + 12
+            let homeLayout = homeLayoutMetrics(
+                for: proxy.size,
+                safeAreaInsets: proxy.safeAreaInsets,
+                horizontalPadding: hPad,
+                bottomPadding: bottomPad
+            )
 
             ZStack {
                 deepBackground
 
                 // --- Home Layer (Layer 1) ---
-                VStack(spacing: 0) {
-                    headerBar
-                        .padding(.top, 10)
-
-                    Text(viewModel.title)
-                        .font(.du(proxy.size.height < 500 ? 28 : 32, weight: .semibold))
-                        .foregroundColor(.white)
-                        .multilineTextAlignment(.leading)
-                        .lineLimit(3)
-                        .minimumScaleFactor(0.82)
-                        .shadow(color: Color.black.opacity(0.15), radius: 2, x: 0, y: 2)
-                        .frame(maxWidth: 250, alignment: .leading) // Match HTML max width: 250px
-                        .padding(.top, DUSpacing.md)
-                        .padding(.horizontal, hPad + 4)
-
-                    Spacer(minLength: 8)
-
-                    // 释放原本强制写死的高度限制，让球体区域能够自由适应屏幕，防止底部语音按钮被挤压遮挡
-                    ZStack {
-                        orbMesh
-                            .offset(y: 20) // 线条向下移，给标题留空间
-                        aiCoreOrb(coreSize: coreSize)
-                        scatteredPrompts(coreSize: coreSize)
-                    }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-
-
-                    Spacer(minLength: 8)
-
-                    voiceSection
-                        .padding(.bottom, bottomPad)
-                }
+                homeLayer(
+                    coreSize: coreSize,
+                    layout: homeLayout
+                )
                 .blur(radius: viewModel.currentStep == .home ? 0 : 15)
                 .scaleEffect(viewModel.currentStep == .home ? 1.0 : 0.85)
                 .opacity(viewModel.currentStep == .home ? 1.0 : 0.0)
@@ -109,6 +87,93 @@ struct AIChatView: View {
         }
     }
 
+    private func homeLayer(coreSize: CGFloat, layout: AIChatHomeLayout) -> some View {
+        VStack(spacing: 0) {
+            headerBar
+
+            Text(viewModel.title)
+                .font(.du(layout.titleFontSize, weight: .semibold))
+                .foregroundColor(.white)
+                .multilineTextAlignment(.center)
+                .lineLimit(2)
+                .minimumScaleFactor(0.9)
+                .fixedSize(horizontal: false, vertical: true)
+                .shadow(color: Color.black.opacity(0.15), radius: 2, x: 0, y: 2)
+                .frame(width: layout.titleWidth)
+                .padding(.top, layout.titleTopPadding)
+                .frame(maxWidth: .infinity)
+
+            homeHeroSection(coreSize: coreSize, layout: layout)
+                .frame(width: layout.heroStageWidth, height: layout.heroHeight)
+                .padding(.top, layout.heroTopPadding)
+                .frame(maxWidth: .infinity)
+
+            Spacer(minLength: layout.voiceTopSpacing)
+
+            voiceSection(isCompactHeight: layout.isCompactHeight)
+                .frame(width: layout.contentWidth)
+                .padding(.bottom, layout.bottomPadding)
+                .frame(maxWidth: .infinity)
+        }
+        .padding(.top, layout.topPadding)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+    }
+
+    private func homeHeroSection(coreSize: CGFloat, layout: AIChatHomeLayout) -> some View {
+        GeometryReader { proxy in
+            let meshSize = min(max(max(proxy.size.width, proxy.size.height) * 1.02, coreSize * 2.5), 420)
+            let orbOffsetY: CGFloat = layout.isCompactHeight ? 10 : 18
+
+            ZStack {
+                orbMesh(size: meshSize)
+                    .offset(y: orbOffsetY + 8)
+
+                aiCoreOrb(coreSize: coreSize)
+                    .offset(y: orbOffsetY)
+
+                scatteredPrompts(
+                    coreSize: coreSize,
+                    availableSize: proxy.size,
+                    promptMaxWidth: layout.promptMaxWidth,
+                    orbOffsetY: orbOffsetY
+                )
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+    }
+
+    private func homeLayoutMetrics(
+        for size: CGSize,
+        safeAreaInsets: EdgeInsets,
+        horizontalPadding: CGFloat,
+        bottomPadding: CGFloat
+    ) -> AIChatHomeLayout {
+        let isCompactHeight = size.height < 720
+        let contentWidth = min(max(size.width - (horizontalPadding * 2) - 12, 280), 344)
+        let heroStageWidth = min(max(size.width - (horizontalPadding * 2), 320), 420)
+        let titleFontSize: CGFloat = size.height < 540 ? 28 : (isCompactHeight ? 30 : 34)
+        let titleWidth = min(max(contentWidth * 0.76, 216), 252)
+        let reservedHeight = max(safeAreaInsets.top, DUSpacing.lg) + 44 + bottomPadding + 124 + (isCompactHeight ? 72 : 88)
+        let heroHeight = min(max(size.height - reservedHeight, 250), 420)
+        let promptMaxWidth = min(max(heroStageWidth * 0.30, 108), 150)
+
+        return AIChatHomeLayout(
+            contentWidth: contentWidth,
+            heroStageWidth: heroStageWidth,
+            horizontalPadding: horizontalPadding,
+            topPadding: max(safeAreaInsets.top, DUSpacing.lg) + (isCompactHeight ? DUSpacing.sm : DUSpacing.md),
+            titleTopPadding: isCompactHeight ? DUSpacing.md : DUSpacing.lg,
+            titleFontSize: titleFontSize,
+            titleWidth: titleWidth,
+            heroTopPadding: isCompactHeight ? DUSpacing.lg : DUSpacing.xl,
+            heroHeight: heroHeight,
+            voiceTopSpacing: isCompactHeight ? DUSpacing.md : DUSpacing.xl,
+            promptMaxWidth: promptMaxWidth,
+            bottomPadding: bottomPadding,
+            isCompactHeight: isCompactHeight
+        )
+    }
+
     // MARK: - Background
 
     private var deepBackground: some View {
@@ -141,7 +206,7 @@ struct AIChatView: View {
 
     // MARK: - Orb Mesh Background
 
-    private var orbMesh: some View {
+    private func orbMesh(size: CGFloat) -> some View {
         ZStack {
             // Organic ripple mesh behind orb
             ForEach(0..<6, id: \.self) { i in
@@ -154,12 +219,12 @@ struct AIChatView: View {
                         ], startPoint: .topLeading, endPoint: .bottomTrailing),
                         lineWidth: 1.2
                     )
-                    .frame(width: 420, height: 420)
+                    .frame(width: size, height: size)
                     .scaleEffect(0.9 + CGFloat(i) * 0.1)
                     .rotationEffect(.degrees(Double(i) * 12 + coreRotation * 0.1))
             }
         }
-        .frame(width: 420, height: 420)
+        .frame(width: size, height: size)
         .opacity(0.7)
     }
 
@@ -270,42 +335,70 @@ struct AIChatView: View {
 
     // MARK: - Scattered Prompts
 
-    private func scatteredPrompts(coreSize: CGFloat) -> some View {
-        ZStack {
-            // tag-1: top-left
+    private func scatteredPrompts(
+        coreSize: CGFloat,
+        availableSize: CGSize,
+        promptMaxWidth: CGFloat,
+        orbOffsetY: CGFloat
+    ) -> some View {
+        let promptWidth = promptMaxWidth
+        let promptHalfWidth = promptWidth * 0.5
+        let promptHeight: CGFloat = 56
+        let promptHalfHeight = promptHeight * 0.5
+        let horizontalMargin: CGFloat = 18
+        let verticalMargin: CGFloat = 14
+        let minX = promptHalfWidth + horizontalMargin
+        let maxX = max(availableSize.width - promptHalfWidth - horizontalMargin, minX)
+        let minY = promptHalfHeight + verticalMargin
+        let maxY = max(availableSize.height - promptHalfHeight - verticalMargin, minY)
+        let orbCenterX = availableSize.width * 0.5
+        let orbCenterY = (availableSize.height * 0.5) + orbOffsetY
+        let topLeftPoint = CGPoint(
+            x: min(max(orbCenterX - coreSize * 0.88, minX), maxX),
+            y: min(max(orbCenterY - coreSize * 0.80, minY), maxY)
+        )
+        let bottomLeftPoint = CGPoint(
+            x: min(max(orbCenterX - coreSize * 0.70, minX), maxX),
+            y: min(max(orbCenterY + coreSize * 0.92, minY), maxY)
+        )
+        let rightPoint = CGPoint(
+            x: min(max(orbCenterX + coreSize * 0.95, minX), maxX),
+            y: min(max(orbCenterY - coreSize * 0.26, minY), maxY)
+        )
+
+        return ZStack {
             if let t = viewModel.suggestedPrompts[safe: 0] {
-                promptCapsule(t, index: 0)
-                    .offset(x: -coreSize * 1.05, y: -coreSize * 0.75)
+                promptCapsule(t, index: 0, width: promptWidth)
+                    .position(x: topLeftPoint.x, y: topLeftPoint.y)
             }
-            // tag-2: bottom-left
             if let t = viewModel.suggestedPrompts[safe: 1] {
-                promptCapsule(t, index: 1)
-                    .offset(x: -coreSize * 0.65, y: coreSize * 0.9)
+                promptCapsule(t, index: 1, width: promptWidth)
+                    .position(x: bottomLeftPoint.x, y: bottomLeftPoint.y)
             }
-            // tag-3: right-middle
             if let t = viewModel.suggestedPrompts[safe: 2] {
-                promptCapsule(t, index: 2)
-                    .offset(x: coreSize * 1.05, y: coreSize * 0.25)
+                promptCapsule(t, index: 2, width: promptWidth)
+                    .position(x: rightPoint.x, y: rightPoint.y)
             }
         }
     }
 
-    private func promptCapsule(_ text: String, index: Int) -> some View {
+    private func promptCapsule(_ text: String, index: Int, width: CGFloat) -> some View {
         Button {
             viewModel.sendSuggestedPrompt(text)
         } label: {
             Text(text)
-                .font(.system(size: 14, weight: .regular))
-                .foregroundColor(.white.opacity(0.9)) // 稍微柔和一点的白
+                .font(.du(14))
+                .foregroundColor(.white.opacity(0.92))
                 .multilineTextAlignment(.center)
-                .lineLimit(2) // 如图一图二所示，允许拆行
+                .lineLimit(2)
                 .minimumScaleFactor(0.85)
-                .padding(.horizontal, 16)
+                .padding(.horizontal, DUSpacing.lg)
                 .padding(.vertical, 10)
-                .frame(maxWidth: 160) // 给予合理的换行宽度，防止文字被截断
+                .frame(width: width)
+                .frame(minHeight: 56)
                 .background(.ultraThinMaterial)
-                .background(Color.white.opacity(0.08)) // 稍微增加一点底层白色可见度
-                .clipShape(Capsule()) // 像图二一样使用完美的药丸形状
+                .background(Color.white.opacity(0.08))
+                .clipShape(Capsule())
                 .overlay(Capsule().stroke(Color.white.opacity(0.4), lineWidth: 1))
                 .shadow(color: Color.black.opacity(0.15), radius: 10, x: 0, y: 5)
         }
@@ -316,8 +409,12 @@ struct AIChatView: View {
 
     // MARK: - Voice Section
 
-    private var voiceSection: some View {
-        VStack(spacing: 12) {
+    private func voiceSection(isCompactHeight: Bool) -> some View {
+        let ringSize: CGFloat = isCompactHeight ? 70 : 76
+        let innerSize: CGFloat = isCompactHeight ? 54 : 58
+        let iconSize: CGFloat = isCompactHeight ? 22 : 24
+
+        return VStack(spacing: isCompactHeight ? DUSpacing.sm : DUSpacing.md) {
             Text("Hold to Talk ~")
                 .font(.du(14, weight: .light))
                 .foregroundColor(.white.opacity(0.7))
@@ -339,18 +436,18 @@ struct AIChatView: View {
                             ),
                             lineWidth: 3
                         )
-                        .frame(width: 76, height: 76) // Match HTML 76px
+                        .frame(width: ringSize, height: ringSize)
                         .rotationEffect(.degrees(coreRotation))
 
                     Circle()
                         .fill(Color(hex: 0x1E1B4B).opacity(0.4))
-                        .frame(width: 58, height: 58) // Match HTML 58px
+                        .frame(width: innerSize, height: innerSize)
                         .background(.ultraThinMaterial)
                         .clipShape(Circle())
                         .overlay(Circle().stroke(Color.white.opacity(0.1), lineWidth: 0.5))
 
                     Image(systemName: "mic")
-                        .font(.system(size: 24, weight: .regular))
+                        .font(.system(size: iconSize, weight: .regular))
                         .foregroundColor(.white)
                 }
             }
@@ -645,6 +742,22 @@ struct AIChatView: View {
     }
 }
 
+private struct AIChatHomeLayout {
+    let contentWidth: CGFloat
+    let heroStageWidth: CGFloat
+    let horizontalPadding: CGFloat
+    let topPadding: CGFloat
+    let titleTopPadding: CGFloat
+    let titleFontSize: CGFloat
+    let titleWidth: CGFloat
+    let heroTopPadding: CGFloat
+    let heroHeight: CGFloat
+    let voiceTopSpacing: CGFloat
+    let promptMaxWidth: CGFloat
+    let bottomPadding: CGFloat
+    let isCompactHeight: Bool
+}
+
 
 extension Array {
     subscript(safe index: Int) -> Element? {
@@ -672,8 +785,6 @@ struct FluidBlobShape: Shape {
         let factor = 0.04 * offset
         let r1 = w * (0.46 + factor)
         let r2 = w * (0.54 - factor)
-        let r3 = w * (0.50 + factor)
-        let r4 = w * (0.50 - factor)
         
         path.addRoundedRect(in: rect, cornerSize: CGSize(width: r1, height: r2), style: .continuous)
         

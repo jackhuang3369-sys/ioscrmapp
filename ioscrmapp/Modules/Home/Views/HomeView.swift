@@ -170,7 +170,9 @@ struct HomeView: View {
 
             if isAIChatPresented {
                 GeometryReader { proxy in
-                    let sheetHeight = min(max(proxy.size.height * 0.85, 600), 850)
+                    let topInset = max(proxy.safeAreaInsets.top + 14, 28)
+                    let horizontalInset: CGFloat = 0
+                    let sheetHeight = max(proxy.size.height - topInset, 620)
 
                     ZStack(alignment: .bottom) {
                         Color.black.opacity(0.3)
@@ -194,6 +196,7 @@ struct HomeView: View {
                         }
                         .frame(maxWidth: .infinity)
                         .frame(height: sheetHeight)
+                        .padding(.horizontal, horizontalInset)
                         .clipShape(RoundedRectangle(cornerRadius: 36, style: .continuous))
                         .ignoresSafeArea(edges: .bottom)
                         .shadow(color: Color.black.opacity(0.3), radius: 40, x: 0, y: -10)
@@ -205,7 +208,9 @@ struct HomeView: View {
             }
         }
         .safeAreaInset(edge: .bottom, spacing: 0) {
-            homeTabBar
+            if !isAIChatPresented {
+                homeTabBar
+            }
         }
         .background(homePageBackground.ignoresSafeArea())
     }
