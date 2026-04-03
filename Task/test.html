@@ -119,12 +119,41 @@
         /* 顶部按钮 */
         .header-actions {
             display: flex;
-            justify-content: flex-end;
-            gap: 16px;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 24px;
-            z-index: 1;
+            z-index: 100;
             position: relative;
             padding-top: 10px;
+        }
+
+        .back-btn {
+            background: transparent;
+            border: none;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            color: rgba(255, 255, 255, 0.8);
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s;
+            margin-left: -5px;
+        }
+
+        /* 非首页状态下显示回退按钮 */
+        .show-offers .back-btn,
+        .show-details .back-btn,
+        .show-success .back-btn {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .action-group {
+            display: flex;
+            gap: 16px;
         }
 
         .icon-btn {
@@ -377,16 +406,87 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 12px;
+            gap: 20px;
             padding-bottom: 30px;
-            z-index: 2;
+            z-index: 100;
             position: relative;
+            padding-top: 10px;
+        }
+
+        /* 文字输入框容器 - 位于语音按钮上方 */
+        .chat-input-wrapper {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.07);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border-radius: 28px;
+            padding: 8px 10px 8px 24px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s, background 0.3s;
+        }
+
+        .chat-input-wrapper:focus-within {
+            background: rgba(255, 255, 255, 0.12);
+            border-color: rgba(56, 189, 248, 0.4);
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2), 0 0 15px rgba(56, 189, 248, 0.15);
+        }
+
+        .chat-input-field {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: white;
+            font-size: 15px;
+            font-weight: 300;
+            padding: 8px 0;
+        }
+
+        .chat-input-field::placeholder {
+            color: rgba(255, 255, 255, 0.35);
+        }
+
+        .send-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #38bdf8 0%, #818cf8 100%);
+            border: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        .send-btn.active {
+            opacity: 1;
+            pointer-events: auto;
+            box-shadow: 0 4px 12px rgba(56, 189, 248, 0.4);
+        }
+
+        .send-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 16px rgba(56, 189, 248, 0.6);
+        }
+
+        .send-btn:active {
+            transform: scale(0.95);
         }
 
         .hold-text {
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 14px;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 13px;
             font-weight: 300;
+            margin-top: -10px;
         }
 
         /* 图一的麦克风按钮是大圆环，不是实心边框 */
@@ -515,114 +615,196 @@
             gap: 10px;
         }
 
+        /* 全新：套餐卡片网格布局 */
+        /* ---------------- 三层视图布局与切换核心 ---------------- */
+        .offers-view,
+        .details-view {
+            position: absolute;
+            top: 75px;
+            /* 顶部留出位置给 Header */
+            left: 0;
+            width: 100%;
+            /* 改为 calc(100% - 130px)，配合详情容器的内边距，确保底部不被遮挡 */
+            height: calc(100% - 130px);
+            padding: 0 20px;
+            opacity: 0;
+            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            pointer-events: none;
+            z-index: 5;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            /* 外部容器固定，内部滚动 */
+        }
+
+        /* 列表页滚动容器 */
         .offer-list {
+            flex: 1;
+            overflow-y: auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            padding-bottom: 160px;
+            /* 进一步增加底部间距，确保不被语音按钮遮挡 */
+            -webkit-mask-image: linear-gradient(to bottom, black 90%, transparent 100%);
+            mask-image: linear-gradient(to bottom, black 90%, transparent 100%);
+        }
+
+        /* 详情页滚动容器：核心修复 - 必须有 overflow-y: auto */
+        .details-container {
             flex: 1;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
-            gap: 16px;
-            /* 底部多留一点内边距，确保最后一张卡片能完整滚动上来 */
-            padding-bottom: 40px;
-
-            /* 核心视觉优化：上下边缘渐隐，告别生硬裁剪 */
-            -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 5%, black 90%, transparent 100%);
-            mask-image: linear-gradient(to bottom, transparent 0%, black 5%, black 90%, transparent 100%);
+            padding-bottom: 200px;
+            /* 额外留白，确保“立即办理”按钮能完整滚到可视区 */
+            -webkit-overflow-scrolling: touch;
         }
 
-        /* 3. 新增：深度定制滚动条样式 */
-        .offer-list::-webkit-scrollbar {
-            width: 4px;
-            /* 极细设计 */
+        .details-container::-webkit-scrollbar {
+            width: 3px;
         }
 
-        .offer-list::-webkit-scrollbar-track {
-            background: transparent;
-            /* 轨道全透明 */
-            margin-top: 10px;
-            margin-bottom: 10px;
-        }
-
-        .offer-list::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.15);
-            /* 半透明指示器 */
+        .details-container::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
             border-radius: 10px;
         }
 
-        .offer-list::-webkit-scrollbar-thumb:hover {
-            background: rgba(255, 255, 255, 0.4);
-            /* 交互反馈 */
-        }
-
-        .offer-card {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(25px);
-            -webkit-backdrop-filter: blur(25px);
-            border-radius: 24px;
-            padding: 22px;
-            /* 增加内边距 */
-            border: 1px solid rgba(255, 255, 255, 0.12);
+        /* 详情页文字排版修复 (防止 Combo Name 与文字重叠) */
+        .info-row {
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-            min-height: 90px;
+            align-items: flex-start;
+            gap: 15px;
+            margin-bottom: 14px;
         }
 
-        .offer-card::after {
-            content: '';
+        .info-key {
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 14px;
+            white-space: nowrap;
+            /* Key 不换行 */
+        }
+
+        .info-val {
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+            text-align: right;
+            word-break: break-word;
+            /* 内容允许换行防止溢出 */
+        }
+
+        /* ---------------- 状态样式切换 ---------------- */
+        .show-offers .offers-view {
+            opacity: 1;
+            transform: translateX(0);
+            pointer-events: all;
+        }
+
+        .show-offers .core-container,
+        .show-offers .title {
+            opacity: 0;
+            transform: scale(0.9);
+            filter: blur(10px);
+            pointer-events: none;
+        }
+
+        .show-details .offers-view {
+            opacity: 0;
+            transform: translateX(-30px);
+            pointer-events: none;
+        }
+
+        .show-details .details-view {
+            opacity: 1;
+            transform: translateX(0);
+            pointer-events: all;
+        }
+
+        .show-details .core-container,
+        .show-details .title {
+            opacity: 0;
+            filter: blur(15px);
+        }
+
+        /* ---------------- 第四层：成功视图 ---------------- */
+        .success-view {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
-            transform: translateX(-100%);
-            transition: transform 0.6s;
-        }
-
-        .offer-card:hover {
-            background: rgba(255, 255, 255, 0.1);
-            transform: translateY(-3px);
-            border-color: rgba(255, 255, 255, 0.3);
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-        }
-
-        .offer-card:hover::after {
-            transform: translateX(100%);
-        }
-
-        .offer-info h3 {
-            color: white;
-            font-size: 17px;
-            font-weight: 600;
-            margin-bottom: 6px;
-        }
-
-        .offer-details {
+            padding: 40px 20px;
+            opacity: 0;
+            transform: scale(0.95);
+            transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+            pointer-events: none;
+            z-index: 15;
             display: flex;
-            gap: 12px;
-            font-size: 13px;
-            color: var(--text-dim);
+            flex-direction: column;
+            align-items: center;
         }
 
-        .offer-price-box {
-            text-align: right;
+        .show-success .success-view {
+            opacity: 1;
+            transform: scale(1);
+            pointer-events: all;
         }
 
-        .offer-price {
-            display: block;
-            color: var(--accent-blue);
-            font-size: 20px;
-            font-weight: 700;
+        /* 成功页左上角的极简状态标签 */
+        .mini-status-tag {
+            position: absolute;
+            top: 60px;
+            left: 20px;
+            width: 80px;
+            opacity: 0.6;
+            transform: scale(0.65);
+            transform-origin: top left;
+            pointer-events: none;
         }
 
-        .offer-period {
-            font-size: 11px;
-            color: var(--text-dim);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+        .success-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            margin-top: -60px;
+        }
+
+        /* 插画容器 */
+        .success-illustration {
+            width: 180px;
+            height: 180px;
+            margin-bottom: 40px;
+            position: relative;
+        }
+
+        .success-message {
+            color: white;
+            font-size: 26px;
+            font-weight: 600;
+            line-height: 1.4;
+            max-width: 300px;
+            text-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            animation: fadeInBlur 0.8s ease-out;
+        }
+
+        @keyframes fadeInBlur {
+            from { opacity: 0; filter: blur(10px); transform: translateY(20px); }
+            to { opacity: 1; filter: blur(0); transform: translateY(0); }
+        }
+
+        .show-success .offers-view,
+        .show-success .details-view,
+        .show-success .core-container,
+        .show-success .title {
+            opacity: 0;
+            pointer-events: none;
+            transform: scale(0.9);
+            filter: blur(15px);
         }
 
         .back-btn {
@@ -638,15 +820,296 @@
             display: none;
             transition: all 0.2s;
             backdrop-filter: blur(10px);
+            z-index: 10;
         }
 
         .back-btn:hover {
             background: rgba(255, 255, 255, 0.15);
             color: white;
+            border-color: rgba(255, 255, 255, 0.3);
         }
 
-        .show-offers .back-btn {
+        .show-offers .back-btn,
+        .show-details .back-btn {
             display: block;
+        }
+
+        /* --- 新增：套餐卡片样式 (Layer 2) --- */
+        .offer-card {
+            appearance: none;
+            position: relative;
+            width: 100%;
+            padding: 20px;
+            border: 1px solid rgba(148, 163, 184, 0.12);
+            border-radius: 28px;
+            background: linear-gradient(180deg, #3b4eb7 0%, #6c3fc4 100%);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 16px 40px rgba(8, 15, 45, 0.2);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            color: white;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+
+        .offer-card::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(125, 211, 252, 0.08), transparent 45%, rgba(244, 114, 182, 0.05));
+            pointer-events: none;
+        }
+
+        .offer-card:hover {
+            transform: translateY(-6px);
+            border-color: rgba(125, 211, 252, 0.4);
+            background: linear-gradient(180deg, #4c63ff 0%, #7d44fd 100%);
+            box-shadow: 0 20px 45px rgba(108, 63, 196, 0.35);
+        }
+
+        .offer-card:active {
+            transform: scale(0.97);
+        }
+
+        .offer-name {
+            color: white;
+            font-size: 18px;
+            font-weight: 600;
+            line-height: 1.35;
+            height: 48px;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            line-clamp: 2;
+            -webkit-box-orient: vertical;
+            margin-bottom: 24px;
+            z-index: 1;
+        }
+
+        .offer-info-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 24px;
+            gap: 20px;
+            z-index: 1;
+        }
+
+        .info-item {
+            flex: 1;
+        }
+
+        /* DATA 和 VALIDITY 之间的分隔线 */
+        .info-item:first-child {
+            position: relative;
+            padding-right: 20px;
+            border-right: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .info-label {
+            display: block;
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .info-value {
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .price-btn {
+            width: 100%;
+            height: 52px;
+            border-radius: 26px;
+            background: linear-gradient(90deg, #3cd1ff 0%, #c349ff 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 6px;
+            color: white;
+            border: none;
+            font-size: 20px;
+            font-weight: 800;
+            cursor: pointer;
+            box-shadow: 0 10px 20px rgba(56, 189, 248, 0.3);
+            transition: all 0.3s;
+            z-index: 1;
+        }
+
+        .price-amount {
+            font-size: 24px;
+            font-weight: 800;
+        }
+
+        .offer-card:hover .price-btn {
+            box-shadow: 0 12px 25px rgba(56, 189, 248, 0.5);
+            transform: scale(1.02);
+        }
+
+        .price-btn span {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            opacity: 0.95;
+            margin-left: 2px;
+            color: white;
+        }
+
+        /* --- 第三层：详情页增强 (Layer 3) --- */
+        .detail-info-text {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 16px;
+            line-height: 1.5;
+            margin-bottom: 24px;
+            font-weight: 400;
+        }
+
+        .detail-info-text span {
+            color: #38bdf8;
+            font-weight: 600;
+        }
+
+        .selected-mini-wrapper {
+            margin-bottom: 24px;
+        }
+
+        /* 第三层缩略卡片专项放大 */
+        .selected-mini-wrapper .info-label {
+            font-size: 11px;
+        }
+
+        .selected-mini-wrapper .info-value {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .selected-mini-wrapper .price-amount {
+            font-size: 28px;
+            letter-spacing: -0.02em;
+        }
+
+        .selected-mini-wrapper .price-btn {
+            height: 60px;
+            border-radius: 30px;
+        }
+
+        .info-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border-radius: 24px;
+            padding: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .info-card h3 {
+            color: #38bdf8;
+            font-size: 16px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            align-items: flex-start;
+            gap: 15px;
+        }
+
+        .info-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .info-key {
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 14px;
+            white-space: nowrap;
+        }
+
+        .info-val {
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+            text-align: right;
+            word-break: break-word;
+        }
+
+        .business-details {
+            margin-top: 24px;
+        }
+
+        .details-img-placeholder {
+            width: 100%;
+            height: 200px;
+            border-radius: 20px;
+            background: linear-gradient(135deg, #1e3a8a 0%, #1e1b4b 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-top: 16px;
+        }
+
+        .details-img-placeholder img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.8;
+        }
+
+        /* 渐变主按钮 */
+        .action-btn-large {
+            width: 100%;
+            padding: 16px;
+            border-radius: 30px;
+            background: linear-gradient(90deg, #38bdf8 0%, #c148ff 100%);
+            border: none;
+            color: white;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 20px;
+            box-shadow: 0 8px 30px rgba(193, 72, 255, 0.4);
+            transition: all 0.3s;
+        }
+
+        .action-btn-large:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(193, 72, 255, 0.6);
+        }
+
+        .action-btn-large:active {
+            transform: scale(0.98);
+        }
+
+        /* 自定义滚动条风格 */
+        .offer-list::-webkit-scrollbar,
+        .details-container::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .offer-list::-webkit-scrollbar-track,
+        .details-container::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .offer-list::-webkit-scrollbar-thumb,
+        .details-container::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
         }
     </style>
 </head>
@@ -659,23 +1122,39 @@
         <div class="ai-card">
 
             <div class="header-actions">
-                <!-- 对话图标 (更简洁的矩形对话框) -->
-                <button class="icon-btn">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
-                        stroke-linecap="round" stroke-linejoin="round">
-                        <path
-                            d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z">
-                        </path>
+                <!-- 返回按钮 -->
+                <button class="back-btn" id="backBtn">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="15 18 9 12 15 6"></polyline>
                     </svg>
                 </button>
-                <!-- 关闭图标 -->
-                <button class="icon-btn" id="closeBtn">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
-                        stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="18" y1="6" x2="6" y2="18"></line>
-                        <line x1="6" y1="6" x2="18" y2="18"></line>
-                    </svg>
-                </button>
+
+                <div class="action-group">
+                    <!-- 全屏图标 -->
+                    <button class="icon-btn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"></path>
+                        </svg>
+                    </button>
+                    <!-- 对话图标 -->
+                    <button class="icon-btn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <path
+                                d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z">
+                            </path>
+                        </svg>
+                    </button>
+                    <!-- 关闭图标 -->
+                    <button class="icon-btn" id="closeBtn">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
             </div>
 
             <h1 class="title">How may I help<br>you today?</h1>
@@ -684,102 +1163,171 @@
                 <div class="orb-mesh"></div>
                 <div class="orb-outer">
                     <div class="orb-core">
-                        <!-- 内部流体色块，制造液体流动的高级感 -->
                         <div class="orb-fluid orb-fluid-1"></div>
                         <div class="orb-fluid orb-fluid-2"></div>
                         <div class="orb-fluid orb-fluid-3"></div>
-                        <!-- 静态极光玻璃反射高光片 -->
                         <div class="glass-reflection"></div>
                     </div>
-                    <!-- 提示标签：位置、样式已调整 -->
-                    <div class="prompt-tag tag-1">Book a flight</div>
-                    <div class="prompt-tag tag-2" id="offerTrigger">Refill data plan</div>
-                    <div class="prompt-tag tag-3">Check the weather</div>
+                    <div class="prompt-tag tag-1" onclick="toggleOffers()">Book a flight</div>
+                    <div class="prompt-tag tag-2" onclick="toggleOffers()">Order a meal package</div>
+                    <div class="prompt-tag tag-3" onclick="toggleOffers()">Check the weather</div>
                 </div>
             </div>
 
-            <!-- 新增：订购 Offer 场景视图 -->
+            <!-- 新订购视图：高度调优以匹配滚动 -->
             <div class="offers-view">
-                <button class="back-btn" id="backToOrb">← DASHBOARD</button>
-                <div class="offers-title">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-                        stroke-linecap="round" stroke-linejoin="round">
-                        <path
-                            d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z">
-                        </path>
-                    </svg>
-                    Recommended for You
+                <h2 style="color: white; font-size: 18px; margin-bottom: 20px; font-weight: 400; opacity: 0.9;">Here are
+                    the recommended package options for you~</h2>
+                <div class="offer-list" id="offerListContainer">
+                    <!-- 补全套餐选项 -->
+                    <div class="offer-card" onclick="showOfferDetails('DataRoamingPrice (10 GB) KSA', '15.00')">
+                        <div class="offer-name">DataRoamingPrice (10 GB) KSA</div>
+                        <div class="offer-info-row">
+                            <div class="info-item">
+                                <div class="info-label">Data</div>
+                                <div class="info-value">10 GB</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Validity</div>
+                                <div class="info-value">Monthly</div>
+                            </div>
+                        </div>
+                        <button class="price-btn"><span class="price-amount">15.00</span>
+                            <span>SDG/Month</span></button>
+                    </div>
+                    <div class="offer-card" onclick="showOfferDetails('DataRoamingPrice (20 GB) KSA', '35.00')">
+                        <div class="offer-name">DataRoamingPrice (20 GB) KSA</div>
+                        <div class="offer-info-row">
+                            <div class="info-item">
+                                <div class="info-label">Data</div>
+                                <div class="info-value">20 GB</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Validity</div>
+                                <div class="info-value">Monthly</div>
+                            </div>
+                        </div>
+                        <button class="price-btn"><span class="price-amount">35.00</span>
+                            <span>SDG/Month</span></button>
+                    </div>
+                    <div class="offer-card" onclick="showOfferDetails('DataRoamingPrice (50 GB) KSA', '55.00')">
+                        <div class="offer-name">DataRoamingPrice (50 GB) KSA</div>
+                        <div class="offer-info-row">
+                            <div class="info-item">
+                                <div class="info-label">Data</div>
+                                <div class="info-value">50 GB</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Validity</div>
+                                <div class="info-value">Monthly</div>
+                            </div>
+                        </div>
+                        <button class="price-btn"><span class="price-amount">55.00</span>
+                            <span>SDG/Month</span></button>
+                    </div>
+                    <div class="offer-card" onclick="showOfferDetails('DataRoamingPrice (100 GB) KSA', '75.00')">
+                        <div class="offer-name">DataRoamingPrice (100 GB) KSA</div>
+                        <div class="offer-info-row">
+                            <div class="info-item">
+                                <div class="info-label">Data</div>
+                                <div class="info-value">100 GB</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Validity</div>
+                                <div class="info-value">Monthly</div>
+                            </div>
+                        </div>
+                        <button class="price-btn"><span class="price-amount">75.00</span>
+                            <span>SDG/Month</span></button>
+                    </div>
+                    <div class="offer-card" onclick="showOfferDetails('DataRoamingPrice (Unlimited) KSA', '120.00')">
+                        <div class="offer-name">DataRoamingPrice (Unlimited) KSA</div>
+                        <div class="offer-info-row">
+                            <div class="info-item">
+                                <div class="info-label">Data</div>
+                                <div class="info-value">Unlimited</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Validity</div>
+                                <div class="info-value">Monthly</div>
+                            </div>
+                        </div>
+                        <button class="price-btn"><span class="price-amount">120.00</span>
+                            <span>SDG/Month</span></button>
+                    </div>
                 </div>
-                <div class="offer-list">
-                    <div class="offer-card">
-                        <div class="offer-info">
-                            <h3>Data Speed Pack Gold</h3>
-                            <div class="offer-details">
-                                <span>100GB Data</span>
-                                <span>Next Month</span>
-                            </div>
-                        </div>
-                        <div class="offer-price-box">
-                            <span class="offer-price">¥49.00</span>
-                            <span class="offer-period">Per Month</span>
-                        </div>
+            </div>
+
+            <!-- 全新：套餐详情视图 (Details View) -->
+            <div class="details-view">
+                <!-- 顶部选中的简易反馈区 -->
+                <div class="selected-mini-wrapper" id="miniCardPlaceholder"></div>
+
+                <h2 class="detail-info-text">You have selected: <span id="selectedNameText">DataRoamingPrice (50 GB)
+                        KSA</span>, here are the package details.</h2>
+
+                <div class="details-container">
+                    <div class="info-card">
+                        <h3>基本信息</h3>
+                        <div class="info-row"><span class="info-key">Combo Name:</span><span class="info-val"
+                                id="detailComboName">DataRoamingPrice (50 GB) KSA</span></div>
+                        <div class="info-row"><span class="info-key">Effective time:</span><span
+                                class="info-val">Effective immediately</span></div>
+                        <div class="info-row"><span class="info-key">Validity period:</span><span class="info-val">The
+                                current month</span></div>
                     </div>
-                    <div class="offer-card">
-                        <div class="offer-info">
-                            <h3>Smooth Flow Plus</h3>
-                            <div class="offer-details">
-                                <span>50GB Data</span>
-                                <span>Immediately</span>
-                            </div>
+
+                    <div class="info-card">
+                        <h3>Business Details</h3>
+                        <div class="details-img-placeholder">
+                            <!-- 模拟用户上传的描述图 -->
+                            <img src="https://images.unsplash.com/photo-1543269865-cbf427effbad?auto=format&fit=crop&q=80&w=600"
+                                alt="Family usage">
                         </div>
-                        <div class="offer-price-box">
-                            <span class="offer-price">¥29.00</span>
-                            <span class="offer-period">Per Month</span>
+                        <div style="margin-top: 15px; color: rgba(255,255,255,0.6); font-size: 13px; line-height: 1.6;">
+                            This package offers high-speed data roaming services across KSA territories. Ensure data
+                            roaming is enabled on your device Settings.
                         </div>
+                        <!-- 底部醒目操作按钮 -->
+                        <button class="action-btn-large" onclick="finishProcess()">Process Immediately</button>
                     </div>
-                    <div class="offer-card">
-                        <div class="offer-info">
-                            <h3>Weekend Unlimited</h3>
-                            <div class="offer-details">
-                                <span>Unlimited Data</span>
-                                <span>Sat - Sun</span>
-                            </div>
-                        </div>
-                        <div class="offer-price-box">
-                            <span class="offer-price">¥9.90</span>
-                            <span class="offer-period">Per Weekend</span>
-                        </div>
+                </div>
+            </div>
+
+            <!-- 第四层：成功页内容 -->
+            <div class="success-view">
+                <div class="success-content">
+                    <div class="success-illustration">
+                        <!-- 图二中的成功插画：模拟文档勾选 -->
+                        <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="50" y="40" width="100" height="130" rx="15" fill="white" fill-opacity="0.1" stroke="white" stroke-opacity="0.3" stroke-width="2"/>
+                            <rect x="65" y="70" width="30" height="30" rx="6" fill="#38bdf8" fill-opacity="0.4"/>
+                            <rect x="105" y="75" width="30" height="6" rx="3" fill="white" fill-opacity="0.4"/>
+                            <rect x="105" y="90" width="20" height="6" rx="3" fill="white" fill-opacity="0.2"/>
+                            <circle cx="120" cy="130" r="35" fill="#38bdf8" fill-opacity="0.2"/>
+                            <circle cx="120" cy="130" r="25" fill="#38bdf8" fill-opacity="0.8"/>
+                            <path d="M110 130L117 137L132 122" stroke="white" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+                            <!-- 装饰星星 -->
+                            <path d="M160 50L164 58L172 62L164 66L160 74L156 66L148 62L156 58L160 50Z" fill="#fbbf24"/>
+                            <path d="M40 140L43 146L49 149L43 152L40 158L37 152L31 149L37 146L40 140Z" fill="#fbbf24"/>
+                        </svg>
                     </div>
-                    <div class="offer-card">
-                        <div class="offer-info">
-                            <h3>Global Roaming</h3>
-                            <div class="offer-details">
-                                <span>10GB Global</span>
-                                <span>7 Days</span>
-                            </div>
-                        </div>
-                        <div class="offer-price-box">
-                            <span class="offer-price">¥88.00</span>
-                            <span class="offer-period">Once</span>
-                        </div>
-                    </div>
-                    <div class="offer-card">
-                        <div class="offer-info">
-                            <h3>Night Owl Pack</h3>
-                            <div class="offer-details">
-                                <span>30GB Data</span>
-                                <span>23:00 - 07:00</span>
-                            </div>
-                        </div>
-                        <div class="offer-price-box">
-                            <span class="offer-price">¥5.00</span>
-                            <span class="offer-period">Per Month</span>
-                        </div>
-                    </div>
+                    <h2 class="success-message">Congratulations on your successful application</h2>
                 </div>
             </div>
 
             <div class="footer">
+                <!-- 常驻文字输入框 -->
+                <div class="chat-input-wrapper">
+                    <input type="text" class="chat-input-field" id="chatInput" placeholder="Type your message..." autocomplete="off">
+                    <button class="send-btn" id="sendBtn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="22" y1="2" x2="11" y2="13"></line>
+                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                        </svg>
+                    </button>
+                </div>
+
                 <p class="hold-text">Hold to Talk ~</p>
                 <div class="mic-btn-outer">
                     <button class="mic-btn-inner">
@@ -797,49 +1345,160 @@
 
     <script>
         const openBtn = document.getElementById('openBtn');
+        const backBtn = document.getElementById('backBtn');
         const closeBtn = document.getElementById('closeBtn');
         const overlay = document.getElementById('overlay');
+        const card = document.querySelector('.ai-card');
+
+        // 辅助切换函数：点击标签可直接跳转到列表
+        window.toggleOffers = function () {
+            card.classList.add('show-offers');
+            card.classList.remove('show-details', 'show-success');
+        }
+
+        // 核心跳转函数：显示套餐详情
+        window.showOfferDetails = function (name, price) {
+            document.getElementById('selectedNameText').innerText = name;
+            document.getElementById('detailComboName').innerText = name;
+
+            // 动态生成顶部缩略卡片 (带勾选框)
+            const miniPlaceholder = document.getElementById('miniCardPlaceholder');
+            miniPlaceholder.innerHTML = `
+                <div class="offer-card" style="border-color: #38bdf8; background: rgba(56, 189, 248, 0.1);">
+                    <div style="position: absolute; top: 12px; right: 12px; background: #22c55e; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    </div>
+                    <div class="offer-name">${name}</div>
+                    <div class="offer-info-row">
+                        <div class="info-item"><div class="info-label">Data</div><div class="info-value">${name.includes('50') ? '50 GB' : '100 GB'}</div></div>
+                        <div class="info-item"><div class="info-label">Validity</div><div class="info-value">Monthly</div></div>
+                    </div>
+                    <button class="price-btn"><span class="price-amount">${price}</span> <span>SDG/Month</span></button>
+                </div>
+            `;
+
+            card.classList.add('show-details');
+            card.classList.remove('show-success');
+        }
+
+        // 第四层交互：完成订购
+        window.finishProcess = function() {
+            card.classList.add('show-success');
+            card.classList.remove('show-details', 'show-offers');
+        }
 
         // 默认直接打开方便预览
         setTimeout(() => {
             overlay.classList.add('active');
         }, 300);
 
-        openBtn.addEventListener('click', () => {
-            overlay.classList.add('active');
+        openBtn.addEventListener('click', () => overlay.classList.add('active'));
+
+        // 回退逻辑：逐级返回
+        backBtn.addEventListener('click', () => {
+            if (card.classList.contains('show-success')) {
+                card.classList.remove('show-success');
+                card.classList.add('show-details');
+            } else if (card.classList.contains('show-details')) {
+                card.classList.remove('show-details');
+                card.classList.add('show-offers');
+            } else if (card.classList.contains('show-offers')) {
+                card.classList.remove('show-offers');
+            }
+            // 返回首页时重置输入状态
+            if (!card.classList.contains('show-offers') && !card.classList.contains('show-details')) {
+                document.getElementById('chatInput').style.opacity = '1';
+                document.getElementById('chatInput').parentElement.style.opacity = '1';
+            }
         });
 
+        // 文字输入交互逻辑
+        const chatInput = document.getElementById('chatInput');
+        const sendBtn = document.getElementById('sendBtn');
+
+        chatInput.addEventListener('input', () => {
+            if (chatInput.value.trim().length > 0) {
+                sendBtn.classList.add('active');
+            } else {
+                sendBtn.classList.remove('active');
+            }
+        });
+
+        function handleSendMessage() {
+            const text = chatInput.value.trim();
+            if (text.length === 0) return;
+
+            // 模拟发送动效
+            chatInput.disabled = true;
+            sendBtn.classList.remove('active');
+            
+            // 简单模拟搜索套餐的关键词匹配
+            const isRoaming = text.toLowerCase().includes('roaming') || text.toLowerCase().includes('data') || text.toLowerCase().includes('package');
+            
+            setTimeout(() => {
+                if (isRoaming) {
+                    toggleOffers();
+                } else {
+                    // 如果不是套餐相关，也跳转展示一下模型意图
+                    toggleOffers();
+                }
+                chatInput.value = '';
+                chatInput.disabled = false;
+            }, 600);
+        }
+
+        sendBtn.addEventListener('click', handleSendMessage);
+        chatInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') handleSendMessage();
+        });
+
+        // 关闭逻辑：一键强退出
         closeBtn.addEventListener('click', () => {
             overlay.classList.remove('active');
+            // 延时重置状态，防止动画闪烁
+            setTimeout(() => {
+                card.classList.remove('show-success', 'show-offers', 'show-details');
+            }, 600);
         });
 
         overlay.addEventListener('click', (e) => {
             if (e.target === overlay) {
                 overlay.classList.remove('active');
-                card.classList.remove('show-offers'); // 关闭弹窗时重置状态
+                card.classList.remove('show-offers');
+                card.classList.remove('show-details');
             }
         });
 
-        // Offer 场景交互
-        const offerTrigger = document.getElementById('offerTrigger');
-        const backToOrb = document.getElementById('backToOrb');
-        const card = document.querySelector('.ai-card');
+        // AI 语音交互逻辑
+        const micBtn = document.querySelector('.mic-btn-inner');
+        const holdText = document.querySelector('.hold-text');
+        let isHolding = false;
 
-        offerTrigger.addEventListener('click', () => {
-            // 模拟 AI 处理动画
-            offerTrigger.style.borderColor = 'var(--accent-blue)';
-            offerTrigger.innerHTML = 'Analyzing your usage...';
+        function startHolding() {
+            isHolding = true;
+            micBtn.style.transform = 'scale(0.9)';
+            holdText.innerHTML = 'Listening...';
+        }
 
+        function endHolding() {
+            if (!isHolding) return;
+            isHolding = false;
+            micBtn.style.transform = 'scale(1)';
+
+            holdText.innerHTML = '"Show me data roaming plans"';
             setTimeout(() => {
-                card.classList.add('show-offers');
-                offerTrigger.innerHTML = 'Refill data plan';
-                offerTrigger.style.borderColor = 'rgba(255, 255, 255, 0.3)';
-            }, 800);
-        });
+                toggleOffers();
+                setTimeout(() => holdText.innerHTML = 'Hold to Talk ~', 1000);
+            }, 1000);
+        }
 
-        backToOrb.addEventListener('click', () => {
-            card.classList.remove('show-offers');
-        });
+        micBtn.addEventListener('mousedown', startHolding);
+        window.addEventListener('mouseup', endHolding);
+        micBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            startHolding();
+        }, { passive: false });
+        window.addEventListener('touchend', endHolding);
     </script>
 </body>
 
