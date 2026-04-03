@@ -113,20 +113,14 @@
 		F10000000000000000000004 /* AIChatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F20000000000000000000004 /* AIChatView.swift */; };
 		A10000000000000000000047 /* MockWeatherData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000047 /* MockWeatherData.swift */; };
 		A10000000000000000000048 /* WeatherCondition.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000048 /* WeatherCondition.swift */; };
-		A10000000000000000000049 /* WeatherDetailDimension.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000049 /* WeatherDetailDimension.swift */; };
-		A1000000000000000000004A /* DimensionSceneBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000004A /* DimensionSceneBuilder.swift */; };
 		A1000000000000000000004B /* ParticleController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000004B /* ParticleController.swift */; };
 		A1000000000000000000004C /* SceneConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000004C /* SceneConstants.swift */; };
 		A1000000000000000000004D /* WeatherSceneManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000004D /* WeatherSceneManager.swift */; };
 		A1000000000000000000004E /* WeatherSceneView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000004E /* WeatherSceneView.swift */; };
 		A10000000000000000000060 /* WeatherAudioPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000060 /* WeatherAudioPlayer.swift */; };
-		A1000000000000000000004F /* DimensionDataView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000004F /* DimensionDataView.swift */; };
-		A10000000000000000000050 /* DimensionPanelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000050 /* DimensionPanelView.swift */; };
-		A10000000000000000000051 /* WeatherConditionOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000051 /* WeatherConditionOverlay.swift */; };
-		A10000000000000000000052 /* WeatherDatePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000052 /* WeatherDatePicker.swift */; };
-		A10000000000000000000053 /* WeatherDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000053 /* WeatherDetailView.swift */; };
 		A10000000000000000000054 /* WeatherHourlyStrip.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000054 /* WeatherHourlyStrip.swift */; };
 		A10000000000000000000055 /* WeatherMainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000055 /* WeatherMainView.swift */; };
+		A10000000000000000000061 /* WeatherWindBackgroundView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000061 /* WeatherWindBackgroundView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -237,20 +231,14 @@
 		F20000000000000000000004 /* AIChatView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIChatView.swift; sourceTree = "<group>"; };
 		A20000000000000000000047 /* MockWeatherData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockWeatherData.swift; sourceTree = "<group>"; };
 		A20000000000000000000048 /* WeatherCondition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherCondition.swift; sourceTree = "<group>"; };
-		A20000000000000000000049 /* WeatherDetailDimension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherDetailDimension.swift; sourceTree = "<group>"; };
-		A2000000000000000000004A /* DimensionSceneBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DimensionSceneBuilder.swift; sourceTree = "<group>"; };
 		A2000000000000000000004B /* ParticleController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParticleController.swift; sourceTree = "<group>"; };
 		A2000000000000000000004C /* SceneConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneConstants.swift; sourceTree = "<group>"; };
 		A2000000000000000000004D /* WeatherSceneManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherSceneManager.swift; sourceTree = "<group>"; };
 		A2000000000000000000004E /* WeatherSceneView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherSceneView.swift; sourceTree = "<group>"; };
 		A20000000000000000000060 /* WeatherAudioPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherAudioPlayer.swift; sourceTree = "<group>"; };
-		A2000000000000000000004F /* DimensionDataView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DimensionDataView.swift; sourceTree = "<group>"; };
-		A20000000000000000000050 /* DimensionPanelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DimensionPanelView.swift; sourceTree = "<group>"; };
-		A20000000000000000000051 /* WeatherConditionOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherConditionOverlay.swift; sourceTree = "<group>"; };
-		A20000000000000000000052 /* WeatherDatePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherDatePicker.swift; sourceTree = "<group>"; };
-		A20000000000000000000053 /* WeatherDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherDetailView.swift; sourceTree = "<group>"; };
 		A20000000000000000000054 /* WeatherHourlyStrip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherHourlyStrip.swift; sourceTree = "<group>"; };
 		A20000000000000000000055 /* WeatherMainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherMainView.swift; sourceTree = "<group>"; };
+		A20000000000000000000061 /* WeatherWindBackgroundView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherWindBackgroundView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -895,7 +883,6 @@
 			children = (
 				A20000000000000000000047 /* MockWeatherData.swift */,
 				A20000000000000000000048 /* WeatherCondition.swift */,
-				A20000000000000000000049 /* WeatherDetailDimension.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -903,7 +890,6 @@
 		A30000000000000000000052 /* SceneKit */ = {
 			isa = PBXGroup;
 			children = (
-				A2000000000000000000004A /* DimensionSceneBuilder.swift */,
 				A2000000000000000000004B /* ParticleController.swift */,
 				A2000000000000000000004C /* SceneConstants.swift */,
 				A2000000000000000000004D /* WeatherSceneManager.swift */,
@@ -916,13 +902,9 @@
 		A30000000000000000000053 /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				A2000000000000000000004F /* DimensionDataView.swift */,
-				A20000000000000000000050 /* DimensionPanelView.swift */,
-				A20000000000000000000051 /* WeatherConditionOverlay.swift */,
-				A20000000000000000000052 /* WeatherDatePicker.swift */,
-				A20000000000000000000053 /* WeatherDetailView.swift */,
 				A20000000000000000000054 /* WeatherHourlyStrip.swift */,
 				A20000000000000000000055 /* WeatherMainView.swift */,
+				A20000000000000000000061 /* WeatherWindBackgroundView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -987,101 +969,45 @@
 			files = (
 				A10000000000000000000013 /* Localizations in Resources */,
 				04E692D02F5EA2CF0082C59F /* Preview Assets.xcassets in Resources */,
-				A5EF6DC72F7F5A060061353E /* karat_models.dae in Resources */,
 				A5EF6DC82F7F5A060061353E /* andy-colors.json in Resources */,
-				A5EF6DC92F7F5A060061353E /* night7.mtl in Resources */,
-				A5EF6DCA2F7F5A060061353E /* night0.mtl in Resources */,
-				A5EF6DCB2F7F5A060061353E /* day7.obj in Resources */,
-				A5EF6DCC2F7F5A060061353E /* day5.mtl in Resources */,
 				A5EF6DCD2F7F5A060061353E /* spin-fast-4.m4a in Resources */,
 				A5EF6DCE2F7F5A060061353E /* graphite-colors.json in Resources */,
-				A5EF6DCF2F7F5A060061353E /* normal_models.dae in Resources */,
 				A5EF6DD02F7F5A060061353E /* chroma-animation.json in Resources */,
-				A5EF6DD12F7F5A060061353E /* andy_models.dae in Resources */,
-				A5EF6DD22F7F5A060061353E /* anim_sun_in.dae in Resources */,
-				A5EF6DD32F7F5A060061353E /* base1_particles.dae in Resources */,
 				A5EF6DD42F7F5A060061353E /* weather-ambience-icepellets.m4a in Resources */,
 				A5EF6DD52F7F5A060061353E /* opal-colors.json in Resources */,
-				A5EF6DD62F7F5A060061353E /* night9.mtl in Resources */,
-				A5EF6DD72F7F5A060061353E /* presstube_particles.dae in Resources */,
-				A5EF6DD82F7F5A060061353E /* normal_main.dae in Resources */,
 				A5EF6DD92F7F5A060061353E /* PLAN-zh.md in Resources */,
-				A5EF6DDA2F7F5A060061353E /* normal_numbers.dae in Resources */,
-				A5EF6DDB2F7F5A060061353E /* day12.obj in Resources */,
-				A5EF6DDC2F7F5A060061353E /* anim_cloud_out.dae in Resources */,
-				A5EF6DDD2F7F5A060061353E /* anim_sun_out.dae in Resources */,
-				A5EF6DDE2F7F5A060061353E /* normal_particles.dae in Resources */,
-				A5EF6DDF2F7F5A060061353E /* day1.mtl in Resources */,
-				A5EF6DE02F7F5A060061353E /* night5.mtl in Resources */,
 				A5EF6DE12F7F5A060061353E /* gold-dim.png in Resources */,
 				A5EF6DE22F7F5A060061353E /* weather-sting-snow.m4a in Resources */,
 				A5EF6DE32F7F5A060061353E /* weather-sting-mostlycloudy.m4a in Resources */,
 				A5EF6DE42F7F5A060061353E /* spin-slow-5.m4a in Resources */,
 				A5EF6DE52F7F5A060061353E /* ui-day-select-7.m4a in Resources */,
-				A5EF6DE62F7F5A060061353E /* night2.mtl in Resources */,
-				A5EF6DE72F7F5A060061353E /* day12.mtl in Resources */,
 				A5EF6DE82F7F5A060061353E /* shape-tap-7.m4a in Resources */,
-				A5EF6DE92F7F5A060061353E /* night8.mtl in Resources */,
-				A5EF6DEA2F7F5A060061353E /* snow1.mtl in Resources */,
-				A5EF6DEB2F7F5A060061353E /* night9.obj in Resources */,
-				A5EF6DEC2F7F5A060061353E /* day0.mtl in Resources */,
 				A5EF6DED2F7F5A060061353E /* weather-ambience-cloudy.m4a in Resources */,
 				A5EF6DEE2F7F5A060061353E /* precip-16.png in Resources */,
-				A5EF6DEF2F7F5A060061353E /* presstube_main.dae in Resources */,
 				A5EF6DF02F7F5A060061353E /* precip-64.png in Resources */,
-				A5EF6DF12F7F5A060061353E /* night8.obj in Resources */,
-				A5EF6DF22F7F5A060061353E /* anim_particle_pop.dae in Resources */,
 				A5EF6DF32F7F5A060061353E /* karat-theme.json in Resources */,
 				A5EF6DF42F7F5A060061353E /* README.md in Resources */,
-				A5EF6DF52F7F5A060061353E /* andy_main.dae in Resources */,
 				A5EF6DF62F7F5A060061353E /* cedar-animation.json in Resources */,
 				A5EF6DF72F7F5A060061353E /* ui-day-select-1.m4a in Resources */,
-				A5EF6DF82F7F5A060061353E /* night0.obj in Resources */,
 				A5EF6DF92F7F5A060061353E /* presstube-theme.json in Resources */,
-				A5EF6DFA2F7F5A060061353E /* night12.mtl in Resources */,
 				A5EF6DFB2F7F5A060061353E /* SKILL.md in Resources */,
-				A5EF6DFC2F7F5A060061353E /* night2.obj in Resources */,
-				A5EF6DFD2F7F5A060061353E /* day5.obj in Resources */,
 				A5EF6DFE2F7F5A060061353E /* precip-128.png in Resources */,
 				A5EF6DFF2F7F5A060061353E /* cedar-theme.json in Resources */,
 				A5EF6E002F7F5A060061353E /* terrazzo-mask.png in Resources */,
 				A5EF6E012F7F5A060061353E /* depth-colors.json in Resources */,
 				A5EF6E022F7F5A060061353E /* opal-theme.json in Resources */,
-				A5EF6E032F7F5A060061353E /* karat_particles.dae in Resources */,
 				A5EF6E042F7F5A060061353E /* unlock-1.m4a in Resources */,
 				A5EF6E052F7F5A060061353E /* precip-32.png in Resources */,
-				A5EF6E062F7F5A060061353E /* night1.mtl in Resources */,
-				A5EF6E072F7F5A060061353E /* andy_particles.dae in Resources */,
-				A5EF6E082F7F5A060061353E /* day1.obj in Resources */,
 				A5EF6E092F7F5A060061353E /* detailed-enter-1.m4a in Resources */,
 				A5EF6E0A2F7F5A060061353E /* moon-tapped-4.m4a in Resources */,
-				A5EF6E0B2F7F5A060061353E /* presstube_models.dae in Resources */,
 				A5EF6E0C2F7F5A060061353E /* menu-open-1.m4a in Resources */,
 				A5EF6E0D2F7F5A060061353E /* spin-slow-4.m4a in Resources */,
-				A5EF6E0E2F7F5A060061353E /* night12.obj in Resources */,
-				A5EF6E0F2F7F5A060061353E /* cloudly1.mtl in Resources */,
-				A5EF6E102F7F5A060061353E /* karat_main.dae in Resources */,
-				A5EF6E112F7F5A060061353E /* day7.mtl in Resources */,
-				A5EF6E122F7F5A060061353E /* day8.obj in Resources */,
 				A5EF6E132F7F5A060061353E /* PLAN.md in Resources */,
 				A5EF6E142F7F5A060061353E /* cedar-colors.json in Resources */,
 				A5EF6E152F7F5A060061353E /* ui-day-select-3.m4a in Resources */,
-				A5EF6E162F7F5A060061353E /* anim_cloud_in.dae in Resources */,
 				A5EF6E172F7F5A060061353E /* ui-time-scroll-click-1.m4a in Resources */,
-				A5EF6E182F7F5A060061353E /* day0.obj in Resources */,
-				A5EF6E192F7F5A060061353E /* night1.obj in Resources */,
 				A5EF6E1A2F7F5A060061353E /* shape-tap-1.m4a in Resources */,
-				A5EF6E1B2F7F5A060061353E /* snow1.obj in Resources */,
-				A5EF6E1C2F7F5A060061353E /* cloudly1.obj in Resources */,
-				A5EF6E1D2F7F5A060061353E /* night5.obj in Resources */,
-				A5EF6E1E2F7F5A060061353E /* day8.mtl in Resources */,
-				A5EF6E1F2F7F5A060061353E /* anim_fog.dae in Resources */,
-				A5EF6E202F7F5A060061353E /* anim_cloud.dae in Resources */,
-				A5EF6E212F7F5A060061353E /* anim_pop.dae in Resources */,
 				A5EF6E222F7F5A060061353E /* spin-fast-5.m4a in Resources */,
-				A5EF6E232F7F5A060061353E /* anim_bolt.dae in Resources */,
-				A5EF6E242F7F5A060061353E /* night7.obj in Resources */,
-				A5EF6E252F7F5A060061353E /* anim_camera_shake.dae in Resources */,
 				04E692CD2F5EA2CF0082C59F /* Assets.xcassets in Resources */,
 				04C38BAB2F7DFDF70022C556 /* Weather in Resources */,
 			);
@@ -1104,18 +1030,11 @@
 				A5EF6DB62F7F5A060061353E /* ParticleController.swift in Sources */,
 				A5EF6DB72F7F5A060061353E /* WeatherCondition.swift in Sources */,
 				A5EF6DB82F7F5A060061353E /* SceneConstants.swift in Sources */,
-				A5EF6DB92F7F5A060061353E /* WeatherDetailDimension.swift in Sources */,
 				A5EF6DBA2F7F5A060061353E /* MockWeatherData.swift in Sources */,
-				A5EF6DBB2F7F5A060061353E /* DimensionPanelView.swift in Sources */,
 				A5EF6DBC2F7F5A060061353E /* WeatherMainView.swift in Sources */,
 				A5EF6DBD2F7F5A060061353E /* WeatherHourlyStrip.swift in Sources */,
-				A5EF6DBE2F7F5A060061353E /* DimensionDataView.swift in Sources */,
 				A5EF6DBF2F7F5A060061353E /* WeatherAudioPlayer.swift in Sources */,
-				A5EF6DC02F7F5A060061353E /* WeatherDatePicker.swift in Sources */,
-				A5EF6DC12F7F5A060061353E /* WeatherDetailView.swift in Sources */,
 				A5EF6DC32F7F5A060061353E /* WeatherSceneView.swift in Sources */,
-				A5EF6DC42F7F5A060061353E /* DimensionSceneBuilder.swift in Sources */,
-				A5EF6DC52F7F5A060061353E /* WeatherConditionOverlay.swift in Sources */,
 				A5EF6DC62F7F5A060061353E /* WeatherSceneManager.swift in Sources */,
 				E10000000000000000000002 /* VideoAPI.swift in Sources */,
 				A10000000000000000000043 /* HomeViewModel.swift in Sources */,
@@ -1212,20 +1131,14 @@
 				04E692C92F5EA2CE0082C59F /* ioscrmappApp.swift in Sources */,
 				A10000000000000000000047 /* MockWeatherData.swift in Sources */,
 				A10000000000000000000048 /* WeatherCondition.swift in Sources */,
-				A10000000000000000000049 /* WeatherDetailDimension.swift in Sources */,
-				A1000000000000000000004A /* DimensionSceneBuilder.swift in Sources */,
 				A1000000000000000000004B /* ParticleController.swift in Sources */,
 				A1000000000000000000004C /* SceneConstants.swift in Sources */,
 				A1000000000000000000004D /* WeatherSceneManager.swift in Sources */,
 				A1000000000000000000004E /* WeatherSceneView.swift in Sources */,
 				A10000000000000000000060 /* WeatherAudioPlayer.swift in Sources */,
-				A1000000000000000000004F /* DimensionDataView.swift in Sources */,
-				A10000000000000000000050 /* DimensionPanelView.swift in Sources */,
-				A10000000000000000000051 /* WeatherConditionOverlay.swift in Sources */,
-				A10000000000000000000052 /* WeatherDatePicker.swift in Sources */,
-				A10000000000000000000053 /* WeatherDetailView.swift in Sources */,
 				A10000000000000000000054 /* WeatherHourlyStrip.swift in Sources */,
 				A10000000000000000000055 /* WeatherMainView.swift in Sources */,
+				A10000000000000000000061 /* WeatherWindBackgroundView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

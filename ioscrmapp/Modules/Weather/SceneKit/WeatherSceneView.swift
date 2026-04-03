@@ -48,21 +48,36 @@ struct WeatherSceneView: UIViewRepresentable {
     final class Coordinator: NSObject {
 
         private let manager:     WeatherSceneManager?
-        private var velX:        Float = 0
-        private var velY:        Float = 0
-        private var isPanning:   Bool  = false
+        private var currentYaw:     Float = 0
+        private var currentPitch:   Float = 0
+        private var currentRoll:    Float = 0
+        private var targetYaw:      Float = 0
+        private var targetPitch:    Float = 0
+        private var targetRoll:     Float = 0
+        private var yawVelocity:   Float = 0
+        private var pitchVelocity: Float = 0
+        private var rollVelocity:  Float = 0
+        private var isPanning:     Bool  = false
         private var displayLink: CADisplayLink?
         private var hintTimer:   Timer?
-        private var hintPhase:   Float = 0
+        private var lastPanPoint: CGPoint?
 
         // Tuning constants
-        private let sensitivity: Float = 0.0054  // rad per screen-point
-        private let friction:    Float = 0.90    // per-frame velocity decay
-        private let autoSpin:    Float = 0.0     // keep the model still unless the user drags it
-        private let tiltLimit:   Float = 0.30    // 上下旋转范围（约±17度）
+        private let yawSensitivity:   Float = 0.0155
+        private let pitchSensitivity: Float = 0.0125
+        private let rollSensitivity:  Float = 0.0038
+        private let velocityDamping:  Float = 0.93
+        private let followStrength:   Float = 0.72
+        private let idleFollow:       Float = 0.36
+        private let yawReturnStrength: Float = 0.2
+        private let pitchReturnStrength: Float = 0.24
+        private let rollReturnStrength: Float = 0.22
 
         init(manager: WeatherSceneManager?) {
             self.manager = manager
+            let restPitch = manager?.restTiltX ?? 0
+            currentPitch = restPitch
+            targetPitch = restPitch
         }
         deinit { displayLink?.invalidate(); hintTimer?.invalidate() }
 
@@ -82,23 +97,47 @@ struct WeatherSceneView: UIViewRepresentable {
         // 首次加载时给模型一个左右摇摆速度，提示可拖拽
         private func playDragHint() {
             guard !isPanning else { return }
-            velX = 0.018
+            yawVelocity = 0.024
+            rollVelocity = -0.008
         }
 
         @objc private func step(_ link: CADisplayLink) {
             guard let node = manager?.conditionGroup else { return }
+            let restPitch = manager?.restTiltX ?? 0
+
             if !isPanning {
-                velX *= friction
-                velY *= friction
+                targetYaw += yawVelocity
+                targetPitch += pitchVelocity
+                targetRoll += rollVelocity
+
+                yawVelocity *= velocityDamping
+                pitchVelocity *= velocityDamping
+                rollVelocity *= velocityDamping
+
+                let yawReturn = abs(yawVelocity) < 0.007 ? yawReturnStrength : 0.03
+                let pitchReturn = abs(pitchVelocity) < 0.006 ? pitchReturnStrength : 0.08
+                let rollReturn = abs(rollVelocity) < 0.005 ? rollReturnStrength : 0.06
+
+                targetYaw += (0 - targetYaw) * yawReturn
+                targetPitch += (restPitch - targetPitch) * pitchReturn
+                targetRoll += (0 - targetRoll) * rollReturn
             }
-            // Horizontal spin (Y-axis)
-            node.eulerAngles.y += velX + autoSpin
-            // Vertical tilt returns slowly to the manager's preferred rest angle.
-            let restTilt = manager?.restTiltX ?? 0
-            let newX = node.eulerAngles.x + velY + ((restTilt - node.eulerAngles.x) * 0.08)
-            node.eulerAngles.x = max(restTilt - tiltLimit, min(restTilt + tiltLimit, newX))
-            // 同步数字显示组旋转，让数字与天气模型看起来是一体的
+
+            let follow = isPanning ? followStrength : idleFollow
+            currentYaw += (targetYaw - currentYaw) * follow
+            currentPitch += (targetPitch - currentPitch) * follow
+            currentRoll += (targetRoll - currentRoll) * follow
+
+            applyOrientation(to: node)
+
             manager?.syncDisplayGroupRotation(to: node.eulerAngles)
+        }
+
+        private func applyOrientation(to node: SCNNode) {
+            let yaw = simd_quatf(angle: currentYaw, axis: SIMD3<Float>(0, 1, 0))
+            let pitch = simd_quatf(angle: currentPitch, axis: SIMD3<Float>(1, 0, 0))
+            let roll = simd_quatf(angle: currentRoll, axis: SIMD3<Float>(0, 0, 1))
+            node.simdOrientation = simd_normalize(yaw * pitch * roll)
         }
 
         // MARK: Pan gesture
@@ -108,27 +147,44 @@ struct WeatherSceneView: UIViewRepresentable {
             switch gesture.state {
             case .began:
                 isPanning = true
-                velX = 0
-                velY = 0
+                lastPanPoint = gesture.location(in: gesture.view)
+                yawVelocity = 0
+                pitchVelocity = 0
+                rollVelocity = 0
                 WeatherAudioPlayer.shared.playShapeTap()
                 SCNTransaction.begin()
                 SCNTransaction.animationDuration = 0.16
                 node.scale = SCNVector3(node.scale.x * 1.02, node.scale.y * 1.02, node.scale.z * 1.02)
                 SCNTransaction.commit()
             case .changed:
-                let d = gesture.translation(in: gesture.view)
-                node.eulerAngles.y += Float(d.x) * sensitivity
-                let restTilt = manager?.restTiltX ?? 0
-                let newX = node.eulerAngles.x + Float(d.y) * sensitivity * 0.5
-                node.eulerAngles.x = max(restTilt - tiltLimit, min(restTilt + tiltLimit, newX))
-                gesture.setTranslation(.zero, in: gesture.view)
+                let point = gesture.location(in: gesture.view)
+                let previousPoint = lastPanPoint ?? point
+                let deltaX = point.x - previousPoint.x
+                let deltaY = point.y - previousPoint.y
+                lastPanPoint = point
+
+                let yawDelta = Float(deltaX) * yawSensitivity
+                let pitchDelta = Float(deltaY) * pitchSensitivity
+                let rollDelta = Float(deltaX) * -rollSensitivity
+
+                targetYaw += yawDelta
+                targetPitch += pitchDelta
+                targetRoll += rollDelta
+
+                currentYaw += yawDelta * 0.34
+                currentPitch += pitchDelta * 0.28
+                currentRoll += rollDelta * 0.30
+                applyOrientation(to: node)
+
                 manager?.syncDisplayGroupRotation(to: node.eulerAngles)
             case .ended, .cancelled:
                 isPanning = false
+                lastPanPoint = nil
                 let v = gesture.velocity(in: gesture.view)
-                velX = Float(v.x) * sensitivity / 60
-                velY = 0
-                let fast = abs(v.x) > 600
+                yawVelocity = Float(v.x) * yawSensitivity / 92
+                pitchVelocity = Float(v.y) * pitchSensitivity / 110
+                rollVelocity = Float(v.x) * -rollSensitivity / 118
+                let fast = hypot(v.x, v.y) > 650
                 WeatherAudioPlayer.shared.playSpinLoop(fast: fast)
                 SCNTransaction.begin()
                 SCNTransaction.animationDuration = 0.22
@@ -137,6 +193,7 @@ struct WeatherSceneView: UIViewRepresentable {
                 SCNTransaction.commit()
             default:
                 isPanning = false
+                lastPanPoint = nil
             }
         }
     }
