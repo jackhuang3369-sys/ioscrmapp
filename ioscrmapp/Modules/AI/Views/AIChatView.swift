@@ -936,22 +936,6 @@ struct AIChatView: View {
     }
 }
 
-private struct AIChatHomeLayout {
-    let contentWidth: CGFloat
-    let heroStageWidth: CGFloat
-    let horizontalPadding: CGFloat
-    let topPadding: CGFloat
-    let titleTopPadding: CGFloat
-    let titleFontSize: CGFloat
-    let titleWidth: CGFloat
-    let heroTopPadding: CGFloat
-    let heroHeight: CGFloat
-    let voiceTopSpacing: CGFloat
-    let promptMaxWidth: CGFloat
-    let bottomPadding: CGFloat
-    let isCompactHeight: Bool
-}
-
 
 extension Array {
     subscript(safe index: Int) -> Element? {
