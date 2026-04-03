@@ -928,62 +928,22 @@ private extension CRMVideoFormat {
     }
 }
 
-private enum CRMReferenceLocalResource {
-    static func videoURL(_ name: String) -> String {
-        if let url = Bundle.main.url(
-            forResource: name,
-            withExtension: "mp4",
-            subdirectory: "Resources/Videos"
-        ) {
-            return url.absoluteString
-        }
+private enum CRMReferenceRemoteResource {
+    private static let baseURL = "http://10.108.1.193:15800/minio/video"
 
-        if let url = Bundle.main.url(forResource: name, withExtension: "mp4") {
-            return url.absoluteString
-        }
-
-        return ""
+    static func videoURL(_ fileName: String) -> String {
+        "\(baseURL)/videos/\(fileName)"
     }
 
-    static func subtitleURL(_ name: String) -> String {
-        let extensions = ["srt", "vtt"]
-
-        for ext in extensions {
-            if let url = Bundle.main.url(
-                forResource: name,
-                withExtension: ext,
-                subdirectory: "Resources/Subtitles"
-            ) {
-                return url.absoluteString
-            }
-
-            if let url = Bundle.main.url(forResource: name, withExtension: ext) {
-                return url.absoluteString
-            }
-        }
-
-        return ""
+    static func subtitleURL(_ fileName: String) -> String {
+        "\(baseURL)/subtitles/\(fileName)"
     }
 
-    static func audioURL(_ name: String) -> String {
-        let extensions = ["m4a", "aac", "mp3"]
-
-        for ext in extensions {
-            if let url = Bundle.main.url(
-                forResource: name,
-                withExtension: ext,
-                subdirectory: "Resources/Audio"
-            ) {
-                return url.absoluteString
-            }
-
-            if let url = Bundle.main.url(forResource: name, withExtension: ext) {
-                return url.absoluteString
-            }
-        }
-
-        return ""
+    static func audioURL(_ fileName: String) -> String {
+        "\(baseURL)/audios/\(fileName)"
     }
+
+    static let spidermanCoverURL = "\(baseURL)/videos/f5126fdc84b8248c7f7c3b448e68fde6.jpeg"
 }
 
 private enum CRMReferenceMockData {
@@ -1061,25 +1021,25 @@ private enum CRMReferenceMockData {
         [
             CRMVideoSource(
                 id: "sm_480",
-                url: CRMReferenceLocalResource.videoURL("video_h264_480p"),
+                url: CRMReferenceRemoteResource.videoURL("video_h264_480p.mp4"),
                 quality: .sd480,
                 format: .mp4
             ),
             CRMVideoSource(
                 id: "sm_720",
-                url: CRMReferenceLocalResource.videoURL("video_h264_720p"),
+                url: CRMReferenceRemoteResource.videoURL("video_h264_720p.mp4"),
                 quality: .hd720,
                 format: .mp4
             ),
             CRMVideoSource(
                 id: "sm_1080",
-                url: CRMReferenceLocalResource.videoURL("video_h264_1080p"),
+                url: CRMReferenceRemoteResource.videoURL("video_h264_1080p.mp4"),
                 quality: .hd1080,
                 format: .mp4
             ),
             CRMVideoSource(
                 id: "sm_4k",
-                url: CRMReferenceLocalResource.videoURL("video_h264_4K"),
+                url: CRMReferenceRemoteResource.videoURL("video_h246_4K.mp4"),
                 quality: .uhd4k,
                 format: .mp4
             ),
@@ -1098,15 +1058,29 @@ private enum CRMReferenceMockData {
             CRMSubtitle(
                 id: "sm_sub_en",
                 language: "en-US",
-                displayName: "English",
-                url: CRMReferenceLocalResource.subtitleURL("subs_en"),
+                displayName: "English (VTT)",
+                url: CRMReferenceRemoteResource.subtitleURL("subs_en.vtt"),
+                isEmbedded: false
+            ),
+            CRMSubtitle(
+                id: "sm_sub_en_srt",
+                language: "en-US",
+                displayName: "English (SRT)",
+                url: CRMReferenceRemoteResource.subtitleURL("subs_en.srt"),
                 isEmbedded: false
             ),
             CRMSubtitle(
                 id: "sm_sub_jp",
                 language: "ja-JP",
-                displayName: "日本語",
-                url: CRMReferenceLocalResource.subtitleURL("subs_jp"),
+                displayName: "日本語 (VTT)",
+                url: CRMReferenceRemoteResource.subtitleURL("subs_jp.vtt"),
+                isEmbedded: false
+            ),
+            CRMSubtitle(
+                id: "sm_sub_jp_srt",
+                language: "ja-JP",
+                displayName: "日本語 (SRT)",
+                url: CRMReferenceRemoteResource.subtitleURL("subs_jp.srt"),
                 isEmbedded: false
             ),
         ]
@@ -1117,15 +1091,22 @@ private enum CRMReferenceMockData {
             CRMAudioTrack(
                 id: "sm_audio_en",
                 language: "en-US",
-                displayName: "English",
-                url: CRMReferenceLocalResource.audioURL("audio_en"),
+                displayName: "English (M4A)",
+                url: CRMReferenceRemoteResource.audioURL("audio_en.m4a"),
                 isDefault: true
+            ),
+            CRMAudioTrack(
+                id: "sm_audio_en_webm",
+                language: "en-US",
+                displayName: "English (WEBM)",
+                url: CRMReferenceRemoteResource.audioURL("audio_en.webm"),
+                isDefault: false
             ),
             CRMAudioTrack(
                 id: "sm_audio_jp",
                 language: "ja-JP",
-                displayName: "日本語",
-                url: CRMReferenceLocalResource.audioURL("audio_jp"),
+                displayName: "日本語 (M4A)",
+                url: CRMReferenceRemoteResource.audioURL("audio_jp.m4a"),
                 isDefault: false
             ),
         ]
@@ -1164,7 +1145,7 @@ private enum CRMReferenceMockData {
             episodeNumber: 1,
             title: "Full Movie",
             duration: 8400,
-            thumbnail: "",
+            thumbnail: CRMReferenceRemoteResource.spidermanCoverURL,
             videoSources: spidermanVideoSources,
             subtitles: spidermanSubtitles,
             audioTracks: spidermanAudioTracks
@@ -1176,7 +1157,7 @@ private enum CRMReferenceMockData {
             CRMMedia(
                 id: "spiderman_2026",
                 title: "SPIDER-MAN: BRAND NEW DAY",
-                cover: "local:img",
+                cover: CRMReferenceRemoteResource.spidermanCoverURL,
                 description: "Peter Parker tries to focus on college and leave Spider-Man behind. But when a new threat endangers his friends, he must break his promise and suit up again, teaming with an unexpected ally to protect those he loves.",
                 type: .movie,
                 views: 89_234_567,

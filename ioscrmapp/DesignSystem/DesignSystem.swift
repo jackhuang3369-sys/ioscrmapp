@@ -20,6 +20,7 @@ enum DUTheme {
     static let panel = Color.white
     static let line = Color(hex: 0xDBE5EF)
     static let lineLight = Color(hex: 0xE8EEF4)
+    static let homeCarouselIndicatorInactive = Color(hex: 0xD6DEE8)
 
     static let success = Color(hex: 0x1F8A52)
     static let successBackground = Color(hex: 0xE8F5E9)
@@ -41,6 +42,21 @@ enum DUTheme {
         gradient: Gradient(colors: [cyanLight, blueLight]),
         startPoint: .topLeading,
         endPoint: .bottomTrailing
+    )
+
+    static let homeCarouselIndicatorGradient = LinearGradient(
+        gradient: Gradient(colors: [Color(hex: 0x009FFF), Color(hex: 0x0066FF)]),
+        startPoint: .leading,
+        endPoint: .trailing
+    )
+
+    static let homeTabBarBackgroundGradient = LinearGradient(
+        gradient: Gradient(colors: [
+            Color(hex: 0x0077FF, opacity: 0.30),
+            Color(hex: 0xFFFFFF, opacity: 0)
+        ]),
+        startPoint: .top,
+        endPoint: .bottom
     )
 }
 

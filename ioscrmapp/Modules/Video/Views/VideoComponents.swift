@@ -151,18 +151,22 @@ struct VideoFeedCard: View {
     let primaryCategoryTitle: String
     let action: () -> Void
 
-    private let posterHeight: CGFloat = 220
     private let cardCornerRadius: CGFloat = 26
+    private let posterAspectRatio: CGFloat = 2.0 / 3.0
 
     var body: some View {
         Button(action: action) {
             VStack(alignment: .leading, spacing: 0) {
-                VideoImageView(
-                    image: content.posterImage,
-                    cornerRadius: cardCornerRadius,
-                    contentMode: .fill
-                )
-                .frame(height: posterHeight)
+                Color.clear
+                .aspectRatio(posterAspectRatio, contentMode: .fit)
+                .overlay {
+                    VideoImageView(
+                        image: content.posterImage,
+                        cornerRadius: cardCornerRadius,
+                        contentMode: .fill
+                    )
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                }
                 .clipShape(RoundedRectangle(cornerRadius: cardCornerRadius, style: .continuous))
 
                 VStack(alignment: .leading, spacing: DUSpacing.sm) {

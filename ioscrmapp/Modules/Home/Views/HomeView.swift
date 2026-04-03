@@ -30,6 +30,7 @@ struct HomeView: View {
     @State private var isRechargePresented = false
     @State private var isOffersPresented = false
     @State private var isTicketsPresented = false
+    @State private var requestedVideoID: String?
     @State private var isSigningOut = false
     @State private var isCreditLimitExpanded = false
     @State private var signOutFailureMessageKey: String?
@@ -50,11 +51,26 @@ struct HomeView: View {
         .init(title: .key("home.service.voicePack"), assetName: "HomeServiceVoicePackDesignIcon"),
     ]
 
-    private let featuredCarouselAssetNames: [String] = [
-        "HomeCarouselGreenHills",
-        "HomeCarouselGoldenValley",
-        "HomeCarouselSnowMountains",
-        "HomeCarouselCliffDawn",
+    private let featuredCarouselItems: [HomeFeatureCarouselItem] = [
+        .init(
+            assetName: "HomeCarouselWeather3D",
+            title: .key("home.carousel.telecomEco")
+        ),
+        .init(
+            assetName: "HomeCarouselTelecomEco",
+            title: .key("home.carousel.weather3D"),
+            action: .tickets
+        ),
+        .init(
+            assetName: "HomeCarouselIPhone17",
+            title: .key("home.carousel.iPhone17"),
+            action: .mall
+        ),
+        .init(
+            assetName: "HomeCarouselSpiderMovie",
+            title: .key("home.carousel.spiderBrandNewDay"),
+            action: .videoDetail("spiderman_2026")
+        ),
     ]
 
     init(
@@ -239,7 +255,9 @@ struct HomeView: View {
 
             VideoContainerView(
                 session: custSubInfo,
-                videoService: videoService
+                videoService: videoService,
+                requestedVideoID: $requestedVideoID,
+                isActive: selectedTab == .video
             )
             .tabItem {
                 Image(HomeTab.video.assetName)
@@ -287,7 +305,7 @@ struct HomeView: View {
 
                             quickActionsSection
                             featuredCarouselSection
-                            servicesSection
+                            //servicesSection
                             Color.clear
                                 .frame(height: homeDashboardBottomPlaceholderHeight)
                                 .accessibilityHidden(true)
@@ -757,7 +775,9 @@ struct HomeView: View {
     }
 
     private var featuredCarouselSection: some View {
-        HomeFeatureCarouselView(assetNames: featuredCarouselAssetNames)
+        HomeFeatureCarouselView(items: featuredCarouselItems) { item in
+            handleFeaturedCarouselSelection(item)
+        }
             .padding(.horizontal, 12)
             .padding(.top, 16)
             .padding(.bottom, 14)
@@ -835,20 +855,10 @@ struct HomeView: View {
 
             ZStack(alignment: .bottom) {
                 barShape
-                    .fill(.ultraThinMaterial)
+                    .fill(Color.white)
                     .overlay(
                         barShape
-                            .fill(
-                                LinearGradient(
-                                    colors: [
-                                        Color.white.opacity(0.90),
-                                        Color(hex: 0x9AC8FF, opacity: 0.16),
-                                        Color.white.opacity(0.68)
-                                    ],
-                                    startPoint: .top,
-                                    endPoint: .bottom
-                                )
-                            )
+                            .fill(DUTheme.homeTabBarBackgroundGradient)
                     )
                     .overlay(
                         barShape
@@ -992,6 +1002,20 @@ struct HomeView: View {
             isOffersPresented = true
         case .tickets:
             isTicketsPresented = true
+        }
+    }
+
+    private func handleFeaturedCarouselSelection(_ item: HomeFeatureCarouselItem) {
+        switch item.action {
+        case .none:
+            return
+        case .tickets:
+            isTicketsPresented = true
+        case .mall:
+            selectedTab = .mall
+        case let .videoDetail(videoID):
+            selectedTab = .video
+            requestedVideoID = videoID
         }
     }
 
