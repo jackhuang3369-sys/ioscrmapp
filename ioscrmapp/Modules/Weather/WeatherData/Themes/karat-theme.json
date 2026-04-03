@@ -1,0 +1,20 @@
+{
+  "id": "karat",
+  "name": "Karat",
+  "sku": "SKNx007",
+  "description": "DO NOT USE",
+  "edition": "legendary",
+  "productUrl": "https://notboring.software/product/karat",
+  "firstAppVersion": "2.0",
+  "isNew": false,
+  "characterPairSpacing": [
+    { "c1": "7", "c2": ",", "spacing": -0.9},
+    { "c1": "7", "c2": ".", "spacing": -0.9},
+    { "c1": "*", "c2": ",", "spacing": 0.1},
+    { "c1": ",", "c2": "*", "spacing": 0.1},
+    { "c1": ".", "c2": "*", "spacing": 0.1},
+    { "c1": "*", "c2": ".", "spacing": 0.1},
+    { "c1": "*", "c2": "*", "spacing": 0.4},
+  ],
+  "baseThemeId": "base1"
+}

@@ -1,0 +1,44 @@
+{
+  "animations": {
+    "sunIn": {
+      "actions": [
+        {
+          "nativeAnimation": "planeColor",
+          "targetColor": "255 255 255"
+        },
+        {
+          "nativeAnimation": "planeNoiseIntensity",
+          "intensity": 0.4
+        },
+        {
+          "nativeAnimation": "fogColor",
+          "targetColor": "255 255 255 245"
+        },
+        {
+          "nativeAnimation": "statusBarStyle",
+          "statusBarStyle": "dark"
+        }
+      ]
+    },
+    "moonIn": {
+      "actions": [
+        {
+          "nativeAnimation": "planeColor",
+          "targetColor": "0 0 0"
+        },
+        {
+          "nativeAnimation": "planeNoiseIntensity",
+          "intensity": 0.5
+        },
+        {
+          "nativeAnimation": "fogColor",
+          "targetColor": "0 0 0 245"
+        },
+        {
+          "nativeAnimation": "statusBarStyle",
+          "statusBarStyle": "light"
+        }
+      ]
+    },
+  }
+}

@@ -1,0 +1,883 @@
+{
+  "colors": {
+    "palette": {
+      "light": "white",
+      "dark": "r:0.078, g:0.039, b:0.25, a:1.0",
+      "clouds": "r:0.629, g:0.695, b:0.894, a:1.0",
+      "rain": "r:0.0, g:0.898, b:1.0, a:1.0",
+      "snow": "r:0.689, g:0.579, b:1.0, a:1.0",
+      "bolt": "white",
+      "sun": "white",
+      "highlight": "r:0.689, g:0.579, b:1.0, a:1.0",
+      "shadow": "r:0.85, g:0.85, b:0.85, a:1.0",
+      "moonLight": "white",
+      "moonDark": "r:0.078, g:0.039, b:0.25, a:1.0"
+    },
+    "elements": {
+      "explodedPrimary": {
+        "light": "dark",
+        "dark": "light"
+      },
+      "explodedSecondary": {
+        "light": "light",
+        "dark": "dark"
+      },
+      "alertBackground": {
+        "light": "dark",
+        "dark": "light"
+      },
+      "alertForeground": {
+        "light": "light",
+        "dark": "dark"
+      },
+      "headerStatus": {
+        "light": "dark",
+        "dark": "light"
+      },
+      "menuForeground": {
+        "light": "dark, a:0.15",
+        "dark": "light, a:0.15"
+      },
+      "genericText": {
+        "light": "dark",
+        "dark": "light",
+        "noBackground": "white"
+      },
+      "appSummaryStroke": {
+        "light": "R:182, G:205, B:255, A:255",
+        "dark": "dark"
+      },
+      "hourlyMinMaxText": {
+        "light": "dark",
+        "dark": "light",
+        "noBackground": "white"
+      },
+      "hourlyAxisLabel": {
+        "light": "dark",
+        "dark": "light",
+        "noBackground": "white"
+      },
+      "moon": {
+        "light": "moonLight",
+        "dark": "moonDark",
+      },
+      "hourlySelectedTimeLabel": {
+        "light": "dark",
+        "dark": "light",
+        "noBackground": "white"
+      },
+      "widgetTemp": {
+        "light": "dark",
+        "dark": "light",
+        "noBackground": "white"
+      },
+      "widgetLocation": {
+        "light": "dark, a:0.4",
+        "dark": "light, a:0.4",
+        "noBackground": "highlight"
+      },
+      "widgetSummary": {
+        "light": "dark",
+        "dark": "light",
+        "noBackground": "white"
+      },
+      "widgetAQITitle": {
+        "light": "dark, a:0.4",
+        "dark": "light, a:0.4",
+        "noBackground": "highlight"
+      },
+      "widgetEPANumber": {
+        "light": "dark",
+        "dark": "light",
+        "noBackground": "white"
+      },
+      "widgetEPAText": {
+        "light": "dark",
+        "dark": "light",
+        "noBackground": "white"
+      },
+      "widgetPollenTitle": {
+        "light": "dark, a:0.4",
+        "dark": "light, a:0.4",
+        "noBackground": "highlight"
+      },
+      "widgetPollenText": {
+        "light": "dark",
+        "dark": "light",
+        "noBackground": "white"
+      },
+      "widgetErrorText": {
+        "light": "dark, a:0.4",
+        "dark": "light, a:0.4",
+        "noBackground": "white, a:0.4"
+      },
+      "widgetPaywallIconText": {
+        "light": "dark",
+        "dark": "light",
+        "noBackground": "white"
+      },
+      "weeklyDay": {
+        "light": "dark",
+        "dark": "light",
+        "noBackground": "white"
+      },
+      "weeklyTempHigh": {
+        "light": "dark",
+        "dark": "light",
+        "noBackground": "white"
+      },
+      "weeklyTempLow": {
+        "light": "dark, a: 0.4",
+        "dark": "light, a: 0.4",
+        "noBackground": "white, a: 0.4"
+      },
+      "nextHourAxisLabel": {
+        "light": "dark",
+        "dark": "light",
+        "noBackground": "white"
+      },
+      "nextHourGraphBaseline": {
+        "light": "dark",
+        "dark": "light",
+        "noBackground": "white"
+      },
+      "nextHourGraphLines": {
+        "light": "dark, a:0.4",
+        "dark": "light, a: 0.4",
+        "noBackground": "white, a:0.4"
+      },
+      "nextHourForecastTitle": {
+        "light": "dark",
+        "dark": "light",
+        "noBackground": "white"
+      }
+    }
+  },
+
+  "codes": {
+    "freezingRainHeavy": "rain",
+    "freezingRain": "rain",
+    "freezingRainLight": "rain",
+    "freezingDrizzle": "rain",
+
+    "icePelletsHeavy": "rain",
+    "icePellets": "rain",
+    "icePelletsLight": "rain",
+
+    "snowHeavy": "snow",
+    "snow": "snow",
+    "snowLight": "snow",
+    "flurries": "snow",
+
+    "thunderstorm": "rain",
+    "rainHeavy": "rain",
+    "rain": "rain",
+    "rainLight": "rain",
+    "drizzle": "rain",
+
+    "fog": "clouds",
+    "fogLight": "clouds",
+    "smoke": "clouds",
+    "haze": "clouds",
+
+    "cloudy": "clouds",
+    "mostlyCloudy": "clouds",
+    "partlyCloudy": "clouds",
+    "mostlyClear": "clouds, a:0.15",
+    "clear": "clouds, a:0.15"
+  },
+
+  "icons": {
+    "freezingRainHeavy": [
+      {
+        "name": "cloud",
+        "colorScheme": {
+          "light": "dark",
+          "dark": "light",
+          "noBackground": "white"
+        },
+        "solar": ["day", "night"]
+      },
+      {
+        "name": "rain",
+        "colorScheme": {
+          "light": "rain",
+          "dark": "rain",
+          "noBackground": "rain"
+        },
+        "solar": ["day", "night"]
+      },
+      {
+        "name": "shadow",
+        "iconSet": ["layers3D"],
+        "colorScheme": {
+          "light": "shadow",
+          "dark": "shadow",
+          "noBackground": "shadow"
+        },
+        "solar": ["day", "night"]
+      }
+    ],
+    "freezingRain": [
+      {
+        "name": "cloud",
+        "colorScheme": {
+          "light": "dark",
+          "dark": "light",
+          "noBackground": "white"
+        },
+        "solar": ["day", "night"]
+      },
+      {
+        "name": "rain",
+        "colorScheme": {
+          "light": "rain",
+          "dark": "rain",
+          "noBackground": "rain"
+        },
+        "solar": ["day", "night"]
+      },
+      {
+        "name": "shadow",
+        "iconSet": ["layers3D"],
+        "colorScheme": {
+          "light": "shadow",
+          "dark": "shadow",
+          "noBackground": "shadow"
+        },
+        "solar": ["day", "night"]
+      }
+    ],
+    "freezingRainLight": [
+      {
+        "name": "cloud",
+        "colorScheme": {
+          "light": "dark",
+          "dark": "light",
+          "noBackground": "white"
+        },
+        "solar": ["day", "night"]
+      },
+      {
+        "name": "rain",
+        "colorScheme": {
+          "light": "rain",
+          "dark": "rain",
+          "noBackground": "rain"
+        },
+        "solar": ["day", "night"]
+      },
+      {
+        "name": "shadow",
+        "iconSet": ["layers3D"],
+        "colorScheme": {
+          "light": "shadow",
+          "dark": "shadow",
+          "noBackground": "shadow"
+        },
+        "solar": ["day", "night"]
+      }
+    ],
+    "freezingDrizzle": [
+      {
+        "name": "cloud",
+        "colorScheme": {
+          "light": "dark",
+          "dark": "light",
+          "noBackground": "white"
+        },
+        "solar": ["day", "night"]
+      },
+      {
+        "name": "rain",
+        "colorScheme": {
+          "light": "rain",
+          "dark": "rain",
+          "noBackground": "rain"
+        },
+        "solar": ["day", "night"]
+      },
+      {
+        "name": "shadow",
+        "iconSet": ["layers3D"],
+        "colorScheme": {
+          "light": "shadow",
+          "dark": "shadow",
+          "noBackground": "shadow"
+        },
+        "solar": ["day", "night"]
+      }
+    ],
+
+    "icePelletsHeavy": [
+      {
+        "name": "cloud",
+        "colorScheme": {
+          "light": "dark",
+          "dark": "light",
+          "noBackground": "white"
+        },
+        "solar": ["day", "night"]
+      },
+      {
+        "name": "rain",
+        "colorScheme": {
+          "light": "rain",
+          "dark": "rain",
+          "noBackground": "rain"
+        },
+        "solar": ["day", "night"]
+      },
+      {
+        "name": "shadow",
+        "iconSet": ["layers3D"],
+        "colorScheme": {
+          "light": "shadow",
+          "dark": "shadow",
+          "noBackground": "shadow"
+        },
+        "solar": ["day", "night"]
+      }
+    ],
+    "icePellets": [
+      {
+        "name": "cloud",
+        "colorScheme": {
+          "light": "dark",
+          "dark": "light",
+          "noBackground": "white"
+        },
+        "solar": ["day", "night"]
+      },
+      {
+        "name": "rain",
+        "colorScheme": {
+          "light": "rain",
+          "dark": "rain",
+          "noBackground": "rain"
+        },
+        "solar": ["day", "night"]
+      },
+      {
+        "name": "shadow",
+        "iconSet": ["layers3D"],
+        "colorScheme": {
+          "light": "shadow",
+          "dark": "shadow",
+          "noBackground": "shadow"
+        },
+        "solar": ["day", "night"]
+      }
+    ],
+    "icePelletsLight": [
+      {
+        "name": "cloud",
+        "colorScheme": {
+          "light": "dark",
+          "dark": "light",
+          "noBackground": "white"
+        },
+        "solar": ["day", "night"]
+      },
+      {
+        "name": "rain",
+        "colorScheme": {
+          "light": "rain",
+          "dark": "rain",
+          "noBackground": "rain"
+        },
+        "solar": ["day", "night"]
+      },
+      {
+        "name": "shadow",
+        "iconSet": ["layers3D"],
+        "colorScheme": {
+          "light": "shadow",
+          "dark": "shadow",
+          "noBackground": "shadow"
+        },
+        "solar": ["day", "night"]
+      }
+    ],
+
+    "snowHeavy": [
+      {
+        "name": "flake",
+        "colorScheme": {
+          "light": "dark",
+          "dark": "light",
+          "noBackground": "white"
+        },
+        "solar": ["day", "night"]
+      },
+      {
+        "name": "shadow",
+        "iconSet": ["layers3D"],
+        "colorScheme": {
+          "light": "shadow",
+          "dark": "shadow",
+          "noBackground": "shadow"
+        },
+        "solar": ["day", "night"]
+      }
+    ],
+    "snow": [
+      {
+        "name": "flake",
+        "colorScheme": {
+          "light": "dark",
+          "dark": "light",
+          "noBackground": "white"
+        },
+        "solar": ["day", "night"]
+      },
+      {
+        "name": "shadow",
+        "iconSet": ["layers3D"],
+        "colorScheme": {
+          "light": "shadow",
+          "dark": "shadow",
+          "noBackground": "shadow"
+        },
+        "solar": ["day", "night"]
+      }
+    ],
+    "snowLight": [
+      {
+        "name": "flake",
+        "colorScheme": {
+          "light": "dark",
+          "dark": "light",
+          "noBackground": "white"
+        },
+        "solar": ["day", "night"]
+      },
+      {
+        "name": "shadow",
+        "iconSet": ["layers3D"],
+        "colorScheme": {
+          "light": "shadow",
+          "dark": "shadow",
+          "noBackground": "shadow"
+        },
+        "solar": ["day", "night"]
+      }
+    ],
+    "flurries": [
+      {
+        "name": "flake",
+        "colorScheme": {
+          "light": "dark",
+          "dark": "light",
+          "noBackground": "white"
+        },
+        "solar": ["day", "night"]
+      },
+      {
+        "name": "shadow",
+        "iconSet": ["layers3D"],
+        "colorScheme": {
+          "light": "shadow",
+          "dark": "shadow",
+          "noBackground": "shadow"
+        },
+        "solar": ["day", "night"]
+      }
+    ],
+
+    "thunderstorm": [
+      {
+        "name": "cloud",
+        "colorScheme": {
+          "light": "dark",
+          "dark": "light",
+          "noBackground": "white"
+        },
+        "solar": ["day", "night"]
+      },
+      {
+        "name": "bolt",
+        "colorScheme": {
+          "light": "bolt",
+          "dark": "bolt",
+          "noBackground": "bolt"
+        },
+        "solar": ["day", "night"]
+      },
+      {
+        "name": "shadow",
+        "iconSet": ["layers3D"],
+        "colorScheme": {
+          "light": "shadow",
+          "dark": "shadow",
+          "noBackground": "shadow"
+        },
+        "solar": ["day", "night"]
+      }
+    ],
+    "rainHeavy": [
+      {
+        "name": "cloud",
+        "colorScheme": {
+          "light": "dark",
+          "dark": "light",
+          "noBackground": "white"
+        },
+        "solar": ["day", "night"]
+      },
+      {
+        "name": "rain",
+        "colorScheme": {
+          "light": "rain",
+          "dark": "rain",
+          "noBackground": "rain"
+        },
+        "solar": ["day", "night"]
+      },
+      {
+        "name": "shadow",
+        "iconSet": ["layers3D"],
+        "colorScheme": {
+          "light": "shadow",
+          "dark": "shadow",
+          "noBackground": "shadow"
+        },
+        "solar": ["day", "night"]
+      }
+    ],
+    "rain": [
+      {
+        "name": "cloud",
+        "colorScheme": {
+          "light": "dark",
+          "dark": "light",
+          "noBackground": "white"
+        },
+        "solar": ["day", "night"]
+      },
+      {
+        "name": "rain",
+        "colorScheme": {
+          "light": "rain",
+          "dark": "rain",
+          "noBackground": "rain"
+        },
+        "solar": ["day", "night"]
+      },
+      {
+        "name": "shadow",
+        "iconSet": ["layers3D"],
+        "colorScheme": {
+          "light": "shadow",
+          "dark": "shadow",
+          "noBackground": "shadow"
+        },
+        "solar": ["day", "night"]
+      }
+    ],
+    "rainLight": [
+      {
+        "name": "cloud",
+        "colorScheme": {
+          "light": "dark",
+          "dark": "light",
+          "noBackground": "white"
+        },
+        "solar": ["day", "night"]
+      },
+      {
+        "name": "rain",
+        "colorScheme": {
+          "light": "rain",
+          "dark": "rain",
+          "noBackground": "rain"
+        },
+        "solar": ["day", "night"]
+      },
+      {
+        "name": "shadow",
+        "iconSet": ["layers3D"],
+        "colorScheme": {
+          "light": "shadow",
+          "dark": "shadow",
+          "noBackground": "shadow"
+        },
+        "solar": ["day", "night"]
+      }
+    ],
+    "drizzle": [
+      {
+        "name": "cloud",
+        "colorScheme": {
+          "light": "dark",
+          "dark": "light",
+          "noBackground": "white"
+        },
+        "solar": ["day", "night"]
+      },
+      {
+        "name": "rain",
+        "colorScheme": {
+          "light": "rain",
+          "dark": "rain",
+          "noBackground": "rain"
+        },
+        "solar": ["day", "night"]
+      },
+      {
+        "name": "shadow",
+        "iconSet": ["layers3D"],
+        "colorScheme": {
+          "light": "shadow",
+          "dark": "shadow",
+          "noBackground": "shadow"
+        },
+        "solar": ["day", "night"]
+      }
+    ],
+
+    "fog": [
+      {
+        "name": "cloud",
+        "colorScheme": {
+          "light": "dark",
+          "dark": "light",
+          "noBackground": "white"
+        },
+        "solar": ["day", "night"]
+      },
+      {
+        "name": "shadow",
+        "iconSet": ["layers3D"],
+        "colorScheme": {
+          "light": "shadow",
+          "dark": "shadow",
+          "noBackground": "shadow"
+        },
+        "solar": ["day", "night"]
+      }
+    ],
+    "fogLight": [
+      {
+        "name": "cloud",
+        "colorScheme": {
+          "light": "dark",
+          "dark": "light",
+          "noBackground": "white"
+        },
+        "solar": ["day", "night"]
+      },
+      {
+        "name": "shadow",
+        "iconSet": ["layers3D"],
+        "colorScheme": {
+          "light": "shadow",
+          "dark": "shadow",
+          "noBackground": "shadow"
+        },
+        "solar": ["day", "night"]
+      }
+    ],
+    "smoke": [
+      {
+        "name": "cloud",
+        "colorScheme": {
+          "light": "dark",
+          "dark": "light",
+          "noBackground": "white"
+        },
+        "solar": ["day", "night"]
+      },
+      {
+        "name": "shadow",
+        "iconSet": ["layers3D"],
+        "colorScheme": {
+          "light": "shadow",
+          "dark": "shadow",
+          "noBackground": "shadow"
+        },
+        "solar": ["day", "night"]
+      }
+    ],
+    "haze": [
+      {
+        "name": "cloud",
+        "colorScheme": {
+          "light": "dark",
+          "dark": "light",
+          "noBackground": "white"
+        },
+        "solar": ["day", "night"]
+      },
+      {
+        "name": "shadow",
+        "iconSet": ["layers3D"],
+        "colorScheme": {
+          "light": "shadow",
+          "dark": "shadow",
+          "noBackground": "shadow"
+        },
+        "solar": ["day", "night"]
+      }
+    ],
+
+    "cloudy": [
+      {
+        "name": "cloud",
+        "colorScheme": {
+          "light": "dark",
+          "dark": "light",
+          "noBackground": "white"
+        },
+        "solar": ["day", "night"]
+      },
+      {
+        "name": "shadow",
+        "iconSet": ["layers3D"],
+        "colorScheme": {
+          "light": "shadow",
+          "dark": "shadow",
+          "noBackground": "shadow"
+        },
+        "solar": ["day", "night"]
+      }
+    ],
+    "mostlyCloudy": [
+      {
+        "name": "cloud",
+        "colorScheme": {
+          "light": "dark",
+          "dark": "light",
+          "noBackground": "white"
+        },
+        "solar": ["day", "night"]
+      },
+      {
+        "name": "shadow",
+        "iconSet": ["layers3D"],
+        "colorScheme": {
+          "light": "shadow",
+          "dark": "shadow",
+          "noBackground": "shadow"
+        },
+        "solar": ["day", "night"]
+      }
+    ],
+    "partlyCloudy": [
+      {
+        "name": "sun",
+        "colorScheme": {
+          "light": "sun",
+          "dark": "sun",
+          "noBackground": "sun"
+        },
+        "solar": ["day"]
+      },
+      {
+        "name": "moon",
+        "iconSet": ["layersFlat"],
+        "colorScheme": {
+          "light": "dark",
+          "dark": "light",
+          "noBackground": "white"
+        },
+        "solar": ["night"]
+      },
+      {
+        "name": "cloud",
+        "colorScheme": {
+          "light": "dark",
+          "dark": "light",
+          "noBackground": "white"
+        },
+        "solar": ["day", "night"]
+      },
+      {
+        "name": "shadow",
+        "iconSet": ["layers3D"],
+        "colorScheme": {
+          "light": "shadow",
+          "dark": "shadow",
+          "noBackground": "shadow"
+        },
+        "solar": ["day", "night"]
+      }
+    ],
+    "mostlyClear": [
+      {
+        "name": "sun",
+        "colorScheme": {
+          "light": "sun",
+          "dark": "sun",
+          "noBackground": "sun"
+        },
+        "solar": ["day"]
+      },
+      {
+        "name": "moon",
+        "iconSet": ["layersFlat"],
+        "colorScheme": {
+          "light": "dark",
+          "dark": "light",
+          "noBackground": "white"
+        },
+        "solar": ["night"]
+      },
+      {
+        "name": "cloud",
+        "colorScheme": {
+          "light": "dark",
+          "dark": "light",
+          "noBackground": "white"
+        },
+        "solar": ["day", "night"]
+      },
+      {
+        "name": "shadow",
+        "iconSet": ["layers3D"],
+        "colorScheme": {
+          "light": "shadow",
+          "dark": "shadow",
+          "noBackground": "shadow"
+        },
+        "solar": ["day", "night"]
+      }
+    ],
+    "clear":[
+      {
+        "name": "sun",
+        "colorScheme": {
+          "light": "sun",
+          "dark": "sun",
+          "noBackground": "sun"
+        },
+        "solar": ["day"]
+      },
+      {
+        "name": "moon",
+        "iconSet": ["layersFlat"],
+        "colorScheme": {
+          "light": "dark",
+          "dark": "light",
+          "noBackground": "white"
+        },
+        "solar": ["night"]
+      },
+      {
+        "name": "shadow",
+        "iconSet": ["layers3D"],
+        "colorScheme": {
+          "light": "shadow",
+          "dark": "shadow",
+          "noBackground": "shadow"
+        },
+        "solar": ["day", "night"]
+      }
+    ]
+  },
+
+  "widgets": {
+    "backgroundResizingMode": "stretch",
+    "defaultColorScheme": "light"
+  }
+}

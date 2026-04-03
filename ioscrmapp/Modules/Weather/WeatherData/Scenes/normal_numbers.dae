@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1">
+ <asset>
+  <contributor>
+   <authoring_tool>SceneKit Collada Exporter v1.0</authoring_tool>
+  </contributor>
+  <created>2026-04-02T01:34:05Z</created>
+  <modified>2026-04-02T01:34:05Z</modified>
+  <unit meter="1.000000"/>
+  <up_axis>Y_UP</up_axis>
+ </asset>
+ <library_materials>
+  <material id="Night" name="Night">
+   <instance_effect url="#effect_Night"/>
+  </material>
+  <material id="Day" name="Day">
+   <instance_effect url="#effect_Day"/>
+  </material>
+ </library_materials>
+ <library_effects>
+  <effect id="effect_Night">
+   <profile_COMMON>
+    <technique sid="common">
+     <constant>
+      <reflective>
+       <color>0 0 0 1</color>
+      </reflective>
+      <transparent opaque="A_ONE">
+       <color>1 1 1 1</color>
+      </transparent>
+      <transparency>
+       <float>1</float>
+      </transparency>
+     </constant>
+     <extra>
+      <technique profile="SceneKit">
+       <constant_ambient>
+        <color>0.484529 0.484529 0.484529 1</color>
+       </constant_ambient>
+       <constant_diffuse>
+        <color>0.061641 0.061641 0.061641 1</color>
+       </constant_diffuse>
+      </technique>
+     </extra>
+    </technique>
+   </profile_COMMON>
+   <extra>
+    <technique profile="SceneKit">
+     <litPerPixel>1</litPerPixel>
+     <ambient_diffuse_lock>1</ambient_diffuse_lock>
+     <intensities>
+      <normal>
+       <float>0.4</float>
+      </normal>
+     </intensities>
+    </technique>
+   </extra>
+  </effect>
+  <effect id="effect_Day">
+   <profile_COMMON>
+    <technique sid="common">
+     <constant>
+      <reflective>
+       <color>0 0 0 1</color>
+      </reflective>
+      <transparent opaque="A_ONE">
+       <color>1 1 1 1</color>
+      </transparent>
+      <transparency>
+       <float>1</float>
+      </transparency>
+     </constant>
+     <extra>
+      <technique profile="SceneKit">
+       <constant_ambient>
+        <color>0.484529 0.484529 0.484529 1</color>
+       </constant_ambient>
+       <constant_diffuse>
+        <color>0.0525461 0.0525461 0.0525461 1</color>
+       </constant_diffuse>
+      </technique>
+     </extra>
+    </technique>
+   </profile_COMMON>
+   <extra>
+    <technique profile="SceneKit">
+     <litPerPixel>1</litPerPixel>
+     <ambient_diffuse_lock>1</ambient_diffuse_lock>
+     <intensities>
+      <normal>
+       <float>0.4</float>
+      </normal>
+     </intensities>
+    </technique>
+   </extra>
+  </effect>
+ </library_effects>
+ <library_geometries>
+  <geometry id="geometry1">
+   <mesh>
+    <source id="geometrySource2">
+     <float_array id="ID3-array" count="72">-0.5 -0.5 0.5 -0.5 0.5 0.5 0.5 -0.5 0.5 0.5 0.5 0.5 0.5 -0.5 0.5 0.5 0.5 0.5 0.5 -0.5 -0.5 0.5 0.5 -0.5 0.5 -0.5 -0.5 0.5 0.5 -0.5 -0.5 -0.5 -0.5 -0.5 0.5 -0.5 -0.5 -0.5 -0.5 -0.5 0.5 -0.5 -0.5 -0.5 0.5 -0.5 0.5 0.5 -0.5 0.5 0.5 -0.5 0.5 -0.5 0.5 0.5 0.5 0.5 0.5 -0.5 -0.5 -0.5 -0.5 -0.5 -0.5 0.5 0.5 -0.5 -0.5 0.5 -0.5 0.5 </float_array>
+     <technique_common>
+      <accessor source="#ID3-array" count="24" stride="3">
+       <param name="X" type="float"/>
+       <param name="Y" type="float"/>
+       <param name="Z" type="float"/>
+      </accessor>
+     </technique_common>
+    </source>
+    <source id="geometrySource4">
+     <float_array id="ID5-array" count="72">0 0 1 0 0 1 0 0 1 0 0 1 1 0 -4.37114e-08 1 0 -4.37114e-08 1 0 -4.37114e-08 1 0 -4.37114e-08 -8.74228e-08 0 -1 -8.74228e-08 0 -1 -8.74228e-08 0 -1 -8.74228e-08 0 -1 -1 0 1.19249e-08 -1 0 1.19249e-08 -1 0 1.19249e-08 -1 0 1.19249e-08 0 1 -4.37114e-08 0 1 -4.37114e-08 0 1 -4.37114e-08 0 1 -4.37114e-08 0 -1 -4.37114e-08 0 -1 -4.37114e-08 0 -1 -4.37114e-08 0 -1 -4.37114e-08 </float_array>
+     <technique_common>
+      <accessor source="#ID5-array" count="24" stride="3">
+       <param name="X" type="float"/>
+       <param name="Y" type="float"/>
+       <param name="Z" type="float"/>
+      </accessor>
+     </technique_common>
+    </source>
+    <source id="geometrySource6">
+     <float_array id="ID7-array" count="48">0 0 0 1 1 0 1 1 0 0 0 1 1 0 1 1 0 0 0 1 1 0 1 1 0 0 0 1 1 0 1 1 0 0 0 1 1 0 1 1 0 0 0 1 1 0 1 1 </float_array>
+     <technique_common>
+      <accessor source="#ID7-array" count="24" stride="2">
+       <param name="S" type="float"/>
+       <param name="T" type="float"/>
+      </accessor>
+     </technique_common>
+    </source>
+    <vertices id="geometrySource2-vertices">
+     <input semantic="POSITION" source="#geometrySource2"/>
+     <input semantic="NORMAL" source="#geometrySource4"/>
+    </vertices>
+    <triangles count="12" material="geometryElement8">
+     <input semantic="VERTEX" offset="0" source="#geometrySource2-vertices"/>
+     <input semantic="NORMAL" offset="0" source="#geometrySource4"/>
+     <input semantic="TEXCOORD" offset="0" source="#geometrySource6" set="1"/>
+     <p>0 3 1 0 2 3 4 7 5 4 6 7 8 11 9 8 10 11 12 15 13 12 14 15 16 19 17 16 18 19 20 23 21 20 22 23 </p>
+    </triangles>
+   </mesh>
+  </geometry>
+  <geometry id="geometry9">
+   <mesh>
+    <triangles count="12" material="geometryElement8">
+     <input semantic="VERTEX" offset="0" source="#geometrySource2-vertices"/>
+     <input semantic="NORMAL" offset="0" source="#geometrySource4"/>
+     <input semantic="TEXCOORD" offset="0" source="#geometrySource6" set="1"/>
+     <p>0 3 1 0 2 3 4 7 5 4 6 7 8 11 9 8 10 11 12 15 13 12 14 15 16 19 17 16 18 19 20 23 21 20 22 23 </p>
+    </triangles>
+   </mesh>
+  </geometry>
+ </library_geometries>
+ <library_visual_scenes>
+  <visual_scene id="scene10">
+   <node id="default-mat" name="default-mat">
+    <node id="state0" name="state0">
+     <instance_geometry url="#geometry1">
+      <bind_material>
+       <technique_common>
+        <instance_material symbol="geometryElement8" target="#Night"/>
+       </technique_common>
+      </bind_material>
+     </instance_geometry>
+    </node>
+    <node id="state1" name="state1">
+     <matrix>1 0 0 1.5 0 1 0 0 0 0 1 0 0 0 0 1 </matrix>
+     <instance_geometry url="#geometry9">
+      <bind_material>
+       <technique_common>
+        <instance_material symbol="geometryElement8" target="#Day"/>
+       </technique_common>
+      </bind_material>
+     </instance_geometry>
+    </node>
+   </node>
+  </visual_scene>
+ </library_visual_scenes>
+ <scene>
+  <instance_visual_scene url="#scene10"/>
+ </scene>
+</COLLADA>
