@@ -54,14 +54,15 @@ struct AIChatView: View {
 
                     Spacer(minLength: 8)
 
+                    // 释放原本强制写死的高度限制，让球体区域能够自由适应屏幕，防止底部语音按钮被挤压遮挡
                     ZStack {
                         orbMesh
+                            .offset(y: 20) // 线条向下移，给标题留空间
                         aiCoreOrb(coreSize: coreSize)
                         scatteredPrompts(coreSize: coreSize)
                     }
-                    .frame(maxWidth: .infinity)
-                    .frame(height: coreSize * 2.8) // Increase height to fit larger orb mesh
-                    .offset(y: -20)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+
 
                     Spacer(minLength: 8)
 
@@ -96,8 +97,12 @@ struct AIChatView: View {
             }
         }
         .onAppear {
-            isAnimatingCore = true
-            withAnimation(.linear(duration: 25).repeatForever(autoreverses: false)) {
+            // SwiftUI 在复杂视图里有时会导致基于布尔值的连续动画失效（变静态）。
+            // 解决办法：采用一个大范围波动的 Double 类型配合 easeInOut 和极大 duration。
+            withAnimation(.easeInOut(duration: 8).repeatForever(autoreverses: true)) {
+                isAnimatingCore = true
+            }
+            withAnimation(.linear(duration: 35).repeatForever(autoreverses: false)) {
                 coreRotation = 360
             }
             animatePrompts()
@@ -108,25 +113,29 @@ struct AIChatView: View {
 
     private var deepBackground: some View {
         ZStack {
+            // 图二的整体背景偏向清澈的带紫调宝蓝，不是黑蓝色
             LinearGradient(
                 gradient: Gradient(colors: [
-                    Color(hex: 0x184CC2),
-                    Color(hex: 0x1A1E50),
-                    Color(hex: 0x151336)
+                    Color(hex: 0x1E3A8A), // 更亮的蓝色顶部
+                    Color(hex: 0x312E81), // 中间的靛蓝
+                    Color(hex: 0x2E1065)  // 底部紫光感
                 ]),
-                startPoint: .top,
-                endPoint: .bottom
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
             )
 
-            // Bottom purple glow under the mesh
-            VStack {
-                Spacer()
-                Circle()
-                    .fill(Color(hex: 0x9333EA).opacity(0.4))
-                    .frame(width: 400, height: 400)
-                    .blur(radius: 120)
-                    .offset(y: 200)
-            }
+            // 图二中部的巨大且柔和的环境反光
+            Circle()
+                .fill(Color(hex: 0xEC4899).opacity(0.15))
+                .frame(width: 500, height: 500)
+                .blur(radius: 120)
+                .offset(y: 100)
+                
+            Circle()
+                .fill(Color(hex: 0x38BDF8).opacity(0.2))
+                .frame(width: 400, height: 400)
+                .blur(radius: 100)
+                .offset(x: -100, y: -200)
         }
     }
 
@@ -252,10 +261,10 @@ struct AIChatView: View {
                     .stroke(Color.white.opacity(0.4), lineWidth: 0.5)
             }
             .frame(width: coreSize, height: coreSize)
-            .shadow(color: Color(hex: 0x38bdf8).opacity(0.5), radius: 40, x: 0, y: 0)
-            .shadow(color: Color(hex: 0xEC4899).opacity(0.3), radius: 60, x: 0, y: 0)
-            .scaleEffect(isAnimatingCore ? 1.02 : 0.98)
-            .animation(.easeInOut(duration: 6).repeatForever(autoreverses: true), value: isAnimatingCore)
+            .shadow(color: Color(hex: 0x38bdf8).opacity(0.5), radius: 30, x: 0, y: 0)
+            .shadow(color: Color(hex: 0xEC4899).opacity(0.3), radius: 50, x: 0, y: 0)
+            // 将动画效果直接绑定到 `offset` 参数上，而不是只在最外层用 scaleEffect
+            .scaleEffect(isAnimatingCore ? 1.03 : 0.96)
         }
     }
 
@@ -287,17 +296,18 @@ struct AIChatView: View {
         } label: {
             Text(text)
                 .font(.system(size: 14, weight: .regular))
-                .foregroundColor(.white)
+                .foregroundColor(.white.opacity(0.9)) // 稍微柔和一点的白
                 .multilineTextAlignment(.center)
-                .lineLimit(1)
-                .minimumScaleFactor(0.9)
-                .padding(.horizontal, 14)
-                .padding(.vertical, 8)
+                .lineLimit(2) // 如图一图二所示，允许拆行
+                .minimumScaleFactor(0.85)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 10)
+                .frame(maxWidth: 160) // 给予合理的换行宽度，防止文字被截断
                 .background(.ultraThinMaterial)
-                .background(Color.white.opacity(0.05))
-                .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
-                .overlay(RoundedRectangle(cornerRadius: 24, style: .continuous).stroke(Color.white.opacity(0.3), lineWidth: 1))
-                .shadow(color: Color.black.opacity(0.1), radius: 10, x: 0, y: 4)
+                .background(Color.white.opacity(0.08)) // 稍微增加一点底层白色可见度
+                .clipShape(Capsule()) // 像图二一样使用完美的药丸形状
+                .overlay(Capsule().stroke(Color.white.opacity(0.4), lineWidth: 1))
+                .shadow(color: Color.black.opacity(0.15), radius: 10, x: 0, y: 5)
         }
         .buttonStyle(.plain)
         .opacity(promptOpacities[safe: index] ?? 1)
@@ -670,17 +680,17 @@ struct FluidBlobShape: Shape {
         var p = Path()
         p.move(to: CGPoint(x: w * 0.5, y: 0))
         p.addCurve(to: CGPoint(x: w, y: h * 0.5), 
-                   control1: CGPoint(x: w * (0.8 + factor), y: 0), 
-                   control2: CGPoint(x: w, y: h * (0.2 - factor)))
+                   control1: CGPoint(x: w * (0.85 + factor), y: 0), 
+                   control2: CGPoint(x: w, y: h * (0.15 - factor)))
         p.addCurve(to: CGPoint(x: w * 0.5, y: h), 
-                   control1: CGPoint(x: w, y: h * (0.8 + factor)), 
-                   control2: CGPoint(x: w * (0.8 - factor), y: h))
+                   control1: CGPoint(x: w, y: h * (0.85 + factor)), 
+                   control2: CGPoint(x: w * (0.85 - factor), y: h))
         p.addCurve(to: CGPoint(x: 0, y: h * 0.5), 
-                   control1: CGPoint(x: w * (0.2 - factor), y: h), 
-                   control2: CGPoint(x: 0, y: h * (0.8 - factor)))
+                   control1: CGPoint(x: w * (0.15 - factor), y: h), 
+                   control2: CGPoint(x: 0, y: h * (0.85 - factor)))
         p.addCurve(to: CGPoint(x: w * 0.5, y: 0), 
-                   control1: CGPoint(x: 0, y: h * (0.2 + factor)), 
-                   control2: CGPoint(x: w * (0.2 + factor), y: 0))
+                   control1: CGPoint(x: 0, y: h * (0.15 + factor)), 
+                   control2: CGPoint(x: w * (0.15 + factor), y: 0))
         
         return p
     }
