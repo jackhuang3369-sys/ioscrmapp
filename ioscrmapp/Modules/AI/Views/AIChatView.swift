@@ -91,24 +91,34 @@ struct AIChatView: View {
         VStack(spacing: 0) {
             headerBar
 
-            Text(viewModel.title)
-                .font(.du(layout.titleFontSize, weight: .semibold))
-                .foregroundColor(.white)
-                .multilineTextAlignment(.center)
-                .lineLimit(2)
-                .minimumScaleFactor(0.9)
-                .fixedSize(horizontal: false, vertical: true)
-                .shadow(color: Color.black.opacity(0.15), radius: 2, x: 0, y: 2)
-                .frame(width: layout.titleWidth)
-                .padding(.top, layout.titleTopPadding)
-                .frame(maxWidth: .infinity)
+            VStack(spacing: 8) {
+                Text(viewModel.title)
+                    .font(.system(size: layout.titleFontSize, weight: .bold, design: .rounded))
+                    .foregroundColor(.white)
+                    .multilineTextAlignment(.center)
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.8)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .shadow(color: Color.black.opacity(0.15), radius: 8, x: 0, y: 4)
+
+                // Optional: Subtitle line to add context or just a subtle visual line
+                RoundedRectangle(cornerRadius: 1)
+                    .fill(
+                        LinearGradient(colors: [.clear, Color.white.opacity(0.3), .clear], startPoint: .leading, endPoint: .trailing)
+                    )
+                    .frame(width: 120, height: 1)
+                    .opacity(0.8)
+            }
+            .frame(width: layout.titleWidth)
+            .padding(.top, layout.titleTopPadding)
+            .frame(maxWidth: .infinity)
 
             homeHeroSection(coreSize: coreSize, layout: layout)
                 .frame(width: layout.heroStageWidth, height: layout.heroHeight)
                 .padding(.top, layout.heroTopPadding)
                 .frame(maxWidth: .infinity)
 
-            Spacer(minLength: layout.voiceTopSpacing)
+            Spacer(minLength: 0)
 
             voiceSection(isCompactHeight: layout.isCompactHeight)
                 .frame(width: layout.contentWidth)
@@ -161,11 +171,11 @@ struct AIChatView: View {
             contentWidth: contentWidth,
             heroStageWidth: heroStageWidth,
             horizontalPadding: horizontalPadding,
-            topPadding: max(safeAreaInsets.top, DUSpacing.lg) + (isCompactHeight ? DUSpacing.sm : DUSpacing.md),
-            titleTopPadding: isCompactHeight ? DUSpacing.md : DUSpacing.lg,
+            topPadding: max(safeAreaInsets.top, DUSpacing.lg),
+            titleTopPadding: isCompactHeight ? DUSpacing.md : DUSpacing.xl,
             titleFontSize: titleFontSize,
             titleWidth: titleWidth,
-            heroTopPadding: isCompactHeight ? DUSpacing.lg : DUSpacing.xl,
+            heroTopPadding: isCompactHeight ? DUSpacing.lg : DUSpacing.xxl,
             heroHeight: heroHeight,
             voiceTopSpacing: isCompactHeight ? DUSpacing.md : DUSpacing.xl,
             promptMaxWidth: promptMaxWidth,
@@ -178,30 +188,42 @@ struct AIChatView: View {
 
     private var deepBackground: some View {
         ZStack {
-            // 图二的整体背景偏向清澈的带紫调宝蓝，不是黑蓝色
+            // 深邃的海蓝色与紫色渐变，增加 3D 深度感
             LinearGradient(
                 gradient: Gradient(colors: [
-                    Color(hex: 0x1E3A8A), // 更亮的蓝色顶部
-                    Color(hex: 0x312E81), // 中间的靛蓝
-                    Color(hex: 0x2E1065)  // 底部紫光感
+                    Color(hex: 0x0F172A), // 极深蓝
+                    Color(hex: 0x1E3A8A), // 宝蓝
+                    Color(hex: 0x312E81), // 靛蓝
+                    Color(hex: 0x1E1B4B)  // 紫底
                 ]),
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
 
-            // 图二中部的巨大且柔和的环境反光
+            // 环境光：左上深蓝色
+            RadialGradient(
+                colors: [Color(hex: 0x38BDF8).opacity(0.12), .clear],
+                center: .topLeading,
+                startRadius: 0,
+                endRadius: 600
+            )
+
+            // 环境光：底部粉紫色
+            RadialGradient(
+                colors: [Color(hex: 0xEC4899).opacity(0.08), .clear],
+                center: .bottomTrailing,
+                startRadius: 0,
+                endRadius: 500
+            )
+            
+            // 环境光：中央微光，增加通透度
             Circle()
-                .fill(Color(hex: 0xEC4899).opacity(0.15))
-                .frame(width: 500, height: 500)
-                .blur(radius: 120)
-                .offset(y: 100)
-                
-            Circle()
-                .fill(Color(hex: 0x38BDF8).opacity(0.2))
-                .frame(width: 400, height: 400)
+                .fill(Color(hex: 0x818CF8).opacity(0.1))
+                .frame(width: 600, height: 600)
                 .blur(radius: 100)
-                .offset(x: -100, y: -200)
+                .offset(y: 50)
         }
+        .ignoresSafeArea()
     }
 
     // MARK: - Orb Mesh Background
@@ -276,60 +298,79 @@ struct AIChatView: View {
     // MARK: - AI Core Orb
 
     private func aiCoreOrb(coreSize: CGFloat) -> some View {
-        let auraSize = coreSize * 1.9
+        let auraSize = coreSize * 2.2
         
         return ZStack {
-            // Slowly rotating aura around core orb
+            // 脉冲背景光：增强层次感
             Circle()
                 .fill(
+                    RadialGradient(
+                        colors: [Color(hex: 0x38bdf8).opacity(0.25), Color(hex: 0x818cf8).opacity(0.1), .clear],
+                        center: .center,
+                        startRadius: 0,
+                        endRadius: auraSize * 0.5
+                    )
+                )
+                .scaleEffect(isAnimatingCore ? 1.1 : 0.95)
+                .blur(radius: 40)
+
+            // 旋转光环：极细的光线律动
+            Circle()
+                .stroke(
                     AngularGradient(
-                        colors: [.clear, Color(hex: 0x38bdf8).opacity(0.5), Color(hex: 0xf472b6).opacity(0.6), Color(hex: 0x818cf8).opacity(0.5), .clear],
+                        colors: [.clear, Color(hex: 0x38bdf8).opacity(0.6), Color(hex: 0xf472b6).opacity(0.7), Color(hex: 0x818cf8).opacity(0.6), .clear],
                         center: .center,
                         startAngle: .degrees(0),
                         endAngle: .degrees(360)
-                    )
+                    ),
+                    lineWidth: 0.8
                 )
-                .frame(width: auraSize, height: auraSize)
-                .blur(radius: 30)
-                .rotationEffect(.degrees(coreRotation * 0.4))
+                .frame(width: auraSize * 0.85, height: auraSize * 0.85)
+                .blur(radius: 1)
+                .rotationEffect(.degrees(coreRotation * 0.5))
             
             ZStack {
-                // Core base gradient
-                FluidBlobShape(offset: isAnimatingCore ? 1 : 0)
+                // Core base gradient: 深邃基底
+                FluidBlobShape(offset: isAnimatingCore ? 1.1 : -0.1)
                     .fill(
                         LinearGradient(
-                            colors: [Color(hex: 0x1E40AF), Color(hex: 0x1E1B4B)],
+                            colors: [Color(hex: 0x1E40AF), Color(hex: 0x0F172A)],
                             startPoint: .topLeading, endPoint: .bottomTrailing
                         )
                     )
 
-                // Internal fluid glow layers
+                // 核心液态辉光层
                 OrbInternalFluid(isAnimating: isAnimatingCore)
-                    .mask(FluidBlobShape(offset: isAnimatingCore ? 1 : 0))
+                    .mask(FluidBlobShape(offset: isAnimatingCore ? 1.0 : 0.0))
+                    .opacity(0.8)
                 
                 Group {
-                    // Bottom pink refraction glow
-                    RadialGradient(colors: [Color(hex: 0xEC4899).opacity(0.6), .clear], center: .bottomTrailing, startRadius: 0, endRadius: coreSize * 0.8)
+                    // 折射光 1：粉紫侧光
+                    RadialGradient(colors: [Color(hex: 0xEC4899).opacity(0.5), .clear], center: .bottomTrailing, startRadius: 0, endRadius: coreSize * 0.9)
                     
-                    RadialGradient(colors: [Color(hex: 0x22D3EE).opacity(0.4), .clear], center: .center, startRadius: 0, endRadius: coreSize * 0.7)
+                    // 折射光 2：青蓝色高光
+                    RadialGradient(colors: [Color(hex: 0x22D3EE).opacity(0.4), .clear], center: .topLeading, startRadius: 0, endRadius: coreSize * 0.8)
                 }
-                .mask(FluidBlobShape(offset: isAnimatingCore ? 1 : 0))
-                .blendMode(.plusLighter)
+                .mask(FluidBlobShape(offset: isAnimatingCore ? 1.1 : -0.1))
+                .blendMode(.screen)
 
-                // Primary highlight on the top-left surface
+                // 玻璃表面反射
                 GlassReflection()
-                    .scaleEffect(1.2)
-                    .offset(x: -coreSize * 0.05, y: -coreSize * 0.05)
+                    .opacity(0.7)
+                    .scaleEffect(1.1)
+                    .offset(x: -coreSize * 0.08, y: -coreSize * 0.08)
                 
-                // Subtle edge rim light
-                FluidBlobShape(offset: isAnimatingCore ? 1 : 0)
-                    .stroke(Color.white.opacity(0.4), lineWidth: 0.5)
+                // 极细边缘光
+                FluidBlobShape(offset: isAnimatingCore ? 1.1 : -0.1)
+                    .stroke(
+                        LinearGradient(colors: [.white.opacity(0.6), .clear, .white.opacity(0.3)], startPoint: .topLeading, endPoint: .bottomTrailing),
+                        lineWidth: 0.5
+                    )
             }
             .frame(width: coreSize, height: coreSize)
-            .shadow(color: Color(hex: 0x38bdf8).opacity(0.5), radius: 30, x: 0, y: 0)
-            .shadow(color: Color(hex: 0xEC4899).opacity(0.3), radius: 50, x: 0, y: 0)
-            // 将动画效果直接绑定到 `offset` 参数上，而不是只在最外层用 scaleEffect
-            .scaleEffect(isAnimatingCore ? 1.03 : 0.96)
+            .shadow(color: Color(hex: 0x38bdf8).opacity(0.4), radius: 25, x: 0, y: 0)
+            .shadow(color: Color(hex: 0xEC4899).opacity(0.2), radius: 40, x: 0, y: 0)
+            .scaleEffect(isAnimatingCore ? 1.04 : 0.98)
         }
     }
 
@@ -387,68 +428,103 @@ struct AIChatView: View {
             viewModel.sendSuggestedPrompt(text)
         } label: {
             Text(text)
-                .font(.du(14))
-                .foregroundColor(.white.opacity(0.92))
+                .font(.system(size: 14, weight: .medium, design: .rounded))
+                .foregroundColor(.white.opacity(0.95))
                 .multilineTextAlignment(.center)
                 .lineLimit(2)
                 .minimumScaleFactor(0.85)
-                .padding(.horizontal, DUSpacing.lg)
-                .padding(.vertical, 10)
+                .padding(.horizontal, 20)
+                .padding(.vertical, 12)
                 .frame(width: width)
-                .frame(minHeight: 56)
-                .background(.ultraThinMaterial)
-                .background(Color.white.opacity(0.08))
-                .clipShape(Capsule())
-                .overlay(Capsule().stroke(Color.white.opacity(0.4), lineWidth: 1))
-                .shadow(color: Color.black.opacity(0.15), radius: 10, x: 0, y: 5)
+                .frame(minHeight: 58)
+                .background(
+                    ZStack {
+                        // 玻璃态背景
+                        RoundedRectangle(cornerRadius: 30, style: .continuous)
+                            .fill(.ultraThinMaterial)
+                            .opacity(0.95)
+                        
+                        // 微弱内部渐变
+                        RoundedRectangle(cornerRadius: 30, style: .continuous)
+                            .fill(
+                                LinearGradient(colors: [Color.white.opacity(0.08), .clear], startPoint: .topLeading, endPoint: .bottomTrailing)
+                            )
+                    }
+                )
+                .clipShape(RoundedRectangle(cornerRadius: 30, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 30, style: .continuous)
+                        .stroke(
+                            LinearGradient(colors: [.white.opacity(0.4), .white.opacity(0.1)], startPoint: .topLeading, endPoint: .bottomTrailing),
+                            lineWidth: 0.5
+                        )
+                )
+                .shadow(color: Color.black.opacity(0.12), radius: 12, x: 0, y: 6)
         }
         .buttonStyle(.plain)
-        .opacity(promptOpacities[safe: index] ?? 1)
-        .offset(y: promptOffsets[safe: index] ?? 0)
+        .opacity(promptOpacities[safe: index] ?? 0)
+        .offset(y: promptOffsets[safe: index] ?? 20)
     }
 
     // MARK: - Voice Section
 
     private func voiceSection(isCompactHeight: Bool) -> some View {
-        let ringSize: CGFloat = isCompactHeight ? 70 : 76
-        let innerSize: CGFloat = isCompactHeight ? 54 : 58
-        let iconSize: CGFloat = isCompactHeight ? 22 : 24
+        let ringSize: CGFloat = isCompactHeight ? 72 : 82
+        let innerSize: CGFloat = isCompactHeight ? 56 : 62
+        let iconSize: CGFloat = isCompactHeight ? 24 : 28
 
-        return VStack(spacing: isCompactHeight ? DUSpacing.sm : DUSpacing.md) {
+        return VStack(spacing: isCompactHeight ? 12 : 20) {
             Text("Hold to Talk ~")
-                .font(.du(14, weight: .light))
-                .foregroundColor(.white.opacity(0.7))
+                .font(.system(size: 13, weight: .regular, design: .rounded))
+                .foregroundColor(.white.opacity(0.6))
+                .tracking(0.5)
 
             Button {
                 let gen = UIImpactFeedbackGenerator(style: .medium)
                 gen.impactOccurred()
             } label: {
                 ZStack {
-                    // Rotating conic ring like HTML design
+                    // 外层呼吸律动环
+                    Circle()
+                        .stroke(Color.white.opacity(0.15), lineWidth: 1)
+                        .frame(width: ringSize + 12, height: ringSize + 12)
+                        .scaleEffect(isAnimatingCore ? 1.08 : 1.0)
+                        .opacity(isAnimatingCore ? 0.2 : 0.5)
+                    
+                    // 多彩渐变旋转环
                     Circle()
                         .stroke(
                             AngularGradient(
                                 colors: [
                                     Color(hex: 0x38bdf8), Color(hex: 0x818cf8), Color(hex: 0xc084fc), Color(hex: 0xf472b6),
-                                    Color(hex: 0xfb923c), Color(hex: 0xfcd34d), Color(hex: 0x34d399), Color(hex: 0x38bdf8)
+                                    Color(hex: 0x38bdf8)
                                 ],
                                 center: .center
                             ),
-                            lineWidth: 3
+                            lineWidth: 2.5
                         )
                         .frame(width: ringSize, height: ringSize)
                         .rotationEffect(.degrees(coreRotation))
+                        .blur(radius: 0.5)
 
+                    // 按钮球体
                     Circle()
-                        .fill(Color(hex: 0x1E1B4B).opacity(0.4))
+                        .fill(
+                            LinearGradient(colors: [Color(hex: 0x1E1B4B), Color(hex: 0x0F172A)], startPoint: .top, endPoint: .bottom)
+                        )
                         .frame(width: innerSize, height: innerSize)
                         .background(.ultraThinMaterial)
                         .clipShape(Circle())
-                        .overlay(Circle().stroke(Color.white.opacity(0.1), lineWidth: 0.5))
+                        .overlay(
+                            Circle()
+                                .stroke(Color.white.opacity(0.2), lineWidth: 0.5)
+                        )
+                        .shadow(color: Color.black.opacity(0.3), radius: 10, x: 0, y: 5)
 
-                    Image(systemName: "mic")
-                        .font(.system(size: iconSize, weight: .regular))
+                    Image(systemName: "mic.fill")
+                        .font(.system(size: iconSize, weight: .semibold))
                         .foregroundColor(.white)
+                        .shadow(color: Color(hex: 0x38bdf8).opacity(0.5), radius: 8, x: 0, y: 0)
                 }
             }
             .buttonStyle(.plain)
