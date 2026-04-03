@@ -180,8 +180,8 @@ struct HomeView: View {
             if isAIChatPresented {
                 GeometryReader { proxy in
                     let topInset = max(proxy.safeAreaInsets.top + 14, 28)
-                    let horizontalInset: CGFloat = 0
-                    let sheetHeight = max(proxy.size.height - topInset, 620)
+                    let bottomSafeArea = proxy.safeAreaInsets.bottom
+                    let sheetHeight = max(proxy.size.height - topInset + bottomSafeArea, 620)
 
                     ZStack(alignment: .bottom) {
                         Color.black.opacity(0.3)
@@ -205,7 +205,6 @@ struct HomeView: View {
                         }
                         .frame(maxWidth: .infinity)
                         .frame(height: sheetHeight)
-                        .padding(.horizontal, horizontalInset)
                         .background(
                             ZStack {
                                 LinearGradient(
@@ -224,9 +223,9 @@ struct HomeView: View {
                                     .clipped()
                             }
                         )
-                        .clipShape(RoundedRectangle(cornerRadius: 36, style: .continuous))
+                        .clipShape(TopRoundedRectangle(radius: 36))
                         .overlay(
-                            RoundedRectangle(cornerRadius: 36, style: .continuous)
+                            TopRoundedRectangle(radius: 36)
                                 .stroke(
                                     LinearGradient(
                                         colors: [.white.opacity(0.45), .white.opacity(0.08), .white.opacity(0.25)],
@@ -240,6 +239,7 @@ struct HomeView: View {
                         .shadow(color: Color.black.opacity(0.25), radius: 20, x: 0, y: -5)
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .ignoresSafeArea(edges: .bottom)
                 }
                 .zIndex(100)
                 .transition(.move(edge: .bottom).combined(with: .opacity))
@@ -1666,6 +1666,28 @@ private struct HomePrimaryPillButtonStyle: ButtonStyle {
             )
             .shadow(color: Color(hex: 0x287FFF, opacity: configuration.isPressed ? 0.22 : 0.38), radius: 10, x: 0, y: 8)
             .scaleEffect(configuration.isPressed ? 0.98 : 1)
+    }
+}
+
+private struct TopRoundedRectangle: Shape {
+    let radius: CGFloat
+
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        path.move(to: CGPoint(x: rect.minX, y: rect.maxY))
+        path.addLine(to: CGPoint(x: rect.minX, y: rect.minY + radius))
+        path.addQuadCurve(
+            to: CGPoint(x: rect.minX + radius, y: rect.minY),
+            control: CGPoint(x: rect.minX, y: rect.minY)
+        )
+        path.addLine(to: CGPoint(x: rect.maxX - radius, y: rect.minY))
+        path.addQuadCurve(
+            to: CGPoint(x: rect.maxX, y: rect.minY + radius),
+            control: CGPoint(x: rect.maxX, y: rect.minY)
+        )
+        path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
+        path.closeSubpath()
+        return path
     }
 }
 

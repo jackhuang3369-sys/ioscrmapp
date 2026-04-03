@@ -54,7 +54,7 @@ struct AIChatView: View {
             let bottomPad = max(baseSafeBottomInset, 16) + 12
             let viewFrameInScreen = proxy.frame(in: .global)
             let keyboardOverlap = keyboardOverlapHeight(for: viewFrameInScreen)
-            let composerBottomPadding = keyboardOverlap > 0 ? keyboardOverlap + 6 : 12
+            let composerBottomPadding = keyboardOverlap > 0 ? keyboardOverlap + 6 : baseSafeBottomInset + 12
             let homeLayout = homeLayoutMetrics(
                 for: proxy.size,
                 safeAreaInsets: proxy.safeAreaInsets,
