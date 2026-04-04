@@ -179,9 +179,15 @@ struct HomeView: View {
 
             if isAIChatPresented {
                 GeometryReader { proxy in
-                    let topInset = max(proxy.safeAreaInsets.top + 14, 28)
+                    let topInset = max(proxy.safeAreaInsets.top + 38, 52)
                     let bottomSafeArea = proxy.safeAreaInsets.bottom
                     let sheetHeight = max(proxy.size.height - topInset + bottomSafeArea, 620)
+                    let portraitWidth = min(max(proxy.size.width * 0.155, 76), 88)
+                    let portraitLift = portraitWidth * 1.20
+                    let bubbleText = AIChatLocalizedCopy
+                        .title(for: languageStore.currentLanguage)
+                        .replacingOccurrences(of: "\n", with: " ")
+                    let bubbleWidth = min(max(proxy.size.width * 0.46, 180), 250)
 
                     ZStack(alignment: .bottom) {
                         Color.black.opacity(0.3)
@@ -193,54 +199,90 @@ struct HomeView: View {
                                 }
                             }
 
-                        AIChatView(
-                            custSubInfo: custSubInfo,
-                            language: languageStore.currentLanguage,
-                            aiChatService: aiChatService
-                        ) { target in
-                            withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
-                                isAIChatPresented = false
+                        ZStack(alignment: .topLeading) {
+                            HStack(alignment: .top, spacing: 10) {
+                                Image("AIChatAssistantPortrait")
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: portraitWidth)
+                                    .shadow(color: Color.black.opacity(0.2), radius: 12, x: 0, y: 6)
+                                    .allowsHitTesting(false)
+                                    .accessibilityHidden(true)
+
+                                Text(bubbleText)
+                                    .font(.system(size: 18, weight: .bold, design: .rounded))
+                                    .foregroundColor(.white)
+                                    .multilineTextAlignment(.leading)
+                                    .lineLimit(2)
+                                    .minimumScaleFactor(0.84)
+                                    .padding(.horizontal, 18)
+                                    .padding(.vertical, 14)
+                                    .frame(width: bubbleWidth, alignment: .leading)
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 20, style: .continuous)
+                                            .fill(Color.white.opacity(0.18))
+                                    )
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 20, style: .continuous)
+                                            .stroke(Color.white.opacity(0.32), lineWidth: 1)
+                                    )
+                                    .shadow(color: .black.opacity(0.12), radius: 8, y: 3)
                             }
-                            handleAIChatNavigation(target)
+                            .padding(.leading, 16)
+                            .offset(x: 0, y: -portraitLift)
+
+                            AIChatView(
+                                custSubInfo: custSubInfo,
+                                language: languageStore.currentLanguage,
+                                aiChatService: aiChatService
+                            ) { target in
+                                withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
+                                    isAIChatPresented = false
+                                }
+                                handleAIChatNavigation(target)
+                            }
+                            .frame(maxWidth: .infinity)
+                            .frame(height: sheetHeight)
+                            .background(
+                                ZStack {
+                                    LinearGradient(
+                                        colors: [
+                                            Color(hex: 0x0E5CB7),
+                                            Color(hex: 0x780BAA)
+                                        ],
+                                        startPoint: .top,
+                                        endPoint: .bottom
+                                    )
+
+                                    Image("AIChatBottomWave")
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fill)
+                                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+                                        .clipped()
+                                }
+                            )
+                            .clipShape(TopRoundedRectangle(radius: 36))
+                            .overlay(
+                                TopRoundedRectangle(radius: 36)
+                                    .stroke(
+                                        LinearGradient(
+                                            colors: [.white.opacity(0.45), .white.opacity(0.08), .white.opacity(0.25)],
+                                            startPoint: .topLeading,
+                                            endPoint: .bottomTrailing
+                                        ),
+                                        lineWidth: 0.5
+                                    )
+                            )
                         }
                         .frame(maxWidth: .infinity)
-                        .frame(height: sheetHeight)
-                        .background(
-                            ZStack {
-                                LinearGradient(
-                                    colors: [
-                                        Color(hex: 0x0E5CB7),
-                                        Color(hex: 0x780BAA)
-                                    ],
-                                    startPoint: .top,
-                                    endPoint: .bottom
-                                )
-
-                                Image("AIChatBottomWave")
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fill)
-                                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
-                                    .clipped()
-                            }
-                        )
-                        .clipShape(TopRoundedRectangle(radius: 36))
-                        .overlay(
-                            TopRoundedRectangle(radius: 36)
-                                .stroke(
-                                    LinearGradient(
-                                        colors: [.white.opacity(0.45), .white.opacity(0.08), .white.opacity(0.25)],
-                                        startPoint: .topLeading,
-                                        endPoint: .bottomTrailing
-                                    ),
-                                    lineWidth: 0.5
-                                )
-                        )
+                        .frame(height: sheetHeight, alignment: .top)
                         .shadow(color: Color(hex: 0x1E3A8A).opacity(0.4), radius: 50, x: 0, y: -12)
                         .shadow(color: Color.black.opacity(0.25), radius: 20, x: 0, y: -5)
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .ignoresSafeArea(edges: .bottom)
                 }
+                .ignoresSafeArea(.keyboard)
                 .zIndex(100)
                 .transition(.move(edge: .bottom).combined(with: .opacity))
             }

@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "Bash(npm search:*)",
+      "Bash(pip search:*)",
+      "Bash(pip index:*)",
+      "Bash(npx @anthropic-ai/mcp-search codesign)",
+      "Bash(curl -s https://raw.githubusercontent.com/modelcontextprotocol/servers/main/README.md)",
+      "Bash(swiftc -typecheck ioscrmapp/Modules/Weather/SceneKit/WeatherSceneManager.swift)",
+      "Bash(swiftc -typecheck Modules/Weather/SceneKit/WeatherSceneManager.swift)"
+    ]
+  }
+}

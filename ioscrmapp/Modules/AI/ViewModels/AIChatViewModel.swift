@@ -127,6 +127,16 @@ final class AIChatViewModel: ObservableObject {
         }
     }
 
+    func advanceFromHomeAfterTransientPrompt() {
+        guard currentStep == .home else {
+            return
+        }
+
+        withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
+            currentStep = .offersList
+        }
+    }
+
     private func send(_ message: String) {
         guard !isSending else {
             return

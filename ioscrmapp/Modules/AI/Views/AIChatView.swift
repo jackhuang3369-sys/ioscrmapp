@@ -18,6 +18,12 @@ struct AIChatView: View {
     @State private var promptOpacities: [Double] = [0, 0, 0, 0]
     @State private var glowOffset: CGFloat = -1.2 // 驱动详情页扫光效果
     @State private var keyboardFrameInScreen: CGRect = .null
+    @State private var transientUserMessageText: String?
+    @State private var floatingMessageHideWorkItem: DispatchWorkItem?
+
+    private var latestUserMessage: AIChatMessage? {
+        viewModel.messages.last(where: { $0.sender == .user })
+    }
 
     private var shouldShowPersistentComposer: Bool {
         switch viewModel.currentStep {
@@ -26,8 +32,20 @@ struct AIChatView: View {
         }
     }
 
+    private var shouldShowThinkingIndicator: Bool {
+        transientUserMessageText != nil
+    }
+
+    private var floatingUserMessageReserveHeight: CGFloat {
+        guard shouldShowThinkingIndicator else {
+            return 0
+        }
+
+        return 120
+    }
+
     private var composerReserveHeight: CGFloat {
-        shouldShowPersistentComposer ? 112 : 0
+        shouldShowPersistentComposer ? 112 + floatingUserMessageReserveHeight : 0
     }
 
     init(
@@ -102,14 +120,31 @@ struct AIChatView: View {
             }
             .frame(width: proxy.size.width)
             .clipped()
+            .contentShape(Rectangle())
+            .simultaneousGesture(
+                TapGesture().onEnded {
+                    dismissKeyboardIfNeeded()
+                }
+            )
             .overlay(alignment: .bottom) {
                 if shouldShowPersistentComposer {
-                    composerSection(isCompactHeight: homeLayout.isCompactHeight)
+                    VStack(spacing: homeLayout.isCompactHeight ? 10 : 14) {
+                        if shouldShowThinkingIndicator {
+                            thinkingStatusBubble(
+                                maxWidth: homeLayout.contentWidth,
+                                isCompactHeight: homeLayout.isCompactHeight
+                            )
+                            .transition(.move(edge: .bottom).combined(with: .opacity))
+                        }
+
+                        composerSection(isCompactHeight: homeLayout.isCompactHeight)
+                    }
                         .frame(width: homeLayout.contentWidth)
                         .padding(.bottom, composerBottomPadding)
                         .frame(maxWidth: .infinity)
                 }
             }
+            .animation(.spring(response: 0.42, dampingFraction: 0.86), value: transientUserMessageText)
         }
         .ignoresSafeArea(.keyboard, edges: .bottom)
         .onAppear {
@@ -126,6 +161,13 @@ struct AIChatView: View {
                 glowOffset = 1.2
             }
             animatePrompts()
+        }
+        .onChange(of: latestUserMessage?.id) { _ in
+            presentTransientUserMessageIfNeeded()
+        }
+        .onDisappear {
+            floatingMessageHideWorkItem?.cancel()
+            floatingMessageHideWorkItem = nil
         }
         .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillChangeFrameNotification)) { notification in
             updateKeyboardFrame(from: notification)
@@ -152,28 +194,8 @@ struct AIChatView: View {
         VStack(spacing: 0) {
             headerBar
 
-            VStack(spacing: 8) {
-                Text(viewModel.title)
-                    .font(.system(size: layout.titleFontSize, weight: .bold, design: .rounded))
-                    .foregroundColor(.white)
-                    .multilineTextAlignment(.center)
-                    .lineLimit(2)
-                    .minimumScaleFactor(0.8)
-                    .padding(.horizontal, 24)
-                    .frame(width: layout.titleWidth)
-                    .frame(maxWidth: .infinity)
-
-                // Optional: Subtitle line to add context or just a subtle visual line
-                RoundedRectangle(cornerRadius: 1)
-                    .fill(
-                        LinearGradient(colors: [.clear, Color.white.opacity(0.3), .clear], startPoint: .leading, endPoint: .trailing)
-                    )
-                    .frame(width: 120, height: 1)
-                    .opacity(0.8)
-            }
-            .frame(maxWidth: .infinity)
-            .padding(.top, 16)
-            .padding(.bottom, 12)
+            hiddenLegacyTitle(layout: layout)
+                .frame(height: 0)
 
             homeHeroSection(coreSize: coreSize, layout: layout)
                 .frame(width: layout.heroStageWidth, height: layout.heroHeight)
@@ -182,6 +204,13 @@ struct AIChatView: View {
             Spacer(minLength: 0)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+    }
+
+    private func hiddenLegacyTitle(layout: AIChatHomeLayout) -> some View {
+        Text(viewModel.title)
+            .font(.system(size: layout.titleFontSize, weight: .bold, design: .rounded))
+            .hidden()
+            .accessibilityHidden(true)
     }
 
     private func homeHeroSection(coreSize: CGFloat, layout: AIChatHomeLayout) -> some View {
@@ -410,29 +439,37 @@ struct AIChatView: View {
         promptMaxWidth: CGFloat,
         orbOffsetY: CGFloat
     ) -> some View {
-        let promptWidth = promptMaxWidth
-        let promptHalfWidth = promptWidth * 0.5
-        let promptHeight: CGFloat = 56
-        let promptHalfHeight = promptHeight * 0.5
         let horizontalMargin: CGFloat = 32
         let verticalMargin: CGFloat = 16
+        let promptWidth = max(promptMaxWidth * 0.86, 122)
+        let promptHalfWidth = promptWidth * 0.5
+        let promptHeight: CGFloat = 52
+        let promptHalfHeight = promptHeight * 0.5
+        let sideColumnOffset = coreSize * 0.72
+        let transientBottomAllowance = promptHeight * 1.6
         let minX = promptHalfWidth + horizontalMargin
         let maxX = max(availableSize.width - promptHalfWidth - horizontalMargin, minX)
         let minY = promptHalfHeight + verticalMargin
         let maxY = max(availableSize.height - promptHalfHeight - verticalMargin, minY)
         let orbCenterX = availableSize.width * 0.5
         let orbCenterY = (availableSize.height * 0.5) + orbOffsetY
+        let leftColumnX = min(max(orbCenterX - sideColumnOffset, minX), maxX)
+        let rightColumnX = min(max(orbCenterX + sideColumnOffset, minX), maxX)
         let topLeftPoint = CGPoint(
-            x: min(max(orbCenterX - coreSize * 0.72, minX), maxX),
+            x: leftColumnX,
             y: min(max(orbCenterY - coreSize * 0.78, minY), maxY)
         )
         let bottomLeftPoint = CGPoint(
-            x: min(max(orbCenterX - coreSize * 0.60, minX), maxX),
+            x: leftColumnX,
             y: min(max(orbCenterY + coreSize * 0.85, minY), maxY)
         )
-        let rightPoint = CGPoint(
-            x: min(max(orbCenterX + coreSize * 0.78, minX), maxX),
+        let topRightPoint = CGPoint(
+            x: rightColumnX,
             y: min(max(orbCenterY + coreSize * 0.15, minY), maxY)
+        )
+        let transientRightPoint = CGPoint(
+            x: rightColumnX,
+            y: min(max(orbCenterY + coreSize * 1.68, minY), maxY + transientBottomAllowance)
         )
 
         return ZStack {
@@ -446,7 +483,13 @@ struct AIChatView: View {
             }
             if let t = viewModel.suggestedPrompts[safe: 2] {
                 promptCapsule(t, index: 2, width: promptWidth)
-                    .position(x: rightPoint.x, y: rightPoint.y)
+                    .position(x: topRightPoint.x, y: topRightPoint.y)
+            }
+            if let transientUserMessageText {
+                transientPromptCapsule(transientUserMessageText, width: promptWidth)
+                    .position(x: transientRightPoint.x, y: transientRightPoint.y)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                    .zIndex(1)
             }
         }
     }
@@ -455,43 +498,59 @@ struct AIChatView: View {
         Button {
             viewModel.sendSuggestedPrompt(text)
         } label: {
-            Text(text)
-                .font(.system(size: 14, weight: .medium, design: .rounded))
-                .foregroundColor(.white.opacity(0.95))
-                .multilineTextAlignment(.center)
-                .lineLimit(2)
-                .minimumScaleFactor(0.85)
-                .padding(.horizontal, 18)
-                .padding(.vertical, 12)
-                .frame(width: width)
-                .frame(minHeight: 58)
-                .background(
-                    ZStack {
-                        // 玻璃态背景
-                        RoundedRectangle(cornerRadius: 30, style: .continuous)
-                            .fill(.ultraThinMaterial)
-                            .opacity(0.95)
-                        
-                        // 微弱内部渐变
-                        RoundedRectangle(cornerRadius: 30, style: .continuous)
-                            .fill(
-                                LinearGradient(colors: [Color.white.opacity(0.08), .clear], startPoint: .topLeading, endPoint: .bottomTrailing)
-                            )
-                    }
-                )
-                .clipShape(RoundedRectangle(cornerRadius: 30, style: .continuous))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 30, style: .continuous)
-                        .stroke(
-                            LinearGradient(colors: [.white.opacity(0.4), .white.opacity(0.1)], startPoint: .topLeading, endPoint: .bottomTrailing),
-                            lineWidth: 0.5
-                        )
-                )
-                .shadow(color: Color.black.opacity(0.12), radius: 12, x: 0, y: 6)
+            promptCapsuleContent(text, width: width, lineLimit: 2)
         }
         .buttonStyle(.plain)
         .opacity(promptOpacities[safe: index] ?? 0)
         .offset(y: promptOffsets[safe: index] ?? 20)
+    }
+
+    private func transientPromptCapsule(_ text: String, width: CGFloat) -> some View {
+        promptCapsuleContent(text, width: width, lineLimit: 2)
+            .allowsHitTesting(false)
+            .accessibilityHidden(true)
+    }
+
+    private func promptCapsuleContent(_ text: String, width: CGFloat, lineLimit: Int) -> some View {
+        Text(text)
+            .font(.system(size: 14, weight: .medium, design: .rounded))
+            .foregroundColor(.white.opacity(0.95))
+            .multilineTextAlignment(.center)
+            .lineLimit(lineLimit)
+            .minimumScaleFactor(0.8)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 10)
+            .frame(maxWidth: width)
+            .frame(minHeight: 52)
+            .background(
+                ZStack {
+                    RoundedRectangle(cornerRadius: 30, style: .continuous)
+                        .fill(.ultraThinMaterial)
+                        .opacity(0.58)
+
+                    RoundedRectangle(cornerRadius: 30, style: .continuous)
+                        .fill(Color.white.opacity(0.012))
+
+                    RoundedRectangle(cornerRadius: 30, style: .continuous)
+                        .fill(
+                            LinearGradient(
+                                colors: [
+                                    Color.white.opacity(0.05),
+                                    Color.white.opacity(0.01),
+                                    Color.clear
+                                ],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                }
+            )
+            .clipShape(RoundedRectangle(cornerRadius: 30, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 30, style: .continuous)
+                    .stroke(Color.white.opacity(0.62), lineWidth: 1)
+            )
+            .shadow(color: Color.black.opacity(0.04), radius: 8, x: 0, y: 4)
     }
 
     // MARK: - Composer Section
@@ -593,7 +652,7 @@ struct AIChatView: View {
                 .background(
                     RoundedRectangle(cornerRadius: 24, style: .continuous)
                         .fill(.ultraThinMaterial)
-                        .opacity(0.92)
+                        .opacity(0.5)
                 )
         )
         .overlay(
@@ -614,6 +673,80 @@ struct AIChatView: View {
         Text(AIChatLocalizedCopy.inputPlaceholder(for: viewModel.language))
             .font(.du(17, weight: .medium))
             .foregroundColor(.white.opacity(0.48))
+    }
+
+    private func thinkingStatusBubble(maxWidth: CGFloat, isCompactHeight: Bool) -> some View {
+        VStack(spacing: isCompactHeight ? 10 : 12) {
+            AIChatThinkingIndicatorView(isCompactHeight: isCompactHeight)
+
+            Text("Tinking...")
+                .font(.system(size: isCompactHeight ? 16 : 18, weight: .medium, design: .rounded))
+                .foregroundColor(.white.opacity(0.88))
+                .multilineTextAlignment(.center)
+                .lineLimit(1)
+                .minimumScaleFactor(0.82)
+                .padding(.horizontal, 6)
+        }
+        .padding(.horizontal, 18)
+        .padding(.vertical, isCompactHeight ? 14 : 16)
+        .frame(maxWidth: min(maxWidth * 0.84, 336))
+        .background(
+            ZStack {
+                RoundedRectangle(cornerRadius: 26, style: .continuous)
+                    .fill(.ultraThinMaterial)
+                    .opacity(0.94)
+
+                RoundedRectangle(cornerRadius: 26, style: .continuous)
+                    .fill(Color.white.opacity(0.06))
+
+                RoundedRectangle(cornerRadius: 26, style: .continuous)
+                    .fill(
+                        LinearGradient(
+                            colors: [
+                                Color.white.opacity(0.18),
+                                Color.white.opacity(0.05),
+                                Color.clear
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+            }
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 26, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 26, style: .continuous)
+                .stroke(Color.white.opacity(0.68), lineWidth: 1)
+        )
+        .shadow(color: Color.black.opacity(0.14), radius: 14, x: 0, y: 8)
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
+    }
+
+    private func presentTransientUserMessageIfNeeded() {
+        guard viewModel.currentStep == .home, let latestUserMessage else {
+            return
+        }
+
+        let trimmedText = latestUserMessage.text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedText.isEmpty else {
+            return
+        }
+
+        floatingMessageHideWorkItem?.cancel()
+        withAnimation(.spring(response: 0.42, dampingFraction: 0.86)) {
+            transientUserMessageText = trimmedText
+        }
+
+        let workItem = DispatchWorkItem {
+            withAnimation(.spring(response: 0.42, dampingFraction: 0.86)) {
+                transientUserMessageText = nil
+            }
+            floatingMessageHideWorkItem = nil
+            viewModel.advanceFromHomeAfterTransientPrompt()
+        }
+        floatingMessageHideWorkItem = workItem
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3, execute: workItem)
     }
 
     private func voiceSection(isCompactHeight: Bool) -> some View {
@@ -745,6 +878,14 @@ struct AIChatView: View {
         DispatchQueue.main.async {
             isDraftFieldFocused = true
         }
+    }
+
+    private func dismissKeyboardIfNeeded() {
+        guard isDraftFieldFocused else {
+            return
+        }
+
+        isDraftFieldFocused = false
     }
 
     private func keyboardOverlapHeight(for viewFrameInScreen: CGRect) -> CGFloat {
@@ -1201,10 +1342,30 @@ struct AIChatView: View {
     }
 }
 
-
 extension Array {
     subscript(safe index: Int) -> Element? {
         return indices.contains(index) ? self[index] : nil
+    }
+}
+
+private struct AIChatThinkingIndicatorView: View {
+    let isCompactHeight: Bool
+    @State private var rotation: Double = 0
+
+    var body: some View {
+        Image("AIChatThinkingIndicator")
+            .resizable()
+            .renderingMode(.original)
+            .scaledToFit()
+            .frame(width: isCompactHeight ? 34 : 40, height: isCompactHeight ? 34 : 40)
+            .rotationEffect(.degrees(rotation))
+            .shadow(color: Color(hex: 0x7C3AED).opacity(0.18), radius: 8, x: 0, y: 2)
+            .onAppear {
+                rotation = 0
+                withAnimation(.linear(duration: 6).repeatForever(autoreverses: false)) {
+                    rotation = 360
+                }
+            }
     }
 }
 
