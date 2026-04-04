@@ -37,7 +37,13 @@ struct HomeView: View {
     @State private var signOutFailureMessageKey: String?
     @State private var isParallaxCarouselDraggingHorizontally = false
 
-    private let pageHorizontalPadding: CGFloat = 8
+    private let pageHorizontalPadding: CGFloat = DUSpacing.sm
+    private let headerContentHorizontalPadding: CGFloat = 14
+    private let accountCardBottomSpacingScale: CGFloat = 0.85 * 0.7 * 0.85
+    private let parallaxReelTopSpacingScale: CGFloat = 0.8
+    private var homeDashboardSectionSpacing: CGFloat { DUSpacing.md * accountCardBottomSpacingScale }
+    private var headerBottomPadding: CGFloat { 18 * accountCardBottomSpacingScale }
+    private var parallaxReelTopSpacing: CGFloat { DUSpacing.md * parallaxReelTopSpacingScale }
 
     private let quickActions: [HomeItem] = [
         .init(title: .key("home.quick.recharge"), assetName: "HomeQuickRechargeDesignIcon", action: .recharge),
@@ -336,19 +342,21 @@ struct HomeView: View {
         if let dashboard = viewModel.dashboard {
             GeometryReader { proxy in
                 ScrollView(showsIndicators: false) {
-                    VStack(spacing: 12) {
+                    VStack(spacing: homeDashboardSectionSpacing) {
                         header(
                             topInset: proxy.safeAreaInsets.top,
                             dashboard: dashboard
                         )
 
-                        VStack(spacing: 12) {
+                        VStack(spacing: DUSpacing.md) {
                             if let bannerMessage = viewModel.bannerMessage {
                                 inlineBanner(bannerMessage)
                             }
 
-                            quickActionsSection
-                            parallaxReelSection
+                            VStack(spacing: parallaxReelTopSpacing) {
+                                quickActionsSection
+                                parallaxReelSection
+                            }
                             //featuredCarouselSection
                             //parallaxCarouselSection
                             //servicesSection
@@ -406,111 +414,114 @@ struct HomeView: View {
         dashboard: HomeDashboardSnapshot
     ) -> some View {
         VStack(spacing: 14) {
-            HStack(alignment: .center) {
-                HStack(spacing: 6) {
-                    Image(systemName: "sun.max.fill")
-                        .font(homeFont(13, weight: .semibold))
-                        .foregroundColor(Color(hex: 0xFFD351))
-                        .shadow(color: Color(hex: 0xFFD351, opacity: 0.34), radius: 6)
+            VStack(spacing: 14) {
+                HStack(alignment: .center) {
+                    HStack(spacing: 6) {
+                        Image(systemName: "sun.max.fill")
+                            .font(homeFont(13, weight: .semibold))
+                            .foregroundColor(Color(hex: 0xFFD351))
+                            .shadow(color: Color(hex: 0xFFD351, opacity: 0.34), radius: 6)
 
-                    Text(localized("home.greeting.morning"))
-                        .font(homeFont(13, weight: .medium))
-                        .foregroundColor(.white.opacity(0.86))
-                }
-
-                Spacer()
-
-                HStack(spacing: 10) {
-                    HomeHeaderActionButton(assetName: "HomeSearchButtonIcon") {
-                        placeholderMessage = .key("home.placeholder.search")
+                        Text(localized("home.greeting.morning"))
+                            .font(homeFont(13, weight: .medium))
+                            .foregroundColor(.white.opacity(0.86))
                     }
-                    HomeHeaderActionButton(assetName: "HomeNotificationButtonIcon") {
-                        isMessageCenterPresented = true
-                    }
-                }
-            }
 
-            HStack(alignment: .center, spacing: 12) {
-                HStack(spacing: 12) {
-                    Image("HomeHeroAvatar")
-                        .renderingMode(.original)
-                        .resizable()
-                        .scaledToFill()
-                        .frame(width: 56, height: 56)
-                        .clipShape(Circle())
+                    Spacer()
 
-                    VStack(alignment: .leading, spacing: 0) {
-                        Text(dashboard.profile.displayName)
-                            .font(homeFont(15, weight: .semibold))
-                            .foregroundColor(.white)
-                            .lineLimit(1)
-
-                        HStack(spacing: 6) {
-                            if let packageName = localizedPackageName(for: dashboard.profile.packageName) {
-                                Text(packageName)
-                                    .lineLimit(1)
-                            }
-
-                            if localizedPackageName(for: dashboard.profile.packageName) != nil,
-                               profilePointsText != nil {
-                                Text("|")
-                                    .opacity(0.62)
-                            }
-
-                            if let profilePointsText {
-                                Text(profilePointsText)
-                                    .lineLimit(1)
-                            }
+                    HStack(spacing: 10) {
+                        HomeHeaderActionButton(assetName: "HomeSearchButtonIcon") {
+                            placeholderMessage = .key("home.placeholder.search")
                         }
-                        .font(homeFont(11, weight: .medium))
-                        .foregroundColor(.white.opacity(0.84))
-                        .padding(.top, 5)
+                        HomeHeaderActionButton(assetName: "HomeNotificationButtonIcon") {
+                            isMessageCenterPresented = true
+                        }
+                    }
+                }
 
-                        HStack(spacing: 8) {
-                            Text(dashboard.profile.serviceNumber)
-                                .font(homeFont(10, weight: .medium))
-                                .foregroundColor(.white.opacity(0.92))
-                                .padding(.horizontal, 7)
-                                .padding(.vertical, 2)
-                                .background(
-                                    Capsule()
-                                        .fill(.white.opacity(0.14))
-                                )
+                HStack(alignment: .center, spacing: 12) {
+                    HStack(spacing: 12) {
+                        Image("HomeHeroAvatar")
+                            .renderingMode(.original)
+                            .resizable()
+                            .scaledToFill()
+                            .frame(width: 56, height: 56)
+                            .clipShape(Circle())
 
-                            if let networkStatus = dashboard.profile.networkStatus {
-                                Text(localized(networkStatus.textValue))
+                        VStack(alignment: .leading, spacing: 0) {
+                            Text(dashboard.profile.displayName)
+                                .font(homeFont(15, weight: .semibold))
+                                .foregroundColor(.white)
+                                .lineLimit(1)
+
+                            HStack(spacing: 6) {
+                                if let packageName = localizedPackageName(for: dashboard.profile.packageName) {
+                                    Text(packageName)
+                                        .lineLimit(1)
+                                }
+
+                                if localizedPackageName(for: dashboard.profile.packageName) != nil,
+                                   profilePointsText != nil {
+                                    Text("|")
+                                        .opacity(0.62)
+                                }
+
+                                if let profilePointsText {
+                                    Text(profilePointsText)
+                                        .lineLimit(1)
+                                }
+                            }
+                            .font(homeFont(11, weight: .medium))
+                            .foregroundColor(.white.opacity(0.84))
+                            .padding(.top, 5)
+
+                            HStack(spacing: 8) {
+                                Text(dashboard.profile.serviceNumber)
                                     .font(homeFont(10, weight: .medium))
-                                    .foregroundColor(.white.opacity(0.72))
-                                    .lineLimit(1)
+                                    .foregroundColor(.white.opacity(0.92))
+                                    .padding(.horizontal, 7)
+                                    .padding(.vertical, 2)
+                                    .background(
+                                        Capsule()
+                                            .fill(.white.opacity(0.14))
+                                    )
+
+                                if let networkStatus = dashboard.profile.networkStatus {
+                                    Text(localized(networkStatus.textValue))
+                                        .font(homeFont(10, weight: .medium))
+                                        .foregroundColor(.white.opacity(0.72))
+                                        .lineLimit(1)
+                                }
                             }
+                            .padding(.top, 8)
                         }
-                        .padding(.top, 8)
+                    }
+
+                    Spacer(minLength: 8)
+
+                    HStack(spacing: 6) {
+                        Image("HomeHeroBadgeIcon")
+                            .renderingMode(.original)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 18, height: 18)
+
+                        Text(localized("home.profile.advanced"))
+                            .font(homeFont(9, weight: .medium))
+                            .foregroundColor(.white.opacity(0.82))
                     }
                 }
-
-                Spacer(minLength: 8)
-
-                HStack(spacing: 6) {
-                    Image("HomeHeroBadgeIcon")
-                        .renderingMode(.original)
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 18, height: 18)
-
-                    Text(localized("home.profile.advanced"))
-                        .font(homeFont(9, weight: .medium))
-                        .foregroundColor(.white.opacity(0.82))
-                }
             }
+            .padding(.horizontal, headerContentHorizontalPadding)
 
             accountCard(
                 summary: dashboard.summary,
                 usage: dashboard.usage
             )
+            .padding(.horizontal, pageHorizontalPadding)
         }
-        .padding(.horizontal, 14)
         .padding(.top, max(topInset, 8) + 6)
-        .padding(.bottom, 18)
+        .padding(.bottom, headerBottomPadding)
     }
 
     private func accountCard(

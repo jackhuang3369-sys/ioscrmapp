@@ -88,7 +88,16 @@ private struct HomeParallaxReelIOS17ContentView: View {
                         GeometryReader { proxy in
                             let cardSize = CGSize(width: proxy.size.width, height: cardHeight)
                             let itemFrame = proxy.frame(in: .scrollView)
-                            let minX = min(itemFrame.minX * 0.8, proxy.size.width * 0.8)
+                            let imageWidth = homeParallaxReelImageWidth(
+                                cardWidth: cardSize.width,
+                                minimumOverflow: 120
+                            )
+                            let proposedOffset = -min(itemFrame.minX * 0.8, proxy.size.width * 0.8)
+                            let imageOffset = homeParallaxReelClampedImageOffset(
+                                cardWidth: cardSize.width,
+                                imageWidth: imageWidth,
+                                proposedOffset: proposedOffset
+                            )
                             let distanceRatio = homeParallaxReelDistanceRatio(
                                 cardMidX: itemFrame.midX,
                                 viewportWidth: size.width
@@ -101,8 +110,8 @@ private struct HomeParallaxReelIOS17ContentView: View {
                             HomeParallaxReelCardUnitView(
                                 item: item,
                                 cardSize: cardSize,
-                                imageWidth: cardSize.width * 1.24,
-                                imageOffsetX: -minX,
+                                imageWidth: imageWidth,
+                                imageOffsetX: imageOffset,
                                 titleWidth: max(cardSize.width - (titleHorizontalInset * 2), 0),
                                 titleSpacing: titleSpacing,
                                 showsBorder: false,
@@ -147,7 +156,14 @@ private struct HomeParallaxReelLegacyCardView: View {
         GeometryReader { proxy in
             let itemFrame = proxy.frame(in: .global)
             let distanceRatio = normalizedDistanceRatio(itemFrame: itemFrame)
-            let imageOffset = parallaxOffset(itemFrame: itemFrame)
+            let imageWidth = homeParallaxReelImageWidth(
+                cardWidth: cardSize.width,
+                minimumOverflow: 136
+            )
+            let imageOffset = parallaxOffset(
+                itemFrame: itemFrame,
+                imageWidth: imageWidth
+            )
             let scaleX = 0.94 + (distanceRatio * 0.06)
             let scaleY = 0.82 + (distanceRatio * 0.18)
             let saturation = 1 - (distanceRatio * 0.62)
@@ -156,7 +172,7 @@ private struct HomeParallaxReelLegacyCardView: View {
             HomeParallaxReelCardUnitView(
                 item: item,
                 cardSize: cardSize,
-                imageWidth: cardSize.width * 1.42,
+                imageWidth: imageWidth,
                 imageOffsetX: imageOffset,
                 titleWidth: max(cardSize.width - (titleHorizontalInset * 2), 0),
                 titleSpacing: titleSpacing,
@@ -183,9 +199,13 @@ private struct HomeParallaxReelLegacyCardView: View {
         )
     }
 
-    private func parallaxOffset(itemFrame: CGRect) -> CGFloat {
+    private func parallaxOffset(itemFrame: CGRect, imageWidth: CGFloat) -> CGFloat {
         let relativeOffset = itemFrame.minX - viewportFrame.minX
-        return -(relativeOffset * 0.26)
+        return homeParallaxReelClampedImageOffset(
+            cardWidth: cardSize.width,
+            imageWidth: imageWidth,
+            proposedOffset: -(relativeOffset * 0.26)
+        )
     }
 }
 
@@ -239,11 +259,13 @@ private struct HomeParallaxReelCaptionView: View {
 
     var body: some View {
         Text(languageStore.string(item.title))
-            .font(.du(15, weight: .semibold))
+            .font(.custom("PingFangSC-Semibold", size: 16))
             .foregroundColor(DUTheme.ink)
             .multilineTextAlignment(.center)
             .lineLimit(2)
             .truncationMode(.tail)
+            .lineSpacing(3)
+            .fixedSize(horizontal: false, vertical: true)
     }
 }
 
@@ -285,4 +307,20 @@ private func homeParallaxReelDistanceRatio(
     let viewportMidX = safeViewportWidth / 2
     let distance = abs(cardMidX - viewportMidX)
     return min(distance / safeViewportWidth, 1)
+}
+
+private func homeParallaxReelImageWidth(
+    cardWidth: CGFloat,
+    minimumOverflow: CGFloat
+) -> CGFloat {
+    max(cardWidth * 1.36, cardWidth + minimumOverflow)
+}
+
+private func homeParallaxReelClampedImageOffset(
+    cardWidth: CGFloat,
+    imageWidth: CGFloat,
+    proposedOffset: CGFloat
+) -> CGFloat {
+    let maxOffset = max((imageWidth - cardWidth) / 2, 0)
+    return min(max(proposedOffset, -maxOffset), maxOffset)
 }
