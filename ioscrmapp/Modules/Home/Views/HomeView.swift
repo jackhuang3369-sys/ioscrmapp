@@ -36,6 +36,8 @@ struct HomeView: View {
     @State private var isCreditLimitExpanded = false
     @State private var signOutFailureMessageKey: String?
     @State private var isParallaxCarouselDraggingHorizontally = false
+    @State private var tabBarBounceTarget: HomeTab?
+    @State private var tabBarBounceToken = 0
 
     private let pageHorizontalPadding: CGFloat = DUSpacing.sm
     private let headerContentHorizontalPadding: CGFloat = 14
@@ -955,9 +957,10 @@ struct HomeView: View {
                         title: localized(HomeTab.home.title),
                         inactiveAssetName: "HomeTabHomeDesignIcon",
                         activeAssetName: "HomeTabHomeActiveDesignIcon",
-                        isActive: selectedTab == .home
+                        isActive: selectedTab == .home,
+                        bounceToken: tabBarBounceTarget == .home ? tabBarBounceToken : 0
                     ) {
-                        selectedTab = .home
+                        selectHomeTab(.home)
                     }
                     .frame(width: sideWidth, height: baseBarHeight)
 
@@ -965,9 +968,10 @@ struct HomeView: View {
                         title: localized(HomeTab.service.title),
                         inactiveAssetName: "HomeTabServiceDesignIcon",
                         activeAssetName: "HomeTabServiceActiveDesignIcon",
-                        isActive: selectedTab == .service
+                        isActive: selectedTab == .service,
+                        bounceToken: tabBarBounceTarget == .service ? tabBarBounceToken : 0
                     ) {
-                        selectedTab = .service
+                        selectHomeTab(.service)
                     }
                     .frame(width: sideWidth, height: baseBarHeight)
 
@@ -977,9 +981,10 @@ struct HomeView: View {
                         title: localized(HomeTab.video.title),
                         inactiveAssetName: "HomeTabVideoDesignIcon",
                         activeAssetName: "HomeTabVideoActiveDesignIcon",
-                        isActive: selectedTab == .video
+                        isActive: selectedTab == .video,
+                        bounceToken: tabBarBounceTarget == .video ? tabBarBounceToken : 0
                     ) {
-                        selectedTab = .video
+                        selectHomeTab(.video)
                     }
                     .frame(width: sideWidth, height: baseBarHeight)
 
@@ -987,9 +992,10 @@ struct HomeView: View {
                         title: localized(HomeTab.me.title),
                         inactiveAssetName: "HomeTabMeDesignIcon",
                         activeAssetName: "HomeTabMeActiveDesignIcon",
-                        isActive: selectedTab == .me
+                        isActive: selectedTab == .me,
+                        bounceToken: tabBarBounceTarget == .me ? tabBarBounceToken : 0
                     ) {
-                        selectedTab = .me
+                        selectHomeTab(.me)
                     }
                     .frame(width: sideWidth, height: baseBarHeight)
                 }
@@ -1010,6 +1016,12 @@ struct HomeView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
         }
         .frame(height: 112)
+    }
+
+    private func selectHomeTab(_ tab: HomeTab) {
+        selectedTab = tab
+        tabBarBounceTarget = tab
+        tabBarBounceToken += 1
     }
 
     private var placeholderAlertIsPresented: Binding<Bool> {
@@ -1485,7 +1497,16 @@ private struct HomeBottomTabBarButton: View {
     let inactiveAssetName: String
     let activeAssetName: String
     let isActive: Bool
+    let bounceToken: Int
     let action: () -> Void
+
+    @State private var dropletScaleX: CGFloat = 1
+    @State private var dropletScaleY: CGFloat = 1
+    @State private var dropletOffsetY: CGFloat = 0
+    @State private var innerRippleScale: CGFloat = 0.82
+    @State private var innerRippleOpacity: CGFloat = 0
+    @State private var outerRippleScale: CGFloat = 0.88
+    @State private var outerRippleOpacity: CGFloat = 0
 
     var body: some View {
         let contentSize = CGSize(width: isActive ? 62 : 60, height: 40)
@@ -1505,7 +1526,25 @@ private struct HomeBottomTabBarButton: View {
                             )
                         )
                         .frame(width: contentSize.width, height: contentSize.height)
+                        .overlay {
+                            ZStack {
+                                Capsule()
+                                    .stroke(Color.white.opacity(innerRippleOpacity), lineWidth: 1.6)
+                                    .scaleEffect(innerRippleScale)
+
+                                Capsule()
+                                    .stroke(Color.white.opacity(outerRippleOpacity), lineWidth: 1.2)
+                                    .scaleEffect(outerRippleScale)
+                            }
+                            .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+                        }
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                                .stroke(Color.white.opacity(0.30), lineWidth: 1)
+                        )
                         .shadow(color: Color(hex: 0x1176FF, opacity: 0.28), radius: 14, x: 0, y: 8)
+                        .scaleEffect(x: dropletScaleX, y: dropletScaleY, anchor: .center)
+                        .offset(y: dropletOffsetY)
                 }
 
                 VStack(spacing: 4) {
@@ -1526,6 +1565,61 @@ private struct HomeBottomTabBarButton: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
         }
         .buttonStyle(.plain)
+        .onChange(of: bounceToken) { _ in
+            guard isActive else {
+                return
+            }
+            playDropletBounce()
+        }
+    }
+
+    private func playDropletBounce() {
+        dropletScaleX = 1
+        dropletScaleY = 1
+        dropletOffsetY = 0
+        innerRippleScale = 0.82
+        innerRippleOpacity = 0
+        outerRippleScale = 0.88
+        outerRippleOpacity = 0
+
+        withAnimation(.spring(response: 0.14, dampingFraction: 0.56)) {
+            dropletScaleX = 1.23
+            dropletScaleY = 0.79
+            dropletOffsetY = -4
+            innerRippleScale = 0.95
+            innerRippleOpacity = 0.40
+            outerRippleScale = 1.02
+            outerRippleOpacity = 0.20
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.09) {
+            withAnimation(.spring(response: 0.22, dampingFraction: 0.52)) {
+                dropletScaleX = 0.93
+                dropletScaleY = 1.14
+                dropletOffsetY = 1.5
+                innerRippleScale = 1.10
+                innerRippleOpacity = 0.18
+                outerRippleScale = 1.24
+                outerRippleOpacity = 0.24
+            }
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.18) {
+            withAnimation(.easeOut(duration: 0.18)) {
+                innerRippleScale = 1.26
+                innerRippleOpacity = 0
+                outerRippleScale = 1.46
+                outerRippleOpacity = 0
+            }
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.24) {
+            withAnimation(.spring(response: 0.34, dampingFraction: 0.76)) {
+                dropletScaleX = 1
+                dropletScaleY = 1
+                dropletOffsetY = 0
+            }
+        }
     }
 }
 
