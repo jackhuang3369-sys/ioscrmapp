@@ -226,6 +226,28 @@
       "iPhone17": "iPhone 17 Slim, lighter than ever",
       "spiderBrandNewDay": "SPIDER-MAN: BRAND NEW DAY"
     },
+    "parallax": {
+      "eyebrow": "PARALLAX SCENES",
+      "title": "Gesture-driven carousel study",
+      "item": {
+        "snowMirror": {
+          "title": "Snow Mirror",
+          "subtitle": "Still peaks and a glassy lake moving in one calm sweep."
+        },
+        "springField": {
+          "title": "Spring Field",
+          "subtitle": "A bright meadow where the foreground glides faster than the sky."
+        },
+        "cliffGlow": {
+          "title": "Cliff Glow",
+          "subtitle": "Sunset cliffs and distant ridges stretched through a soft drag."
+        },
+        "goldenVista": {
+          "title": "Golden Vista",
+          "subtitle": "A winding road and far mountains with layered parallax depth."
+        }
+      }
+    },
     "service": {
       "dataPack": "Data Pack",
       "voicePack": "Voice Pack",

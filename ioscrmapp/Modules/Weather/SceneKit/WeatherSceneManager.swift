@@ -10,6 +10,7 @@ final class WeatherSceneManager: ObservableObject {
     private(set) var currentTemperature: Int
 
     private var temperatureNode: SCNNode?
+    private var _birdsScene: SCNScene?   // 防止 ARC 过早释放鸟群场景
     private let weatherDataSubdirectory = "WeatherData"
 
     init(temperature: Int = MockWeatherData.today.temperature) {
@@ -68,7 +69,7 @@ final class WeatherSceneManager: ObservableObject {
 
         let root = SCNNode()
         root.name = "weather_root"
-        root.position = SCNVector3(0, -1.82, 0)
+        root.position = SCNVector3(0, -1.94, 0)
         scene.rootNode.addChildNode(root)
 
         let rotatingGroup = SCNNode()
@@ -77,11 +78,11 @@ final class WeatherSceneManager: ObservableObject {
         conditionGroup = rotatingGroup
 
         let sun = makeSunNode()
-        sun.position = SCNVector3(0, 3.46, -0.1)
+        sun.position = SCNVector3(0, 3.26, -0.1)
         rotatingGroup.addChildNode(sun)
 
         let digits = makeTemperatureNode(text: "\(currentTemperature)")
-        digits.position = SCNVector3(0, -2.0, 0.12)
+        digits.position = SCNVector3(0, -2.12, 0.12)
         rotatingGroup.addChildNode(digits)
         temperatureNode = digits
 
@@ -183,6 +184,13 @@ final class WeatherSceneManager: ObservableObject {
         applySunMaterial(to: model)
         root.addChildNode(model)
 
+        // 鸟群：作为太阳 root 的子节点，自动跟随太阳的一切动画（自旋、脉冲、浮动）
+        // 太阳球半径 2.16，x=3.2 在球体右侧外沿，y=0.3 约在球体中部偏上
+        if let birdsNode = loadBirdsNode() {
+            birdsNode.position = SCNVector3(3.2, -0.8, 0)
+            root.addChildNode(birdsNode)
+        }
+
         let glow = SCNLight()
         glow.type = .omni
         glow.intensity = 700
@@ -195,6 +203,104 @@ final class WeatherSceneManager: ObservableObject {
         root.addChildNode(glowNode)
 
         return root
+    }
+
+    /// 加载鸟群节点（birds2.usdz）。
+    private func loadBirdsNode() -> SCNNode? {
+        let loadOpts: [SCNSceneSource.LoadingOption: Any] = [
+            .animationImportPolicy: SCNSceneSource.AnimationImportPolicy.playRepeatedly
+        ]
+        guard let url = Bundle.main.url(forResource: "birds2", withExtension: "usdz",
+                                        subdirectory: weatherDataSubdirectory),
+              let src = SCNSceneSource(url: url, options: loadOpts),
+              let loadedScene = src.scene(options: loadOpts),
+              !loadedScene.rootNode.childNodes.isEmpty else {
+            print("[Birds] ❌ birds2.usdz 加载失败")
+            return nil
+        }
+        let animCount = src.identifiersOfEntries(withClass: CAAnimation.self).count
+        print("[Birds] ✅ birds2.usdz  children=\(loadedScene.rootNode.childNodes.count)  CAAnims=\(animCount)")
+        return makeBirdsContainer(from: loadedScene)
+    }
+
+    private func makeBirdsContainer(from loadedScene: SCNScene) -> SCNNode? {
+        _birdsScene = loadedScene
+        let container = loadedScene.rootNode
+        container.name = SceneNode.birds
+
+        // 打印节点树（便于调试，找到界面中多余节点的名称）
+        print("[Birds] --- node tree ---")
+        printBirdsNodeTree(container, indent: "  ")
+
+        // 移除球体：按名称关键字过滤
+        removeBallNodes(from: container)
+
+        let (bmin, bmax) = container.boundingBox
+        let xSpan = bmax.x - bmin.x
+        guard xSpan > 0.001 else { return nil }
+        let cx = (bmin.x + bmax.x) / 2
+        let cy = (bmin.y + bmax.y) / 2
+        let cz = (bmin.z + bmax.z) / 2
+        container.pivot = SCNMatrix4MakeTranslation(cx, cy, cz)
+        container.scale = SCNVector3(Float(1.8) / xSpan, Float(1.8) / xSpan, Float(1.8) / xSpan)
+        applyBirdsDarkMaterial(to: container)
+        container.enumerateHierarchy { node, _ in
+            for key in node.animationKeys { node.animationPlayer(forKey: key)?.play() }
+        }
+        return container
+    }
+
+    /// 递归打印节点树，帮助识别多余的球体节点。
+    private func printBirdsNodeTree(_ node: SCNNode, indent: String) {
+        let geo  = node.geometry  != nil ? " [geo]"  : ""
+        let skin = node.skinner   != nil ? " [skin]" : ""
+        let kids = node.childNodes.count
+        print("\(indent)\(node.name ?? "<nil>")\(geo)\(skin)  children=\(kids)")
+        for child in node.childNodes {
+            printBirdsNodeTree(child, indent: indent + "  ")
+        }
+    }
+
+    /// 移除球体节点：按常见命名关键字匹配，或按「有几何体且无子节点且边界盒近似球形」的几何特征匹配。
+    private func removeBallNodes(from root: SCNNode) {
+        let keywords = ["sphere", "ball", "icosphere", "uvsphere", "circle"]
+        var toRemove: [SCNNode] = []
+        root.enumerateChildNodes { node, _ in
+            // 1) 名称关键字
+            if let name = node.name?.lowercased(),
+               keywords.contains(where: { name.contains($0) }) {
+                toRemove.append(node)
+                return
+            }
+            // 2) 几何特征：有 geometry、无子节点、且边界盒 X/Y/Z 较均匀（宽高比接近 1）
+            if node.geometry != nil, node.childNodes.isEmpty {
+                let (lo, hi) = node.boundingBox
+                let dx = hi.x - lo.x, dy = hi.y - lo.y, dz = hi.z - lo.z
+                let maxD = max(dx, dy, dz)
+                let minD = min(dx, dy, dz)
+                if maxD > 0.001, minD / maxD > 0.75 {
+                    toRemove.append(node)
+                }
+            }
+        }
+        for node in toRemove {
+            print("[Birds] 🗑 removing node: \(node.name ?? "<nil>")")
+            node.removeFromParentNode()
+        }
+    }
+
+    /// 为鸟群节点应用深色哑光 PBR 材质
+    private func applyBirdsDarkMaterial(to node: SCNNode) {
+        node.enumerateChildNodes { child, _ in
+            guard let geo = child.geometry else { return }
+            let mat = SCNMaterial()
+            mat.lightingModel      = .physicallyBased
+            mat.diffuse.contents   = UIColor(red: 0.04, green: 0.04, blue: 0.06, alpha: 1)
+            mat.metalness.contents = Float(0.10)
+            mat.roughness.contents = Float(0.90)
+            mat.isDoubleSided      = true
+            geo.materials = [mat]
+        }
     }
 
     private func makeTemperatureModelNode(text: String) -> SCNNode? {
@@ -236,9 +342,35 @@ final class WeatherSceneManager: ObservableObject {
             return nil
         }
 
-        applyTemperatureDigitMaterial(to: payload.node)
-        payload.node.name = "digit_\(digitName)"
-        return (payload.node, payload.size.x)
+        let normalized = normalizeDigitPayload(payload, for: digitName)
+        applyTemperatureDigitMaterial(to: normalized.node)
+        normalized.node.name = "digit_\(digitName)"
+        return normalized
+    }
+
+    private func normalizeDigitPayload(_ payload: (node: SCNNode, size: SCNVector3), for digitName: String) -> (node: SCNNode, width: Float) {
+        let maxWidth: Float = 2.2
+        let maxDepth: Float = 0.72
+        let widthScale = payload.size.x > maxWidth ? maxWidth / payload.size.x : 1
+        let depthScale = payload.size.z > maxDepth ? maxDepth / payload.size.z : 1
+        let manualScale: Float
+
+        switch digitName {
+        case "2":
+            manualScale = 0.92
+        case "4":
+            manualScale = 0.84
+        default:
+            manualScale = 1
+        }
+
+        let correction = min(widthScale, depthScale, manualScale)
+        if correction >= 0.999 {
+            return (payload.node, payload.size.x)
+        }
+
+        payload.node.scale = SCNVector3(correction, correction, correction)
+        return (payload.node, payload.size.x * correction)
     }
 
     private func loadNormalizedModelNode(named name: String, fileExtension: String, targetHeight: Float) -> (node: SCNNode, size: SCNVector3)? {
@@ -279,22 +411,23 @@ final class WeatherSceneManager: ObservableObject {
     }
 
     private func applySunMaterial(to node: SCNNode) {
-        guard let textureURL = Bundle.main.url(forResource: "texture", withExtension: "png", subdirectory: weatherDataSubdirectory),
-              let image = UIImage(contentsOfFile: textureURL.path) else {
-            return
-        }
-
         node.enumerateChildNodes { child, _ in
             guard let geometry = child.geometry else { return }
-            let material = SCNMaterial()
-            material.lightingModel = .physicallyBased
-            material.diffuse.contents = image
-            material.emission.contents = image
-            material.metalness.contents = Float(0.0)
-            material.roughness.contents = Float(0.72)
-            material.isDoubleSided = true
-            geometry.materials = [material]
+            self.applySunMaterialToGeometry(geometry)
         }
+    }
+
+    private func applySunMaterialToGeometry(_ geometry: SCNGeometry) {
+        guard let textureURL = Bundle.main.url(forResource: "texture", withExtension: "png", subdirectory: weatherDataSubdirectory),
+              let image = UIImage(contentsOfFile: textureURL.path) else { return }
+        let material = SCNMaterial()
+        material.lightingModel     = .physicallyBased
+        material.diffuse.contents  = image
+        material.emission.contents = image
+        material.metalness.contents = Float(0.0)
+        material.roughness.contents = Float(0.72)
+        material.isDoubleSided     = true
+        geometry.materials = [material]
     }
 
     private func applyTemperatureDigitMaterial(to node: SCNNode) {
@@ -323,7 +456,7 @@ final class WeatherSceneManager: ObservableObject {
         guard let root = conditionGroup else { return }
 
         let replacement = makeTemperatureNode(text: "\(currentTemperature)")
-        replacement.position = SCNVector3(0, -2.0, 0.12)
+        replacement.position = SCNVector3(0, -2.02, 0.12)
         replacement.opacity = animated ? 0 : 1
         root.addChildNode(replacement)
 
@@ -369,9 +502,10 @@ final class WeatherSceneManager: ObservableObject {
         let spin = CABasicAnimation(keyPath: "rotation")
         spin.fromValue = NSValue(scnVector4: SCNVector4(0, 1, 0, 0))
         spin.toValue = NSValue(scnVector4: SCNVector4(0, 1, 0, -Float.pi * 2))
-        spin.duration = 18
+        spin.duration = 30   // 原 18s，降到 60% 速度
         spin.repeatCount = .infinity
         spin.timingFunction = CAMediaTimingFunction(name: .linear)
         node.addAnimation(spin, forKey: "sun_spin")
     }
+
 }

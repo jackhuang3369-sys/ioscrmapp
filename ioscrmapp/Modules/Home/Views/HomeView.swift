@@ -35,8 +35,17 @@ struct HomeView: View {
     @State private var isSigningOut = false
     @State private var isCreditLimitExpanded = false
     @State private var signOutFailureMessageKey: String?
+    @State private var isParallaxCarouselDraggingHorizontally = false
+    @State private var tabBarBounceTarget: HomeTab?
+    @State private var tabBarBounceToken = 0
 
-    private let pageHorizontalPadding: CGFloat = 8
+    private let pageHorizontalPadding: CGFloat = DUSpacing.sm
+    private let headerContentHorizontalPadding: CGFloat = 14
+    private let accountCardBottomSpacingScale: CGFloat = 0.85 * 0.7 * 0.85
+    private let parallaxReelTopSpacingScale: CGFloat = 0.8
+    private var homeDashboardSectionSpacing: CGFloat { DUSpacing.md * accountCardBottomSpacingScale }
+    private var headerBottomPadding: CGFloat { 18 * accountCardBottomSpacingScale }
+    private var parallaxReelTopSpacing: CGFloat { DUSpacing.md * parallaxReelTopSpacingScale }
 
     private let quickActions: [HomeItem] = [
         .init(title: .key("home.quick.recharge"), assetName: "HomeQuickRechargeDesignIcon", action: .recharge),
@@ -377,19 +386,23 @@ struct HomeView: View {
         if let dashboard = viewModel.dashboard {
             GeometryReader { proxy in
                 ScrollView(showsIndicators: false) {
-                    VStack(spacing: 12) {
+                    VStack(spacing: homeDashboardSectionSpacing) {
                         header(
                             topInset: proxy.safeAreaInsets.top,
                             dashboard: dashboard
                         )
 
-                        VStack(spacing: 12) {
+                        VStack(spacing: DUSpacing.md) {
                             if let bannerMessage = viewModel.bannerMessage {
                                 inlineBanner(bannerMessage)
                             }
 
-                            quickActionsSection
-                            featuredCarouselSection
+                            VStack(spacing: parallaxReelTopSpacing) {
+                                quickActionsSection
+                                parallaxReelSection
+                            }
+                            //featuredCarouselSection
+                            //parallaxCarouselSection
                             //servicesSection
                             Color.clear
                                 .frame(height: homeDashboardBottomPlaceholderHeight)
@@ -398,6 +411,7 @@ struct HomeView: View {
                     }
                     .padding(.bottom, DUSpacing.lg)
                 }
+                .homeScrollDisabled(isParallaxCarouselDraggingHorizontally)
                 .refreshable {
                     await viewModel.refresh()
                 }
@@ -444,111 +458,114 @@ struct HomeView: View {
         dashboard: HomeDashboardSnapshot
     ) -> some View {
         VStack(spacing: 14) {
-            HStack(alignment: .center) {
-                HStack(spacing: 6) {
-                    Image(systemName: "sun.max.fill")
-                        .font(homeFont(13, weight: .semibold))
-                        .foregroundColor(Color(hex: 0xFFD351))
-                        .shadow(color: Color(hex: 0xFFD351, opacity: 0.34), radius: 6)
+            VStack(spacing: 14) {
+                HStack(alignment: .center) {
+                    HStack(spacing: 6) {
+                        Image(systemName: "sun.max.fill")
+                            .font(homeFont(13, weight: .semibold))
+                            .foregroundColor(Color(hex: 0xFFD351))
+                            .shadow(color: Color(hex: 0xFFD351, opacity: 0.34), radius: 6)
 
-                    Text(localized("home.greeting.morning"))
-                        .font(homeFont(13, weight: .medium))
-                        .foregroundColor(.white.opacity(0.86))
-                }
-
-                Spacer()
-
-                HStack(spacing: 10) {
-                    HomeHeaderActionButton(assetName: "HomeSearchButtonIcon") {
-                        placeholderMessage = .key("home.placeholder.search")
+                        Text(localized("home.greeting.morning"))
+                            .font(homeFont(13, weight: .medium))
+                            .foregroundColor(.white.opacity(0.86))
                     }
-                    HomeHeaderActionButton(assetName: "HomeNotificationButtonIcon") {
-                        isMessageCenterPresented = true
-                    }
-                }
-            }
 
-            HStack(alignment: .center, spacing: 12) {
-                HStack(spacing: 12) {
-                    Image("HomeHeroAvatar")
-                        .renderingMode(.original)
-                        .resizable()
-                        .scaledToFill()
-                        .frame(width: 56, height: 56)
-                        .clipShape(Circle())
+                    Spacer()
 
-                    VStack(alignment: .leading, spacing: 0) {
-                        Text(dashboard.profile.displayName)
-                            .font(homeFont(15, weight: .semibold))
-                            .foregroundColor(.white)
-                            .lineLimit(1)
-
-                        HStack(spacing: 6) {
-                            if let packageName = localizedPackageName(for: dashboard.profile.packageName) {
-                                Text(packageName)
-                                    .lineLimit(1)
-                            }
-
-                            if localizedPackageName(for: dashboard.profile.packageName) != nil,
-                               profilePointsText != nil {
-                                Text("|")
-                                    .opacity(0.62)
-                            }
-
-                            if let profilePointsText {
-                                Text(profilePointsText)
-                                    .lineLimit(1)
-                            }
+                    HStack(spacing: 10) {
+                        HomeHeaderActionButton(assetName: "HomeSearchButtonIcon") {
+                            placeholderMessage = .key("home.placeholder.search")
                         }
-                        .font(homeFont(11, weight: .medium))
-                        .foregroundColor(.white.opacity(0.84))
-                        .padding(.top, 5)
+                        HomeHeaderActionButton(assetName: "HomeNotificationButtonIcon") {
+                            isMessageCenterPresented = true
+                        }
+                    }
+                }
 
-                        HStack(spacing: 8) {
-                            Text(dashboard.profile.serviceNumber)
-                                .font(homeFont(10, weight: .medium))
-                                .foregroundColor(.white.opacity(0.92))
-                                .padding(.horizontal, 7)
-                                .padding(.vertical, 2)
-                                .background(
-                                    Capsule()
-                                        .fill(.white.opacity(0.14))
-                                )
+                HStack(alignment: .center, spacing: 12) {
+                    HStack(spacing: 12) {
+                        Image("HomeHeroAvatar")
+                            .renderingMode(.original)
+                            .resizable()
+                            .scaledToFill()
+                            .frame(width: 56, height: 56)
+                            .clipShape(Circle())
 
-                            if let networkStatus = dashboard.profile.networkStatus {
-                                Text(localized(networkStatus.textValue))
+                        VStack(alignment: .leading, spacing: 0) {
+                            Text(dashboard.profile.displayName)
+                                .font(homeFont(15, weight: .semibold))
+                                .foregroundColor(.white)
+                                .lineLimit(1)
+
+                            HStack(spacing: 6) {
+                                if let packageName = localizedPackageName(for: dashboard.profile.packageName) {
+                                    Text(packageName)
+                                        .lineLimit(1)
+                                }
+
+                                if localizedPackageName(for: dashboard.profile.packageName) != nil,
+                                   profilePointsText != nil {
+                                    Text("|")
+                                        .opacity(0.62)
+                                }
+
+                                if let profilePointsText {
+                                    Text(profilePointsText)
+                                        .lineLimit(1)
+                                }
+                            }
+                            .font(homeFont(11, weight: .medium))
+                            .foregroundColor(.white.opacity(0.84))
+                            .padding(.top, 5)
+
+                            HStack(spacing: 8) {
+                                Text(dashboard.profile.serviceNumber)
                                     .font(homeFont(10, weight: .medium))
-                                    .foregroundColor(.white.opacity(0.72))
-                                    .lineLimit(1)
+                                    .foregroundColor(.white.opacity(0.92))
+                                    .padding(.horizontal, 7)
+                                    .padding(.vertical, 2)
+                                    .background(
+                                        Capsule()
+                                            .fill(.white.opacity(0.14))
+                                    )
+
+                                if let networkStatus = dashboard.profile.networkStatus {
+                                    Text(localized(networkStatus.textValue))
+                                        .font(homeFont(10, weight: .medium))
+                                        .foregroundColor(.white.opacity(0.72))
+                                        .lineLimit(1)
+                                }
                             }
+                            .padding(.top, 8)
                         }
-                        .padding(.top, 8)
+                    }
+
+                    Spacer(minLength: 8)
+
+                    HStack(spacing: 6) {
+                        Image("HomeHeroBadgeIcon")
+                            .renderingMode(.original)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 18, height: 18)
+
+                        Text(localized("home.profile.advanced"))
+                            .font(homeFont(9, weight: .medium))
+                            .foregroundColor(.white.opacity(0.82))
                     }
                 }
-
-                Spacer(minLength: 8)
-
-                HStack(spacing: 6) {
-                    Image("HomeHeroBadgeIcon")
-                        .renderingMode(.original)
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 18, height: 18)
-
-                    Text(localized("home.profile.advanced"))
-                        .font(homeFont(9, weight: .medium))
-                        .foregroundColor(.white.opacity(0.82))
-                }
             }
+            .padding(.horizontal, headerContentHorizontalPadding)
 
             accountCard(
                 summary: dashboard.summary,
                 usage: dashboard.usage
             )
+            .padding(.horizontal, pageHorizontalPadding)
         }
-        .padding(.horizontal, 14)
         .padding(.top, max(topInset, 8) + 6)
-        .padding(.bottom, 18)
+        .padding(.bottom, headerBottomPadding)
     }
 
     private func accountCard(
@@ -859,18 +876,35 @@ struct HomeView: View {
         .padding(.horizontal, pageHorizontalPadding)
     }
 
-    private var featuredCarouselSection: some View {
-        HomeFeatureCarouselView(items: featuredCarouselItems) { item in
+//    private var featuredCarouselSection: some View {
+//        HomeFeatureCarouselView(items: featuredCarouselItems) { item in
+//            handleFeaturedCarouselSelection(item)
+//        }
+//            .padding(.horizontal, 12)
+//            .padding(.top, 16)
+//            .padding(.bottom, 14)
+//            .background(Color.white)
+//            .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+//            .shadow(color: Color.black.opacity(0.08), radius: 14, x: 0, y: 8)
+//            .padding(.horizontal, pageHorizontalPadding)
+//    }
+
+    private var parallaxReelSection: some View {
+        HomeParallaxReelSectionView(items: featuredCarouselItems) { item in
             handleFeaturedCarouselSelection(item)
         }
-            .padding(.horizontal, 12)
-            .padding(.top, 16)
-            .padding(.bottom, 14)
-            .background(Color.white)
-            .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
-            .shadow(color: Color.black.opacity(0.08), radius: 14, x: 0, y: 8)
-            .padding(.horizontal, pageHorizontalPadding)
+        .padding(.horizontal, pageHorizontalPadding)
     }
+
+//    private var parallaxCarouselSection: some View {
+//        HomeParallaxCarouselView(
+//            items: featuredCarouselItems,
+//            onSelectItem: handleFeaturedCarouselSelection,
+//            isParentScrollLocked: $isParallaxCarouselDraggingHorizontally
+//        )
+//            .padding(.top, 6)
+//            .padding(.bottom, 10)
+//    }
 
     private var servicesSection: some View {
         VStack(alignment: .leading, spacing: 14) {
@@ -965,9 +999,10 @@ struct HomeView: View {
                         title: localized(HomeTab.home.title),
                         inactiveAssetName: "HomeTabHomeDesignIcon",
                         activeAssetName: "HomeTabHomeActiveDesignIcon",
-                        isActive: selectedTab == .home
+                        isActive: selectedTab == .home,
+                        bounceToken: tabBarBounceTarget == .home ? tabBarBounceToken : 0
                     ) {
-                        selectedTab = .home
+                        selectHomeTab(.home)
                     }
                     .frame(width: sideWidth, height: baseBarHeight)
 
@@ -975,9 +1010,10 @@ struct HomeView: View {
                         title: localized(HomeTab.service.title),
                         inactiveAssetName: "HomeTabServiceDesignIcon",
                         activeAssetName: "HomeTabServiceActiveDesignIcon",
-                        isActive: selectedTab == .service
+                        isActive: selectedTab == .service,
+                        bounceToken: tabBarBounceTarget == .service ? tabBarBounceToken : 0
                     ) {
-                        selectedTab = .service
+                        selectHomeTab(.service)
                     }
                     .frame(width: sideWidth, height: baseBarHeight)
 
@@ -987,9 +1023,10 @@ struct HomeView: View {
                         title: localized(HomeTab.video.title),
                         inactiveAssetName: "HomeTabVideoDesignIcon",
                         activeAssetName: "HomeTabVideoActiveDesignIcon",
-                        isActive: selectedTab == .video
+                        isActive: selectedTab == .video,
+                        bounceToken: tabBarBounceTarget == .video ? tabBarBounceToken : 0
                     ) {
-                        selectedTab = .video
+                        selectHomeTab(.video)
                     }
                     .frame(width: sideWidth, height: baseBarHeight)
 
@@ -997,9 +1034,10 @@ struct HomeView: View {
                         title: localized(HomeTab.me.title),
                         inactiveAssetName: "HomeTabMeDesignIcon",
                         activeAssetName: "HomeTabMeActiveDesignIcon",
-                        isActive: selectedTab == .me
+                        isActive: selectedTab == .me,
+                        bounceToken: tabBarBounceTarget == .me ? tabBarBounceToken : 0
                     ) {
-                        selectedTab = .me
+                        selectHomeTab(.me)
                     }
                     .frame(width: sideWidth, height: baseBarHeight)
                 }
@@ -1020,6 +1058,12 @@ struct HomeView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
         }
         .frame(height: 112)
+    }
+
+    private func selectHomeTab(_ tab: HomeTab) {
+        selectedTab = tab
+        tabBarBounceTarget = tab
+        tabBarBounceToken += 1
     }
 
     private var placeholderAlertIsPresented: Binding<Bool> {
@@ -1091,18 +1135,20 @@ struct HomeView: View {
     }
 
     private func handleFeaturedCarouselSelection(_ item: HomeFeatureCarouselItem) {
-        switch item.action {
-        case .none:
-            return
-        case .tickets:
-            isTicketsPresented = true
-        case .mall:
-            selectedTab = .mall
-        case let .videoDetail(videoID):
-            selectedTab = .video
-            requestedVideoID = videoID
-        case .weather:
-            isWeatherPresented = true
+        DispatchQueue.main.async {
+            switch item.action {
+            case .none:
+                return
+            case .tickets:
+                isTicketsPresented = true
+            case .mall:
+                selectedTab = .mall
+            case let .videoDetail(videoID):
+                selectedTab = .video
+                requestedVideoID = videoID
+            case .weather:
+                isWeatherPresented = true
+            }
         }
     }
 
@@ -1331,6 +1377,17 @@ struct HomeView: View {
     }
 }
 
+private extension View {
+    @ViewBuilder
+    func homeScrollDisabled(_ disabled: Bool) -> some View {
+        if #available(iOS 16.0, *) {
+            scrollDisabled(disabled)
+        } else {
+            self
+        }
+    }
+}
+
 private let homeCreditLimitExpandAnimation = Animation.easeOut(duration: 0.4)
 private let homeCreditLimitCollapseAnimation = Animation.easeInOut(duration: 0.4)
 private let homeDashboardBottomPlaceholderHeight: CGFloat = 48
@@ -1482,7 +1539,16 @@ private struct HomeBottomTabBarButton: View {
     let inactiveAssetName: String
     let activeAssetName: String
     let isActive: Bool
+    let bounceToken: Int
     let action: () -> Void
+
+    @State private var dropletScaleX: CGFloat = 1
+    @State private var dropletScaleY: CGFloat = 1
+    @State private var dropletOffsetY: CGFloat = 0
+    @State private var innerRippleScale: CGFloat = 0.82
+    @State private var innerRippleOpacity: CGFloat = 0
+    @State private var outerRippleScale: CGFloat = 0.88
+    @State private var outerRippleOpacity: CGFloat = 0
 
     var body: some View {
         let contentSize = CGSize(width: isActive ? 62 : 60, height: 40)
@@ -1502,7 +1568,25 @@ private struct HomeBottomTabBarButton: View {
                             )
                         )
                         .frame(width: contentSize.width, height: contentSize.height)
+                        .overlay {
+                            ZStack {
+                                Capsule()
+                                    .stroke(Color.white.opacity(innerRippleOpacity), lineWidth: 1.6)
+                                    .scaleEffect(innerRippleScale)
+
+                                Capsule()
+                                    .stroke(Color.white.opacity(outerRippleOpacity), lineWidth: 1.2)
+                                    .scaleEffect(outerRippleScale)
+                            }
+                            .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+                        }
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                                .stroke(Color.white.opacity(0.30), lineWidth: 1)
+                        )
                         .shadow(color: Color(hex: 0x1176FF, opacity: 0.28), radius: 14, x: 0, y: 8)
+                        .scaleEffect(x: dropletScaleX, y: dropletScaleY, anchor: .center)
+                        .offset(y: dropletOffsetY)
                 }
 
                 VStack(spacing: 4) {
@@ -1523,6 +1607,61 @@ private struct HomeBottomTabBarButton: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
         }
         .buttonStyle(.plain)
+        .onChange(of: bounceToken) { _ in
+            guard isActive else {
+                return
+            }
+            playDropletBounce()
+        }
+    }
+
+    private func playDropletBounce() {
+        dropletScaleX = 1
+        dropletScaleY = 1
+        dropletOffsetY = 0
+        innerRippleScale = 0.82
+        innerRippleOpacity = 0
+        outerRippleScale = 0.88
+        outerRippleOpacity = 0
+
+        withAnimation(.spring(response: 0.14, dampingFraction: 0.56)) {
+            dropletScaleX = 1.23
+            dropletScaleY = 0.79
+            dropletOffsetY = -4
+            innerRippleScale = 0.95
+            innerRippleOpacity = 0.40
+            outerRippleScale = 1.02
+            outerRippleOpacity = 0.20
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.09) {
+            withAnimation(.spring(response: 0.22, dampingFraction: 0.52)) {
+                dropletScaleX = 0.93
+                dropletScaleY = 1.14
+                dropletOffsetY = 1.5
+                innerRippleScale = 1.10
+                innerRippleOpacity = 0.18
+                outerRippleScale = 1.24
+                outerRippleOpacity = 0.24
+            }
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.18) {
+            withAnimation(.easeOut(duration: 0.18)) {
+                innerRippleScale = 1.26
+                innerRippleOpacity = 0
+                outerRippleScale = 1.46
+                outerRippleOpacity = 0
+            }
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.24) {
+            withAnimation(.spring(response: 0.34, dampingFraction: 0.76)) {
+                dropletScaleX = 1
+                dropletScaleY = 1
+                dropletOffsetY = 0
+            }
+        }
     }
 }
 

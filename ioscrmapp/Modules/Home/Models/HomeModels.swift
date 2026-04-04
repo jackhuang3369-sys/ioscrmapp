@@ -175,6 +175,16 @@ struct HomeFeatureCarouselItem: Identifiable, Equatable, Sendable {
     }
 }
 
+struct HomeParallaxCarouselItem: Identifiable, Equatable, Sendable {
+    let assetName: String
+    let title: LocalizedTextValue
+    let subtitle: LocalizedTextValue
+
+    var id: String {
+        assetName
+    }
+}
+
 struct HomeDashboardSnapshot: Equatable, Sendable {
     let profile: HomeProfileSection
     let summary: HomeSummarySection

@@ -226,6 +226,28 @@
       "iPhone17": "iPhone 17 Slim，轻薄新登场",
       "spiderBrandNewDay": "SPIDER-MAN: BRAND NEW DAY"
     },
+    "parallax": {
+      "eyebrow": "视差场景",
+      "title": "手势驱动轮播实验",
+      "item": {
+        "snowMirror": {
+          "title": "雪山映湖",
+          "subtitle": "静谧雪峰与镜面湖水，在一次轻拖里缓缓同向滑过。"
+        },
+        "springField": {
+          "title": "春野晴空",
+          "subtitle": "明亮草地向前掠过，天空层次在后方慢慢跟随。"
+        },
+        "cliffGlow": {
+          "title": "崖边余晖",
+          "subtitle": "晚霞、山崖与远山，在柔和拖拽里拉开景深层次。"
+        },
+        "goldenVista": {
+          "title": "金色远景",
+          "subtitle": "蜿蜒公路通向群山，前后层在视差里逐步展开。"
+        }
+      }
+    },
     "service": {
       "dataPack": "流量包",
       "voicePack": "语音包",
