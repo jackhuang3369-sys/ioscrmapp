@@ -8,6 +8,7 @@ enum SceneNode {
 
     // MARK: Page A — Main Weather Scene
     static let sun           = "weather_sun"
+    static let birds         = "weather_birds"
     static let cloudMain     = "weather_cloud_main"
     static let cloudLeft     = "weather_cloud_left"
     static let cloudRight    = "weather_cloud_right"

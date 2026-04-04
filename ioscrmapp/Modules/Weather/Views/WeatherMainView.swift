@@ -24,7 +24,7 @@ struct WeatherMainView: View {
 
                     WeatherSceneView(scene: sceneManager.scene, manager: sceneManager)
                         .frame(height: proxy.size.height * 0.59)
-                        .padding(.top, 24)
+                        .padding(.top, 28)
                         .padding(.horizontal, 10)
                         .zIndex(1)
 
@@ -53,7 +53,7 @@ struct WeatherMainView: View {
                         sceneManager.setTemperature(entry.temperature, animated: true)
                     }
                     .frame(width: proxy.size.width * 0.8)
-                    .padding(.bottom, max(proxy.safeAreaInsets.bottom, 12) + 22)
+                    .padding(.bottom, max(proxy.safeAreaInsets.bottom, 12) + 24)
                 }
             }
             .ignoresSafeArea()

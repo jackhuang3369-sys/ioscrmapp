@@ -26,12 +26,12 @@ enum MockWeatherData {
 
     static let timeline: [WeatherTimelineEntry] = [
         .init(id: "now", label: "现在", temperature: 31, symbolName: "sun.max.fill", isCurrent: true),
-        .init(id: "09", label: "09", temperature: 30, symbolName: "sun.max.fill", isCurrent: false),
+        .init(id: "09", label: "09", temperature: 32, symbolName: "sun.max.fill", isCurrent: false),
         .init(id: "12", label: "12", temperature: 33, symbolName: "sun.max.fill", isCurrent: false),
         .init(id: "15", label: "15", temperature: 35, symbolName: "sun.max.fill", isCurrent: false),
         .init(id: "18", label: "18", temperature: 34, symbolName: "sun.max.fill", isCurrent: false),
-        .init(id: "21", label: "21", temperature: 30, symbolName: "sunset.fill", isCurrent: false),
-        .init(id: "00", label: "00", temperature: 27, symbolName: "moon.stars.fill", isCurrent: false),
-        .init(id: "03", label: "03", temperature: 25, symbolName: "moon.stars.fill", isCurrent: false)
+        .init(id: "21", label: "21", temperature: 25, symbolName: "sunset.fill", isCurrent: false),
+        .init(id: "00", label: "00", temperature: 23, symbolName: "moon.stars.fill", isCurrent: false),
+        .init(id: "03", label: "03", temperature: 21, symbolName: "moon.stars.fill", isCurrent: false)
     ]
 }
