@@ -35,6 +35,7 @@ struct HomeView: View {
     @State private var isSigningOut = false
     @State private var isCreditLimitExpanded = false
     @State private var signOutFailureMessageKey: String?
+    @State private var isParallaxCarouselDraggingHorizontally = false
 
     private let pageHorizontalPadding: CGFloat = 8
 
@@ -348,6 +349,7 @@ struct HomeView: View {
 
                             quickActionsSection
                             featuredCarouselSection
+                            parallaxCarouselSection
                             //servicesSection
                             Color.clear
                                 .frame(height: homeDashboardBottomPlaceholderHeight)
@@ -356,6 +358,7 @@ struct HomeView: View {
                     }
                     .padding(.bottom, DUSpacing.lg)
                 }
+                .homeScrollDisabled(isParallaxCarouselDraggingHorizontally)
                 .refreshable {
                     await viewModel.refresh()
                 }
@@ -830,6 +833,16 @@ struct HomeView: View {
             .padding(.horizontal, pageHorizontalPadding)
     }
 
+    private var parallaxCarouselSection: some View {
+        HomeParallaxCarouselView(
+            items: featuredCarouselItems,
+            onSelectItem: handleFeaturedCarouselSelection,
+            isParentScrollLocked: $isParallaxCarouselDraggingHorizontally
+        )
+            .padding(.top, 6)
+            .padding(.bottom, 10)
+    }
+
     private var servicesSection: some View {
         VStack(alignment: .leading, spacing: 14) {
             HStack {
@@ -1285,6 +1298,17 @@ struct HomeView: View {
                     }
                 }
             }
+        }
+    }
+}
+
+private extension View {
+    @ViewBuilder
+    func homeScrollDisabled(_ disabled: Bool) -> some View {
+        if #available(iOS 16.0, *) {
+            scrollDisabled(disabled)
+        } else {
+            self
         }
     }
 }

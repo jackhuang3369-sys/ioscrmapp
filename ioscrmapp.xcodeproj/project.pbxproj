@@ -76,6 +76,7 @@
 		A10000000000000000000044 /* MallAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000044 /* MallAPI.swift */; };
 		A10000000000000000000045 /* BadgeCenterAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000045 /* BadgeCenterAPI.swift */; };
 		A10000000000000000000046 /* HomeFeatureCarouselView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000046 /* HomeFeatureCarouselView.swift */; };
+		A10000000000000000000062 /* HomeParallaxCarouselView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000062 /* HomeParallaxCarouselView.swift */; };
 		B10000000000000000000001 /* BillingAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000001 /* BillingAPI.swift */; };
 		B10000000000000000000002 /* BillingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000002 /* BillingService.swift */; };
 		B10000000000000000000003 /* BillingModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000003 /* BillingModels.swift */; };
@@ -194,6 +195,7 @@
 		A20000000000000000000044 /* MallAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MallAPI.swift; sourceTree = "<group>"; };
 		A20000000000000000000045 /* BadgeCenterAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BadgeCenterAPI.swift; sourceTree = "<group>"; };
 		A20000000000000000000046 /* HomeFeatureCarouselView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeFeatureCarouselView.swift; sourceTree = "<group>"; };
+		A20000000000000000000062 /* HomeParallaxCarouselView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeParallaxCarouselView.swift; sourceTree = "<group>"; };
 		B20000000000000000000001 /* BillingAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BillingAPI.swift; sourceTree = "<group>"; };
 		B20000000000000000000002 /* BillingService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BillingService.swift; sourceTree = "<group>"; };
 		B20000000000000000000003 /* BillingModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BillingModels.swift; sourceTree = "<group>"; };
@@ -408,6 +410,7 @@
 		A3000000000000000000000B /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				A20000000000000000000062 /* HomeParallaxCarouselView.swift */,
 				A20000000000000000000046 /* HomeFeatureCarouselView.swift */,
 				A20000000000000000000006 /* HomeView.swift */,
 			);
@@ -1041,6 +1044,7 @@
 				A10000000000000000000042 /* HomeModels.swift in Sources */,
 				A10000000000000000000041 /* HomeService.swift in Sources */,
 				A10000000000000000000040 /* HomeAPI.swift in Sources */,
+				A10000000000000000000062 /* HomeParallaxCarouselView.swift in Sources */,
 				A10000000000000000000046 /* HomeFeatureCarouselView.swift in Sources */,
 				A10000000000000000000045 /* BadgeCenterAPI.swift in Sources */,
 				C10000000000000000000004 /* BadgeCenterView.swift in Sources */,
