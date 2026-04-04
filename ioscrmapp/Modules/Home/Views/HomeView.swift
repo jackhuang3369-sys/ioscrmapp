@@ -348,8 +348,9 @@ struct HomeView: View {
                             }
 
                             quickActionsSection
-                            featuredCarouselSection
-                            parallaxCarouselSection
+                            parallaxReelSection
+                            //featuredCarouselSection
+                            //parallaxCarouselSection
                             //servicesSection
                             Color.clear
                                 .frame(height: homeDashboardBottomPlaceholderHeight)
@@ -820,28 +821,35 @@ struct HomeView: View {
         .padding(.horizontal, pageHorizontalPadding)
     }
 
-    private var featuredCarouselSection: some View {
-        HomeFeatureCarouselView(items: featuredCarouselItems) { item in
+//    private var featuredCarouselSection: some View {
+//        HomeFeatureCarouselView(items: featuredCarouselItems) { item in
+//            handleFeaturedCarouselSelection(item)
+//        }
+//            .padding(.horizontal, 12)
+//            .padding(.top, 16)
+//            .padding(.bottom, 14)
+//            .background(Color.white)
+//            .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+//            .shadow(color: Color.black.opacity(0.08), radius: 14, x: 0, y: 8)
+//            .padding(.horizontal, pageHorizontalPadding)
+//    }
+
+    private var parallaxReelSection: some View {
+        HomeParallaxReelSectionView(items: featuredCarouselItems) { item in
             handleFeaturedCarouselSelection(item)
         }
-            .padding(.horizontal, 12)
-            .padding(.top, 16)
-            .padding(.bottom, 14)
-            .background(Color.white)
-            .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
-            .shadow(color: Color.black.opacity(0.08), radius: 14, x: 0, y: 8)
-            .padding(.horizontal, pageHorizontalPadding)
+        .padding(.horizontal, pageHorizontalPadding)
     }
 
-    private var parallaxCarouselSection: some View {
-        HomeParallaxCarouselView(
-            items: featuredCarouselItems,
-            onSelectItem: handleFeaturedCarouselSelection,
-            isParentScrollLocked: $isParallaxCarouselDraggingHorizontally
-        )
-            .padding(.top, 6)
-            .padding(.bottom, 10)
-    }
+//    private var parallaxCarouselSection: some View {
+//        HomeParallaxCarouselView(
+//            items: featuredCarouselItems,
+//            onSelectItem: handleFeaturedCarouselSelection,
+//            isParentScrollLocked: $isParallaxCarouselDraggingHorizontally
+//        )
+//            .padding(.top, 6)
+//            .padding(.bottom, 10)
+//    }
 
     private var servicesSection: some View {
         VStack(alignment: .leading, spacing: 14) {
@@ -1062,18 +1070,20 @@ struct HomeView: View {
     }
 
     private func handleFeaturedCarouselSelection(_ item: HomeFeatureCarouselItem) {
-        switch item.action {
-        case .none:
-            return
-        case .tickets:
-            isTicketsPresented = true
-        case .mall:
-            selectedTab = .mall
-        case let .videoDetail(videoID):
-            selectedTab = .video
-            requestedVideoID = videoID
-        case .weather:
-            isWeatherPresented = true
+        DispatchQueue.main.async {
+            switch item.action {
+            case .none:
+                return
+            case .tickets:
+                isTicketsPresented = true
+            case .mall:
+                selectedTab = .mall
+            case let .videoDetail(videoID):
+                selectedTab = .video
+                requestedVideoID = videoID
+            case .weather:
+                isWeatherPresented = true
+            }
         }
     }
 

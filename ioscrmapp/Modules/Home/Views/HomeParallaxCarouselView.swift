@@ -441,7 +441,7 @@ private struct HomeParallaxCarouselCaptionView: View {
     var body: some View {
         VStack(spacing: 4) {
             Text(title)
-                .font(.du(22, weight: .bold))
+                .font(.du(16, weight: .semibold))
                 .foregroundColor(DUTheme.ink)
                 .multilineTextAlignment(.center)
                 .lineLimit(1)
