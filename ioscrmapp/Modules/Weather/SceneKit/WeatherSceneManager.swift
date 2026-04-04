@@ -356,8 +356,12 @@ final class WeatherSceneManager: ObservableObject {
         let manualScale: Float
 
         switch digitName {
+        case "1":
+            manualScale = 0.74
         case "2":
             manualScale = 0.92
+        case "3":
+            manualScale = 0.74
         case "4":
             manualScale = 0.84
         default:
