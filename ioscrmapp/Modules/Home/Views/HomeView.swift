@@ -35,8 +35,15 @@ struct HomeView: View {
     @State private var isSigningOut = false
     @State private var isCreditLimitExpanded = false
     @State private var signOutFailureMessageKey: String?
+    @State private var isParallaxCarouselDraggingHorizontally = false
 
-    private let pageHorizontalPadding: CGFloat = 8
+    private let pageHorizontalPadding: CGFloat = DUSpacing.sm
+    private let headerContentHorizontalPadding: CGFloat = 14
+    private let accountCardBottomSpacingScale: CGFloat = 0.85 * 0.7 * 0.85
+    private let parallaxReelTopSpacingScale: CGFloat = 0.8
+    private var homeDashboardSectionSpacing: CGFloat { DUSpacing.md * accountCardBottomSpacingScale }
+    private var headerBottomPadding: CGFloat { 18 * accountCardBottomSpacingScale }
+    private var parallaxReelTopSpacing: CGFloat { DUSpacing.md * parallaxReelTopSpacingScale }
 
     private let quickActions: [HomeItem] = [
         .init(title: .key("home.quick.recharge"), assetName: "HomeQuickRechargeDesignIcon", action: .recharge),
@@ -180,8 +187,8 @@ struct HomeView: View {
             if isAIChatPresented {
                 GeometryReader { proxy in
                     let topInset = max(proxy.safeAreaInsets.top + 14, 28)
-                    let horizontalInset: CGFloat = 0
-                    let sheetHeight = max(proxy.size.height - topInset, 620)
+                    let bottomSafeArea = proxy.safeAreaInsets.bottom
+                    let sheetHeight = max(proxy.size.height - topInset + bottomSafeArea, 620)
 
                     ZStack(alignment: .bottom) {
                         Color.black.opacity(0.3)
@@ -205,7 +212,6 @@ struct HomeView: View {
                         }
                         .frame(maxWidth: .infinity)
                         .frame(height: sheetHeight)
-                        .padding(.horizontal, horizontalInset)
                         .background(
                             ZStack {
                                 LinearGradient(
@@ -224,9 +230,9 @@ struct HomeView: View {
                                     .clipped()
                             }
                         )
-                        .clipShape(RoundedRectangle(cornerRadius: 36, style: .continuous))
+                        .clipShape(TopRoundedRectangle(radius: 36))
                         .overlay(
-                            RoundedRectangle(cornerRadius: 36, style: .continuous)
+                            TopRoundedRectangle(radius: 36)
                                 .stroke(
                                     LinearGradient(
                                         colors: [.white.opacity(0.45), .white.opacity(0.08), .white.opacity(0.25)],
@@ -240,6 +246,7 @@ struct HomeView: View {
                         .shadow(color: Color.black.opacity(0.25), radius: 20, x: 0, y: -5)
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .ignoresSafeArea(edges: .bottom)
                 }
                 .zIndex(100)
                 .transition(.move(edge: .bottom).combined(with: .opacity))
@@ -335,19 +342,23 @@ struct HomeView: View {
         if let dashboard = viewModel.dashboard {
             GeometryReader { proxy in
                 ScrollView(showsIndicators: false) {
-                    VStack(spacing: 12) {
+                    VStack(spacing: homeDashboardSectionSpacing) {
                         header(
                             topInset: proxy.safeAreaInsets.top,
                             dashboard: dashboard
                         )
 
-                        VStack(spacing: 12) {
+                        VStack(spacing: DUSpacing.md) {
                             if let bannerMessage = viewModel.bannerMessage {
                                 inlineBanner(bannerMessage)
                             }
 
-                            quickActionsSection
-                            featuredCarouselSection
+                            VStack(spacing: parallaxReelTopSpacing) {
+                                quickActionsSection
+                                parallaxReelSection
+                            }
+                            //featuredCarouselSection
+                            //parallaxCarouselSection
                             //servicesSection
                             Color.clear
                                 .frame(height: homeDashboardBottomPlaceholderHeight)
@@ -356,6 +367,7 @@ struct HomeView: View {
                     }
                     .padding(.bottom, DUSpacing.lg)
                 }
+                .homeScrollDisabled(isParallaxCarouselDraggingHorizontally)
                 .refreshable {
                     await viewModel.refresh()
                 }
@@ -402,111 +414,114 @@ struct HomeView: View {
         dashboard: HomeDashboardSnapshot
     ) -> some View {
         VStack(spacing: 14) {
-            HStack(alignment: .center) {
-                HStack(spacing: 6) {
-                    Image(systemName: "sun.max.fill")
-                        .font(homeFont(13, weight: .semibold))
-                        .foregroundColor(Color(hex: 0xFFD351))
-                        .shadow(color: Color(hex: 0xFFD351, opacity: 0.34), radius: 6)
+            VStack(spacing: 14) {
+                HStack(alignment: .center) {
+                    HStack(spacing: 6) {
+                        Image(systemName: "sun.max.fill")
+                            .font(homeFont(13, weight: .semibold))
+                            .foregroundColor(Color(hex: 0xFFD351))
+                            .shadow(color: Color(hex: 0xFFD351, opacity: 0.34), radius: 6)
 
-                    Text(localized("home.greeting.morning"))
-                        .font(homeFont(13, weight: .medium))
-                        .foregroundColor(.white.opacity(0.86))
-                }
-
-                Spacer()
-
-                HStack(spacing: 10) {
-                    HomeHeaderActionButton(assetName: "HomeSearchButtonIcon") {
-                        placeholderMessage = .key("home.placeholder.search")
+                        Text(localized("home.greeting.morning"))
+                            .font(homeFont(13, weight: .medium))
+                            .foregroundColor(.white.opacity(0.86))
                     }
-                    HomeHeaderActionButton(assetName: "HomeNotificationButtonIcon") {
-                        isMessageCenterPresented = true
-                    }
-                }
-            }
 
-            HStack(alignment: .center, spacing: 12) {
-                HStack(spacing: 12) {
-                    Image("HomeHeroAvatar")
-                        .renderingMode(.original)
-                        .resizable()
-                        .scaledToFill()
-                        .frame(width: 56, height: 56)
-                        .clipShape(Circle())
+                    Spacer()
 
-                    VStack(alignment: .leading, spacing: 0) {
-                        Text(dashboard.profile.displayName)
-                            .font(homeFont(15, weight: .semibold))
-                            .foregroundColor(.white)
-                            .lineLimit(1)
-
-                        HStack(spacing: 6) {
-                            if let packageName = localizedPackageName(for: dashboard.profile.packageName) {
-                                Text(packageName)
-                                    .lineLimit(1)
-                            }
-
-                            if localizedPackageName(for: dashboard.profile.packageName) != nil,
-                               profilePointsText != nil {
-                                Text("|")
-                                    .opacity(0.62)
-                            }
-
-                            if let profilePointsText {
-                                Text(profilePointsText)
-                                    .lineLimit(1)
-                            }
+                    HStack(spacing: 10) {
+                        HomeHeaderActionButton(assetName: "HomeSearchButtonIcon") {
+                            placeholderMessage = .key("home.placeholder.search")
                         }
-                        .font(homeFont(11, weight: .medium))
-                        .foregroundColor(.white.opacity(0.84))
-                        .padding(.top, 5)
+                        HomeHeaderActionButton(assetName: "HomeNotificationButtonIcon") {
+                            isMessageCenterPresented = true
+                        }
+                    }
+                }
 
-                        HStack(spacing: 8) {
-                            Text(dashboard.profile.serviceNumber)
-                                .font(homeFont(10, weight: .medium))
-                                .foregroundColor(.white.opacity(0.92))
-                                .padding(.horizontal, 7)
-                                .padding(.vertical, 2)
-                                .background(
-                                    Capsule()
-                                        .fill(.white.opacity(0.14))
-                                )
+                HStack(alignment: .center, spacing: 12) {
+                    HStack(spacing: 12) {
+                        Image("HomeHeroAvatar")
+                            .renderingMode(.original)
+                            .resizable()
+                            .scaledToFill()
+                            .frame(width: 56, height: 56)
+                            .clipShape(Circle())
 
-                            if let networkStatus = dashboard.profile.networkStatus {
-                                Text(localized(networkStatus.textValue))
+                        VStack(alignment: .leading, spacing: 0) {
+                            Text(dashboard.profile.displayName)
+                                .font(homeFont(15, weight: .semibold))
+                                .foregroundColor(.white)
+                                .lineLimit(1)
+
+                            HStack(spacing: 6) {
+                                if let packageName = localizedPackageName(for: dashboard.profile.packageName) {
+                                    Text(packageName)
+                                        .lineLimit(1)
+                                }
+
+                                if localizedPackageName(for: dashboard.profile.packageName) != nil,
+                                   profilePointsText != nil {
+                                    Text("|")
+                                        .opacity(0.62)
+                                }
+
+                                if let profilePointsText {
+                                    Text(profilePointsText)
+                                        .lineLimit(1)
+                                }
+                            }
+                            .font(homeFont(11, weight: .medium))
+                            .foregroundColor(.white.opacity(0.84))
+                            .padding(.top, 5)
+
+                            HStack(spacing: 8) {
+                                Text(dashboard.profile.serviceNumber)
                                     .font(homeFont(10, weight: .medium))
-                                    .foregroundColor(.white.opacity(0.72))
-                                    .lineLimit(1)
+                                    .foregroundColor(.white.opacity(0.92))
+                                    .padding(.horizontal, 7)
+                                    .padding(.vertical, 2)
+                                    .background(
+                                        Capsule()
+                                            .fill(.white.opacity(0.14))
+                                    )
+
+                                if let networkStatus = dashboard.profile.networkStatus {
+                                    Text(localized(networkStatus.textValue))
+                                        .font(homeFont(10, weight: .medium))
+                                        .foregroundColor(.white.opacity(0.72))
+                                        .lineLimit(1)
+                                }
                             }
+                            .padding(.top, 8)
                         }
-                        .padding(.top, 8)
+                    }
+
+                    Spacer(minLength: 8)
+
+                    HStack(spacing: 6) {
+                        Image("HomeHeroBadgeIcon")
+                            .renderingMode(.original)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 18, height: 18)
+
+                        Text(localized("home.profile.advanced"))
+                            .font(homeFont(9, weight: .medium))
+                            .foregroundColor(.white.opacity(0.82))
                     }
                 }
-
-                Spacer(minLength: 8)
-
-                HStack(spacing: 6) {
-                    Image("HomeHeroBadgeIcon")
-                        .renderingMode(.original)
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 18, height: 18)
-
-                    Text(localized("home.profile.advanced"))
-                        .font(homeFont(9, weight: .medium))
-                        .foregroundColor(.white.opacity(0.82))
-                }
             }
+            .padding(.horizontal, headerContentHorizontalPadding)
 
             accountCard(
                 summary: dashboard.summary,
                 usage: dashboard.usage
             )
+            .padding(.horizontal, pageHorizontalPadding)
         }
-        .padding(.horizontal, 14)
         .padding(.top, max(topInset, 8) + 6)
-        .padding(.bottom, 18)
+        .padding(.bottom, headerBottomPadding)
     }
 
     private func accountCard(
@@ -817,18 +832,35 @@ struct HomeView: View {
         .padding(.horizontal, pageHorizontalPadding)
     }
 
-    private var featuredCarouselSection: some View {
-        HomeFeatureCarouselView(items: featuredCarouselItems) { item in
+//    private var featuredCarouselSection: some View {
+//        HomeFeatureCarouselView(items: featuredCarouselItems) { item in
+//            handleFeaturedCarouselSelection(item)
+//        }
+//            .padding(.horizontal, 12)
+//            .padding(.top, 16)
+//            .padding(.bottom, 14)
+//            .background(Color.white)
+//            .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+//            .shadow(color: Color.black.opacity(0.08), radius: 14, x: 0, y: 8)
+//            .padding(.horizontal, pageHorizontalPadding)
+//    }
+
+    private var parallaxReelSection: some View {
+        HomeParallaxReelSectionView(items: featuredCarouselItems) { item in
             handleFeaturedCarouselSelection(item)
         }
-            .padding(.horizontal, 12)
-            .padding(.top, 16)
-            .padding(.bottom, 14)
-            .background(Color.white)
-            .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
-            .shadow(color: Color.black.opacity(0.08), radius: 14, x: 0, y: 8)
-            .padding(.horizontal, pageHorizontalPadding)
+        .padding(.horizontal, pageHorizontalPadding)
     }
+
+//    private var parallaxCarouselSection: some View {
+//        HomeParallaxCarouselView(
+//            items: featuredCarouselItems,
+//            onSelectItem: handleFeaturedCarouselSelection,
+//            isParentScrollLocked: $isParallaxCarouselDraggingHorizontally
+//        )
+//            .padding(.top, 6)
+//            .padding(.bottom, 10)
+//    }
 
     private var servicesSection: some View {
         VStack(alignment: .leading, spacing: 14) {
@@ -1049,18 +1081,20 @@ struct HomeView: View {
     }
 
     private func handleFeaturedCarouselSelection(_ item: HomeFeatureCarouselItem) {
-        switch item.action {
-        case .none:
-            return
-        case .tickets:
-            isTicketsPresented = true
-        case .mall:
-            selectedTab = .mall
-        case let .videoDetail(videoID):
-            selectedTab = .video
-            requestedVideoID = videoID
-        case .weather:
-            isWeatherPresented = true
+        DispatchQueue.main.async {
+            switch item.action {
+            case .none:
+                return
+            case .tickets:
+                isTicketsPresented = true
+            case .mall:
+                selectedTab = .mall
+            case let .videoDetail(videoID):
+                selectedTab = .video
+                requestedVideoID = videoID
+            case .weather:
+                isWeatherPresented = true
+            }
         }
     }
 
@@ -1285,6 +1319,17 @@ struct HomeView: View {
                     }
                 }
             }
+        }
+    }
+}
+
+private extension View {
+    @ViewBuilder
+    func homeScrollDisabled(_ disabled: Bool) -> some View {
+        if #available(iOS 16.0, *) {
+            scrollDisabled(disabled)
+        } else {
+            self
         }
     }
 }
@@ -1666,6 +1711,28 @@ private struct HomePrimaryPillButtonStyle: ButtonStyle {
             )
             .shadow(color: Color(hex: 0x287FFF, opacity: configuration.isPressed ? 0.22 : 0.38), radius: 10, x: 0, y: 8)
             .scaleEffect(configuration.isPressed ? 0.98 : 1)
+    }
+}
+
+private struct TopRoundedRectangle: Shape {
+    let radius: CGFloat
+
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        path.move(to: CGPoint(x: rect.minX, y: rect.maxY))
+        path.addLine(to: CGPoint(x: rect.minX, y: rect.minY + radius))
+        path.addQuadCurve(
+            to: CGPoint(x: rect.minX + radius, y: rect.minY),
+            control: CGPoint(x: rect.minX, y: rect.minY)
+        )
+        path.addLine(to: CGPoint(x: rect.maxX - radius, y: rect.minY))
+        path.addQuadCurve(
+            to: CGPoint(x: rect.maxX, y: rect.minY + radius),
+            control: CGPoint(x: rect.maxX, y: rect.minY)
+        )
+        path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
+        path.closeSubpath()
+        return path
     }
 }
 

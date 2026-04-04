@@ -226,6 +226,28 @@
       "iPhone17": "iPhone 17 Slim بخفة جديدة",
       "spiderBrandNewDay": "SPIDER-MAN: BRAND NEW DAY"
     },
+    "parallax": {
+      "eyebrow": "مشاهد بارالاكس",
+      "title": "دراسة Carousel تقاد بالإيماءة",
+      "item": {
+        "snowMirror": {
+          "title": "مرآة الثلج",
+          "subtitle": "قمم هادئة وبحيرة زجاجية تتحركان في اتجاه واحد بهدوء."
+        },
+        "springField": {
+          "title": "حقل الربيع",
+          "subtitle": "مرج مضيء ينزلق في المقدمة بينما السماء تتبعه بإيقاع أبطأ."
+        },
+        "cliffGlow": {
+          "title": "وهج الجرف",
+          "subtitle": "غروب دافئ فوق الحافة الجبلية مع عمق ناعم أثناء السحب."
+        },
+        "goldenVista": {
+          "title": "المشهد الذهبي",
+          "subtitle": "طريق متعرج وجبال بعيدة تتكشف بطبقات بارالاكس متتابعة."
+        }
+      }
+    },
     "service": {
       "dataPack": "باقة بيانات",
       "voicePack": "باقة دقائق",
