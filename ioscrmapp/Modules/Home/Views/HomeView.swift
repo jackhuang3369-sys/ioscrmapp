@@ -893,7 +893,6 @@ struct HomeView: View {
         HomeParallaxReelSectionView(items: featuredCarouselItems) { item in
             handleFeaturedCarouselSelection(item)
         }
-        .padding(.horizontal, pageHorizontalPadding)
     }
 
 //    private var parallaxCarouselSection: some View {

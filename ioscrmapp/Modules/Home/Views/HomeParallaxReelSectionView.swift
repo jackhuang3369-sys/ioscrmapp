@@ -88,15 +88,10 @@ private struct HomeParallaxReelIOS17ContentView: View {
                         GeometryReader { proxy in
                             let cardSize = CGSize(width: proxy.size.width, height: cardHeight)
                             let itemFrame = proxy.frame(in: .scrollView)
-                            let imageWidth = homeParallaxReelImageWidth(
-                                cardWidth: cardSize.width,
-                                minimumOverflow: 120
-                            )
-                            let proposedOffset = -min(itemFrame.minX * 0.8, proxy.size.width * 0.8)
-                            let imageOffset = homeParallaxReelClampedImageOffset(
-                                cardWidth: cardSize.width,
-                                imageWidth: imageWidth,
-                                proposedOffset: proposedOffset
+                            let imageOffset = homeParallaxReelCenteredImageOffset(
+                                cardMidX: itemFrame.midX,
+                                viewportWidth: size.width,
+                                parallaxFactor: 0.8
                             )
                             let distanceRatio = homeParallaxReelDistanceRatio(
                                 cardMidX: itemFrame.midX,
@@ -110,7 +105,7 @@ private struct HomeParallaxReelIOS17ContentView: View {
                             HomeParallaxReelCardUnitView(
                                 item: item,
                                 cardSize: cardSize,
-                                imageWidth: imageWidth,
+                                imageWidth: cardSize.width * 1.36,
                                 imageOffsetX: imageOffset,
                                 titleWidth: max(cardSize.width - (titleHorizontalInset * 2), 0),
                                 titleSpacing: titleSpacing,
@@ -156,14 +151,7 @@ private struct HomeParallaxReelLegacyCardView: View {
         GeometryReader { proxy in
             let itemFrame = proxy.frame(in: .global)
             let distanceRatio = normalizedDistanceRatio(itemFrame: itemFrame)
-            let imageWidth = homeParallaxReelImageWidth(
-                cardWidth: cardSize.width,
-                minimumOverflow: 136
-            )
-            let imageOffset = parallaxOffset(
-                itemFrame: itemFrame,
-                imageWidth: imageWidth
-            )
+            let imageOffset = parallaxOffset(itemFrame: itemFrame)
             let scaleX = 0.94 + (distanceRatio * 0.06)
             let scaleY = 0.82 + (distanceRatio * 0.18)
             let saturation = 1 - (distanceRatio * 0.62)
@@ -172,7 +160,7 @@ private struct HomeParallaxReelLegacyCardView: View {
             HomeParallaxReelCardUnitView(
                 item: item,
                 cardSize: cardSize,
-                imageWidth: imageWidth,
+                imageWidth: cardSize.width * 1.42,
                 imageOffsetX: imageOffset,
                 titleWidth: max(cardSize.width - (titleHorizontalInset * 2), 0),
                 titleSpacing: titleSpacing,
@@ -199,12 +187,11 @@ private struct HomeParallaxReelLegacyCardView: View {
         )
     }
 
-    private func parallaxOffset(itemFrame: CGRect, imageWidth: CGFloat) -> CGFloat {
-        let relativeOffset = itemFrame.minX - viewportFrame.minX
-        return homeParallaxReelClampedImageOffset(
-            cardWidth: cardSize.width,
-            imageWidth: imageWidth,
-            proposedOffset: -(relativeOffset * 0.26)
+    private func parallaxOffset(itemFrame: CGRect) -> CGFloat {
+        homeParallaxReelCenteredImageOffset(
+            cardMidX: itemFrame.midX - viewportFrame.minX,
+            viewportWidth: viewportFrame.width,
+            parallaxFactor: 0.26
         )
     }
 }
@@ -309,18 +296,12 @@ private func homeParallaxReelDistanceRatio(
     return min(distance / safeViewportWidth, 1)
 }
 
-private func homeParallaxReelImageWidth(
-    cardWidth: CGFloat,
-    minimumOverflow: CGFloat
+private func homeParallaxReelCenteredImageOffset(
+    cardMidX: CGFloat,
+    viewportWidth: CGFloat,
+    parallaxFactor: CGFloat
 ) -> CGFloat {
-    max(cardWidth * 1.36, cardWidth + minimumOverflow)
-}
-
-private func homeParallaxReelClampedImageOffset(
-    cardWidth: CGFloat,
-    imageWidth: CGFloat,
-    proposedOffset: CGFloat
-) -> CGFloat {
-    let maxOffset = max((imageWidth - cardWidth) / 2, 0)
-    return min(max(proposedOffset, -maxOffset), maxOffset)
+    let viewportMidX = max(viewportWidth, 1) / 2
+    let centerDelta = cardMidX - viewportMidX
+    return -(centerDelta * parallaxFactor)
 }
