@@ -679,7 +679,7 @@ struct AIChatView: View {
         VStack(spacing: isCompactHeight ? 10 : 12) {
             AIChatThinkingIndicatorView(isCompactHeight: isCompactHeight)
 
-            Text("Tinking...")
+            Text("Thinking...")
                 .font(.system(size: isCompactHeight ? 16 : 18, weight: .medium, design: .rounded))
                 .foregroundColor(.white.opacity(0.88))
                 .multilineTextAlignment(.center)
