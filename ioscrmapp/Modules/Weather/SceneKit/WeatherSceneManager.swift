@@ -43,7 +43,7 @@ final class WeatherSceneManager: ObservableObject {
 
         let ambient = SCNLight()
         ambient.type = .ambient
-        ambient.intensity = 700
+        ambient.intensity = 1000   // 提高环境光，防止暗部全黑
         ambient.color = UIColor(white: 0.85, alpha: 1)
         let ambientNode = SCNNode()
         ambientNode.light = ambient
@@ -67,6 +67,18 @@ final class WeatherSceneManager: ObservableObject {
         rimNode.eulerAngles = SCNVector3(0.35, -.pi + 0.3, 0)
         scene.rootNode.addChildNode(rimNode)
 
+        // ── 右侧棱角补光：从摄像机右上方照射，照亮数字有棱角的右侧面 ──
+        // 调整 intensity 控制强度，eulerAngles.y 控制左右方向（负值=来自右侧）
+        let rightFill = SCNLight()
+        rightFill.type = .directional
+        rightFill.intensity = 700
+        rightFill.color = UIColor(red: 0.95, green: 0.97, blue: 1.0, alpha: 1)
+        let rightFillNode = SCNNode()
+        rightFillNode.light = rightFill
+        // Y=-0.6 ≈ 来自右前方约 34°，既补右侧面又不造成过度阴影
+        rightFillNode.eulerAngles = SCNVector3(-0.2, -0.6, 0)
+        scene.rootNode.addChildNode(rightFillNode)
+
         let root = SCNNode()
         root.name = "weather_root"
         root.position = SCNVector3(0, -1.94, 0)
@@ -82,7 +94,8 @@ final class WeatherSceneManager: ObservableObject {
         rotatingGroup.addChildNode(sun)
 
         let digits = makeTemperatureNode(text: "\(currentTemperature)")
-        digits.position = SCNVector3(0, -2.12, 0.12)
+        // ── 数字位置：Y 值越小越靠下（如需微调往下移，减小 Y 值）──
+        digits.position = SCNVector3(0, -2.3, 0.12)
         rotatingGroup.addChildNode(digits)
         temperatureNode = digits
 
@@ -338,7 +351,8 @@ final class WeatherSceneManager: ObservableObject {
     private func makeDigitGlyph(for character: Character) -> (node: SCNNode, width: Float)? {
         guard character.isNumber else { return nil }
         let digitName = String(character)
-        guard let payload = loadNormalizedModelNode(named: digitName, fileExtension: "obj", targetHeight: 6.15) else {
+        // ── 数字大小调整入口：修改 targetHeight 可整体缩放字体（数值越大越大）──
+        guard let payload = loadNormalizedModelNode(named: digitName, fileExtension: "obj", targetHeight: 7.5) else {
             return nil
         }
 
@@ -349,8 +363,9 @@ final class WeatherSceneManager: ObservableObject {
     }
 
     private func normalizeDigitPayload(_ payload: (node: SCNNode, size: SCNVector3), for digitName: String) -> (node: SCNNode, width: Float) {
-        let maxWidth: Float = 2.2
-        let maxDepth: Float = 0.72
+        // maxWidth/maxDepth 与 targetHeight 同步缩放，避免个别数字被过度压缩
+        let maxWidth: Float = 2.68
+        let maxDepth: Float = 0.88
         let widthScale = payload.size.x > maxWidth ? maxWidth / payload.size.x : 1
         let depthScale = payload.size.z > maxDepth ? maxDepth / payload.size.z : 1
         let manualScale: Float
@@ -363,7 +378,9 @@ final class WeatherSceneManager: ObservableObject {
         case "3":
             manualScale = 0.74
         case "4":
-            manualScale = 0.84
+            manualScale = 0.74 // 字形偏宽，手动收窄保持视觉等高
+        case "5":
+            manualScale = 0.74
         default:
             manualScale = 1
         }
@@ -427,9 +444,10 @@ final class WeatherSceneManager: ObservableObject {
         let material = SCNMaterial()
         material.lightingModel     = .physicallyBased
         material.diffuse.contents  = image
-        material.emission.contents = image
+        // emission 改为低强度暖色，避免全强度叠加纹理图片导致表面发糊
+        material.emission.contents = UIColor(red: 0.55, green: 0.06, blue: 0.02, alpha: 1)
         material.metalness.contents = Float(0.0)
-        material.roughness.contents = Float(0.72)
+        material.roughness.contents = Float(0.62)  // 稍降粗糙度，纹理细节更清晰
         material.isDoubleSided     = true
         geometry.materials = [material]
     }
@@ -448,11 +466,13 @@ final class WeatherSceneManager: ObservableObject {
 
     private func makeTemperatureDigitMaterial() -> SCNMaterial {
         let material = SCNMaterial()
-        material.lightingModel = .physicallyBased
-        material.diffuse.contents = UIColor(red: 0.10, green: 0.10, blue: 0.11, alpha: 1)
-        material.metalness.contents = Float(0.52)
-        material.roughness.contents = Float(0.22)
-        material.specular.contents = UIColor(white: 0.96, alpha: 1)
+        material.lightingModel      = .physicallyBased
+        material.diffuse.contents   = UIColor(red: 0.10, green: 0.10, blue: 0.11, alpha: 1)
+        // metalness 0.18：OBJ 网格没有切线数据，纯非金属+高粗糙度会导致侧面全黑；
+        // 适量金属度借助 Fresnel 效应补亮边缘面，同时保留磨砂哑光整体质感
+        material.metalness.contents = Float(0.18)
+        material.roughness.contents = Float(0.90)  // 高粗糙度 = 哑光磨砂感
+        material.specular.contents  = UIColor(white: 0.28, alpha: 1) // 微弱高光定义棱角
         return material
     }
 
@@ -460,7 +480,7 @@ final class WeatherSceneManager: ObservableObject {
         guard let root = conditionGroup else { return }
 
         let replacement = makeTemperatureNode(text: "\(currentTemperature)")
-        replacement.position = SCNVector3(0, -2.02, 0.12)
+        replacement.position = SCNVector3(0, -2.3, 0.12) // 同步 buildScene 数字位置
         replacement.opacity = animated ? 0 : 1
         root.addChildNode(replacement)
 
