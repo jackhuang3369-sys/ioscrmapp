@@ -17,11 +17,22 @@ struct RechargeContainerView: View {
     @State private var draftStartDate = Date()
     @State private var draftEndDate = Date()
     @State private var expandedDateField: RechargeDateFilterField?
+    private let session: CustSubInfo
+    private let aiChatService: any AIChatServicing
+    private let onAIChatNavigation: (AIChatNavigationTarget) -> Void
 
-    init(session: CustSubInfo, rechargeService: any RechargeServicing) {
+    init(
+        session: CustSubInfo,
+        rechargeService: any RechargeServicing,
+        aiChatService: any AIChatServicing,
+        onAIChatNavigation: @escaping (AIChatNavigationTarget) -> Void = { _ in }
+    ) {
+        self.session = session
         _viewModel = StateObject(
             wrappedValue: RechargeViewModel(session: session, rechargeService: rechargeService)
         )
+        self.aiChatService = aiChatService
+        self.onAIChatNavigation = onAIChatNavigation
     }
 
     var body: some View {
@@ -117,6 +128,11 @@ struct RechargeContainerView: View {
                 }
             )
         }
+        .businessAIAssistant(
+            session: session,
+            aiChatService: aiChatService,
+            onNavigate: handleAIChatNavigation(_:)
+        )
     }
 
     private var orderDetailNavigationLink: some View {
@@ -865,6 +881,26 @@ struct RechargeContainerView: View {
 
     private func localized(_ value: LocalizedTextValue?) -> String {
         languageStore.string(value)
+    }
+
+    private func handleAIChatNavigation(_ target: AIChatNavigationTarget) {
+        guard shouldForwardAIChatNavigation(target) else {
+            return
+        }
+
+        dismiss()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+            onAIChatNavigation(target)
+        }
+    }
+
+    private func shouldForwardAIChatNavigation(_ target: AIChatNavigationTarget) -> Bool {
+        switch target {
+        case .recharge, .external:
+            return false
+        default:
+            return true
+        }
     }
 
     private static let filterDateFormatter: DateFormatter = {

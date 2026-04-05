@@ -6,7 +6,20 @@ struct WeatherMainView: View {
     @StateObject private var sceneManager = WeatherSceneManager(temperature: MockWeatherData.today.temperature)
     @State private var selectedTimelineID = MockWeatherData.timeline.first?.id ?? "now"
 
+    private let session: CustSubInfo
+    private let aiChatService: any AIChatServicing
+    private let onAIChatNavigation: (AIChatNavigationTarget) -> Void
     private let weather = MockWeatherData.today
+
+    init(
+        session: CustSubInfo,
+        aiChatService: any AIChatServicing,
+        onAIChatNavigation: @escaping (AIChatNavigationTarget) -> Void = { _ in }
+    ) {
+        self.session = session
+        self.aiChatService = aiChatService
+        self.onAIChatNavigation = onAIChatNavigation
+    }
 
     private var selectedEntry: WeatherTimelineEntry {
         MockWeatherData.timeline.first(where: { $0.id == selectedTimelineID }) ?? MockWeatherData.timeline[0]
@@ -63,6 +76,11 @@ struct WeatherMainView: View {
             WeatherAudioPlayer.shared.playDetailedEnter()
             sceneManager.setTemperature(selectedEntry.temperature, animated: false)
         }
+        .businessAIAssistant(
+            session: session,
+            aiChatService: aiChatService,
+            onNavigate: handleAIChatNavigation(_:)
+        )
     }
 
     private var background: some View {
@@ -118,5 +136,25 @@ struct WeatherMainView: View {
                 .foregroundColor(Color.black.opacity(0.30))
         }
         .padding(.top, 12)
+    }
+
+    private func handleAIChatNavigation(_ target: AIChatNavigationTarget) {
+        guard shouldForwardAIChatNavigation(target) else {
+            return
+        }
+
+        dismiss()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+            onAIChatNavigation(target)
+        }
+    }
+
+    private func shouldForwardAIChatNavigation(_ target: AIChatNavigationTarget) -> Bool {
+        switch target {
+        case .external:
+            return false
+        default:
+            return true
+        }
     }
 }

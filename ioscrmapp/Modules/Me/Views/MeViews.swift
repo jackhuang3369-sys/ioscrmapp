@@ -2,37 +2,46 @@ import SwiftUI
 
 struct MeContainerView: View {
     @EnvironmentObject private var languageStore: AppLanguageStore
+    @AppStorage(AIAssistantPreferences.isBusinessEntryHiddenKey) private var isBusinessAIAssistantHidden = false
     @StateObject private var viewModel: MeViewModel
     @State private var isRechargePresented = false
+
+    private let bottomTabBarPlaceholderHeight: CGFloat = 120
 
     private let session: CustSubInfo
     private let billingService: any BillingServicing
     private let rechargeService: any RechargeServicing
     private let badgeCenterService: any BadgeCenterServicing
+    private let aiChatService: any AIChatServicing
     private let showRechargeEntry: Bool
     private let isSigningOut: Bool
     private let onSignOut: () -> Void
+    private let onAIChatNavigation: (AIChatNavigationTarget) -> Void
 
     init(
         session: CustSubInfo,
         billingService: any BillingServicing,
         rechargeService: any RechargeServicing,
         badgeCenterService: any BadgeCenterServicing,
+        aiChatService: any AIChatServicing,
         meService: any MeServicing,
         showRechargeEntry: Bool = false,
         isSigningOut: Bool = false,
-        onSignOut: @escaping () -> Void = {}
+        onSignOut: @escaping () -> Void = {},
+        onAIChatNavigation: @escaping (AIChatNavigationTarget) -> Void = { _ in }
     ) {
         self.session = session
         self.billingService = billingService
         self.rechargeService = rechargeService
         self.badgeCenterService = badgeCenterService
+        self.aiChatService = aiChatService
         self.showRechargeEntry = showRechargeEntry
         _viewModel = StateObject(
             wrappedValue: MeViewModel(session: session, meService: meService)
         )
         self.isSigningOut = isSigningOut
         self.onSignOut = onSignOut
+        self.onAIChatNavigation = onAIChatNavigation
     }
 
     var body: some View {
@@ -69,16 +78,33 @@ struct MeContainerView: View {
                 }
             )
         }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            Color.clear
+                .frame(height: bottomTabBarPlaceholderHeight)
+                .accessibilityHidden(true)
+        }
         .fullScreenCover(isPresented: $viewModel.isBillingPresented) {
-            BillingContainerView(session: session, billingService: billingService)
+            BillingContainerView(
+                session: session,
+                billingService: billingService,
+                aiChatService: aiChatService,
+                onAIChatNavigation: onAIChatNavigation
+            )
         }
         .fullScreenCover(isPresented: $isRechargePresented) {
-            RechargeContainerView(session: session, rechargeService: rechargeService)
+            RechargeContainerView(
+                session: session,
+                rechargeService: rechargeService,
+                aiChatService: aiChatService,
+                onAIChatNavigation: onAIChatNavigation
+            )
         }
         .fullScreenCover(isPresented: $viewModel.isBadgeCenterPresented) {
             BadgeCenterContainerView(
                 session: session,
-                badgeCenterService: badgeCenterService
+                badgeCenterService: badgeCenterService,
+                aiChatService: aiChatService,
+                onAIChatNavigation: onAIChatNavigation
             )
         }
     }
@@ -192,7 +218,7 @@ struct MeContainerView: View {
             title: localized("me.empty.title"),
             subtitle: localized("me.empty.subtitle"),
             actionTitle: localized("common.reload"),
-            footer: AnyView(signOutButton)
+            footer: AnyView(meFooterContent)
         ) {
             Task {
                 await viewModel.refresh(language: languageStore.currentLanguage)
@@ -207,7 +233,7 @@ struct MeContainerView: View {
             title: localized("me.error.title"),
             subtitle: localized(message),
             actionTitle: localized("common.retry"),
-            footer: AnyView(signOutButton)
+            footer: AnyView(meFooterContent)
         ) {
             Task {
                 await viewModel.refresh(language: languageStore.currentLanguage)
@@ -454,7 +480,17 @@ struct MeContainerView: View {
                 ForEach(Array(group.items.enumerated()), id: \.element.id) { index, item in
                     menuGroupRow(item)
 
-                    if index < group.items.count - 1 {
+                    if item.actionID == .changeLanguage {
+                        Divider()
+                            .padding(.leading, 84)
+
+                        assistantEntryToggleRow
+
+                        if index < group.items.count - 1 {
+                            Divider()
+                                .padding(.leading, 84)
+                        }
+                    } else if index < group.items.count - 1 {
                         Divider()
                             .padding(.leading, 84)
                     }
@@ -472,6 +508,44 @@ struct MeContainerView: View {
         ) {
             viewModel.handleAction(item.actionID, localizedTitle: localized(item.title))
         }
+    }
+
+    private var assistantEntryToggleRow: some View {
+        HStack(spacing: DUSpacing.md) {
+            ZStack {
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .fill(
+                        LinearGradient(
+                            colors: [DUTheme.cyan.opacity(0.10), DUTheme.magenta.opacity(0.10)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .frame(width: 38, height: 38)
+
+                AIAssistantStaticIcon()
+                    .scaleEffect(0.52)
+                    .frame(width: 38, height: 38)
+            }
+
+            Text(localized("assistant.businessEntry.settings.title"))
+                .font(.du(15, weight: .semibold))
+                .foregroundColor(DUTheme.ink)
+
+            Spacer()
+
+            Toggle(
+                "",
+                isOn: Binding(
+                    get: { !isBusinessAIAssistantHidden },
+                    set: { isBusinessAIAssistantHidden = !$0 }
+                )
+            )
+            .labelsHidden()
+            .tint(DUTheme.cyan)
+        }
+        .padding(.horizontal, DUSpacing.lg)
+        .padding(.vertical, DUSpacing.lg)
     }
 
     private func listItemAccessory(_ accessory: MeMenuAccessory) -> DUListItemAccessory {
@@ -525,6 +599,10 @@ struct MeContainerView: View {
             onSignOut()
         }
         .disabled(isSigningOut)
+    }
+
+    private var meFooterContent: some View {
+        signOutButton
     }
 
     private var rechargeEntryCard: some View {
@@ -600,13 +678,13 @@ struct MeContainerView_Previews: PreviewProvider {
 
     static var previews: some View {
         Group {
-            MeContainerView(session: previewSession, billingService: MockBillingService(), rechargeService: MockRechargeService(), badgeCenterService: MockBadgeCenterService(), meService: MockMeService(), showRechargeEntry: true)
+            MeContainerView(session: previewSession, billingService: MockBillingService(), rechargeService: MockRechargeService(), badgeCenterService: MockBadgeCenterService(), aiChatService: MockAIChatService(), meService: MockMeService(), showRechargeEntry: true)
                 .previewDisplayName("Loaded")
 
-            MeContainerView(session: previewSession, billingService: MockBillingService(), rechargeService: MockRechargeService(), badgeCenterService: MockBadgeCenterService(), meService: MockMeService(mode: .empty))
+            MeContainerView(session: previewSession, billingService: MockBillingService(), rechargeService: MockRechargeService(), badgeCenterService: MockBadgeCenterService(), aiChatService: MockAIChatService(), meService: MockMeService(mode: .empty))
                 .previewDisplayName("Empty")
 
-            MeContainerView(session: previewSession, billingService: MockBillingService(), rechargeService: MockRechargeService(), badgeCenterService: MockBadgeCenterService(), meService: MockMeService(mode: .failed))
+            MeContainerView(session: previewSession, billingService: MockBillingService(), rechargeService: MockRechargeService(), badgeCenterService: MockBadgeCenterService(), aiChatService: MockAIChatService(), meService: MockMeService(mode: .failed))
                 .previewDisplayName("Error")
         }
         .environmentObject(AppLanguageStore(initialLanguage: .english))

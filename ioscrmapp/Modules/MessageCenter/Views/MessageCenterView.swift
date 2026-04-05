@@ -6,14 +6,25 @@ struct MessageCenterView: View {
 
     @StateObject private var viewModel: MessageCenterViewModel
     @State private var pendingConfirmation: PendingConfirmation?
+    private let session: CustSubInfo
+    private let aiChatService: any AIChatServicing
+    private let onAIChatNavigation: (AIChatNavigationTarget) -> Void
 
-    init(session: CustSubInfo, notificationService: any NotificationServicing) {
+    init(
+        session: CustSubInfo,
+        notificationService: any NotificationServicing,
+        aiChatService: any AIChatServicing,
+        onAIChatNavigation: @escaping (AIChatNavigationTarget) -> Void = { _ in }
+    ) {
+        self.session = session
         _viewModel = StateObject(
             wrappedValue: MessageCenterViewModel(
                 session: session,
                 notificationService: notificationService
             )
         )
+        self.aiChatService = aiChatService
+        self.onAIChatNavigation = onAIChatNavigation
     }
 
     var body: some View {
@@ -51,6 +62,11 @@ struct MessageCenterView: View {
         .alert(item: $pendingConfirmation) { confirmation in
             alert(for: confirmation)
         }
+        .businessAIAssistant(
+            session: session,
+            aiChatService: aiChatService,
+            onNavigate: handleAIChatNavigation(_:)
+        )
     }
 
     @ViewBuilder
@@ -313,6 +329,26 @@ struct MessageCenterView: View {
                 },
                 secondaryButton: .cancel(Text(localized("messageCenter.action.cancel")))
             )
+        }
+    }
+
+    private func handleAIChatNavigation(_ target: AIChatNavigationTarget) {
+        guard shouldForwardAIChatNavigation(target) else {
+            return
+        }
+
+        dismiss()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+            onAIChatNavigation(target)
+        }
+    }
+
+    private func shouldForwardAIChatNavigation(_ target: AIChatNavigationTarget) -> Bool {
+        switch target {
+        case .external:
+            return false
+        default:
+            return true
         }
     }
 
@@ -767,7 +803,8 @@ struct MessageCenterView_Previews: PreviewProvider {
                 userID: "preview-user",
                 serviceNumber: AuthValidator.demoPhone
             ),
-            notificationService: MockNotificationService()
+            notificationService: MockNotificationService(),
+            aiChatService: MockAIChatService()
         )
         .environmentObject(AppLanguageStore(initialLanguage: .english))
     }

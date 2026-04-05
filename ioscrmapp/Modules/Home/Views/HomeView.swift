@@ -150,23 +150,49 @@ struct HomeView: View {
                 .fullScreenCover(isPresented: $isMessageCenterPresented) {
                     MessageCenterView(
                         session: custSubInfo,
-                        notificationService: notificationService
+                        notificationService: notificationService,
+                        aiChatService: aiChatService,
+                        onAIChatNavigation: handleAIChatNavigation(_:)
                     )
                 }
                 .fullScreenCover(isPresented: $isBillingPresented) {
-                    BillingContainerView(session: custSubInfo, billingService: billingService)
+                    BillingContainerView(
+                        session: custSubInfo,
+                        billingService: billingService,
+                        aiChatService: aiChatService,
+                        onAIChatNavigation: handleAIChatNavigation(_:)
+                    )
                 }
                 .fullScreenCover(isPresented: $isRechargePresented) {
-                    RechargeContainerView(session: custSubInfo, rechargeService: rechargeService)
+                    RechargeContainerView(
+                        session: custSubInfo,
+                        rechargeService: rechargeService,
+                        aiChatService: aiChatService,
+                        onAIChatNavigation: handleAIChatNavigation(_:)
+                    )
                 }
                 .fullScreenCover(isPresented: $isOffersPresented) {
-                    OffersContainerView(session: custSubInfo, offersService: offersService)
+                    OffersContainerView(
+                        session: custSubInfo,
+                        offersService: offersService,
+                        aiChatService: aiChatService,
+                        onAIChatNavigation: handleAIChatNavigation(_:)
+                    )
                 }
                 .fullScreenCover(isPresented: $isTicketsPresented) {
-                    TicketsModalContainerView(ticketsService: ticketsService)
+                    TicketsModalContainerView(
+                        session: custSubInfo,
+                        ticketsService: ticketsService,
+                        aiChatService: aiChatService,
+                        onAIChatNavigation: handleAIChatNavigation(_:)
+                    )
                 }
                 .fullScreenCover(isPresented: $isWeatherPresented) {
-                    WeatherMainView()
+                    WeatherMainView(
+                        session: custSubInfo,
+                        aiChatService: aiChatService,
+                        onAIChatNavigation: handleAIChatNavigation(_:)
+                    )
                 }
                 .confirmationDialog(
                     localized("me.signOut.failure.title"),
@@ -187,113 +213,13 @@ struct HomeView: View {
                 }
 
             if isAIChatPresented {
-                GeometryReader { proxy in
-                    let topInset = max(proxy.safeAreaInsets.top + 38, 52)
-                    let bottomSafeArea = proxy.safeAreaInsets.bottom
-                    let sheetHeight = max(proxy.size.height - topInset + bottomSafeArea, 620)
-                    let portraitWidth = min(max(proxy.size.width * 0.155, 76), 88)
-                    let portraitLift = portraitWidth * 1.20
-                    let bubbleText = AIChatLocalizedCopy
-                        .title(for: languageStore.currentLanguage)
-                        .replacingOccurrences(of: "\n", with: " ")
-                    let bubbleWidth = min(max(proxy.size.width * 0.46, 180), 250)
-
-                    ZStack(alignment: .bottom) {
-                        Color.black.opacity(0.3)
-                            .background(.ultraThinMaterial)
-                            .ignoresSafeArea()
-                            .onTapGesture {
-                                withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
-                                    isAIChatPresented = false
-                                }
-                            }
-
-                        ZStack(alignment: .topLeading) {
-                            HStack(alignment: .top, spacing: 10) {
-                                Image("AIChatAssistantPortrait")
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(width: portraitWidth)
-                                    .shadow(color: Color.black.opacity(0.2), radius: 12, x: 0, y: 6)
-                                    .allowsHitTesting(false)
-                                    .accessibilityHidden(true)
-
-                                Text(bubbleText)
-                                    .font(.system(size: 18, weight: .bold, design: .rounded))
-                                    .foregroundColor(.white)
-                                    .multilineTextAlignment(.leading)
-                                    .lineLimit(2)
-                                    .minimumScaleFactor(0.84)
-                                    .padding(.horizontal, 18)
-                                    .padding(.vertical, 14)
-                                    .frame(width: bubbleWidth, alignment: .leading)
-                                    .background(
-                                        RoundedRectangle(cornerRadius: 20, style: .continuous)
-                                            .fill(Color.white.opacity(0.18))
-                                    )
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 20, style: .continuous)
-                                            .stroke(Color.white.opacity(0.32), lineWidth: 1)
-                                    )
-                                    .shadow(color: .black.opacity(0.12), radius: 8, y: 3)
-                            }
-                            .padding(.leading, 16)
-                            .offset(x: 0, y: -portraitLift)
-
-                            AIChatView(
-                                custSubInfo: custSubInfo,
-                                language: languageStore.currentLanguage,
-                                aiChatService: aiChatService
-                            ) { target in
-                                withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
-                                    isAIChatPresented = false
-                                }
-                                handleAIChatNavigation(target)
-                            }
-                            .frame(maxWidth: .infinity)
-                            .frame(height: sheetHeight)
-                            .background(
-                                ZStack {
-                                    LinearGradient(
-                                        colors: [
-                                            Color(hex: 0x0E5CB7),
-                                            Color(hex: 0x780BAA)
-                                        ],
-                                        startPoint: .top,
-                                        endPoint: .bottom
-                                    )
-
-                                    Image("AIChatBottomWave")
-                                        .resizable()
-                                        .aspectRatio(contentMode: .fill)
-                                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
-                                        .clipped()
-                                }
-                            )
-                            .clipShape(TopRoundedRectangle(radius: 36))
-                            .overlay(
-                                TopRoundedRectangle(radius: 36)
-                                    .stroke(
-                                        LinearGradient(
-                                            colors: [.white.opacity(0.45), .white.opacity(0.08), .white.opacity(0.25)],
-                                            startPoint: .topLeading,
-                                            endPoint: .bottomTrailing
-                                        ),
-                                        lineWidth: 0.5
-                                    )
-                            )
-                        }
-                        .frame(maxWidth: .infinity)
-                        .frame(height: sheetHeight, alignment: .top)
-                        .shadow(color: Color(hex: 0x1E3A8A).opacity(0.4), radius: 50, x: 0, y: -12)
-                        .shadow(color: Color.black.opacity(0.25), radius: 20, x: 0, y: -5)
-                    }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .ignoresSafeArea(edges: .bottom)
-                }
-                .ignoresSafeArea(.keyboard)
-                .zIndex(100)
-                .transition(.move(edge: .bottom).combined(with: .opacity))
+                AIAssistantChatOverlay(
+                    isPresented: $isAIChatPresented,
+                    custSubInfo: custSubInfo,
+                    language: languageStore.currentLanguage,
+                    aiChatService: aiChatService,
+                    onNavigate: handleAIChatNavigation(_:)
+                )
             }
         }
         .safeAreaInset(edge: .bottom, spacing: 0) {
@@ -365,12 +291,14 @@ struct HomeView: View {
                 billingService: billingService,
                 rechargeService: rechargeService,
                 badgeCenterService: badgeCenterService,
+                aiChatService: aiChatService,
                 meService: meService,
                 showRechargeEntry: showsRechargeEntryInMe,
                 isSigningOut: isSigningOut,
                 onSignOut: {
                     startSignOut()
-                }
+                },
+                onAIChatNavigation: handleAIChatNavigation(_:)
             )
             .tabItem {
                 Image(HomeTab.me.assetName)
@@ -1673,7 +1601,7 @@ private struct HomeAIAgentTabButton: View {
         Button(action: action) {
             ZStack(alignment: .bottom) {
                 VStack(spacing: 0) {
-                    HomeAIAgentOrbitalIcon()
+                    AIAssistantOrbitalIcon()
                         .scaleEffect(0.84)
                         .frame(width: 60, height: 60)
 
@@ -1690,135 +1618,6 @@ private struct HomeAIAgentTabButton: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
         }
         .buttonStyle(.plain)
-    }
-}
-
-private struct HomeAIAgentOrbitalIcon: View {
-    var body: some View {
-        TimelineView(.animation(minimumInterval: 1.0 / 30.0)) { context in
-            let time = context.date.timeIntervalSinceReferenceDate
-            let colorRotation = Angle.degrees((time * 58).truncatingRemainder(dividingBy: 360))
-            let whiteRotation = Angle.degrees((time * -72).truncatingRemainder(dividingBy: 360))
-
-            ZStack {
-                Circle()
-                    .fill(
-                        RadialGradient(
-                            colors: [
-                                Color(hex: 0xAB7BFF, opacity: 0.28),
-                                Color(hex: 0xAB7BFF, opacity: 0)
-                            ],
-                            center: .center,
-                            startRadius: 6,
-                            endRadius: 38
-                        )
-                    )
-                    .frame(width: 72, height: 72)
-
-                Circle()
-                    .stroke(
-                        AngularGradient(
-                            gradient: Gradient(
-                                colors: [
-                                    Color(hex: 0x2ED8FF),
-                                    Color(hex: 0x7A72FF),
-                                    Color(hex: 0xFF6FE5),
-                                    Color(hex: 0xFFD05E),
-                                    Color(hex: 0x2ED8FF)
-                                ]
-                            ),
-                            center: .center
-                        ),
-                        lineWidth: 3
-                    )
-                    .frame(width: 60, height: 60)
-                    .rotationEffect(colorRotation)
-                    .shadow(color: Color(hex: 0x7A72FF, opacity: 0.22), radius: 4)
-
-                ZStack {
-                    Circle()
-                        .stroke(Color.white.opacity(0.92), lineWidth: 2)
-                        .frame(width: 44, height: 44)
-
-                    Circle()
-                        .fill(Color.white)
-                        .frame(width: 8, height: 8)
-                        .shadow(color: Color.white.opacity(0.75), radius: 10)
-                        .offset(y: -22)
-                        .rotationEffect(whiteRotation)
-                }
-
-                ZStack {
-                    Circle()
-                        .fill(
-                            RadialGradient(
-                                colors: [
-                                    .white,
-                                    Color(hex: 0x79DFFF),
-                                    Color(hex: 0x5B9DFF),
-                                    Color(hex: 0x7D65FF),
-                                    Color(hex: 0xFF7BDF)
-                                ],
-                                center: .init(x: 0.35, y: 0.3),
-                                startRadius: 2,
-                                endRadius: 28
-                            )
-                        )
-                        .frame(width: 54, height: 54)
-                        .shadow(color: Color(hex: 0x6E68FF, opacity: 0.34), radius: 12, x: 0, y: 8)
-
-                    Circle()
-                        .fill(
-                            RadialGradient(
-                                colors: [
-                                    .white,
-                                    Color(hex: 0xB9F0FF),
-                                    Color(hex: 0x8DD2FF),
-                                    Color(hex: 0xB874FF),
-                                    Color(hex: 0xFF96E8)
-                                ],
-                                center: .init(x: 0.32, y: 0.28),
-                                startRadius: 2,
-                                endRadius: 20
-                            )
-                        )
-                        .frame(width: 34, height: 34)
-
-                    ForEach(0..<3, id: \.self) { index in
-                        let phase = time * 2.2 + Double(index) * 0.75
-                        Text("✦")
-                            .font(homeFont(starSize(for: index), weight: .semibold))
-                            .foregroundColor(.white)
-                            .shadow(color: Color.white.opacity(0.85), radius: 12)
-                            .opacity(0.35 + (0.65 * max(0, sin(phase))))
-                            .scaleEffect(0.75 + (0.4 * max(0, sin(phase))))
-                            .offset(starOffset(for: index))
-                    }
-                }
-            }
-        }
-    }
-
-    private func starSize(for index: Int) -> CGFloat {
-        switch index {
-        case 0:
-            return 9
-        case 1:
-            return 11
-        default:
-            return 8
-        }
-    }
-
-    private func starOffset(for index: Int) -> CGSize {
-        switch index {
-        case 0:
-            return CGSize(width: -9, height: -13)
-        case 1:
-            return CGSize(width: 10, height: -5)
-        default:
-            return CGSize(width: -1, height: 13)
-        }
     }
 }
 
@@ -1846,28 +1645,6 @@ private struct HomePrimaryPillButtonStyle: ButtonStyle {
             )
             .shadow(color: Color(hex: 0x287FFF, opacity: configuration.isPressed ? 0.22 : 0.38), radius: 10, x: 0, y: 8)
             .scaleEffect(configuration.isPressed ? 0.98 : 1)
-    }
-}
-
-private struct TopRoundedRectangle: Shape {
-    let radius: CGFloat
-
-    func path(in rect: CGRect) -> Path {
-        var path = Path()
-        path.move(to: CGPoint(x: rect.minX, y: rect.maxY))
-        path.addLine(to: CGPoint(x: rect.minX, y: rect.minY + radius))
-        path.addQuadCurve(
-            to: CGPoint(x: rect.minX + radius, y: rect.minY),
-            control: CGPoint(x: rect.minX, y: rect.minY)
-        )
-        path.addLine(to: CGPoint(x: rect.maxX - radius, y: rect.minY))
-        path.addQuadCurve(
-            to: CGPoint(x: rect.maxX, y: rect.minY + radius),
-            control: CGPoint(x: rect.maxX, y: rect.minY)
-        )
-        path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
-        path.closeSubpath()
-        return path
     }
 }
 
@@ -2119,7 +1896,10 @@ private struct TicketsModalContainerView: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var languageStore: AppLanguageStore
 
+    let session: CustSubInfo
     let ticketsService: any TicketsServicing
+    let aiChatService: any AIChatServicing
+    let onAIChatNavigation: (AIChatNavigationTarget) -> Void
 
     var body: some View {
         NavigationView {
@@ -2133,6 +1913,31 @@ private struct TicketsModalContainerView: View {
                 }
         }
         .navigationViewStyle(.stack)
+        .businessAIAssistant(
+            session: session,
+            aiChatService: aiChatService,
+            onNavigate: handleAIChatNavigation(_:)
+        )
+    }
+
+    private func handleAIChatNavigation(_ target: AIChatNavigationTarget) {
+        guard shouldForwardAIChatNavigation(target) else {
+            return
+        }
+
+        dismiss()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+            onAIChatNavigation(target)
+        }
+    }
+
+    private func shouldForwardAIChatNavigation(_ target: AIChatNavigationTarget) -> Bool {
+        switch target {
+        case .external:
+            return false
+        default:
+            return true
+        }
     }
 }
 

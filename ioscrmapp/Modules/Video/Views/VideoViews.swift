@@ -8,6 +8,8 @@ struct VideoHomeView: View {
     @Binding var requestedVideoID: String?
     let isActive: Bool
 
+    private let bottomTabBarPlaceholderHeight: CGFloat = 120
+
     @State private var isSearchPresented = false
     @State private var selectedVideoID: String?
     @State private var selectedCarouselIndex = 0
@@ -110,6 +112,11 @@ struct VideoHomeView: View {
         }
         .onChange(of: viewModel.screenState) { _ in
             consumeRequestedVideoIDIfNeeded()
+        }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            Color.clear
+                .frame(height: bottomTabBarPlaceholderHeight)
+                .accessibilityHidden(true)
         }
     }
 
