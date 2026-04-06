@@ -8,7 +8,20 @@ struct WeatherMainView: View {
     @State private var selectedTimelineID = MockWeatherData.timeline.first?.id ?? "now"
     @State private var isSunDetailPresented = false
 
+    private let session: CustSubInfo
+    private let aiChatService: any AIChatServicing
+    private let onAIChatNavigation: (AIChatNavigationTarget) -> Void
     private let weather = MockWeatherData.today
+
+    init(
+        session: CustSubInfo,
+        aiChatService: any AIChatServicing,
+        onAIChatNavigation: @escaping (AIChatNavigationTarget) -> Void = { _ in }
+    ) {
+        self.session = session
+        self.aiChatService = aiChatService
+        self.onAIChatNavigation = onAIChatNavigation
+    }
 
     private var selectedEntry: WeatherTimelineEntry {
         MockWeatherData.timeline.first(where: { $0.id == selectedTimelineID }) ?? MockWeatherData.timeline[0]
@@ -93,6 +106,11 @@ struct WeatherMainView: View {
                 .padding(.bottom, max(proxy.safeAreaInsets.bottom, 12) + 24)
             }
         }
+        .businessAIAssistant(
+            session: session,
+            aiChatService: aiChatService,
+            onNavigate: handleAIChatNavigation(_:)
+        )
     }
 
     private var background: some View {
@@ -167,6 +185,24 @@ struct WeatherMainView: View {
             isSunDetailPresented = false
         }
         WeatherAudioPlayer.shared.playShapeTap()
+    private func handleAIChatNavigation(_ target: AIChatNavigationTarget) {
+        guard shouldForwardAIChatNavigation(target) else {
+            return
+        }
+
+        dismiss()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+            onAIChatNavigation(target)
+        }
+    }
+
+    private func shouldForwardAIChatNavigation(_ target: AIChatNavigationTarget) -> Bool {
+        switch target {
+        case .external:
+            return false
+        default:
+            return true
+        }
     }
 }
 

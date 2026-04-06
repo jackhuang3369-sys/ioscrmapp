@@ -6,8 +6,15 @@ struct BadgeCenterContainerView: View {
 
     @StateObject private var viewModel: BadgeCenterViewModel
     private let session: CustSubInfo
+    private let aiChatService: any AIChatServicing
+    private let onAIChatNavigation: (AIChatNavigationTarget) -> Void
 
-    init(session: CustSubInfo, badgeCenterService: any BadgeCenterServicing) {
+    init(
+        session: CustSubInfo,
+        badgeCenterService: any BadgeCenterServicing,
+        aiChatService: any AIChatServicing,
+        onAIChatNavigation: @escaping (AIChatNavigationTarget) -> Void = { _ in }
+    ) {
         self.session = session
         _viewModel = StateObject(
             wrappedValue: BadgeCenterViewModel(
@@ -15,6 +22,8 @@ struct BadgeCenterContainerView: View {
                 badgeCenterService: badgeCenterService
             )
         )
+        self.aiChatService = aiChatService
+        self.onAIChatNavigation = onAIChatNavigation
     }
 
     var body: some View {
@@ -62,6 +71,11 @@ struct BadgeCenterContainerView: View {
                 }
             )
         }
+        .businessAIAssistant(
+            session: session,
+            aiChatService: aiChatService,
+            onNavigate: handleAIChatNavigation(_:)
+        )
     }
 
     @ViewBuilder
@@ -389,6 +403,26 @@ struct BadgeCenterContainerView: View {
     private func localized(_ value: LocalizedTextValue?) -> String {
         languageStore.string(value)
     }
+
+    private func handleAIChatNavigation(_ target: AIChatNavigationTarget) {
+        guard shouldForwardAIChatNavigation(target) else {
+            return
+        }
+
+        dismiss()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+            onAIChatNavigation(target)
+        }
+    }
+
+    private func shouldForwardAIChatNavigation(_ target: AIChatNavigationTarget) -> Bool {
+        switch target {
+        case .external:
+            return false
+        default:
+            return true
+        }
+    }
 }
 
 struct BadgeCenterContainerView_Previews: PreviewProvider {
@@ -403,14 +437,16 @@ struct BadgeCenterContainerView_Previews: PreviewProvider {
         Group {
             BadgeCenterContainerView(
                 session: previewSession,
-                badgeCenterService: MockBadgeCenterService()
+                badgeCenterService: MockBadgeCenterService(),
+                aiChatService: MockAIChatService()
             )
             .environmentObject(AppLanguageStore(initialLanguage: .english))
             .previewDisplayName("Badge Center EN")
 
             BadgeCenterContainerView(
                 session: previewSession,
-                badgeCenterService: MockBadgeCenterService()
+                badgeCenterService: MockBadgeCenterService(),
+                aiChatService: MockAIChatService()
             )
             .environmentObject(AppLanguageStore(initialLanguage: .arabic))
             .previewDisplayName("Badge Center AR")

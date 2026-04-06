@@ -162,6 +162,20 @@
       }
     }
   },
+  "assistant": {
+    "businessEntry": {
+      "hide": {
+        "title": "Hide the business-page AI assistant entry?",
+        "message": "After hiding it, Message Center, Billing, Recharge, Offers, and other business pages will no longer show the floating button. You can turn it back on later from Me.",
+        "confirm": "Hide entry"
+      },
+      "settings": {
+        "title": "AI Assistant",
+        "toggle": "Show floating button on business pages",
+        "subtitle": "Turn this off to hide the AI assistant floating button across Message Center, Billing, Recharge, Offers, and other business pages."
+      }
+    }
+  },
   "home": {
     "tab": {
       "home": "Home",

@@ -6,14 +6,25 @@ struct OffersContainerView: View {
     @StateObject private var viewModel: OffersViewModel
     @StateObject private var diyViewModel: DIYOfferViewModel
     @State private var isDIYPresented = false
+    private let session: CustSubInfo
+    private let aiChatService: any AIChatServicing
+    private let onAIChatNavigation: (AIChatNavigationTarget) -> Void
 
-    init(session: CustSubInfo, offersService: any OffersServicing) {
+    init(
+        session: CustSubInfo,
+        offersService: any OffersServicing,
+        aiChatService: any AIChatServicing,
+        onAIChatNavigation: @escaping (AIChatNavigationTarget) -> Void = { _ in }
+    ) {
+        self.session = session
         _viewModel = StateObject(
             wrappedValue: OffersViewModel(session: session, offersService: offersService)
         )
         _diyViewModel = StateObject(
             wrappedValue: DIYOfferViewModel(session: session, offersService: offersService)
         )
+        self.aiChatService = aiChatService
+        self.onAIChatNavigation = onAIChatNavigation
     }
 
     var body: some View {
@@ -65,6 +76,11 @@ struct OffersContainerView: View {
                 }
             )
         }
+        .businessAIAssistant(
+            session: session,
+            aiChatService: aiChatService,
+            onNavigate: handleAIChatNavigation(_:)
+        )
     }
 
     private var purchaseNavigationLink: some View {
@@ -115,6 +131,26 @@ struct OffersContainerView: View {
     private func localized(_ value: LocalizedTextValue?) -> String {
         languageStore.string(value)
     }
+
+    private func handleAIChatNavigation(_ target: AIChatNavigationTarget) {
+        guard shouldForwardAIChatNavigation(target) else {
+            return
+        }
+
+        dismiss()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+            onAIChatNavigation(target)
+        }
+    }
+
+    private func shouldForwardAIChatNavigation(_ target: AIChatNavigationTarget) -> Bool {
+        switch target {
+        case .offers, .external:
+            return false
+        default:
+            return true
+        }
+    }
 }
 
 struct OffersContainerView_Previews: PreviewProvider {
@@ -134,7 +170,8 @@ struct OffersContainerView_Previews: PreviewProvider {
         Group {
             OffersContainerView(
                 session: previewSession,
-                offersService: MockOffersService()
+                offersService: MockOffersService(),
+                aiChatService: MockAIChatService()
             )
             .environmentObject(englishStore)
             .environment(\.layoutDirection, englishStore.layoutDirection)
@@ -142,7 +179,8 @@ struct OffersContainerView_Previews: PreviewProvider {
 
             OffersContainerView(
                 session: previewSession,
-                offersService: MockOffersService()
+                offersService: MockOffersService(),
+                aiChatService: MockAIChatService()
             )
             .environmentObject(arabicStore)
             .environment(\.layoutDirection, arabicStore.layoutDirection)

@@ -113,6 +113,7 @@
 		F10000000000000000000002 /* AIChatModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = F20000000000000000000002 /* AIChatModels.swift */; };
 		F10000000000000000000003 /* AIChatViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F20000000000000000000003 /* AIChatViewModel.swift */; };
 		F10000000000000000000004 /* AIChatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F20000000000000000000004 /* AIChatView.swift */; };
+		F10000000000000000000005 /* AIAssistantEntryComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = F20000000000000000000005 /* AIAssistantEntryComponents.swift */; };
 		A10000000000000000000047 /* MockWeatherData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000047 /* MockWeatherData.swift */; };
 		A10000000000000000000048 /* WeatherCondition.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000048 /* WeatherCondition.swift */; };
 		A1000000000000000000004B /* ParticleController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000004B /* ParticleController.swift */; };
@@ -233,6 +234,7 @@
 		F20000000000000000000002 /* AIChatModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIChatModels.swift; sourceTree = "<group>"; };
 		F20000000000000000000003 /* AIChatViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIChatViewModel.swift; sourceTree = "<group>"; };
 		F20000000000000000000004 /* AIChatView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIChatView.swift; sourceTree = "<group>"; };
+		F20000000000000000000005 /* AIAssistantEntryComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIAssistantEntryComponents.swift; sourceTree = "<group>"; };
 		A20000000000000000000047 /* MockWeatherData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockWeatherData.swift; sourceTree = "<group>"; };
 		A20000000000000000000048 /* WeatherCondition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherCondition.swift; sourceTree = "<group>"; };
 		A2000000000000000000004B /* ParticleController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParticleController.swift; sourceTree = "<group>"; };
@@ -868,6 +870,7 @@
 		F30000000000000000000004 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				F20000000000000000000005 /* AIAssistantEntryComponents.swift */,
 				F20000000000000000000004 /* AIChatView.swift */,
 			);
 			path = Views;
@@ -1125,6 +1128,7 @@
 				A10000000000000000000007 /* DesignSystem.swift in Sources */,
 				C10000000000000000000002 /* BadgeCenterModels.swift in Sources */,
 				A10000000000000000000009 /* MeModels.swift in Sources */,
+				F10000000000000000000005 /* AIAssistantEntryComponents.swift in Sources */,
 				F10000000000000000000004 /* AIChatView.swift in Sources */,
 				F10000000000000000000003 /* AIChatViewModel.swift in Sources */,
 				F10000000000000000000002 /* AIChatModels.swift in Sources */,

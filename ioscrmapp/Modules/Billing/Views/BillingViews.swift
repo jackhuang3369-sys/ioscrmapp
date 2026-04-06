@@ -12,11 +12,22 @@ struct BillingContainerView: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var languageStore: AppLanguageStore
     @StateObject private var viewModel: BillingViewModel
+    private let session: CustSubInfo
+    private let aiChatService: any AIChatServicing
+    private let onAIChatNavigation: (AIChatNavigationTarget) -> Void
 
-    init(session: CustSubInfo, billingService: any BillingServicing) {
+    init(
+        session: CustSubInfo,
+        billingService: any BillingServicing,
+        aiChatService: any AIChatServicing,
+        onAIChatNavigation: @escaping (AIChatNavigationTarget) -> Void = { _ in }
+    ) {
+        self.session = session
         _viewModel = StateObject(
             wrappedValue: BillingViewModel(session: session, billingService: billingService)
         )
+        self.aiChatService = aiChatService
+        self.onAIChatNavigation = onAIChatNavigation
     }
 
     var body: some View {
@@ -81,6 +92,11 @@ struct BillingContainerView: View {
                 }
             )
         }
+        .businessAIAssistant(
+            session: session,
+            aiChatService: aiChatService,
+            onNavigate: handleAIChatNavigation(_:)
+        )
     }
 
     private var navigationLinks: some View {
@@ -668,6 +684,26 @@ struct BillingContainerView: View {
             return ""
         }
     }
+
+    private func handleAIChatNavigation(_ target: AIChatNavigationTarget) {
+        guard shouldForwardAIChatNavigation(target) else {
+            return
+        }
+
+        dismiss()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+            onAIChatNavigation(target)
+        }
+    }
+
+    private func shouldForwardAIChatNavigation(_ target: AIChatNavigationTarget) -> Bool {
+        switch target {
+        case .billing, .external:
+            return false
+        default:
+            return true
+        }
+    }
 }
 
 private struct BillingDetailView: View {
@@ -1211,7 +1247,8 @@ struct BillingContainerView_Previews: PreviewProvider {
                 userID: "preview-user",
                 serviceNumber: AuthValidator.demoPhone
             ),
-            billingService: MockBillingService()
+            billingService: MockBillingService(),
+            aiChatService: MockAIChatService()
         )
         .environmentObject(AppLanguageStore(initialLanguage: .english))
     }
