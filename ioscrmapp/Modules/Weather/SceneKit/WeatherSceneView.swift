@@ -13,10 +13,19 @@ struct WeatherSceneView: UIViewRepresentable {
     let scene:   SCNScene
     /// Access to the rotatable model node. Pass nil for non-interactive scene views (e.g. Page B panels).
     let manager: WeatherSceneManager?
+    let onSunTap: (() -> Void)?
+    let allowsInteraction: Bool
+
+    init(scene: SCNScene, manager: WeatherSceneManager?, onSunTap: (() -> Void)? = nil, allowsInteraction: Bool = true) {
+        self.scene = scene
+        self.manager = manager
+        self.onSunTap = onSunTap
+        self.allowsInteraction = allowsInteraction
+    }
 
     // MARK: UIViewRepresentable
 
-    func makeCoordinator() -> Coordinator { Coordinator(manager: manager) }
+    func makeCoordinator() -> Coordinator { Coordinator(manager: manager, onSunTap: onSunTap) }
 
     func makeUIView(context: Context) -> SCNView {
         let scnView = SCNView()
@@ -28,12 +37,21 @@ struct WeatherSceneView: UIViewRepresentable {
         scnView.rendersContinuously      = true
         scnView.autoenablesDefaultLighting = false
 
-        let pan = UIPanGestureRecognizer(
-            target: context.coordinator,
-            action: #selector(Coordinator.handlePan(_:))
-        )
-        pan.maximumNumberOfTouches = 1
-        scnView.addGestureRecognizer(pan)
+        if allowsInteraction {
+            let pan = UIPanGestureRecognizer(
+                target: context.coordinator,
+                action: #selector(Coordinator.handlePan(_:))
+            )
+            pan.maximumNumberOfTouches = 1
+            scnView.addGestureRecognizer(pan)
+
+            let tap = UITapGestureRecognizer(
+                target: context.coordinator,
+                action: #selector(Coordinator.handleTap(_:))
+            )
+            tap.require(toFail: pan)
+            scnView.addGestureRecognizer(tap)
+        }
 
         context.coordinator.startDisplayLink()
         return scnView
@@ -41,6 +59,7 @@ struct WeatherSceneView: UIViewRepresentable {
 
     func updateUIView(_ uiView: SCNView, context: Context) {
         if uiView.scene !== scene { uiView.scene = scene }
+        context.coordinator.updateSunTap(onSunTap)
     }
 
     // MARK: – Coordinator (gesture + CADisplayLink spin)
@@ -48,6 +67,7 @@ struct WeatherSceneView: UIViewRepresentable {
     final class Coordinator: NSObject {
 
         private let manager:     WeatherSceneManager?
+        private var onSunTap:    (() -> Void)?
         private var currentYaw:     Float = 0
         private var currentPitch:   Float = 0
         private var currentRoll:    Float = 0
@@ -73,12 +93,18 @@ struct WeatherSceneView: UIViewRepresentable {
         private let pitchReturnStrength: Float = 0.24
         private let rollReturnStrength: Float = 0.22
 
-        init(manager: WeatherSceneManager?) {
+        init(manager: WeatherSceneManager?, onSunTap: (() -> Void)?) {
             self.manager = manager
+            self.onSunTap = onSunTap
             let restPitch = manager?.restTiltX ?? 0
             currentPitch = restPitch
             targetPitch = restPitch
         }
+
+        func updateSunTap(_ onSunTap: (() -> Void)?) {
+            self.onSunTap = onSunTap
+        }
+
         deinit { displayLink?.invalidate(); hintTimer?.invalidate() }
 
         // MARK: Display link
@@ -104,9 +130,11 @@ struct WeatherSceneView: UIViewRepresentable {
         @objc private func step(_ link: CADisplayLink) {
             guard let node = manager?.conditionGroup else { return }
             let restPitch = manager?.restTiltX ?? 0
+            let autoSpinSpeed = manager?.autoSpinSpeed ?? 0
+            let hasContinuousAutoSpin = abs(autoSpinSpeed) > 0.0001
 
             if !isPanning {
-                targetYaw += yawVelocity
+                targetYaw += autoSpinSpeed + yawVelocity
                 targetPitch += pitchVelocity
                 targetRoll += rollVelocity
 
@@ -114,7 +142,7 @@ struct WeatherSceneView: UIViewRepresentable {
                 pitchVelocity *= velocityDamping
                 rollVelocity *= velocityDamping
 
-                let yawReturn = abs(yawVelocity) < 0.007 ? yawReturnStrength : 0.03
+                let yawReturn: Float = hasContinuousAutoSpin ? 0 : (abs(yawVelocity) < 0.007 ? yawReturnStrength : 0.03)
                 let pitchReturn = abs(pitchVelocity) < 0.006 ? pitchReturnStrength : 0.08
                 let rollReturn = abs(rollVelocity) < 0.005 ? rollReturnStrength : 0.06
 
@@ -195,6 +223,31 @@ struct WeatherSceneView: UIViewRepresentable {
                 isPanning = false
                 lastPanPoint = nil
             }
+        }
+
+        @objc func handleTap(_ gesture: UITapGestureRecognizer) {
+            guard gesture.state == .ended,
+                  let scnView = gesture.view as? SCNView else { return }
+
+            let location = gesture.location(in: scnView)
+            let hits = scnView.hitTest(location, options: [SCNHitTestOption.searchMode: SCNHitTestSearchMode.all.rawValue])
+            guard !hits.isEmpty else { return }
+
+            if hits.contains(where: { isInteractiveNode($0.node) }) {
+                onSunTap?()
+            }
+        }
+
+        private func isInteractiveNode(_ node: SCNNode?) -> Bool {
+            guard let group = manager?.conditionGroup else { return false }
+            var current = node
+            while let value = current {
+                if value === group {
+                    return true
+                }
+                current = value.parent
+            }
+            return false
         }
     }
 }

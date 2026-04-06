@@ -2,20 +2,32 @@ import SceneKit
 import SwiftUI
 import UIKit
 
+enum WeatherSceneMode {
+    case main
+    case sunDetail
+}
+
 final class WeatherSceneManager: ObservableObject {
 
+    @Published private(set) var displayGroupRotation: SCNVector3 = SCNVector3(0, 0, 0)
     private(set) var scene: SCNScene
     private(set) var conditionGroup: SCNNode?
+    private(set) var sunNode: SCNNode?
     private(set) var restTiltX: Float = -0.012
+    private(set) var autoSpinSpeed: Float = 0
     private(set) var currentTemperature: Int
 
+    private let mode: WeatherSceneMode
+    private var detailTitleNode: SCNNode?
     private var temperatureNode: SCNNode?
+    private var isTemperatureHidden: Bool = false
     private var _birdsScene: SCNScene?   // 防止 ARC 过早释放鸟群场景
     private let weatherDataSubdirectory = "WeatherData"
 
-    init(temperature: Int = MockWeatherData.today.temperature) {
+    init(temperature: Int = MockWeatherData.today.temperature, mode: WeatherSceneMode = .main) {
         self.scene = SCNScene()
         self.currentTemperature = temperature
+        self.mode = mode
         buildScene()
     }
 
@@ -24,26 +36,48 @@ final class WeatherSceneManager: ObservableObject {
         updateTemperature(animated: animated)
     }
 
+    func setTemperatureVisibility(isHidden: Bool, animated: Bool) {
+        isTemperatureHidden = isHidden
+        guard let node = temperatureNode else { return }
+
+        let targetOpacity: CGFloat = isHidden ? 0 : 1
+        if animated {
+            SCNTransaction.begin()
+            SCNTransaction.animationDuration = 0.2
+            node.opacity = targetOpacity
+            SCNTransaction.commit()
+        } else {
+            node.opacity = targetOpacity
+        }
+    }
+
     func syncDisplayGroupRotation(to angles: SCNVector3) {
+        displayGroupRotation = angles
     }
 
     private func buildScene() {
         scene.background.contents = UIColor.clear
         scene.rootNode.childNodes.forEach { $0.removeFromParentNode() }
 
+        let isDetailMode = mode == .sunDetail
+        restTiltX = isDetailMode ? -0.004 : -0.012
+        autoSpinSpeed = 0
+
         let camera = SCNCamera()
-        camera.fieldOfView = 31
+        camera.fieldOfView = isDetailMode ? 24 : 31
         camera.zNear = 0.1
         camera.zFar = 120
 
         let cameraNode = SCNNode()
         cameraNode.camera = camera
-        cameraNode.position = SCNVector3(0, 0.02, 20.8)
+        cameraNode.position = isDetailMode
+            ? SCNVector3(0, 0.38, 18.8)
+            : SCNVector3(0, 0.02, 20.8)
         scene.rootNode.addChildNode(cameraNode)
 
         let ambient = SCNLight()
         ambient.type = .ambient
-        ambient.intensity = 1000   // 提高环境光，防止暗部全黑
+        ambient.intensity = isDetailMode ? 1120 : 1000   // 提高环境光，防止暗部全黑
         ambient.color = UIColor(white: 0.85, alpha: 1)
         let ambientNode = SCNNode()
         ambientNode.light = ambient
@@ -51,7 +85,7 @@ final class WeatherSceneManager: ObservableObject {
 
         let key = SCNLight()
         key.type = .directional
-        key.intensity = 1200
+        key.intensity = isDetailMode ? 1380 : 1200
         key.color = UIColor(red: 1.0, green: 0.96, blue: 0.90, alpha: 1)
         let keyNode = SCNNode()
         keyNode.light = key
@@ -60,7 +94,7 @@ final class WeatherSceneManager: ObservableObject {
 
         let rim = SCNLight()
         rim.type = .directional
-        rim.intensity = 420
+        rim.intensity = isDetailMode ? 520 : 420
         rim.color = UIColor(red: 0.92, green: 0.94, blue: 1.0, alpha: 1)
         let rimNode = SCNNode()
         rimNode.light = rim
@@ -71,7 +105,7 @@ final class WeatherSceneManager: ObservableObject {
         // 调整 intensity 控制强度，eulerAngles.y 控制左右方向（负值=来自右侧）
         let rightFill = SCNLight()
         rightFill.type = .directional
-        rightFill.intensity = 700
+        rightFill.intensity = isDetailMode ? 840 : 700
         rightFill.color = UIColor(red: 0.95, green: 0.97, blue: 1.0, alpha: 1)
         let rightFillNode = SCNNode()
         rightFillNode.light = rightFill
@@ -81,7 +115,9 @@ final class WeatherSceneManager: ObservableObject {
 
         let root = SCNNode()
         root.name = "weather_root"
-        root.position = SCNVector3(0, -1.94, 0)
+        root.position = isDetailMode
+            ? SCNVector3(0, -0.42, 0)
+            : SCNVector3(0, -1.94, 0)
         scene.rootNode.addChildNode(root)
 
         let rotatingGroup = SCNNode()
@@ -90,18 +126,43 @@ final class WeatherSceneManager: ObservableObject {
         conditionGroup = rotatingGroup
 
         let sun = makeSunNode()
-        sun.position = SCNVector3(0, 3.26, -0.1)
-        rotatingGroup.addChildNode(sun)
+        if isDetailMode {
+            let sunAssembly = SCNNode()
+            sunAssembly.name = "weather_sun_detail_assembly"
+            sunAssembly.position = SCNVector3(0, -0.44, -0.1)
 
-        let digits = makeTemperatureNode(text: "\(currentTemperature)")
-        // ── 数字位置：Y 值越小越靠下（如需微调往下移，减小 Y 值）──
-        digits.position = SCNVector3(0, -2.3, 0.12)
-        rotatingGroup.addChildNode(digits)
-        temperatureNode = digits
+            sun.position = SCNVector3(0, 0, 0)
+            sunAssembly.addChildNode(sun)
+            rotatingGroup.addChildNode(sunAssembly)
+
+            let title = makeSunDetailTitleNode(text: "太阳")
+            title.position = SCNVector3(0, 2.9, 0.34)
+            rotatingGroup.addChildNode(title)
+            detailTitleNode = title
+
+            sunNode = sunAssembly
+        } else {
+            sun.position = SCNVector3(0, 3.26, -0.1)
+            rotatingGroup.addChildNode(sun)
+            sunNode = sun
+        }
+
+        if mode == .main {
+            let digits = makeTemperatureNode(text: "\(currentTemperature)")
+            // ── 数字位置：Y 值越小越靠下（如需微调往下移，减小 Y 值）──
+            digits.position = SCNVector3(0, -2.3, 0.12)
+            rotatingGroup.addChildNode(digits)
+            temperatureNode = digits
+        } else {
+            temperatureNode = nil
+        }
 
         attachFloatAnimation(to: root)
         attachSunPulse(to: sun)
         attachSunSpin(to: sun)
+        if let detailTitleNode {
+            attachSunSpin(to: detailTitleNode)
+        }
     }
 
     private func makeSunNode() -> SCNNode {
@@ -114,8 +175,9 @@ final class WeatherSceneManager: ObservableObject {
 
     private func makeFallbackSunNode() -> SCNNode {
         let root = SCNNode()
+        root.name = SceneNode.sun
 
-        let sphere = SCNSphere(radius: 2.16)
+        let sphere = SCNSphere(radius: mode == .sunDetail ? 2.37 : 2.16)
         sphere.segmentCount = 80
 
         let material = SCNMaterial()
@@ -129,6 +191,7 @@ final class WeatherSceneManager: ObservableObject {
         sphere.materials = [material]
 
         let body = SCNNode(geometry: sphere)
+        body.name = SceneNode.sun
         root.addChildNode(body)
 
         let glow = SCNLight()
@@ -153,6 +216,49 @@ final class WeatherSceneManager: ObservableObject {
         return makeFallbackTemperatureNode(text: text)
     }
 
+    private func makeSunDetailTitleNode(text: String) -> SCNNode {
+        let container = SCNNode()
+        let frontTitle = makeSingleSunDetailTitleNode(text: text)
+        frontTitle.position.z = 0
+        container.addChildNode(frontTitle)
+
+        container.eulerAngles = SCNVector3(0.02, -0.04, 0.01)
+        container.castsShadow = false
+        return container
+    }
+
+    private func makeSingleSunDetailTitleNode(text: String) -> SCNNode {
+        let textGeometry = SCNText(string: text, extrusionDepth: 0.9)
+        textGeometry.flatness = 0.06
+        textGeometry.font = UIFont.systemFont(ofSize: 10.8, weight: .black)
+        textGeometry.chamferRadius = 0.10
+
+        let front = SCNMaterial()
+        front.lightingModel = .physicallyBased
+        front.diffuse.contents = UIColor(red: 0.16, green: 0.16, blue: 0.17, alpha: 1)
+        front.metalness.contents = Float(0.52)
+        front.roughness.contents = Float(0.24)
+        front.specular.contents = UIColor(white: 0.98, alpha: 1)
+        front.isDoubleSided = false
+
+        let side = SCNMaterial()
+        side.lightingModel = .physicallyBased
+        side.diffuse.contents = UIColor(red: 0.08, green: 0.08, blue: 0.09, alpha: 1)
+        side.metalness.contents = Float(0.84)
+        side.roughness.contents = Float(0.20)
+        side.isDoubleSided = false
+
+        textGeometry.materials = [front, side, side, side, front]
+
+        let node = SCNNode(geometry: textGeometry)
+        let (minBounds, maxBounds) = node.boundingBox
+        let width = maxBounds.x - minBounds.x
+        let height = maxBounds.y - minBounds.y
+        node.pivot = SCNMatrix4MakeTranslation(minBounds.x + width / 2, minBounds.y + height / 2, 0)
+        node.scale = SCNVector3(0.16, 0.16, 0.16)
+        return node
+    }
+
     private func makeFallbackTemperatureNode(text: String) -> SCNNode {
         let textGeometry = SCNText(string: text, extrusionDepth: 1.45)
         textGeometry.flatness = 0.08
@@ -175,6 +281,7 @@ final class WeatherSceneManager: ObservableObject {
         textGeometry.materials = [front, side, side, side, front]
 
         let node = SCNNode(geometry: textGeometry)
+        node.name = SceneNode.temperature
         let (minBounds, maxBounds) = node.boundingBox
         let width = maxBounds.x - minBounds.x
         let height = maxBounds.y - minBounds.y
@@ -185,11 +292,13 @@ final class WeatherSceneManager: ObservableObject {
     }
 
     private func makeSunModelNode() -> SCNNode? {
-        guard let payload = loadNormalizedModelNode(named: "sun", fileExtension: "obj", targetHeight: 4.02) else {
+        let targetHeight: Float = mode == .sunDetail ? 4.72 : 4.02
+        guard let payload = loadNormalizedModelNode(named: "sun", fileExtension: "obj", targetHeight: targetHeight) else {
             return nil
         }
 
         let root = SCNNode()
+        root.name = SceneNode.sun
         let model = payload.node
         model.name = SceneNode.sun
         model.opacity = 0.97
@@ -200,16 +309,18 @@ final class WeatherSceneManager: ObservableObject {
         // 鸟群：作为太阳 root 的子节点，自动跟随太阳的一切动画（自旋、脉冲、浮动）
         // 太阳球半径 2.16，x=3.2 在球体右侧外沿，y=0.3 约在球体中部偏上
         if let birdsNode = loadBirdsNode() {
-            birdsNode.position = SCNVector3(3.2, -0.8, 0)
+            birdsNode.position = mode == .sunDetail
+                ? SCNVector3(-4.1, -0.55, 0)
+                : SCNVector3(3.2, -0.8, 0)
             root.addChildNode(birdsNode)
         }
 
         let glow = SCNLight()
         glow.type = .omni
-        glow.intensity = 700
+        glow.intensity = mode == .sunDetail ? 860 : 700
         glow.color = UIColor(red: 1.0, green: 0.44, blue: 0.28, alpha: 1)
         glow.attenuationStartDistance = 0
-        glow.attenuationEndDistance = 26
+        glow.attenuationEndDistance = mode == .sunDetail ? 34 : 26
 
         let glowNode = SCNNode()
         glowNode.light = glow
@@ -238,8 +349,15 @@ final class WeatherSceneManager: ObservableObject {
 
     private func makeBirdsContainer(from loadedScene: SCNScene) -> SCNNode? {
         _birdsScene = loadedScene
-        let container = loadedScene.rootNode
+        let container = SCNNode()
         container.name = SceneNode.birds
+
+        // 不要直接复用其他 SCNScene 的 rootNode；把 child clone 到新容器里，
+        // 否则在 addChildNode 时会触发“removing the root node of a scene”错误。
+        let sourceNodes = loadedScene.rootNode.childNodes.isEmpty ? [loadedScene.rootNode] : loadedScene.rootNode.childNodes
+        for node in sourceNodes {
+            container.addChildNode(node.clone())
+        }
 
         // 打印节点树（便于调试，找到界面中多余节点的名称）
         print("[Birds] --- node tree ---")
@@ -255,7 +373,8 @@ final class WeatherSceneManager: ObservableObject {
         let cy = (bmin.y + bmax.y) / 2
         let cz = (bmin.z + bmax.z) / 2
         container.pivot = SCNMatrix4MakeTranslation(cx, cy, cz)
-        container.scale = SCNVector3(Float(1.8) / xSpan, Float(1.8) / xSpan, Float(1.8) / xSpan)
+        let targetWidth: Float = mode == .sunDetail ? 1.45 : 1.8
+        container.scale = SCNVector3(targetWidth / xSpan, targetWidth / xSpan, targetWidth / xSpan)
         applyBirdsDarkMaterial(to: container)
         container.enumerateHierarchy { node, _ in
             for key in node.animationKeys { node.animationPlayer(forKey: key)?.play() }
@@ -329,6 +448,7 @@ final class WeatherSceneManager: ObservableObject {
         }
 
         let container = SCNNode()
+        container.name = SceneNode.temperature
         var cursor: Float = 0
         let spacing: Float = 0.18
 
@@ -477,18 +597,21 @@ final class WeatherSceneManager: ObservableObject {
     }
 
     private func updateTemperature(animated: Bool) {
+        guard mode == .main else { return }
         guard let root = conditionGroup else { return }
 
         let replacement = makeTemperatureNode(text: "\(currentTemperature)")
+        replacement.name = SceneNode.temperature
         replacement.position = SCNVector3(0, -2.3, 0.12) // 同步 buildScene 数字位置
-        replacement.opacity = animated ? 0 : 1
+        let targetOpacity: CGFloat = isTemperatureHidden ? 0 : 1
+        replacement.opacity = animated ? 0 : targetOpacity
         root.addChildNode(replacement)
 
         if animated {
             SCNTransaction.begin()
             SCNTransaction.animationDuration = 0.22
             temperatureNode?.opacity = 0
-            replacement.opacity = 1
+            replacement.opacity = targetOpacity
             SCNTransaction.completionBlock = { [weak self] in
                 self?.temperatureNode?.removeFromParentNode()
                 self?.temperatureNode = replacement
