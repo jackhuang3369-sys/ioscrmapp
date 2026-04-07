@@ -4,6 +4,15 @@ import UIKit
 import WebKit
 
 struct AIChatView: View {
+    private struct AssistantAnswerSection {
+        let title: String?
+        let paragraphs: [String]
+
+        var hasVisibleContent: Bool {
+            title != nil || paragraphs.contains { !$0.isEmpty }
+        }
+    }
+
     @Environment(\.openURL) private var openURL
     @StateObject private var viewModel: AIChatViewModel
     @FocusState private var isDraftFieldFocused: Bool
@@ -1036,22 +1045,35 @@ struct AIChatView: View {
     @ViewBuilder
     private func assistantAnswerContent(message: AIChatMessage?) -> some View {
         if let message {
-            if let richText = message.richText, attributedTextIsNotEmpty(richText) {
+            let sections = structuredAnswerSections(from: message)
+
+            if !sections.isEmpty {
+                VStack(alignment: .leading, spacing: 14) {
+                    ForEach(Array(sections.enumerated()), id: \.offset) { index, section in
+                        assistantAnswerSectionCard(section, index: index)
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+            } else if let richText = message.richText, attributedTextIsNotEmpty(richText) {
                 Text(richText)
-                    .font(.system(size: 15, weight: .regular, design: .rounded))
                     .foregroundColor(.white.opacity(0.92))
+                    .lineSpacing(4)
+                    .multilineTextAlignment(.leading)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .fixedSize(horizontal: false, vertical: true)
             } else if let htmlAttributed = attributedHTML(message.htmlContent), attributedTextIsNotEmpty(htmlAttributed) {
                 Text(htmlAttributed)
-                    .font(.system(size: 15, weight: .regular, design: .rounded))
                     .foregroundColor(.white.opacity(0.92))
+                    .lineSpacing(4)
+                    .multilineTextAlignment(.leading)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .fixedSize(horizontal: false, vertical: true)
             } else if !message.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                 Text(message.text)
                     .font(.system(size: 15, weight: .regular, design: .rounded))
                     .foregroundColor(.white.opacity(0.92))
+                    .lineSpacing(4)
+                    .multilineTextAlignment(.leading)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .fixedSize(horizontal: false, vertical: true)
             } else {
@@ -1068,6 +1090,191 @@ struct AIChatView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .fixedSize(horizontal: false, vertical: true)
         }
+    }
+
+    private func assistantAnswerSectionCard(_ section: AssistantAnswerSection, index: Int) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            if let title = section.title {
+                HStack(alignment: .center, spacing: 10) {
+                    Capsule()
+                        .fill(
+                            LinearGradient(
+                                colors: [Color(hex: 0x59D0FF), Color(hex: 0x8B5CFF)],
+                                startPoint: .top,
+                                endPoint: .bottom
+                            )
+                        )
+                        .frame(width: 4, height: 24)
+
+                    Text(title)
+                        .font(.system(size: 17, weight: .semibold, design: .rounded))
+                        .foregroundColor(.white.opacity(0.98))
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+
+            VStack(alignment: .leading, spacing: 10) {
+                ForEach(Array(section.paragraphs.enumerated()), id: \.offset) { _, paragraph in
+                    if let bulletText = bulletBody(from: paragraph) {
+                        HStack(alignment: .top, spacing: 10) {
+                            Circle()
+                                .fill(Color.white.opacity(0.72))
+                                .frame(width: 6, height: 6)
+                                .padding(.top, 7)
+
+                            Text(bulletText)
+                                .font(.system(size: 15, weight: .regular, design: .rounded))
+                                .foregroundColor(.white.opacity(0.9))
+                                .lineSpacing(4)
+                                .multilineTextAlignment(.leading)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                    } else {
+                        Text(paragraph)
+                            .font(.system(size: 15, weight: .regular, design: .rounded))
+                            .foregroundColor(.white.opacity(0.9))
+                            .lineSpacing(4)
+                            .multilineTextAlignment(.leading)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+            }
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 22, style: .continuous)
+                .fill(
+                    LinearGradient(
+                        colors: [
+                            Color.white.opacity(index == 0 ? 0.1 : 0.08),
+                            Color.white.opacity(0.04)
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 22, style: .continuous)
+                .stroke(Color.white.opacity(0.12), lineWidth: 1)
+        )
+    }
+
+    private func structuredAnswerSections(from message: AIChatMessage) -> [AssistantAnswerSection] {
+        let source = message.text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !source.isEmpty else {
+            return []
+        }
+
+        let normalized = source
+            .replacingOccurrences(of: "\r\n", with: "\n")
+            .replacingOccurrences(of: "\r", with: "\n")
+        let lines = normalized.components(separatedBy: "\n")
+
+        var sections: [AssistantAnswerSection] = []
+        var currentTitle: String?
+        var currentParagraphLines: [String] = []
+        var currentParagraphs: [String] = []
+        var detectedStructuredContent = false
+
+        func flushParagraph() {
+            let paragraph = currentParagraphLines
+                .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+                .filter { !$0.isEmpty }
+                .joined(separator: "\n")
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+            if !paragraph.isEmpty {
+                currentParagraphs.append(paragraph)
+            }
+            currentParagraphLines.removeAll()
+        }
+
+        func flushSection() {
+            flushParagraph()
+            let section = AssistantAnswerSection(title: currentTitle, paragraphs: currentParagraphs)
+            if section.hasVisibleContent {
+                sections.append(section)
+            }
+            currentTitle = nil
+            currentParagraphs.removeAll()
+        }
+
+        for rawLine in lines {
+            let line = rawLine.trimmingCharacters(in: .whitespacesAndNewlines)
+
+            if line.isEmpty {
+                flushParagraph()
+                continue
+            }
+
+            if let title = assistantSectionTitle(from: line) {
+                flushSection()
+                currentTitle = title
+                detectedStructuredContent = true
+                continue
+            }
+
+            if let bulletText = normalizedBulletLine(from: line) {
+                flushParagraph()
+                currentParagraphs.append(bulletText)
+                detectedStructuredContent = true
+                continue
+            }
+
+            currentParagraphLines.append(line)
+        }
+
+        flushSection()
+
+        let visibleSections = sections.filter(\.hasVisibleContent)
+        let hasTitledSections = visibleSections.contains { $0.title != nil }
+        return detectedStructuredContent && (visibleSections.count > 1 || hasTitledSections)
+            ? visibleSections
+            : []
+    }
+
+    private func assistantSectionTitle(from line: String) -> String? {
+        if let title = firstMatch(in: line, pattern: #"^\s*#{1,6}\s+(.+)$"#) {
+            return title
+        }
+
+        if let numberedTitle = firstMatch(in: line, pattern: #"^\s*(\d+\.\s+.+)$"#) {
+            return numberedTitle
+        }
+
+        return nil
+    }
+
+    private func normalizedBulletLine(from line: String) -> String? {
+        if let bulletText = firstMatch(in: line, pattern: #"^\s*[-*+•]\s+(.+)$"#) {
+            return "• \(bulletText)"
+        }
+
+        return nil
+    }
+
+    private func bulletBody(from paragraph: String) -> String? {
+        firstMatch(in: paragraph, pattern: #"^\s*•\s+(.+)$"#)
+    }
+
+    private func firstMatch(in text: String, pattern: String) -> String? {
+        guard
+            let regex = try? NSRegularExpression(pattern: pattern),
+            let match = regex.firstMatch(
+                in: text,
+                range: NSRange(text.startIndex..., in: text)
+            )
+        else {
+            return nil
+        }
+
+        let targetRange = match.numberOfRanges > 1 ? match.range(at: 1) : match.range
+        guard let range = Range(targetRange, in: text) else {
+            return nil
+        }
+
+        return String(text[range]).trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     private func infoGlassCard<Content: View>(title: String, @ViewBuilder content: () -> Content) -> some View {
