@@ -21,6 +21,7 @@ struct AppServices {
 
         switch configuration.mode {
         case .mock:
+            let mockBadgeCenterService = MockBadgeCenterService()
             aiChatService = MockAIChatService()
             authService = MockAuthService()
             homeService = MockHomeService()
@@ -30,8 +31,8 @@ struct AppServices {
             billingService = MockBillingService()
             rechargeService = MockRechargeService()
             ticketsService = MockTicketsService()
-            meService = MockMeService()
-            badgeCenterService = MockBadgeCenterService()
+            meService = MockMeService(badgeCenterService: mockBadgeCenterService)
+            badgeCenterService = mockBadgeCenterService
             notificationService = MockNotificationService()
             splashAdService = MockSplashAdService()
         case .remote:

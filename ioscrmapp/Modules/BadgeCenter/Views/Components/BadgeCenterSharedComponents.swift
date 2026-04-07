@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct BadgeRemoteIconView: View {
+    let assetName: String?
     let url: URL?
     let fallbackSystemName: String
     let symbolFont: Font
@@ -8,7 +9,13 @@ struct BadgeRemoteIconView: View {
 
     var body: some View {
         Group {
-            if let url {
+            if let assetName {
+                Image(assetName)
+                    .renderingMode(.original)
+                    .resizable()
+                    .scaledToFit()
+                    .padding(padding)
+            } else if let url {
                 AsyncImage(url: url) { phase in
                     switch phase {
                     case let .success(image):

@@ -31,6 +31,7 @@ struct HomeView: View {
     @State private var isOffersPresented = false
     @State private var isTicketsPresented = false
     @State private var isWeatherPresented = false
+    @State private var isBadgeCenterPresented = false
     @State private var requestedVideoID: String?
     @State private var isSigningOut = false
     @State private var isCreditLimitExpanded = false
@@ -190,6 +191,14 @@ struct HomeView: View {
                 .fullScreenCover(isPresented: $isWeatherPresented) {
                     WeatherMainView(
                         session: custSubInfo,
+                        aiChatService: aiChatService,
+                        onAIChatNavigation: handleAIChatNavigation(_:)
+                    )
+                }
+                .fullScreenCover(isPresented: $isBadgeCenterPresented) {
+                    BadgeCenterContainerView(
+                        session: custSubInfo,
+                        badgeCenterService: badgeCenterService,
                         aiChatService: aiChatService,
                         onAIChatNavigation: handleAIChatNavigation(_:)
                     )
@@ -471,17 +480,29 @@ struct HomeView: View {
 
                     Spacer(minLength: 8)
 
-                    HStack(spacing: 6) {
-                        Image("HomeHeroBadgeIcon")
-                            .renderingMode(.original)
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 18, height: 18)
+                    Button {
+                        isBadgeCenterPresented = true
+                    } label: {
+                        HStack(spacing: 6) {
+                            Image("HomeHeroBadgeIcon")
+                                .renderingMode(.original)
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 18, height: 18)
 
-                        Text(localized("home.profile.advanced"))
-                            .font(homeFont(9, weight: .medium))
-                            .foregroundColor(.white.opacity(0.82))
+                            Text(localized("home.profile.advanced"))
+                                .font(homeFont(9, weight: .medium))
+                                .foregroundColor(.white.opacity(0.82))
+                        }
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 5)
+                        .background(
+                            Capsule()
+                                .fill(.white.opacity(0.12))
+                        )
                     }
+                    .buttonStyle(.plain)
+                    .accessibilityIdentifier("home.badgeCenter.entry")
                 }
             }
             .padding(.horizontal, headerContentHorizontalPadding)

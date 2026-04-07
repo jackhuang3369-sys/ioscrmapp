@@ -276,6 +276,7 @@ struct BadgeSummary: Identifiable, Sendable {
     let status: BadgeDisplayStatus
     let level: BadgeLevel
     let accentStyle: BadgeAccentStyle
+    let iconAssetName: String?
     let iconSystemName: String
     let iconURL: URL?
     let iconHDURL: URL?
@@ -302,6 +303,7 @@ struct BadgeDetail: Identifiable, Sendable {
     let status: BadgeDisplayStatus
     let level: BadgeLevel
     let accentStyle: BadgeAccentStyle
+    let iconAssetName: String?
     let iconSystemName: String
     let iconURL: URL?
     let iconHDURL: URL?
@@ -349,6 +351,7 @@ struct BadgeUnlockEvent: Identifiable, Sendable {
     let title: LocalizedTextValue
     let badgeName: LocalizedTextValue
     let message: LocalizedTextValue
+    let iconAssetName: String?
     let iconURL: URL?
 }
 

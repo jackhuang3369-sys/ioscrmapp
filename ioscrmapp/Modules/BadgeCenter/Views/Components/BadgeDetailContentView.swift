@@ -29,6 +29,7 @@ struct BadgeDetailContentView: View {
                         .frame(width: 98, height: 98)
 
                     BadgeRemoteIconView(
+                        assetName: badge.iconAssetName,
                         url: badge.iconURL,
                         fallbackSystemName: badge.iconSystemName,
                         symbolFont: .du(42, weight: .bold),

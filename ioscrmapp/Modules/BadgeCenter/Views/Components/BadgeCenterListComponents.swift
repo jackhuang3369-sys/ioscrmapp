@@ -138,6 +138,7 @@ struct BadgeCardView: View {
                         .frame(width: 54, height: 54)
 
                     BadgeRemoteIconView(
+                        assetName: badge.iconAssetName,
                         url: badge.iconURL,
                         fallbackSystemName: badge.iconSystemName,
                         symbolFont: .du(22, weight: .bold),

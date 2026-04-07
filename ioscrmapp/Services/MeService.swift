@@ -30,17 +30,30 @@ actor MockMeService: MeServicing {
     }
 
     private let mode: Mode
+    private let badgeCenterService: any BadgeCenterServicing
 
-    init(mode: Mode = .loaded) {
+    init(
+        mode: Mode = .loaded,
+        badgeCenterService: any BadgeCenterServicing = MockBadgeCenterService()
+    ) {
         self.mode = mode
+        self.badgeCenterService = badgeCenterService
     }
 
-    func fetchMeContent(session: CustSubInfo, language _: AppLanguage) async throws -> MeContent {
+    func fetchMeContent(session: CustSubInfo, language: AppLanguage) async throws -> MeContent {
         switch mode {
         case .loaded:
-            return buildContent(session: session, includeContent: true)
+            return await buildContent(
+                session: session,
+                language: language,
+                includeContent: true
+            )
         case .empty:
-            return buildContent(session: session, includeContent: false)
+            return await buildContent(
+                session: session,
+                language: language,
+                includeContent: false
+            )
         case .failed:
             throw MeServiceError.networkUnavailable
         }
@@ -54,15 +67,11 @@ actor MockMeService: MeServicing {
         return normalizedPassword == AuthValidator.demoPassword
     }
 
-    private func buildContent(session: CustSubInfo, includeContent: Bool) -> MeContent {
-        struct BadgePreview {
-            let id: String
-            let title: LocalizedTextValue
-            let assetName: String
-            let levelRank: Int
-            let acquiredAt: String
-        }
-
+    private func buildContent(
+        session: CustSubInfo,
+        language: AppLanguage,
+        includeContent: Bool
+    ) async -> MeContent {
         let profile = MeProfileSummary(
             displayName: session.displayName,
             maskedPhoneNumber: MePhoneNumberFormatter.masked(session.phoneNumber),
@@ -70,6 +79,15 @@ actor MockMeService: MeServicing {
             membershipLabel: .key("me.membership.vip"),
             initials: String(session.displayName.prefix(2)).uppercased()
         )
+
+        let badgeSnapshot: BadgeCenterSnapshot? = if includeContent {
+            try? await badgeCenterService.fetchBadgeCenter(
+                session: session,
+                language: language
+            )
+        } else {
+            nil
+        }
 
         let stats = [
             MeStatItem(
@@ -96,70 +114,14 @@ actor MockMeService: MeServicing {
             MeStatItem(
                 id: "badges",
                 title: .key("me.stat.badges"),
-                value: "12",
+                value: badgeSnapshot.map { String($0.overview.acquiredCount) } ?? "12",
                 assetName: "MeStatBadgesIcon",
                 actionID: .badges
             )
         ]
 
         let badges = includeContent
-            ? Array(
-                [
-                    BadgePreview(
-                        id: "vip",
-                        title: .key("me.badge.vip"),
-                        assetName: "MeBadgeVipIcon",
-                        levelRank: 4,
-                        acquiredAt: "2026-03-25 10:20"
-                    ),
-                    BadgePreview(
-                        id: "first-order",
-                        title: .key("me.badge.firstOrder"),
-                        assetName: "MeBadgeOrderIcon",
-                        levelRank: 3,
-                        acquiredAt: "2026-03-24 09:18"
-                    ),
-                    BadgePreview(
-                        id: "first-recharge",
-                        title: .key("me.badge.firstRecharge"),
-                        assetName: "MeBadgeRechargeIcon",
-                        levelRank: 3,
-                        acquiredAt: "2026-03-18 20:42"
-                    ),
-                    BadgePreview(
-                        id: "streak",
-                        title: .key("me.badge.streak"),
-                        assetName: "MeBadgeStreakIcon",
-                        levelRank: 2,
-                        acquiredAt: "2026-03-21 08:05"
-                    ),
-                    BadgePreview(
-                        id: "new-user",
-                        title: .key("me.badge.newUser"),
-                        assetName: "MeBadgeNewUserIcon",
-                        levelRank: 1,
-                        acquiredAt: "2026-02-08 10:20"
-                    )
-                ]
-                .sorted { lhs, rhs in
-                    if lhs.levelRank != rhs.levelRank {
-                        return lhs.levelRank > rhs.levelRank
-                    }
-                    return lhs.acquiredAt > rhs.acquiredAt
-                }
-                .prefix(5)
-                .map { item in
-                    MeBadgeItem(
-                        id: item.id,
-                        title: item.title,
-                        assetName: item.assetName,
-                        remoteIconURL: nil,
-                        fallbackSystemName: "rosette",
-                        isUnread: false,
-                        actionID: .badges
-                    )
-                }
-            )
+            ? MeBadgePreviewBuilder.previewItems(from: badgeSnapshot)
             : []
 
         let menuGroups = includeContent
@@ -255,7 +217,17 @@ struct RemoteMeService: MeServicing {
     }
 
     private func buildBadgePreviewItems(from snapshot: BadgeCenterSnapshot) -> [MeBadgeItem] {
-        snapshot.badges
+        MeBadgePreviewBuilder.previewItems(from: snapshot)
+    }
+}
+
+private enum MeBadgePreviewBuilder {
+    static func previewItems(from snapshot: BadgeCenterSnapshot?) -> [MeBadgeItem] {
+        guard let snapshot else {
+            return []
+        }
+
+        return snapshot.badges
             .filter { $0.status == .acquired }
             .sorted { lhs, rhs in
                 if lhs.level.sortRank != rhs.level.sortRank {
@@ -269,9 +241,11 @@ struct RemoteMeService: MeServicing {
                 MeBadgeItem(
                     id: badge.id,
                     title: badge.title,
+                    iconAssetName: badge.iconAssetName,
                     assetName: nil,
                     remoteIconURL: badge.iconURL,
                     fallbackSystemName: badge.iconSystemName,
+                    accentStyle: badge.accentStyle,
                     isUnread: badge.isUnread,
                     actionID: .badges
                 )

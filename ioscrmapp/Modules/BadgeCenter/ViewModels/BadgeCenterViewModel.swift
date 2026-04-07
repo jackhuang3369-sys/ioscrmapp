@@ -383,6 +383,7 @@ final class BadgeCenterViewModel: ObservableObject {
             status: detail.status,
             level: detail.level,
             accentStyle: detail.accentStyle,
+            iconAssetName: badgeSummary.iconAssetName,
             iconSystemName: badgeSummary.iconSystemName,
             iconURL: badgeSummary.iconURL,
             iconHDURL: badgeSummary.iconHDURL,

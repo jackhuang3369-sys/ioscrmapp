@@ -402,42 +402,18 @@ struct MeContainerView: View {
     }
 
     private func badgePreviewIcon(for item: MeBadgeItem) -> some View {
-        return ZStack {
+        ZStack {
             Circle()
-                .fill(
-                    LinearGradient(
-                        colors: [DUTheme.cyan.opacity(0.18), DUTheme.blue.opacity(0.14)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
+                .fill(item.accentStyle.gradient)
                 .frame(width: 56, height: 56)
 
-            if let assetName = item.assetName {
-                Image(assetName)
-                    .renderingMode(.original)
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 52, height: 52)
-            } else if let remoteIconURL = item.remoteIconURL {
-                AsyncImage(url: remoteIconURL) { phase in
-                    switch phase {
-                    case let .success(image):
-                        image
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 52, height: 52)
-                    default:
-                        Image(systemName: item.fallbackSystemName)
-                            .font(.du(24, weight: .semibold))
-                            .foregroundColor(DUTheme.blue)
-                    }
-                }
-            } else {
-                Image(systemName: item.fallbackSystemName)
-                    .font(.du(24, weight: .semibold))
-                    .foregroundColor(DUTheme.blue)
-            }
+            BadgeRemoteIconView(
+                assetName: item.iconAssetName ?? item.assetName,
+                url: item.remoteIconURL,
+                fallbackSystemName: item.fallbackSystemName,
+                symbolFont: .du(24, weight: .semibold),
+                padding: 9
+            )
         }
         .frame(width: 56, height: 56)
     }

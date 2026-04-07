@@ -20,6 +20,7 @@ struct BadgeUnlockPromptView: View {
                             .frame(width: 64, height: 64)
 
                         BadgeRemoteIconView(
+                            assetName: event.iconAssetName,
                             url: event.iconURL,
                             fallbackSystemName: "sparkles",
                             symbolFont: .du(28, weight: .bold),

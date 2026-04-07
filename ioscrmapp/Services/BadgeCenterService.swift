@@ -399,6 +399,7 @@ private enum BadgeCenterResponseMapper {
                 for: category,
                 level: level
             ),
+            iconAssetName: nil,
             iconSystemName: iconSystemName(for: category, level: level),
             iconURL: url(in: object, keys: ["iconUrl"]),
             iconHDURL: url(in: object, keys: ["iconHdUrl"]),
@@ -472,6 +473,7 @@ private enum BadgeCenterResponseMapper {
                 ),
                 badgeName: .literal(displayName),
                 message: .literal(string(in: eventObject, keys: ["popupMessage"]) ?? ""),
+                iconAssetName: nil,
                 iconURL: url(in: eventObject, keys: ["iconUrl"])
             )
         }
@@ -535,6 +537,7 @@ private enum BadgeCenterResponseMapper {
             status: status,
             level: level,
             accentStyle: accentStyle(for: category, level: level),
+            iconAssetName: nil,
             iconSystemName: iconSystemName(for: category, level: level),
             iconURL: url(in: object, keys: ["iconUrl"]),
             iconHDURL: url(in: object, keys: ["iconHdUrl"]),
@@ -1061,6 +1064,7 @@ private struct MockBadgeRecord: Sendable {
     let status: BadgeDisplayStatus
     let level: BadgeLevel
     let accentStyle: BadgeAccentStyle
+    let iconAssetName: String?
     let iconSystemName: String
     let title: BadgeCopy
     let subtitle: BadgeCopy
@@ -1091,6 +1095,7 @@ private struct MockBadgeRecord: Sendable {
             status: status,
             level: level,
             accentStyle: accentStyle,
+            iconAssetName: iconAssetName,
             iconSystemName: iconSystemName,
             iconURL: nil,
             iconHDURL: nil,
@@ -1119,6 +1124,7 @@ private struct MockBadgeRecord: Sendable {
             status: status,
             level: level,
             accentStyle: accentStyle,
+            iconAssetName: iconAssetName,
             iconSystemName: iconSystemName,
             iconURL: nil,
             iconHDURL: nil,
@@ -1152,6 +1158,7 @@ private struct MockBadgeRecord: Sendable {
             title: .key("badgeCenter.popup.title"),
             badgeName: title.value(language: language),
             message: unlockMessage.value(language: language),
+            iconAssetName: iconAssetName,
             iconURL: nil
         )
     }
@@ -1248,6 +1255,7 @@ private extension MockBadgeCenterService {
                 status: .acquired,
                 level: .base,
                 accentStyle: .aurora,
+                iconAssetName: "HomeHeroBadgeIcon",
                 iconSystemName: "sparkles",
                 title: BadgeCopy(
                     zhHans: "欢迎登船",
@@ -1377,6 +1385,7 @@ private extension MockBadgeCenterService {
                 status: .acquired,
                 level: .advanced,
                 accentStyle: .ocean,
+                iconAssetName: "BadgeReferenceGoldFlagIcon",
                 iconSystemName: "calendar.badge.clock",
                 title: BadgeCopy(
                     zhHans: "月度活跃",
@@ -1483,6 +1492,7 @@ private extension MockBadgeCenterService {
                 status: .acquired,
                 level: .premium,
                 accentStyle: .night,
+                iconAssetName: "BadgeReferenceSilverMedalIcon",
                 iconSystemName: "moon.stars.fill",
                 title: BadgeCopy(
                     zhHans: "夜间流量王",
@@ -1630,6 +1640,7 @@ private extension MockBadgeCenterService {
                 status: .acquired,
                 level: .premium,
                 accentStyle: .sunrise,
+                iconAssetName: "BadgeReferenceBronzeFlagIcon",
                 iconSystemName: "flag.2.crossed.fill",
                 title: BadgeCopy(
                     zhHans: "国庆限定",
@@ -1745,6 +1756,7 @@ private extension MockBadgeCenterService {
                 status: .acquired,
                 level: .premium,
                 accentStyle: .aurora,
+                iconAssetName: "BadgeReferencePenNibIcon",
                 iconSystemName: "gift.fill",
                 title: BadgeCopy(
                     zhHans: "斋月限定",
@@ -1851,6 +1863,7 @@ private extension MockBadgeCenterService {
                 status: .locked,
                 level: .ultimate,
                 accentStyle: .graphite,
+                iconAssetName: "BadgeReferencePenNibIcon",
                 iconSystemName: "crown.fill",
                 title: BadgeCopy(
                     zhHans: "传奇终章",
@@ -1992,6 +2005,7 @@ private extension MockBadgeCenterService {
                 status: .locked,
                 level: .base,
                 accentStyle: .sunrise,
+                iconAssetName: "BadgeReferenceHallQuillIcon",
                 iconSystemName: "bolt.badge.clock.fill",
                 title: BadgeCopy(
                     zhHans: "周末充值达人",
@@ -2110,6 +2124,7 @@ private extension MockBadgeCenterService {
                 status: .expired,
                 level: .advanced,
                 accentStyle: .ocean,
+                iconAssetName: "BadgeReferenceSilverMedalIcon",
                 iconSystemName: "bicycle.circle.fill",
                 title: BadgeCopy(
                     zhHans: "骑行探索者",
