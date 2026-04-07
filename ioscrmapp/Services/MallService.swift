@@ -1086,6 +1086,21 @@ private enum MallMockData {
         "运动鞋"
     ]
 
+    private enum MallMockAssetName: String {
+        case phone = "MallProductPhoneImage"
+        case laptop = "MallProductLaptopImage"
+        case earbuds = "MallProductEarbudsImage"
+        case watch = "MallProductWatchImage"
+        case serum = "MallProductSerumImage"
+        case lipstick = "MallProductLipstickImage"
+        case perfume = "MallProductPerfumeImage"
+        case toteBag = "MallProductToteBagImage"
+        case sneakers = "MallProductSneakersImage"
+        case jacket = "MallProductJacketImage"
+        case vacuum = "MallProductVacuumImage"
+        case coffeeMachine = "MallProductCoffeeMachineImage"
+    }
+
     static func makeHomeSnapshot() -> MallHomeSnapshot {
         let products = makeProducts()
         let primaryCategories = [
@@ -1132,6 +1147,10 @@ private enum MallMockData {
                 meta: MallLocalizedString("运动上新", "Fresh drop", "إصدار جديد")
             ),
         ]
+    }
+
+    private static func assetImage(_ assetName: MallMockAssetName) -> MallImageSource {
+        .asset(name: assetName.rawValue)
     }
 
     private static func makeElectronicsCategory() -> MallPrimaryCategory {
@@ -1517,7 +1536,7 @@ private enum MallMockData {
                 thirdCategoryID: "iphone-line",
                 title: MallLocalizedString("iPhone 16 Pro Max 256G", "iPhone 16 Pro Max 256GB", "iPhone 16 Pro Max 256GB"),
                 subtitle: MallLocalizedString("沙漠金旗舰 手机焕新直降", "Desert titanium flagship with instant savings", "هاتف رائد بلون التيتانيوم الصحراوي"),
-                image: .asset(name: "ProductIPhoneImage"),
+                image: assetImage(.phone),
                 detailMediaList: sampleDetailMedia(slug: "iphone-16-pro"),
                 price: 8_999,
                 originalPrice: 9_999,
@@ -1540,7 +1559,7 @@ private enum MallMockData {
                 thirdCategoryID: "ultrabook",
                 title: MallLocalizedString("MacBook Air 13 英寸 M4", "MacBook Air 13-inch M4", "MacBook Air 13 بوصة M4"),
                 subtitle: MallLocalizedString("轻薄办公本 支持 24 期免息", "Lightweight laptop with installment offer", "حاسوب خفيف مع تقسيط"),
-                image: .system(name: "laptopcomputer", backgroundHex: 0xEFF4FF, tintHex: 0x4A58C6),
+                image: assetImage(.laptop),
                 detailMediaList: sampleDetailMedia(slug: "macbook-air-m4"),
                 price: 7_499,
                 originalPrice: 8_299,
@@ -1563,7 +1582,7 @@ private enum MallMockData {
                 thirdCategoryID: "earbuds",
                 title: MallLocalizedString("AirPods Pro 主动降噪耳机", "AirPods Pro noise-canceling earbuds", "AirPods Pro لعزل الضوضاء"),
                 subtitle: MallLocalizedString("随身轻便 通勤游戏都合适", "Portable audio for commute and play", "سماعات خفيفة للتنقل واللعب"),
-                image: .asset(name: "ProductAirPodsImage"),
+                image: assetImage(.earbuds),
                 detailMediaList: sampleDetailMedia(slug: "airpods-pro", includesVideo: true),
                 price: 1_499,
                 originalPrice: 1_899,
@@ -1586,7 +1605,7 @@ private enum MallMockData {
                 thirdCategoryID: "watch",
                 title: MallLocalizedString("智能运动手表 Active", "Active smart fitness watch", "ساعة Active الذكية"),
                 subtitle: MallLocalizedString("心率监测与全天候运动记录", "Heart-rate tracking and daily activity", "مراقبة نبضات القلب والنشاط اليومي"),
-                image: .asset(name: "ProductWatchImage"),
+                image: assetImage(.watch),
                 detailMediaList: sampleDetailMedia(slug: "active-watch"),
                 price: 699,
                 originalPrice: 899,
@@ -1609,7 +1628,7 @@ private enum MallMockData {
                 thirdCategoryID: "serum",
                 title: MallLocalizedString("修护精华礼盒", "Repair serum gift set", "مجموعة سيروم الإصلاح"),
                 subtitle: MallLocalizedString("春季保湿维稳套装", "Hydrating set for seasonal care", "مجموعة ترطيب للعناية الموسمية"),
-                image: .system(name: "drop.fill", backgroundHex: 0xFFF7ED, tintHex: 0xF59E0B),
+                image: assetImage(.serum),
                 detailMediaList: sampleDetailMedia(slug: "repair-serum-kit"),
                 price: 369,
                 originalPrice: 459,
@@ -1632,7 +1651,7 @@ private enum MallMockData {
                 thirdCategoryID: "lip",
                 title: MallLocalizedString("春日樱粉口红套装", "Spring matte lip set", "مجموعة أحمر شفاه ربيعية"),
                 subtitle: MallLocalizedString("显白提气色 送礼也合适", "Soft matte shades for daily looks", "درجات ناعمة مناسبة للهدايا"),
-                image: .system(name: "paintbrush.pointed.fill", backgroundHex: 0xFFF1F4, tintHex: 0xEC4899),
+                image: assetImage(.lipstick),
                 detailMediaList: sampleDetailMedia(slug: "matte-lip-kit", includesVideo: true),
                 price: 129,
                 originalPrice: 169,
@@ -1655,7 +1674,7 @@ private enum MallMockData {
                 thirdCategoryID: "perfume",
                 title: MallLocalizedString("高定香氛礼盒", "Premium fragrance gift box", "صندوق عطور فاخر"),
                 subtitle: MallLocalizedString("清新木质香调 节日送礼推荐", "Fresh woody notes for gifting", "روائح خشبية منعشة للهدايا"),
-                image: .system(name: "sparkles", backgroundHex: 0xEEF7FF, tintHex: 0x0EA5E9),
+                image: assetImage(.perfume),
                 detailMediaList: sampleDetailMedia(slug: "perfume-box"),
                 price: 499,
                 originalPrice: 699,
@@ -1678,7 +1697,7 @@ private enum MallMockData {
                 thirdCategoryID: "tote",
                 title: MallLocalizedString("通勤托特包", "City tote bag", "حقيبة توت للعمل"),
                 subtitle: MallLocalizedString("大容量高级感 通勤百搭", "Spacious bag for everyday commute", "واسعة وأنيقة للاستخدام اليومي"),
-                image: .system(name: "bag.fill", backgroundHex: 0xFEF2F2, tintHex: 0xEF4444),
+                image: assetImage(.toteBag),
                 detailMediaList: sampleDetailMedia(slug: "city-tote-bag"),
                 price: 259,
                 originalPrice: 339,
@@ -1701,7 +1720,7 @@ private enum MallMockData {
                 thirdCategoryID: "runner",
                 title: MallLocalizedString("复古运动鞋", "Retro runner sneakers", "حذاء رياضي كلاسيكي"),
                 subtitle: MallLocalizedString("轻弹缓震 日常百搭", "Soft rebound sole for daily wear", "نعل مريح للاستخدام اليومي"),
-                image: .system(name: "figure.walk", backgroundHex: 0xEFF6FF, tintHex: 0x2563EB),
+                image: assetImage(.sneakers),
                 detailMediaList: sampleDetailMedia(slug: "runner-sneakers"),
                 price: 329,
                 originalPrice: 459,
@@ -1724,7 +1743,7 @@ private enum MallMockData {
                 thirdCategoryID: "jacket",
                 title: MallLocalizedString("轻薄防风外套", "Lightweight wind jacket", "سترة خفيفة مقاومة للرياح"),
                 subtitle: MallLocalizedString("春季叠穿更有层次", "Layer-friendly jacket for spring", "سترة مثالية لطبقات الربيع"),
-                image: .system(name: "tshirt.fill", backgroundHex: 0xF5F3FF, tintHex: 0x8B5CF6),
+                image: assetImage(.jacket),
                 detailMediaList: sampleDetailMedia(slug: "wind-jacket"),
                 price: 219,
                 originalPrice: 299,
@@ -1747,7 +1766,7 @@ private enum MallMockData {
                 thirdCategoryID: "robot",
                 title: MallLocalizedString("扫拖一体机器人", "Robot vacuum and mop", "روبوت تنظيف ومسح"),
                 subtitle: MallLocalizedString("自动集尘 解放双手", "Auto-empty dock for hands-free cleaning", "قاعدة تفريغ تلقائي للتنظيف السهل"),
-                image: .system(name: "sparkles", backgroundHex: 0xECFEFF, tintHex: 0x06B6D4),
+                image: assetImage(.vacuum),
                 detailMediaList: sampleDetailMedia(slug: "robot-vacuum", includesVideo: true),
                 price: 1_799,
                 originalPrice: 2_299,
@@ -1770,7 +1789,7 @@ private enum MallMockData {
                 thirdCategoryID: "coffee",
                 title: MallLocalizedString("胶囊咖啡机", "Capsule coffee machine", "ماكينة قهوة بالكبسولات"),
                 subtitle: MallLocalizedString("桌面小体积 早晨一键出杯", "Compact machine for a quick morning brew", "جهاز صغير لتحضير قهوتك بسرعة"),
-                image: .system(name: "cup.and.saucer.fill", backgroundHex: 0xFFF7ED, tintHex: 0xF97316),
+                image: assetImage(.coffeeMachine),
                 detailMediaList: sampleDetailMedia(slug: "capsule-coffee"),
                 price: 799,
                 originalPrice: 999,
@@ -1878,7 +1897,7 @@ private enum MallMockData {
                         "Bundle your phone, audio, and watch from 15% off",
                         "خصم حتى 15% على حزم الهاتف والسماعات والساعة"
                     ),
-                    image: .asset(name: "ProductAirPodsImage"),
+                    image: assetImage(.earbuds),
                     startHex: 0x102A43,
                     endHex: 0x243B53,
                     categoryID: "electronics",
@@ -1897,7 +1916,7 @@ private enum MallMockData {
                         "Mix serums, creams, and masks with bundle savings",
                         "خصومات عند الجمع بين السيروم والكريمات والأقنعة"
                     ),
-                    image: .system(name: "sparkles", backgroundHex: 0xFFF7ED, tintHex: 0xF59E0B),
+                    image: assetImage(.serum),
                     startHex: 0xF9738A,
                     endHex: 0xFB7185,
                     categoryID: "beauty",
@@ -1916,7 +1935,7 @@ private enum MallMockData {
                         "Coffee, cleaning, and smart-home deals in one place",
                         "عروض على القهوة والتنظيف والمنزل الذكي في مكان واحد"
                     ),
-                    image: .system(name: "house.fill", backgroundHex: 0xE0F2FE, tintHex: 0x2563EB),
+                    image: assetImage(.coffeeMachine),
                     startHex: 0x06B6D4,
                     endHex: 0x2563EB,
                     categoryID: "home",
@@ -1972,33 +1991,9 @@ private enum MallMockData {
         slug: String,
         includesVideo: Bool = false
     ) -> [MallProductDetailMedia] {
-        [
-            MallProductDetailMedia(
-                id: "\(slug)-detail-1",
-                type: .image,
-                url: sampleImageURL(slug: slug, suffix: "detail+1")
-            ),
-            MallProductDetailMedia(
-                id: "\(slug)-detail-2",
-                type: includesVideo ? .video : .image,
-                url: includesVideo
-                    ? fixedURL("https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4")
-                    : sampleImageURL(slug: slug, suffix: "detail+2")
-            ),
-        ]
-    }
-
-    private static func sampleImageURL(slug: String, suffix: String) -> URL {
-        fixedURL(
-            "https://placehold.co/1600x2000/png?text=\(slug.replacingOccurrences(of: "-", with: "+"))+\(suffix)"
-        )
-    }
-
-    private static func fixedURL(_ value: String) -> URL {
-        guard let url = URL(string: value) else {
-            preconditionFailure("Invalid Mall mock URL: \(value)")
-        }
-        return url
+        _ = slug
+        _ = includesVideo
+        return []
     }
 
     private static func makeSubcategory(
