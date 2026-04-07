@@ -66,6 +66,7 @@
 		A10000000000000000000034 /* MallComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000034 /* MallComponents.swift */; };
 		A10000000000000000000035 /* MallContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000035 /* MallContainerView.swift */; };
 		A10000000000000000000036 /* MallHomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000036 /* MallHomeView.swift */; };
+		A10000000000000000000064 /* MallHomeHighlightCarouselView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000064 /* MallHomeHighlightCarouselView.swift */; };
 		A10000000000000000000037 /* MallCategoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000037 /* MallCategoryView.swift */; };
 		A10000000000000000000038 /* MallSearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000038 /* MallSearchView.swift */; };
 		A10000000000000000000039 /* MallSearchResultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000039 /* MallSearchResultView.swift */; };
@@ -187,6 +188,7 @@
 		A20000000000000000000034 /* MallComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MallComponents.swift; sourceTree = "<group>"; };
 		A20000000000000000000035 /* MallContainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MallContainerView.swift; sourceTree = "<group>"; };
 		A20000000000000000000036 /* MallHomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MallHomeView.swift; sourceTree = "<group>"; };
+		A20000000000000000000064 /* MallHomeHighlightCarouselView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MallHomeHighlightCarouselView.swift; sourceTree = "<group>"; };
 		A20000000000000000000037 /* MallCategoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MallCategoryView.swift; sourceTree = "<group>"; };
 		A20000000000000000000038 /* MallSearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MallSearchView.swift; sourceTree = "<group>"; };
 		A20000000000000000000039 /* MallSearchResultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MallSearchResultView.swift; sourceTree = "<group>"; };
@@ -663,6 +665,7 @@
 				A20000000000000000000034 /* MallComponents.swift */,
 				A20000000000000000000035 /* MallContainerView.swift */,
 				A20000000000000000000036 /* MallHomeView.swift */,
+				A20000000000000000000064 /* MallHomeHighlightCarouselView.swift */,
 				A20000000000000000000037 /* MallCategoryView.swift */,
 				A20000000000000000000038 /* MallSearchView.swift */,
 				A20000000000000000000039 /* MallSearchResultView.swift */,
@@ -1018,6 +1021,7 @@
 				A10000000000000000000039 /* MallSearchResultView.swift in Sources */,
 				A10000000000000000000038 /* MallSearchView.swift in Sources */,
 				A10000000000000000000037 /* MallCategoryView.swift in Sources */,
+				A10000000000000000000064 /* MallHomeHighlightCarouselView.swift in Sources */,
 				A10000000000000000000036 /* MallHomeView.swift in Sources */,
 				A10000000000000000000035 /* MallContainerView.swift in Sources */,
 				A10000000000000000000034 /* MallComponents.swift in Sources */,
