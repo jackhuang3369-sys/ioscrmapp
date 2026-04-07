@@ -6,157 +6,99 @@ struct MallHomeHighlightCarouselView: View {
     let action: (MallHomeHighlightCard) -> Void
 
     @GestureState private var dragTranslation: CGFloat = 0
-    @State private var selectedIndex = 0
+    @State private var currentIndex = 0
+    @State private var isAutoScrollPaused = false
 
+    private let selectionAnimation = Animation.interactiveSpring(
+        response: 0.34,
+        dampingFraction: 0.82,
+        blendDuration: 0.18
+    )
+    private let dragAnimation = Animation.interactiveSpring(
+        response: 0.22,
+        dampingFraction: 0.92,
+        blendDuration: 0.12
+    )
     private let autoScrollTimer = Timer.publish(every: 4, on: .main, in: .common).autoconnect()
-    private let selectionAnimation = Animation.spring(response: 0.52, dampingFraction: 0.88)
 
     var body: some View {
-        let cardWidth = min(max(containerWidth - 108, 252), 308)
-        let sideOffset = min(max(cardWidth * 0.72, 164), 212)
+        let cardWidth = min(max(containerWidth - 72, 284), 332)
+        let cardHeight = min(max(cardWidth * 0.72, 214), 246)
+        let cardSpacing = min(max(cardWidth * 0.22, 68), 92)
+        let swipeThreshold = min(max(cardWidth * 0.24, 78), 98)
+        let carouselHeight = cardHeight + 18
 
-        return VStack(spacing: DUSpacing.sm) {
-            GeometryReader { geometry in
-                ZStack(alignment: .top) {
-                    ForEach(Array(cards.enumerated()), id: \.element.id) { index, card in
-                        let position = relativePosition(for: index)
+        return GeometryReader { geometry in
+            let screenWidth = geometry.size.width
 
-                        // 轮播只渲染当前卡和两侧相邻卡，减少重绘和动画层级。
-                        if abs(position) <= 1 {
-                            MallHomeHighlightCardView(
-                                card: card,
-                                relativePosition: position,
-                                isFocused: position == 0
-                            ) {
-                                handleCardTap(at: index)
-                            }
-                            .frame(width: cardWidth, height: 206)
-                            .scaleEffect(scaleFactor(for: position))
-                            .opacity(opacity(for: position))
-                            .offset(
-                                x: horizontalOffset(for: position, sideOffset: sideOffset),
-                                y: verticalOffset(for: position)
-                            )
-                            .zIndex(zIndex(for: position))
-                        }
+            ZStack {
+                ForEach(Array(cards.enumerated()), id: \.element.id) { index, card in
+                    let progress = relativeProgress(
+                        for: index,
+                        cardWidth: cardWidth,
+                        cardSpacing: cardSpacing
+                    )
+                    let absoluteProgress = abs(progress)
+
+                    MallHomeHighlightCardView(
+                        card: card,
+                        progress: progress,
+                        cardWidth: cardWidth,
+                        cardHeight: cardHeight
+                    ) {
+                        handleCardTap(at: index)
                     }
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-                .contentShape(Rectangle())
-                .gesture(carouselDragGesture(width: geometry.size.width))
-                .animation(selectionAnimation, value: selectedIndex)
-                .animation(.interactiveSpring(response: 0.26, dampingFraction: 0.88), value: dragTranslation)
-            }
-            .frame(height: 208)
-
-            HStack(spacing: DUSpacing.xs) {
-                ForEach(cards.indices, id: \.self) { index in
-                    Capsule()
-                        .fill(index == selectedIndex ? DUTheme.cyan : DUTheme.inkDisabled.opacity(0.28))
-                        .frame(width: index == selectedIndex ? 22 : 7, height: 7)
+                    .scaleEffect(cardScale(for: absoluteProgress))
+                    .rotation3DEffect(
+                        .degrees(cardRotation(for: progress)),
+                        axis: (x: 0, y: 1, z: 0),
+                        perspective: 0.85
+                    )
+                    .offset(x: horizontalOffset(for: progress, cardWidth: cardWidth))
+                    .offset(y: verticalOffset(for: absoluteProgress))
+                    .opacity(opacity(for: absoluteProgress))
+                    .zIndex(zIndex(for: absoluteProgress, index: index))
                 }
             }
-        }
-        .onReceive(autoScrollTimer) { _ in
-            guard cards.count > 1, dragTranslation == 0 else {
-                return
-            }
-
-            moveSelection(by: 1)
-        }
-        .onChange(of: cards.count) { newCount in
-            guard newCount > 0 else {
-                selectedIndex = 0
-                return
-            }
-
-            selectedIndex = min(selectedIndex, newCount - 1)
-        }
-    }
-
-    private func relativePosition(for index: Int) -> Int {
-        guard !cards.isEmpty else {
-            return 0
-        }
-
-        var offset = index - selectedIndex
-        let halfCount = cards.count / 2
-
-        if offset > halfCount {
-            offset -= cards.count
-        } else if offset < -halfCount {
-            offset += cards.count
-        }
-
-        return offset
-    }
-
-    private func horizontalOffset(for position: Int, sideOffset: CGFloat) -> CGFloat {
-        CGFloat(position) * sideOffset + (dragTranslation * dragMultiplier(for: position))
-    }
-
-    private func verticalOffset(for position: Int) -> CGFloat {
-        position == 0 ? 0 : 14
-    }
-
-    private func scaleFactor(for position: Int) -> CGFloat {
-        position == 0 ? 1 : 0.82
-    }
-
-    private func opacity(for position: Int) -> Double {
-        position == 0 ? 1 : 0.54
-    }
-
-    private func zIndex(for position: Int) -> Double {
-        position == 0 ? 2 : 1
-    }
-
-    private func dragMultiplier(for position: Int) -> CGFloat {
-        position == 0 ? 0.2 : 0.12
-    }
-
-    private func handleCardTap(at index: Int) {
-        guard cards.indices.contains(index) else {
-            return
-        }
-
-        if index == selectedIndex {
-            action(cards[index])
-            return
-        }
-
-        withAnimation(selectionAnimation) {
-            selectedIndex = index
-        }
-    }
-
-    private func carouselDragGesture(width: CGFloat) -> some Gesture {
-        DragGesture(minimumDistance: 14)
-            .updating($dragTranslation) { value, state, _ in
-                state = value.translation.width
-            }
-            .onEnded { value in
-                guard cards.count > 1 else {
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+            .contentShape(Rectangle())
+            .highPriorityGesture(
+                DragGesture(minimumDistance: 8)
+                    .updating($dragTranslation) { value, state, _ in
+                        state = value.translation.width
+                    }
+                    .onChanged { _ in
+                        isAutoScrollPaused = true
+                    }
+                    .onEnded { value in
+                        handleDragEnded(
+                            value: value,
+                            screenWidth: screenWidth,
+                            swipeThreshold: swipeThreshold
+                        )
+                        isAutoScrollPaused = false
+                    }
+            )
+            .animation(selectionAnimation, value: currentIndex)
+            .animation(dragAnimation, value: dragTranslation)
+            .onReceive(autoScrollTimer) { _ in
+                guard cards.count > 1, dragTranslation == 0, !isAutoScrollPaused else {
                     return
                 }
 
-                let threshold = min(max(width * 0.16, 42), 84)
-
-                if value.translation.width <= -threshold {
-                    moveSelection(by: 1)
-                } else if value.translation.width >= threshold {
-                    moveSelection(by: -1)
+                withAnimation(selectionAnimation) {
+                    currentIndex = wrappedIndex(currentIndex + 1)
                 }
             }
-    }
-
-    private func moveSelection(by step: Int) {
-        guard !cards.isEmpty else {
-            return
         }
+        .frame(height: carouselHeight)
+        .onChange(of: cards.count) { newCount in
+            guard newCount > 0 else {
+                currentIndex = 0
+                return
+            }
 
-        withAnimation(selectionAnimation) {
-            selectedIndex = wrappedIndex(selectedIndex + step)
+            currentIndex = min(currentIndex, newCount - 1)
         }
     }
 
@@ -165,8 +107,89 @@ struct MallHomeHighlightCarouselView: View {
             return 0
         }
 
-        let count = cards.count
-        return ((index % count) + count) % count
+        return index >= cards.count ? 0 : max(index, 0)
+    }
+
+    private func relativeProgress(
+        for index: Int,
+        cardWidth: CGFloat,
+        cardSpacing: CGFloat
+    ) -> CGFloat {
+        guard !cards.isEmpty else {
+            return 0
+        }
+
+        let base = CGFloat(index - currentIndex)
+        let dragProgress = dragTranslation / (cardWidth + cardSpacing)
+        return base + dragProgress
+    }
+
+    private func horizontalOffset(for progress: CGFloat, cardWidth: CGFloat) -> CGFloat {
+        progress * (cardWidth * 0.72)
+    }
+
+    private func verticalOffset(for absoluteProgress: CGFloat) -> CGFloat {
+        min(absoluteProgress * 18, 24)
+    }
+
+    private func cardScale(for absoluteProgress: CGFloat) -> CGFloat {
+        max(0.84, 1 - (absoluteProgress * 0.12))
+    }
+
+    private func cardRotation(for progress: CGFloat) -> Double {
+        Double(max(-1, min(1, progress))) * -18
+    }
+
+    private func opacity(for absoluteProgress: CGFloat) -> Double {
+        max(0.45, 1 - (Double(absoluteProgress) * 0.28))
+    }
+
+    private func zIndex(for absoluteProgress: CGFloat, index: Int) -> Double {
+        let centerPriority = 100 - Double(absoluteProgress * 10)
+        return centerPriority + Double(cards.count - index)
+    }
+
+    private func handleCardTap(at index: Int) {
+        guard cards.indices.contains(index) else {
+            return
+        }
+
+        if index == currentIndex {
+            action(cards[index])
+            return
+        }
+
+        withAnimation(selectionAnimation) {
+            currentIndex = index
+        }
+    }
+
+    private func handleDragEnded(
+        value: DragGesture.Value,
+        screenWidth: CGFloat,
+        swipeThreshold: CGFloat
+    ) {
+        guard cards.count > 1 else {
+            return
+        }
+
+        let translation = value.translation.width
+        let predictedTranslation = value.predictedEndTranslation.width
+        let velocityBoost = min(abs(predictedTranslation - translation), screenWidth * 0.14)
+        let effectiveThreshold = max(56, swipeThreshold - (velocityBoost * 0.18))
+
+        let shouldMoveByPrediction = abs(predictedTranslation) > effectiveThreshold
+        let shouldMoveByTranslation = abs(translation) > effectiveThreshold
+
+        var newIndex = currentIndex
+
+        if shouldMoveByPrediction {
+            newIndex += predictedTranslation < 0 ? 1 : -1
+        } else if shouldMoveByTranslation {
+            newIndex += translation < 0 ? 1 : -1
+        }
+
+        currentIndex = min(max(newIndex, 0), cards.count - 1)
     }
 }
 
@@ -174,102 +197,161 @@ private struct MallHomeHighlightCardView: View {
     @EnvironmentObject private var languageStore: AppLanguageStore
 
     let card: MallHomeHighlightCard
-    let relativePosition: Int
-    let isFocused: Bool
+    let progress: CGFloat
+    let cardWidth: CGFloat
+    let cardHeight: CGFloat
     let action: () -> Void
 
+    private let cornerRadius: CGFloat = 28
+
     var body: some View {
-        Button(action: action) {
-            HStack(alignment: .top, spacing: DUSpacing.md) {
-                VStack(alignment: .leading, spacing: DUSpacing.md) {
-                    Text(card.badge.value(for: languageStore.currentLanguage))
-                        .font(.du(11, weight: .bold))
-                        .foregroundColor(Color(hex: 0x9A3412))
-                        .padding(.horizontal, 10)
-                        .frame(height: 24)
-                        .background(Color(hex: 0xFFF1E8))
-                        .clipShape(Capsule())
+        let absoluteProgress = abs(progress)
+        let clampedProgress = max(-1.2, min(1.2, progress))
+        let parallaxOffset = -clampedProgress * 40
+        let imageScale = 1.14 - min(absoluteProgress * 0.08, 0.08)
+        let shadowOpacity = max(0.12, 0.24 - (Double(absoluteProgress) * 0.08))
 
-                    VStack(alignment: .leading, spacing: DUSpacing.sm) {
-                        Text(card.title.value(for: languageStore.currentLanguage))
-                            .font(.du(isFocused ? 24 : 20, weight: .bold))
-                            .foregroundColor(DUTheme.ink)
-                            .lineLimit(2)
-
-                        Text(card.subtitle.value(for: languageStore.currentLanguage))
-                            .font(.du(12, weight: .medium))
-                            .foregroundColor(DUTheme.inkSecondary)
-                            .lineLimit(isFocused ? 3 : 2)
-                    }
-
-                    Spacer()
-
-                    HStack(spacing: 6) {
-                        Text(buttonTitle)
-                            .font(.du(12, weight: .bold))
-
-                        Image(systemName: "chevron.right")
-                            .font(.du(11, weight: .bold))
-                    }
-                    .foregroundColor(Color(hex: 0xFF6D77))
-                }
-                .padding(.leading, DUSpacing.lg)
-                .padding(.top, DUSpacing.md)
-                .padding(.bottom, DUSpacing.md)
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-
-                MallPromotionalIllustration(
-                    image: card.image,
-                    cornerRadius: 22,
-                    contentMode: .fill,
-                    contentScale: 1.28
+        ZStack(alignment: .bottomLeading) {
+            RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                .fill(
+                    LinearGradient(
+                        colors: [
+                            Color(hex: card.startHex),
+                            Color(hex: card.endHex)
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
                 )
-                .frame(width: isFocused ? 128 : 112, height: isFocused ? 128 : 112)
-                .padding(.top, DUSpacing.md - 2)
-                .padding(.trailing, DUSpacing.lg)
+
+            ZStack {
+                GeometryReader { geometry in
+                    MallHomeHighlightArtworkView(image: card.image)
+                        .frame(
+                            width: geometry.size.width + 84,
+                            height: geometry.size.height + 6
+                        )
+                        .scaleEffect(imageScale)
+                        .offset(x: parallaxOffset, y: -4)
+                }
+
+                LinearGradient(
+                    colors: [
+                        Color.white.opacity(0.08),
+                        Color.clear,
+                        Color.black.opacity(0.20),
+                        Color.black.opacity(0.66)
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(Color.white)
-            .overlay(
-                RoundedRectangle(cornerRadius: 28, style: .continuous)
-                    .stroke(Color.black.opacity(isFocused ? 0.06 : 0.04), lineWidth: 1)
-            )
-            .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
-            .shadow(
-                color: Color.black.opacity(isFocused ? 0.16 : 0.08),
-                radius: isFocused ? 22 : 14,
-                x: 0,
-                y: isFocused ? 16 : 10
-            )
-            .rotation3DEffect(
-                .degrees(rotationDegrees),
-                axis: (x: 0.12, y: 1, z: 0),
-                anchor: relativePosition >= 0 ? .leading : .trailing,
-                perspective: 0.82
-            )
+            .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+
+            VStack(alignment: .leading, spacing: DUSpacing.xs) {
+                if !resolvedTitle.isEmpty {
+                    Text(card.title.value(for: languageStore.currentLanguage))
+                        .font(.du(24, weight: .bold))
+                        .foregroundColor(.white)
+                        .lineLimit(2)
+                        .shadow(color: Color.black.opacity(0.25), radius: 10, x: 0, y: 4)
+                }
+
+                if !resolvedSubtitle.isEmpty {
+                    Text(card.subtitle.value(for: languageStore.currentLanguage))
+                        .font(.du(13, weight: .semibold))
+                        .foregroundColor(Color.white.opacity(0.84))
+                        .lineLimit(2)
+                }
+            }
+            .padding(24)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
+
+            RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                .strokeBorder(Color.white.opacity(0.14), lineWidth: 1)
+
+            RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                .fill(
+                    LinearGradient(
+                        colors: [
+                            Color.white.opacity(0.14),
+                            Color.clear
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .center
+                    )
+                )
+                .blendMode(.screen)
+                .allowsHitTesting(false)
+                .padding(1)
         }
-        .buttonStyle(.plain)
+        .frame(width: cardWidth, height: cardHeight)
+        .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+        .shadow(
+            color: Color.black.opacity(shadowOpacity),
+            radius: 14,
+            x: 0,
+            y: 8
+        )
+        .contentShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+        .onTapGesture {
+            action()
+        }
     }
 
-    private var rotationDegrees: Double {
-        switch relativePosition {
-        case ..<0:
-            return 24
-        case 1...:
-            return -24
-        default:
-            return 0
-        }
+    private var resolvedTitle: String {
+        card.title.value(for: languageStore.currentLanguage)
     }
 
-    private var buttonTitle: String {
-        switch languageStore.currentLanguage {
-        case .simplifiedChinese:
-            return "立即抢购"
-        case .english:
-            return "Shop now"
-        case .arabic:
-            return "تسوّق الآن"
+    private var resolvedSubtitle: String {
+        card.subtitle.value(for: languageStore.currentLanguage)
+    }
+}
+
+private struct MallHomeHighlightArtworkView: View {
+    let image: MallImageSource
+
+    var body: some View {
+        Group {
+            switch image {
+            case let .asset(name):
+                Image(name)
+                    .renderingMode(.original)
+                    .resizable()
+                    .scaledToFill()
+            case let .system(name, backgroundHex, tintHex):
+                LinearGradient(
+                    colors: [
+                        Color(hex: backgroundHex),
+                        Color(hex: tintHex).opacity(0.72)
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                .overlay(
+                    Image(systemName: name)
+                        .font(.du(88, weight: .semibold))
+                        .foregroundColor(Color.white.opacity(0.9))
+                        .shadow(color: Color.black.opacity(0.14), radius: 12, x: 0, y: 8)
+                )
+            case let .remote(url):
+                AsyncImage(url: url) { phase in
+                    switch phase {
+                    case let .success(image):
+                        image
+                            .resizable()
+                            .scaledToFill()
+                    default:
+                        ZStack {
+                            Color(hex: 0xEEF4FA)
+
+                            Image(systemName: "photo")
+                                .font(.du(28, weight: .semibold))
+                                .foregroundColor(Color(hex: 0x7B8CA8))
+                        }
+                    }
+                }
+            }
         }
     }
 }
