@@ -1168,7 +1168,7 @@ struct AIChatView: View {
                 .fill(
                     LinearGradient(
                         colors: [
-                            sectionTheme.cardTopOpacity(index: index),
+                            sectionTheme.cardTopOpacity(index),
                             sectionTheme.cardBottom
                         ],
                         startPoint: .topLeading,
