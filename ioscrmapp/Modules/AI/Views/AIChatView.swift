@@ -13,6 +13,12 @@ struct AIChatView: View {
         }
     }
 
+    private enum AssistantParagraphRole {
+        case problem
+        case solution
+        case neutral
+    }
+
     @Environment(\.openURL) private var openURL
     @StateObject private var viewModel: AIChatViewModel
     @FocusState private var isDraftFieldFocused: Bool
@@ -1045,9 +1051,17 @@ struct AIChatView: View {
     @ViewBuilder
     private func assistantAnswerContent(message: AIChatMessage?) -> some View {
         if let message {
+            let consolidatedSections = consolidatedLabeledSections(from: message)
             let sections = structuredAnswerSections(from: message)
 
-            if !sections.isEmpty {
+            if !consolidatedSections.isEmpty {
+                VStack(alignment: .leading, spacing: 14) {
+                    ForEach(Array(consolidatedSections.enumerated()), id: \.offset) { index, section in
+                        assistantAnswerSectionCard(section, index: index)
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+            } else if !sections.isEmpty {
                 VStack(alignment: .leading, spacing: 14) {
                     ForEach(Array(sections.enumerated()), id: \.offset) { index, section in
                         assistantAnswerSectionCard(section, index: index)
@@ -1094,6 +1108,7 @@ struct AIChatView: View {
 
     private func assistantAnswerSectionCard(_ section: AssistantAnswerSection, index: Int) -> some View {
         let titleComponents = section.title.map(sectionTitleComponents(from:))
+        let sectionTheme = assistantSectionTheme(for: section.title)
 
         return VStack(alignment: .leading, spacing: 14) {
             if let titleComponents {
@@ -1102,7 +1117,7 @@ struct AIChatView: View {
                         Circle()
                             .fill(
                                 LinearGradient(
-                                    colors: [Color(hex: 0x56CCF2), Color(hex: 0x8B5CFF)],
+                                    colors: sectionTheme.headerGradient,
                                     startPoint: .topLeading,
                                     endPoint: .bottomTrailing
                                 )
@@ -1119,16 +1134,16 @@ struct AIChatView: View {
                         }
                     }
                     .frame(width: 30, height: 30)
-                    .shadow(color: Color(hex: 0x8B5CFF).opacity(0.28), radius: 10, x: 0, y: 6)
+                    .shadow(color: sectionTheme.accent.opacity(0.28), radius: 10, x: 0, y: 6)
 
                     VStack(alignment: .leading, spacing: 3) {
                         Text(titleComponents.title)
                             .font(.system(size: 18, weight: .semibold, design: .rounded))
-                            .foregroundColor(.white.opacity(0.98))
+                            .foregroundColor(sectionTheme.titleColor)
                             .fixedSize(horizontal: false, vertical: true)
 
                         Rectangle()
-                            .fill(Color.white.opacity(0.14))
+                            .fill(sectionTheme.accent.opacity(0.26))
                             .frame(width: 54, height: 1)
                     }
 
@@ -1140,6 +1155,7 @@ struct AIChatView: View {
                 ForEach(Array(section.paragraphs.enumerated()), id: \.offset) { _, paragraph in
                     assistantAnswerParagraphRow(
                         paragraph,
+                        sectionTitle: section.title,
                         emphasize: section.title == nil && index == 0
                     )
                 }
@@ -1152,8 +1168,8 @@ struct AIChatView: View {
                 .fill(
                     LinearGradient(
                         colors: [
-                            Color.white.opacity(index == 0 ? 0.16 : 0.11),
-                            Color(hex: index.isMultiple(of: 2) ? 0x7C3AED : 0x0EA5E9).opacity(0.08)
+                            sectionTheme.cardTopOpacity(index: index),
+                            sectionTheme.cardBottom
                         ],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
@@ -1183,7 +1199,9 @@ struct AIChatView: View {
     }
 
     @ViewBuilder
-    private func assistantAnswerParagraphRow(_ paragraph: String, emphasize: Bool) -> some View {
+    private func assistantAnswerParagraphRow(_ paragraph: String, sectionTitle: String?, emphasize: Bool) -> some View {
+        let sectionTheme = assistantSectionTheme(for: sectionTitle)
+
         if let (label, body) = labeledParagraph(from: paragraph) {
             let theme = assistantLabelTheme(for: label)
 
@@ -1243,6 +1261,32 @@ struct AIChatView: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
             .padding(.horizontal, 2)
+        } else if let (number, body) = numberedParagraph(from: paragraph) {
+            HStack(alignment: .top, spacing: 12) {
+                ZStack {
+                    Circle()
+                        .fill(
+                            LinearGradient(
+                                colors: sectionTheme.headerGradient,
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .frame(width: 26, height: 26)
+
+                    Text(number)
+                        .font(.system(size: 12, weight: .bold, design: .rounded))
+                        .foregroundColor(.white)
+                }
+                .padding(.top, 1)
+
+                Text(body)
+                    .font(.system(size: 15, weight: .regular, design: .rounded))
+                    .foregroundColor(.white.opacity(0.92))
+                    .lineSpacing(4)
+                    .multilineTextAlignment(.leading)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
         } else {
             Text(paragraph)
                 .font(.system(size: emphasize ? 15.5 : 15, weight: emphasize ? .medium : .regular, design: .rounded))
@@ -1269,6 +1313,8 @@ struct AIChatView: View {
         var currentParagraphLines: [String] = []
         var currentParagraphs: [String] = []
         var detectedStructuredContent = false
+        var detectedLabeledContent = false
+        var currentSectionHasLabelContent = false
 
         func flushParagraph() {
             let paragraph = currentParagraphLines
@@ -1290,6 +1336,7 @@ struct AIChatView: View {
             }
             currentTitle = nil
             currentParagraphs.removeAll()
+            currentSectionHasLabelContent = false
         }
 
         for rawLine in lines {
@@ -1297,6 +1344,9 @@ struct AIChatView: View {
 
             if line.isEmpty {
                 flushParagraph()
+                if currentTitle == nil, currentSectionHasLabelContent, !currentParagraphs.isEmpty {
+                    flushSection()
+                }
                 continue
             }
 
@@ -1304,6 +1354,25 @@ struct AIChatView: View {
                 flushSection()
                 currentTitle = title
                 detectedStructuredContent = true
+                continue
+            }
+
+            if let (label, body) = labeledParagraph(from: line) {
+                flushParagraph()
+
+                let role = assistantParagraphRole(for: label)
+                if currentTitle == nil,
+                   role == .problem,
+                   currentSectionHasLabelContent,
+                   !currentParagraphs.isEmpty
+                {
+                    flushSection()
+                }
+
+                currentParagraphs.append("\(label): \(body)")
+                currentSectionHasLabelContent = true
+                detectedStructuredContent = true
+                detectedLabeledContent = true
                 continue
             }
 
@@ -1321,9 +1390,85 @@ struct AIChatView: View {
 
         let visibleSections = sections.filter(\.hasVisibleContent)
         let hasTitledSections = visibleSections.contains { $0.title != nil }
-        return detectedStructuredContent && (visibleSections.count > 1 || hasTitledSections)
+        return detectedStructuredContent && (visibleSections.count > 1 || hasTitledSections || detectedLabeledContent)
             ? visibleSections
             : []
+    }
+
+    private func consolidatedLabeledSections(from message: AIChatMessage) -> [AssistantAnswerSection] {
+        let source = message.text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !source.isEmpty else {
+            return []
+        }
+
+        let lines = source
+            .replacingOccurrences(of: "\r\n", with: "\n")
+            .replacingOccurrences(of: "\r", with: "\n")
+            .components(separatedBy: "\n")
+
+        var problemItems: [String] = []
+        var solutionItems: [String] = []
+        var lastRole: AssistantParagraphRole?
+        var detectedSupportedLabel = false
+
+        for rawLine in lines {
+            let line = rawLine.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !line.isEmpty else {
+                lastRole = nil
+                continue
+            }
+
+            if let (label, body) = labeledParagraph(from: line) {
+                let role = assistantParagraphRole(for: label)
+                switch role {
+                case .problem:
+                    problemItems.append(stripWrappingQuotes(from: body))
+                    detectedSupportedLabel = true
+                    lastRole = .problem
+                case .solution:
+                    solutionItems.append(stripWrappingQuotes(from: body))
+                    detectedSupportedLabel = true
+                    lastRole = .solution
+                case .neutral:
+                    return []
+                }
+                continue
+            }
+
+            switch lastRole {
+            case .problem where !problemItems.isEmpty:
+                problemItems[problemItems.count - 1] += " " + line
+            case .solution where !solutionItems.isEmpty:
+                solutionItems[solutionItems.count - 1] += " " + line
+            default:
+                return []
+            }
+        }
+
+        guard detectedSupportedLabel, !problemItems.isEmpty || !solutionItems.isEmpty else {
+            return []
+        }
+
+        var sections: [AssistantAnswerSection] = []
+        if !problemItems.isEmpty {
+            sections.append(
+                AssistantAnswerSection(
+                    title: "Reason",
+                    paragraphs: numberedParagraphs(from: problemItems)
+                )
+            )
+        }
+
+        if !solutionItems.isEmpty {
+            sections.append(
+                AssistantAnswerSection(
+                    title: "Solution",
+                    paragraphs: numberedParagraphs(from: solutionItems)
+                )
+            )
+        }
+
+        return sections
     }
 
     private func assistantSectionTitle(from line: String) -> String? {
@@ -1348,6 +1493,23 @@ struct AIChatView: View {
 
     private func bulletBody(from paragraph: String) -> String? {
         firstMatch(in: paragraph, pattern: #"^\s*•\s+(.+)$"#)
+    }
+
+    private func numberedParagraph(from paragraph: String) -> (number: String, body: String)? {
+        guard
+            let number = firstMatch(in: paragraph, pattern: #"^\s*(\d+)[\.\)]\s+.+$"#),
+            let body = firstMatch(in: paragraph, pattern: #"^\s*\d+[\.\)]\s+(.+)$"#)
+        else {
+            return nil
+        }
+
+        return (number, body)
+    }
+
+    private func numberedParagraphs(from items: [String]) -> [String] {
+        items.enumerated().map { index, item in
+            "\(index + 1). \(item)"
+        }
     }
 
     private func sectionTitleComponents(from rawTitle: String) -> (badge: String?, title: String) {
@@ -1413,6 +1575,32 @@ struct AIChatView: View {
             stroke: Color(hex: 0xFFC98E).opacity(0.24),
             icon: "exclamationmark.circle.fill"
         )
+    }
+
+    private func assistantParagraphRole(for label: String) -> AssistantParagraphRole {
+        let normalized = label.lowercased()
+
+        if normalized.contains("reason")
+            || normalized.contains("cause")
+            || normalized.contains("issue")
+            || normalized.contains("problem")
+            || normalized.contains("原因")
+            || normalized.contains("问题")
+        {
+            return .problem
+        }
+
+        if normalized.contains("solution")
+            || normalized.contains("recommend")
+            || normalized.contains("tip")
+            || normalized.contains("fix")
+            || normalized.contains("建议")
+            || normalized.contains("解决")
+        {
+            return .solution
+        }
+
+        return .neutral
     }
 
     private func stripWrappingQuotes(from text: String) -> String {
@@ -2756,6 +2944,50 @@ private enum AIOrbTextureFactory {
                 ]
             )
         }
+    }
+
+    private func assistantSectionTheme(for title: String?) -> (
+        headerGradient: [Color],
+        accent: Color,
+        titleColor: Color,
+        cardBottom: Color,
+        cardTopOpacity: (Int) -> Color
+    ) {
+        let normalized = title?.lowercased() ?? ""
+
+        if normalized.contains("solution") || normalized.contains("建议") || normalized.contains("解决") {
+            return (
+                headerGradient: [Color(hex: 0x34D399), Color(hex: 0x14B8A6)],
+                accent: Color(hex: 0x6EE7B7),
+                titleColor: Color(hex: 0xECFDF5),
+                cardBottom: Color(hex: 0x0F766E).opacity(0.12),
+                cardTopOpacity: { index in
+                    Color(hex: 0xD1FAE5).opacity(index == 0 ? 0.16 : 0.11)
+                }
+            )
+        }
+
+        if normalized.contains("reason") || normalized.contains("cause") || normalized.contains("原因") || normalized.contains("问题") {
+            return (
+                headerGradient: [Color(hex: 0xFB923C), Color(hex: 0xF43F5E)],
+                accent: Color(hex: 0xFDBA74),
+                titleColor: Color(hex: 0xFFF7ED),
+                cardBottom: Color(hex: 0x9A3412).opacity(0.12),
+                cardTopOpacity: { index in
+                    Color(hex: 0xFFEDD5).opacity(index == 0 ? 0.16 : 0.11)
+                }
+            )
+        }
+
+        return (
+            headerGradient: [Color(hex: 0x56CCF2), Color(hex: 0x8B5CFF)],
+            accent: Color(hex: 0x8B5CFF),
+            titleColor: .white.opacity(0.98),
+            cardBottom: Color(hex: 0x7C3AED).opacity(0.08),
+            cardTopOpacity: { index in
+                Color.white.opacity(index == 0 ? 0.16 : 0.11)
+            }
+        )
     }
 
     static func makeRadialMaskTexture(size: CGFloat = 768) -> UIImage {
