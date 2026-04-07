@@ -20,12 +20,12 @@ enum MockWeatherData {
     static let today = CurrentWeather(
         city: "Dubai",
         temperature: 31,
-        title: "晴朗的天空",
+        title: "Clear Sky",
         dateText: "TODAY · APR 03"
     )
 
     static let timeline: [WeatherTimelineEntry] = [
-        .init(id: "now", label: "现在", temperature: 31, symbolName: "sun.max.fill", isCurrent: true),
+        .init(id: "now", label: "Now", temperature: 31, symbolName: "sun.max.fill", isCurrent: true),
         .init(id: "09", label: "09", temperature: 32, symbolName: "sun.max.fill", isCurrent: false),
         .init(id: "12", label: "12", temperature: 33, symbolName: "sun.max.fill", isCurrent: false),
         .init(id: "15", label: "15", temperature: 35, symbolName: "sun.max.fill", isCurrent: false),

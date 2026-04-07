@@ -135,7 +135,7 @@ final class WeatherSceneManager: ObservableObject {
             sunAssembly.addChildNode(sun)
             rotatingGroup.addChildNode(sunAssembly)
 
-            let title = makeSunDetailTitleNode(text: "太阳")
+            let title = makeSunDetailTitleNode(text: "Sun")
             title.position = SCNVector3(0, 2.9, 0.34)
             rotatingGroup.addChildNode(title)
             detailTitleNode = title

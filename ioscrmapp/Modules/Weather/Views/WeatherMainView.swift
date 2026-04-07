@@ -330,20 +330,20 @@ private struct WeatherSunInsightPanel: View {
 
     var body: some View {
         VStack(spacing: 8) {
-            metricRow(title: "紫外线指数", value: "4", highlighted: true)
-            metricRow(title: "日出", value: "6:06上午", highlighted: false)
-            metricRow(title: "日落", value: "6:36下午", highlighted: false)
+            metricRow(title: "UV", value: "4", highlighted: true)
+            metricRow(title: "Sunrise", value: "6:06 AM", highlighted: false)
+            metricRow(title: "Sunset", value: "6:36 PM", highlighted: false)
 
             HStack {
-                Text("现在")
+                Text("Now")
                 Spacer()
-                Text("18时")
+                Text("18")
                 Spacer()
-                Text("0时")
+                Text("0")
                 Spacer()
-                Text("6时")
+                Text("6")
                 Spacer()
-                Text("12时")
+                Text("12")
             }
             .font(.du(9, weight: .medium))
             .foregroundColor(Color.black.opacity(0.72))
@@ -359,7 +359,7 @@ private struct WeatherSunInsightPanel: View {
                 Spacer(minLength: 0)
 
                 HStack(spacing: 10) {
-                    Text("天")
+                    Text("Day")
                         .font(.du(11, weight: .medium))
                         .foregroundColor(Color.black.opacity(0.90))
 
@@ -373,7 +373,7 @@ private struct WeatherSunInsightPanel: View {
                     }
                     .frame(width: 52, height: 26)
 
-                    Text("星期")
+                    Text("Week")
                         .font(.du(11, weight: .medium))
                         .foregroundColor(Color.black.opacity(0.18))
                 }
