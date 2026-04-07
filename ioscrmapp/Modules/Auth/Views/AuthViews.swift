@@ -237,17 +237,17 @@ struct AuthLoginContainerView: View {
                 } action: {
                     viewModel.showPlaceholderMessage(for: "auth.placeholder.sms")
                 }
-                DUIconButton(
-                    title: localized("auth.social.fingerprint")
-                ) {
-                    Image(systemName: "touchid")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 30, height: 30)
-                        .foregroundColor(DUTheme.inkSecondary)
-                } action: {
-                    viewModel.showPlaceholderMessage(for: "auth.placeholder.fingerprint")
-                }
+//                DUIconButton(
+//                    title: localized("auth.social.fingerprint")
+//                ) {
+//                    Image(systemName: "touchid")
+//                        .resizable()
+//                        .scaledToFit()
+//                        .frame(width: 30, height: 30)
+//                        .foregroundColor(DUTheme.inkSecondary)
+//                } action: {
+//                    viewModel.showPlaceholderMessage(for: "auth.placeholder.fingerprint")
+//                }
                 DUIconButton(
                     title: localized("auth.social.face")
                 ) {

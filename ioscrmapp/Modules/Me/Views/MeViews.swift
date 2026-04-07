@@ -6,7 +6,7 @@ struct MeContainerView: View {
     @StateObject private var viewModel: MeViewModel
     @State private var isRechargePresented = false
 
-    private let bottomTabBarPlaceholderHeight: CGFloat = 120
+    private let bottomTabBarClearanceHeight: CGFloat = 70
 
     private let session: CustSubInfo
     private let billingService: any BillingServicing
@@ -77,11 +77,6 @@ struct MeContainerView: View {
                     viewModel.placeholderMessage = nil
                 }
             )
-        }
-        .safeAreaInset(edge: .bottom, spacing: 0) {
-            Color.clear
-                .frame(height: bottomTabBarPlaceholderHeight)
-                .accessibilityHidden(true)
         }
         .fullScreenCover(isPresented: $viewModel.isBillingPresented) {
             BillingContainerView(
@@ -173,7 +168,7 @@ struct MeContainerView: View {
                             .redacted(reason: .placeholder)
                     }
                     .padding(.horizontal, DUSpacing.lg)
-                    .padding(.bottom, DUSpacing.xxxl)
+                    .padding(.bottom, bottomTabBarClearanceHeight)
                 }
             }
             .ignoresSafeArea(edges: .top)
@@ -200,7 +195,7 @@ struct MeContainerView: View {
                         signOutButton
                     }
                     .padding(.horizontal, DUSpacing.lg)
-                    .padding(.bottom, DUSpacing.xxxl)
+                    .padding(.bottom, bottomTabBarClearanceHeight)
                 }
             }
             .background(DUTheme.background.ignoresSafeArea())
@@ -603,6 +598,7 @@ struct MeContainerView: View {
 
     private var meFooterContent: some View {
         signOutButton
+            .padding(.bottom, bottomTabBarClearanceHeight)
     }
 
     private var rechargeEntryCard: some View {

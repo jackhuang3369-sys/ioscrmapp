@@ -74,7 +74,7 @@ actor MockHomeService: HomeServicing {
                     currentBillValue: .literal(homeDisplayMoney("43.20 AED")),
                     dueDateValue: .literal("2026-03-28"),
                     creditLimit: HomeCreditLimitSection(
-                        totalValue: .key("home.value.unlimited"),
+                        totalValue: .literal(homeDisplayMoney("500.00 AED")),
                         usedValue: .literal(homeDisplayMoney("311.80 AED")),
                         remainingValue: .literal(homeDisplayMoney("188.20 AED"))
                     ),
