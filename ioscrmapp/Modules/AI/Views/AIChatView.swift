@@ -1093,72 +1093,164 @@ struct AIChatView: View {
     }
 
     private func assistantAnswerSectionCard(_ section: AssistantAnswerSection, index: Int) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
-            if let title = section.title {
-                HStack(alignment: .center, spacing: 10) {
-                    Capsule()
-                        .fill(
-                            LinearGradient(
-                                colors: [Color(hex: 0x59D0FF), Color(hex: 0x8B5CFF)],
-                                startPoint: .top,
-                                endPoint: .bottom
-                            )
-                        )
-                        .frame(width: 4, height: 24)
+        let titleComponents = section.title.map(sectionTitleComponents(from:))
 
-                    Text(title)
-                        .font(.system(size: 17, weight: .semibold, design: .rounded))
-                        .foregroundColor(.white.opacity(0.98))
-                        .fixedSize(horizontal: false, vertical: true)
+        return VStack(alignment: .leading, spacing: 14) {
+            if let titleComponents {
+                HStack(alignment: .center, spacing: 12) {
+                    ZStack {
+                        Circle()
+                            .fill(
+                                LinearGradient(
+                                    colors: [Color(hex: 0x56CCF2), Color(hex: 0x8B5CFF)],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+
+                        if let badge = titleComponents.badge {
+                            Text(badge)
+                                .font(.system(size: 14, weight: .bold, design: .rounded))
+                                .foregroundColor(.white)
+                        } else {
+                            Image(systemName: "sparkles")
+                                .font(.system(size: 12, weight: .bold))
+                                .foregroundColor(.white)
+                        }
+                    }
+                    .frame(width: 30, height: 30)
+                    .shadow(color: Color(hex: 0x8B5CFF).opacity(0.28), radius: 10, x: 0, y: 6)
+
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text(titleComponents.title)
+                            .font(.system(size: 18, weight: .semibold, design: .rounded))
+                            .foregroundColor(.white.opacity(0.98))
+                            .fixedSize(horizontal: false, vertical: true)
+
+                        Rectangle()
+                            .fill(Color.white.opacity(0.14))
+                            .frame(width: 54, height: 1)
+                    }
+
+                    Spacer(minLength: 0)
                 }
             }
 
-            VStack(alignment: .leading, spacing: 10) {
+            VStack(alignment: .leading, spacing: 12) {
                 ForEach(Array(section.paragraphs.enumerated()), id: \.offset) { _, paragraph in
-                    if let bulletText = bulletBody(from: paragraph) {
-                        HStack(alignment: .top, spacing: 10) {
-                            Circle()
-                                .fill(Color.white.opacity(0.72))
-                                .frame(width: 6, height: 6)
-                                .padding(.top, 7)
-
-                            Text(bulletText)
-                                .font(.system(size: 15, weight: .regular, design: .rounded))
-                                .foregroundColor(.white.opacity(0.9))
-                                .lineSpacing(4)
-                                .multilineTextAlignment(.leading)
-                                .fixedSize(horizontal: false, vertical: true)
-                        }
-                    } else {
-                        Text(paragraph)
-                            .font(.system(size: 15, weight: .regular, design: .rounded))
-                            .foregroundColor(.white.opacity(0.9))
-                            .lineSpacing(4)
-                            .multilineTextAlignment(.leading)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
+                    assistantAnswerParagraphRow(
+                        paragraph,
+                        emphasize: section.title == nil && index == 0
+                    )
                 }
             }
         }
-        .padding(16)
+        .padding(section.title == nil ? 18 : 16)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             RoundedRectangle(cornerRadius: 22, style: .continuous)
                 .fill(
                     LinearGradient(
                         colors: [
-                            Color.white.opacity(index == 0 ? 0.1 : 0.08),
-                            Color.white.opacity(0.04)
+                            Color.white.opacity(index == 0 ? 0.16 : 0.11),
+                            Color(hex: index.isMultiple(of: 2) ? 0x7C3AED : 0x0EA5E9).opacity(0.08)
                         ],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     )
+                )
+                .background(
+                    RoundedRectangle(cornerRadius: 22, style: .continuous)
+                        .fill(.ultraThinMaterial)
+                        .opacity(0.28)
                 )
         )
         .overlay(
             RoundedRectangle(cornerRadius: 22, style: .continuous)
                 .stroke(Color.white.opacity(0.12), lineWidth: 1)
         )
+        .overlay(alignment: .topLeading) {
+            RoundedRectangle(cornerRadius: 22, style: .continuous)
+                .fill(
+                    LinearGradient(
+                        colors: [Color.white.opacity(0.18), .clear],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                )
+                .frame(height: 1)
+        }
+    }
+
+    @ViewBuilder
+    private func assistantAnswerParagraphRow(_ paragraph: String, emphasize: Bool) -> some View {
+        if let (label, body) = labeledParagraph(from: paragraph) {
+            let theme = assistantLabelTheme(for: label)
+
+            VStack(alignment: .leading, spacing: 10) {
+                HStack(spacing: 8) {
+                    Image(systemName: theme.icon)
+                        .font(.system(size: 10, weight: .bold))
+                        .foregroundColor(theme.tint)
+
+                    Text(label)
+                        .font(.system(size: 12, weight: .semibold, design: .rounded))
+                        .foregroundColor(theme.tint)
+                        .lineLimit(1)
+                }
+                .padding(.horizontal, 10)
+                .padding(.vertical, 7)
+                .background(
+                    Capsule()
+                        .fill(theme.fill)
+                )
+
+                Text(body)
+                    .font(.system(size: 15, weight: .regular, design: .rounded))
+                    .foregroundColor(.white.opacity(0.92))
+                    .lineSpacing(4)
+                    .multilineTextAlignment(.leading)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .padding(14)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .fill(theme.container)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .stroke(theme.stroke, lineWidth: 1)
+            )
+        } else if let bulletText = bulletBody(from: paragraph) {
+            HStack(alignment: .top, spacing: 12) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .fill(Color.white.opacity(0.12))
+                        .frame(width: 22, height: 22)
+
+                    Image(systemName: "checkmark")
+                        .font(.system(size: 10, weight: .bold))
+                        .foregroundColor(Color(hex: 0x8EE3FF))
+                }
+                .padding(.top, 1)
+
+                Text(bulletText)
+                    .font(.system(size: 15, weight: .regular, design: .rounded))
+                    .foregroundColor(.white.opacity(0.9))
+                    .lineSpacing(4)
+                    .multilineTextAlignment(.leading)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .padding(.horizontal, 2)
+        } else {
+            Text(paragraph)
+                .font(.system(size: emphasize ? 15.5 : 15, weight: emphasize ? .medium : .regular, design: .rounded))
+                .foregroundColor(.white.opacity(emphasize ? 0.97 : 0.9))
+                .lineSpacing(4)
+                .multilineTextAlignment(.leading)
+                .fixedSize(horizontal: false, vertical: true)
+        }
     }
 
     private func structuredAnswerSections(from message: AIChatMessage) -> [AssistantAnswerSection] {
@@ -1256,6 +1348,75 @@ struct AIChatView: View {
 
     private func bulletBody(from paragraph: String) -> String? {
         firstMatch(in: paragraph, pattern: #"^\s*•\s+(.+)$"#)
+    }
+
+    private func sectionTitleComponents(from rawTitle: String) -> (badge: String?, title: String) {
+        if
+            let badge = firstMatch(in: rawTitle, pattern: #"^\s*(\d+)[\.\)]\s+.+$"#),
+            let title = firstMatch(in: rawTitle, pattern: #"^\s*\d+[\.\)]\s+(.+)$"#)
+        {
+            return (badge, title)
+        }
+
+        return (nil, stripWrappingQuotes(from: rawTitle))
+    }
+
+    private func labeledParagraph(from paragraph: String) -> (label: String, body: String)? {
+        guard
+            let label = firstMatch(
+                in: paragraph,
+                pattern: #"^\s*["“”']?([^:\n]{2,42})["“”']?\s*:\s+(.+)$"#
+            ),
+            let body = firstMatch(
+                in: paragraph,
+                pattern: #"^\s*["“”']?[^:\n]{2,42}["“”']?\s*:\s+(.+)$"#
+            )
+        else {
+            return nil
+        }
+
+        return (
+            stripWrappingQuotes(from: label),
+            stripWrappingQuotes(from: body)
+        )
+    }
+
+    private func assistantLabelTheme(for label: String) -> (
+        tint: Color,
+        fill: Color,
+        container: Color,
+        stroke: Color,
+        icon: String
+    ) {
+        let normalized = label.lowercased()
+
+        if normalized.contains("solution")
+            || normalized.contains("recommend")
+            || normalized.contains("tip")
+            || normalized.contains("fix")
+            || normalized.contains("建议")
+            || normalized.contains("解决")
+        {
+            return (
+                tint: Color(hex: 0x8EF7C3),
+                fill: Color(hex: 0x1E7F5C).opacity(0.34),
+                container: Color(hex: 0x1C6A52).opacity(0.2),
+                stroke: Color(hex: 0x8EF7C3).opacity(0.28),
+                icon: "wand.and.stars"
+            )
+        }
+
+        return (
+            tint: Color(hex: 0xFFC98E),
+            fill: Color(hex: 0x8A4B17).opacity(0.32),
+            container: Color(hex: 0x7A3E14).opacity(0.18),
+            stroke: Color(hex: 0xFFC98E).opacity(0.24),
+            icon: "exclamationmark.circle.fill"
+        )
+    }
+
+    private func stripWrappingQuotes(from text: String) -> String {
+        text.trimmingCharacters(in: CharacterSet(charactersIn: "\"'“” ").union(.whitespacesAndNewlines))
     }
 
     private func firstMatch(in text: String, pattern: String) -> String? {
