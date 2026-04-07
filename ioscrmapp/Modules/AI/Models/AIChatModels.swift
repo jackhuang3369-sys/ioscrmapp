@@ -39,7 +39,7 @@ struct AIChatOffer: Identifiable, Equatable {
         price: String,
         dataAmount: String,
         validity: String,
-        currency: String = "SDG",
+        currency: String = "AED",
         unit: String = "Month"
     ) {
         self.id = id
