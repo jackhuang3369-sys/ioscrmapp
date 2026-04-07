@@ -6,6 +6,10 @@ struct LanguageSettingsView: View {
 
     @State private var selectedLanguage: AppLanguage = .fallback
 
+    private var selectableLanguages: [AppLanguage] {
+        AppLanguage.allCases.filter { $0 != .simplifiedChinese }
+    }
+
     var body: some View {
         VStack(spacing: 0) {
             header
@@ -27,7 +31,7 @@ struct LanguageSettingsView: View {
                 }
 
                 VStack(spacing: DUSpacing.md) {
-                    ForEach(AppLanguage.allCases) { language in
+                    ForEach(selectableLanguages) { language in
                         DUListItem(
                             title: language.nativeName,
                             subtitle: languageStore.string(language.displayNameKey),
