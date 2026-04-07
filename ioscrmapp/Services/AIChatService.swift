@@ -46,6 +46,30 @@ struct MockAIChatService: AIChatServicing {
         let normalized = text.lowercased()
         let language = AppLanguage(rawValue: context.languageCode) ?? .fallback
 
+        if normalized.contains("offer")
+            || normalized.contains("优惠")
+            || normalized.contains("package")
+            || normalized.contains("套餐")
+            || normalized.contains("plan")
+            || normalized.contains("流量")
+            || normalized.contains("roaming")
+            || normalized.contains("data")
+        {
+            return AIChatReply(
+                conversationID: conversationID ?? UUID().uuidString,
+                text: AIChatLocalizedCopy.offersResultTitle(for: language),
+                thinkingText: "",
+                recommendedOffers: mockOffers(),
+                actions: [
+                    AIChatAction(
+                        title: AIChatLocalizedCopy.actionTitle(for: .offers, language: language),
+                        target: .offers,
+                        rawValue: "app://offers"
+                    )
+                ]
+            )
+        }
+
         if normalized.contains("bill") || normalized.contains("账单") {
             return AIChatReply(
                 conversationID: conversationID ?? UUID().uuidString,
@@ -61,24 +85,9 @@ struct MockAIChatService: AIChatServicing {
             )
         }
 
-        if normalized.contains("offer") || normalized.contains("优惠") {
-            return AIChatReply(
-                conversationID: conversationID ?? UUID().uuidString,
-                text: "I can take you to the Offers area so you can review available packages.",
-                thinkingText: "",
-                actions: [
-                    AIChatAction(
-                        title: AIChatLocalizedCopy.actionTitle(for: .offers, language: language),
-                        target: .offers,
-                        rawValue: "app://offers"
-                    )
-                ]
-            )
-        }
-
         return AIChatReply(
             conversationID: conversationID ?? UUID().uuidString,
-            text: "Your AI assistant integration is connected. Ask about balance, offers, recharge, or billing to test the flow.",
+            text: "I can help with balance, billing, recharge, and package questions. Tell me what you need and I will answer or recommend a suitable package.",
             thinkingText: "",
             actions: [
                 AIChatAction(
@@ -93,6 +102,16 @@ struct MockAIChatService: AIChatServicing {
                 )
             ]
         )
+    }
+
+    private func mockOffers() -> [AIChatOffer] {
+        [
+            AIChatOffer(name: "DataRoamingPrice (10 GB) KSA", price: "15.00", dataAmount: "10 GB", validity: "Monthly"),
+            AIChatOffer(name: "DataRoamingPrice (20 GB) KSA", price: "35.00", dataAmount: "20 GB", validity: "Monthly"),
+            AIChatOffer(name: "DataRoamingPrice (50 GB) KSA", price: "55.00", dataAmount: "50 GB", validity: "Monthly"),
+            AIChatOffer(name: "DataRoamingPrice (100 GB) KSA", price: "75.00", dataAmount: "100 GB", validity: "Monthly"),
+            AIChatOffer(name: "DataRoamingPrice (Unlimited) KSA", price: "120.00", dataAmount: "Unlimited", validity: "Monthly")
+        ]
     }
 }
 
@@ -177,6 +196,7 @@ struct RemoteAIChatService: AIChatServicing {
                 htmlContent: parsed.htmlContent,
                 richText: parsed.richText,
                 thinkingText: parsed.thinkingText,
+                recommendedOffers: parsed.recommendedOffers,
                 actions: parsed.actions
             )
         } catch let error as AIChatServiceError {
@@ -284,6 +304,7 @@ private struct AIChatParsedContent {
     let htmlContent: String?
     let richText: AttributedString?
     let thinkingText: String
+    let recommendedOffers: [AIChatOffer]
     let actions: [AIChatAction]
 }
 
@@ -297,8 +318,15 @@ private enum AIChatResponseParser {
         var renderedParts: [AIChatRenderedText] = []
         var thinkingParts: [String] = []
         var actions: [AIChatAction] = []
+        var recommendedOffers: [AIChatOffer] = []
 
-        collect(node: content, renderedParts: &renderedParts, thinkingParts: &thinkingParts, actions: &actions)
+        collect(
+            node: content,
+            renderedParts: &renderedParts,
+            thinkingParts: &thinkingParts,
+            actions: &actions,
+            recommendedOffers: &recommendedOffers
+        )
 
         return AIChatParsedContent(
             text: renderedParts
@@ -308,6 +336,7 @@ private enum AIChatResponseParser {
             htmlContent: htmlContent(from: content),
             richText: combinedRichText(from: renderedParts),
             thinkingText: thinkingParts.joined(separator: "\n\n").trimmingCharacters(in: .whitespacesAndNewlines),
+            recommendedOffers: recommendedOffers,
             actions: actions
         )
     }
@@ -368,14 +397,264 @@ private enum AIChatResponseParser {
         return try? JSONSerialization.jsonObject(with: data)
     }
 
+    private static func collectRecommendedOffers(from node: Any, offers: inout [AIChatOffer]) {
+        switch node {
+        case let text as String:
+            if let object = jsonObject(from: text) {
+                collectRecommendedOffers(from: object, offers: &offers)
+            }
+        case let array as [Any]:
+            array.forEach { collectRecommendedOffers(from: $0, offers: &offers) }
+        case let dictionary as [String: Any]:
+            if let offer = offer(from: dictionary) {
+                appendUnique(offer, offers: &offers)
+            }
+
+            [
+                "content", "body", "items", "children", "actions", "buttons", "data",
+                "card", "cardConfig", "params", "payload", "response", "result",
+                "output", "outputs", "list", "records", "options", "interactive"
+            ]
+            .forEach { key in
+                if let value = dictionary[key] {
+                    collectRecommendedOffers(from: value, offers: &offers)
+                }
+            }
+        default:
+            return
+        }
+    }
+
+    private static func offer(from dictionary: [String: Any]) -> AIChatOffer? {
+        let directName = firstString(
+            in: dictionary,
+            keys: [
+                "name", "title", "offerName", "packageName", "planName", "comboName",
+                "productName", "product_title", "goodsName", "caption", "label"
+            ]
+        )
+        let fallbackName = inferredName(from: dictionary)
+        let name = !directName.isEmpty ? directName : fallbackName
+
+        let directPrice = firstString(
+            in: dictionary,
+            keys: [
+                "price", "amount", "fee", "cost", "charge", "rent", "monthlyFee",
+                "salePrice", "valuePrice", "value"
+            ]
+        )
+        let price = normalizedPrice(directPrice.isEmpty ? inferredPrice(from: dictionary) : directPrice)
+
+        let directDataAmount = firstString(
+            in: dictionary,
+            keys: [
+                "dataAmount", "data", "traffic", "flow", "quota", "allowance",
+                "volume", "capacity", "specification", "size"
+            ]
+        )
+        let dataAmount = !directDataAmount.isEmpty ? directDataAmount : inferredDataAmount(from: dictionary, fallbackName: name)
+
+        let directValidity = firstString(
+            in: dictionary,
+            keys: [
+                "validity", "period", "duration", "cycle", "validityPeriod",
+                "effectivePeriod", "billingCycle"
+            ]
+        )
+        let validity = !directValidity.isEmpty ? directValidity : inferredValidity(from: dictionary)
+
+        let currency = firstString(
+            in: dictionary,
+            keys: ["currency", "currencyCode", "currencySymbol", "moneyUnit"]
+        )
+        let unit = firstString(
+            in: dictionary,
+            keys: ["unit", "periodUnit", "validityUnit", "billingUnit"]
+        )
+
+        let score = [name, price, dataAmount, validity].filter { !$0.isEmpty }.count
+        let normalizedKeys = dictionary.keys.map { $0.lowercased() }
+        let hasPackageHint = normalizedKeys.contains {
+            $0.contains("offer")
+                || $0.contains("package")
+                || $0.contains("plan")
+                || $0.contains("combo")
+                || $0.contains("traffic")
+                || $0.contains("quota")
+                || $0.contains("price")
+        }
+        || name.localizedCaseInsensitiveContains("gb")
+        || name.localizedCaseInsensitiveContains("unlimited")
+        || !price.isEmpty
+        || !dataAmount.isEmpty
+
+        guard !name.isEmpty, score >= 2, hasPackageHint else {
+            return nil
+        }
+
+        return AIChatOffer(
+            name: name,
+            price: price.isEmpty ? "--" : price,
+            dataAmount: dataAmount.isEmpty ? "--" : dataAmount,
+            validity: validity.isEmpty ? "Monthly" : validity,
+            currency: currency.isEmpty ? "SDG" : currency,
+            unit: unit.isEmpty ? "Month" : unit
+        )
+    }
+
+    private static func firstString(in dictionary: [String: Any], keys: [String]) -> String {
+        for key in keys {
+            if let string = stringValue(forKey: key, in: dictionary), !string.isEmpty {
+                return string
+            }
+        }
+        return ""
+    }
+
+    private static func stringValue(forKey key: String, in dictionary: [String: Any]) -> String? {
+        let loweredKey = key.lowercased()
+
+        if let direct = dictionary[key] ?? dictionary.first(where: { $0.key.lowercased() == loweredKey })?.value {
+            let value = flattenString(from: direct)
+            if !value.isEmpty {
+                return value
+            }
+        }
+
+        for nestedKey in ["text", "value", "label", "title", "name", "caption"] {
+            if let nested = dictionary[nestedKey] as? [String: Any],
+               let value = stringValue(forKey: key, in: nested),
+               !value.isEmpty
+            {
+                return value
+            }
+        }
+
+        return nil
+    }
+
+    private static func flattenString(from value: Any) -> String {
+        switch value {
+        case let string as String:
+            return string.trimmingCharacters(in: .whitespacesAndNewlines)
+        case let number as NSNumber:
+            return number.stringValue
+        case let array as [Any]:
+            return array.map(flattenString).filter { !$0.isEmpty }.joined(separator: " ")
+        case let dictionary as [String: Any]:
+            for key in ["text", "value", "label", "title", "name", "caption", "content", "description"] {
+                if let nested = dictionary[key] {
+                    let flattened = flattenString(from: nested)
+                    if !flattened.isEmpty {
+                        return flattened
+                    }
+                }
+            }
+            return ""
+        default:
+            return ""
+        }
+    }
+
+    private static func allStringValues(in node: Any) -> [String] {
+        switch node {
+        case let string as String:
+            let trimmed = string.trimmingCharacters(in: .whitespacesAndNewlines)
+            return trimmed.isEmpty ? [] : [trimmed]
+        case let array as [Any]:
+            return array.flatMap(allStringValues)
+        case let dictionary as [String: Any]:
+            return dictionary.values.flatMap(allStringValues)
+        default:
+            return []
+        }
+    }
+
+    private static func inferredName(from dictionary: [String: Any]) -> String {
+        allStringValues(in: dictionary).first {
+            $0.localizedCaseInsensitiveContains("gb")
+                || $0.localizedCaseInsensitiveContains("unlimited")
+                || $0.localizedCaseInsensitiveContains("package")
+                || $0.localizedCaseInsensitiveContains("plan")
+                || $0.localizedCaseInsensitiveContains("roaming")
+        } ?? ""
+    }
+
+    private static func inferredPrice(from dictionary: [String: Any]) -> String {
+        let combined = allStringValues(in: dictionary).joined(separator: " ")
+        guard let match = combined.firstMatch(for: #"(?<!\d)(\d+(?:\.\d{1,2})?)(?=\s*(?:SDG|AED|USD|SAR|/|$))"#) else {
+            return ""
+        }
+        return String(match)
+    }
+
+    private static func inferredDataAmount(from dictionary: [String: Any], fallbackName: String) -> String {
+        let combined = ([fallbackName] + allStringValues(in: dictionary)).joined(separator: " ")
+        if combined.localizedCaseInsensitiveContains("unlimited") {
+            return "Unlimited"
+        }
+
+        guard let match = combined.firstMatch(for: #"(\d+(?:\.\d+)?)\s*(GB|MB|TB)"#) else {
+            return ""
+        }
+        return String(match).uppercased()
+    }
+
+    private static func inferredValidity(from dictionary: [String: Any]) -> String {
+        let combined = allStringValues(in: dictionary).joined(separator: " ")
+        if let match = combined.firstMatch(for: #"(?i)(monthly|month|weekly|week|daily|day|yearly|year)"#) {
+            let raw = String(match).lowercased()
+            switch raw {
+            case "month":
+                return "Monthly"
+            case "week":
+                return "Weekly"
+            case "day":
+                return "Daily"
+            case "year":
+                return "Yearly"
+            default:
+                return raw.prefix(1).uppercased() + raw.dropFirst()
+            }
+        }
+
+        return ""
+    }
+
+    private static func normalizedPrice(_ rawPrice: String) -> String {
+        let trimmed = rawPrice.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else {
+            return ""
+        }
+
+        if let match = trimmed.firstMatch(for: #"(\d+(?:\.\d{1,2})?)"#) {
+            return String(match)
+        }
+
+        return trimmed
+    }
+
     private static func collect(
         node: Any,
         renderedParts: inout [AIChatRenderedText],
         thinkingParts: inout [String],
-        actions: inout [AIChatAction]
+        actions: inout [AIChatAction],
+        recommendedOffers: inout [AIChatOffer]
     ) {
         switch node {
         case let text as String:
+            let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+            if let object = jsonObject(from: trimmed) {
+                collect(
+                    node: object,
+                    renderedParts: &renderedParts,
+                    thinkingParts: &thinkingParts,
+                    actions: &actions,
+                    recommendedOffers: &recommendedOffers
+                )
+                return
+            }
+
             appendText(text, renderedParts: &renderedParts, thinkingParts: &thinkingParts)
         case let array as [Any]:
             for item in array {
@@ -393,15 +672,24 @@ private enum AIChatResponseParser {
                             interactive,
                             renderedParts: &renderedParts,
                             thinkingParts: &thinkingParts,
-                            actions: &actions
+                            actions: &actions,
+                            recommendedOffers: &recommendedOffers
                         )
                         continue
                     }
                 }
 
-                collect(node: item, renderedParts: &renderedParts, thinkingParts: &thinkingParts, actions: &actions)
+                collect(
+                    node: item,
+                    renderedParts: &renderedParts,
+                    thinkingParts: &thinkingParts,
+                    actions: &actions,
+                    recommendedOffers: &recommendedOffers
+                )
             }
         case let dictionary as [String: Any]:
+            collectRecommendedOffers(from: dictionary, offers: &recommendedOffers)
+
             if looksLikeCard(dictionary) {
                 collectActions(from: dictionary, actions: &actions)
             }
@@ -411,7 +699,8 @@ private enum AIChatResponseParser {
                     interactive,
                     renderedParts: &renderedParts,
                     thinkingParts: &thinkingParts,
-                    actions: &actions
+                    actions: &actions,
+                    recommendedOffers: &recommendedOffers
                 )
                 return
             }
@@ -420,18 +709,36 @@ private enum AIChatResponseParser {
                 if let text = textValue as? String {
                     appendText(text, renderedParts: &renderedParts, thinkingParts: &thinkingParts)
                 } else {
-                    collect(node: textValue, renderedParts: &renderedParts, thinkingParts: &thinkingParts, actions: &actions)
+                    collect(
+                        node: textValue,
+                        renderedParts: &renderedParts,
+                        thinkingParts: &thinkingParts,
+                        actions: &actions,
+                        recommendedOffers: &recommendedOffers
+                    )
                 }
                 return
             }
 
             if let content = dictionary["content"] {
-                collect(node: content, renderedParts: &renderedParts, thinkingParts: &thinkingParts, actions: &actions)
+                collect(
+                    node: content,
+                    renderedParts: &renderedParts,
+                    thinkingParts: &thinkingParts,
+                    actions: &actions,
+                    recommendedOffers: &recommendedOffers
+                )
                 return
             }
 
             if let body = dictionary["body"] {
-                collect(node: body, renderedParts: &renderedParts, thinkingParts: &thinkingParts, actions: &actions)
+                collect(
+                    node: body,
+                    renderedParts: &renderedParts,
+                    thinkingParts: &thinkingParts,
+                    actions: &actions,
+                    recommendedOffers: &recommendedOffers
+                )
                 return
             }
 
@@ -452,7 +759,13 @@ private enum AIChatResponseParser {
 
             for key in ["answer", "message", "result", "output", "outputs", "data", "payload", "response"] {
                 if let value = dictionary[key] {
-                    collect(node: value, renderedParts: &renderedParts, thinkingParts: &thinkingParts, actions: &actions)
+                    collect(
+                        node: value,
+                        renderedParts: &renderedParts,
+                        thinkingParts: &thinkingParts,
+                        actions: &actions,
+                        recommendedOffers: &recommendedOffers
+                    )
                     return
                 }
             }
@@ -482,12 +795,14 @@ private enum AIChatResponseParser {
         _ interactive: [String: Any],
         renderedParts: inout [AIChatRenderedText],
         thinkingParts: inout [String],
-        actions: inout [AIChatAction]
+        actions: inout [AIChatAction],
+        recommendedOffers: inout [AIChatOffer]
     ) {
         let params = interactive["params"] as? [String: Any] ?? [:]
         let interactiveType = (interactive["type"] as? String)?.lowercased() ?? ""
         var interactiveActions: [AIChatAction] = []
         collectActions(from: interactive, actions: &interactiveActions)
+        collectRecommendedOffers(from: interactive, offers: &recommendedOffers)
 
         if
             let description = params["description"] as? String,
@@ -952,6 +1267,19 @@ private enum AIChatResponseParser {
         actions.append(action)
     }
 
+    private static func appendUnique(_ offer: AIChatOffer, offers: inout [AIChatOffer]) {
+        let exists = offers.contains {
+            $0.name == offer.name
+                && $0.price == offer.price
+                && $0.dataAmount == offer.dataAmount
+                && $0.validity == offer.validity
+        }
+        guard !exists else {
+            return
+        }
+        offers.append(offer)
+    }
+
     private static func extractActionTitle(from dictionary: [String: Any]) -> String {
         for key in ["body", "text", "value", "label", "title", "name", "caption"] {
             if let value = dictionary[key] {
@@ -1040,5 +1368,24 @@ private enum AIChatResponseParser {
         }
 
         return nil
+    }
+}
+
+private extension String {
+    func firstMatch(for pattern: String) -> Substring? {
+        guard let regex = try? NSRegularExpression(pattern: pattern, options: []) else {
+            return nil
+        }
+
+        let range = NSRange(startIndex..., in: self)
+        guard
+            let match = regex.firstMatch(in: self, options: [], range: range),
+            match.numberOfRanges > 1,
+            let matchedRange = Range(match.range(at: 1), in: self)
+        else {
+            return nil
+        }
+
+        return self[matchedRange]
     }
 }

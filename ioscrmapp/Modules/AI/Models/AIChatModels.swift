@@ -8,6 +8,7 @@ enum AIChatSender: String, Equatable {
 enum AIChatViewStep: Equatable {
     case home
     case offersList
+    case answer
     case offerDetails(AIChatOffer)
     case success
 }
@@ -38,7 +39,7 @@ struct AIChatOffer: Identifiable, Equatable {
         price: String,
         dataAmount: String,
         validity: String,
-        currency: String = "AED",
+        currency: String = "SDG",
         unit: String = "Month"
     ) {
         self.id = id
@@ -65,6 +66,7 @@ struct AIChatMessage: Identifiable, Equatable {
     var htmlContent: String?
     var richText: AttributedString?
     var thinkingText: String
+    var recommendedOffers: [AIChatOffer]
     var actions: [AIChatAction]
     let createdAt: Date
     var isLoading: Bool
@@ -74,6 +76,7 @@ struct AIChatMessage: Identifiable, Equatable {
         sender: AIChatSender,
         text: String,
         thinkingText: String = "",
+        recommendedOffers: [AIChatOffer] = [],
         actions: [AIChatAction] = [],
         createdAt: Date = Date(),
         isLoading: Bool = false
@@ -84,6 +87,7 @@ struct AIChatMessage: Identifiable, Equatable {
         htmlContent = nil
         richText = nil
         self.thinkingText = thinkingText
+        self.recommendedOffers = recommendedOffers
         self.actions = actions
         self.createdAt = createdAt
         self.isLoading = isLoading
@@ -106,6 +110,7 @@ struct AIChatReply {
     let htmlContent: String?
     let richText: AttributedString?
     let thinkingText: String
+    let recommendedOffers: [AIChatOffer]
     let actions: [AIChatAction]
 
     init(
@@ -114,6 +119,7 @@ struct AIChatReply {
         htmlContent: String? = nil,
         richText: AttributedString? = nil,
         thinkingText: String,
+        recommendedOffers: [AIChatOffer] = [],
         actions: [AIChatAction]
     ) {
         self.conversationID = conversationID
@@ -121,6 +127,7 @@ struct AIChatReply {
         self.htmlContent = htmlContent
         self.richText = richText
         self.thinkingText = thinkingText
+        self.recommendedOffers = recommendedOffers
         self.actions = actions
     }
 }
@@ -273,6 +280,61 @@ enum AIChatLocalizedCopy {
             return "正在生成回复..."
         case .arabic:
             return "جارٍ إنشاء الرد..."
+        }
+    }
+
+    static func offersResultTitle(for language: AppLanguage) -> String {
+        switch language {
+        case .english:
+            return "Here are the recommended package options for you~"
+        case .simplifiedChinese:
+            return "这里是为你推荐的套餐选项~"
+        case .arabic:
+            return "هذه هي الباقات المقترحة المناسبة لك~"
+        }
+    }
+
+    static func questionSectionTitle(for language: AppLanguage) -> String {
+        switch language {
+        case .english:
+            return "Your Question"
+        case .simplifiedChinese:
+            return "你的问题"
+        case .arabic:
+            return "سؤالك"
+        }
+    }
+
+    static func answerSectionTitle(for language: AppLanguage) -> String {
+        switch language {
+        case .english:
+            return "Assistant Reply"
+        case .simplifiedChinese:
+            return "智能体回复"
+        case .arabic:
+            return "رد المساعد"
+        }
+    }
+
+    static func suggestedActionsTitle(for language: AppLanguage) -> String {
+        switch language {
+        case .english:
+            return "Suggested Actions"
+        case .simplifiedChinese:
+            return "建议操作"
+        case .arabic:
+            return "إجراءات مقترحة"
+        }
+    }
+
+    static func continueAskingHint(for language: AppLanguage) -> String {
+        switch language {
+        case .english:
+            return "You can continue asking questions, or choose one of the actions below."
+        case .simplifiedChinese:
+            return "你可以继续提问，或选择下面的操作。"
+        case .arabic:
+            return "يمكنك متابعة طرح الأسئلة أو اختيار أحد الإجراءات أدناه."
         }
     }
 

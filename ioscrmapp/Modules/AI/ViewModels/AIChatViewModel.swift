@@ -19,6 +19,7 @@ final class AIChatViewModel: ObservableObject {
     private let custSubInfo: CustSubInfo
     private let aiChatService: any AIChatServicing
     private var conversationID: String?
+    private var activeAssistantMessageID: UUID?
 
     init(
         custSubInfo: CustSubInfo,
@@ -31,21 +32,62 @@ final class AIChatViewModel: ObservableObject {
         title = AIChatLocalizedCopy.title(for: language)
         subtitle = AIChatLocalizedCopy.subtitle(for: language)
         suggestedPrompts = AIChatLocalizedCopy.suggestedPrompts(for: language)
-        setupMockOffers()
-    }
-
-    private func setupMockOffers() {
-        offers = [
-            AIChatOffer(name: "DataRoamingPrice (10 GB)", price: "15.00", dataAmount: "10 GB", validity: "Monthly"),
-            AIChatOffer(name: "DataRoamingPrice (20 GB)", price: "35.00", dataAmount: "20 GB", validity: "Monthly"),
-            AIChatOffer(name: "DataRoamingPrice (50 GB)", price: "55.00", dataAmount: "50 GB", validity: "Monthly"),
-            AIChatOffer(name: "DataRoamingPrice (100 GB)", price: "75.00", dataAmount: "100 GB", validity: "Monthly"),
-            AIChatOffer(name: "DataRoamingPrice (Unlimited)", price: "120.00", dataAmount: "Unlimited", validity: "Monthly")
-        ]
     }
 
     var canSend: Bool {
         !draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && !isSending
+    }
+
+    var currentAssistantMessage: AIChatMessage? {
+        if let activeAssistantMessageID {
+            return messages.first(where: { $0.id == activeAssistantMessageID })
+        }
+
+        return messages.last(where: { $0.sender == .assistant && !$0.isLoading })
+    }
+
+    func directNavigationTarget(for text: String) -> AIChatNavigationTarget? {
+        let normalized = normalizedIntentText(text)
+        guard !normalized.isEmpty else {
+            return nil
+        }
+
+        let balanceHints = [
+            "how can i check my balance",
+            "how do i check my balance",
+            "check my balance",
+            "view my balance",
+            "my balance",
+            "balance inquiry",
+            "查看余额",
+            "查余额",
+            "余额",
+            "الرصيد"
+        ]
+
+        if balanceHints.contains(where: { normalized.contains($0) }) {
+            return .home
+        }
+
+        let rechargeHints = [
+            "how do i recharge my account",
+            "how can i recharge my account",
+            "recharge my account",
+            "recharge account",
+            "top up my account",
+            "top up",
+            "充值",
+            "充话费",
+            "重新充值",
+            "اعادة شحن",
+            "شحن الحساب"
+        ]
+
+        if rechargeHints.contains(where: { normalized.contains($0) }) {
+            return .recharge
+        }
+
+        return nil
     }
 
     func sendDraft() {
@@ -61,13 +103,6 @@ final class AIChatViewModel: ObservableObject {
     func sendSuggestedPrompt(_ prompt: String) {
         guard !prompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
             return
-        }
-
-        // 复刻 HTML 逻辑：点击推荐问题直接跳转列表
-        if currentStep == .home {
-            withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
-                currentStep = .offersList
-            }
         }
         
         send(prompt)
@@ -93,6 +128,8 @@ final class AIChatViewModel: ObservableObject {
         isSending = false
         currentStep = .home
         selectedOffer = nil
+        offers = []
+        activeAssistantMessageID = nil
     }
 
     func selectOffer(_ offer: AIChatOffer) {
@@ -119,21 +156,13 @@ final class AIChatViewModel: ObservableObject {
                 }
             case .offerDetails:
                 currentStep = .offersList
+            case .answer:
+                currentStep = .home
             case .offersList:
                 currentStep = .home
             case .home:
                 break
             }
-        }
-    }
-
-    func advanceFromHomeAfterTransientPrompt() {
-        guard currentStep == .home else {
-            return
-        }
-
-        withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
-            currentStep = .offersList
         }
     }
 
@@ -169,12 +198,14 @@ final class AIChatViewModel: ObservableObject {
 
                 await MainActor.run {
                     conversationID = reply.conversationID ?? conversationID
+                    applyReplyMetadata(reply)
                     updateAssistantPlaceholder(
                         placeholderID: placeholderID,
                         text: resolvedReplyText(reply),
                         htmlContent: reply.htmlContent,
                         richText: reply.richText,
                         thinkingText: reply.thinkingText,
+                        recommendedOffers: reply.recommendedOffers,
                         actions: reply.actions
                     )
                 }
@@ -186,6 +217,7 @@ final class AIChatViewModel: ObservableObject {
                         htmlContent: nil,
                         richText: nil,
                         thinkingText: "",
+                        recommendedOffers: [],
                         actions: []
                     )
                 }
@@ -200,10 +232,31 @@ final class AIChatViewModel: ObservableObject {
                         htmlContent: nil,
                         richText: nil,
                         thinkingText: "",
+                        recommendedOffers: [],
                         actions: []
                     )
                 }
             }
+        }
+    }
+
+    private func applyReplyMetadata(_ reply: AIChatReply) {
+        guard !reply.recommendedOffers.isEmpty else {
+            return
+        }
+
+        offers = reply.recommendedOffers
+
+        if case .offerDetails(let currentSelection) = currentStep,
+           let updatedSelection = reply.recommendedOffers.first(where: { $0.name == currentSelection.name })
+        {
+            selectedOffer = updatedSelection
+            currentStep = .offerDetails(updatedSelection)
+            return
+        }
+
+        if currentStep == .home || currentStep == .offersList {
+            currentStep = .offersList
         }
     }
 
@@ -213,6 +266,7 @@ final class AIChatViewModel: ObservableObject {
         htmlContent: String?,
         richText: AttributedString?,
         thinkingText: String,
+        recommendedOffers: [AIChatOffer],
         actions: [AIChatAction]
     ) {
         guard let index = messages.firstIndex(where: { $0.id == placeholderID }) else {
@@ -224,9 +278,17 @@ final class AIChatViewModel: ObservableObject {
         messages[index].htmlContent = htmlContent
         messages[index].richText = richText
         messages[index].thinkingText = thinkingText
+        messages[index].recommendedOffers = recommendedOffers
         messages[index].actions = actions
         messages[index].isLoading = false
+        activeAssistantMessageID = placeholderID
+        offers = recommendedOffers
+        selectedOffer = nil
         isSending = false
+
+        withAnimation(.spring(response: 0.5, dampingFraction: 0.82)) {
+            currentStep = recommendedOffers.isEmpty ? .answer : .offersList
+        }
     }
 
     private func resolvedReplyText(_ reply: AIChatReply) -> String {
@@ -234,11 +296,25 @@ final class AIChatViewModel: ObservableObject {
             return reply.text
         }
 
-        if reply.htmlContent != nil || reply.richText != nil || !reply.actions.isEmpty {
+        if reply.htmlContent != nil || reply.richText != nil || !reply.actions.isEmpty || !reply.recommendedOffers.isEmpty {
             return ""
         }
 
         return AIChatLocalizedCopy.emptyReply(for: language)
+    }
+
+    private func normalizedIntentText(_ text: String) -> String {
+        let lowercased = text.lowercased()
+        let sanitized = lowercased.replacingOccurrences(
+            of: #"[^a-z0-9\u{4e00}-\u{9fff}\u{0600}-\u{06ff}]+"#,
+            with: " ",
+            options: .regularExpression
+        )
+
+        return sanitized
+            .split(separator: " ")
+            .joined(separator: " ")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     private func buildContext() -> AIChatContext {
