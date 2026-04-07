@@ -882,6 +882,16 @@ private enum AIChatResponseParser {
             return AIChatRenderedText(plainText: "", richText: nil)
         }
 
+        if looksLikeMarkdown(trimmedRawText),
+           let richText = attributedMarkdown(from: trimmedRawText)
+        {
+            let plainText = collapseDisplayText(String(richText.characters))
+            return AIChatRenderedText(
+                plainText: plainText,
+                richText: plainText.isEmpty ? nil : richText
+            )
+        }
+
         if let richText = attributedText(from: trimmedRawText) {
             let plainText = collapseDisplayText(String(richText.characters))
             return AIChatRenderedText(
@@ -942,6 +952,20 @@ private enum AIChatResponseParser {
         #endif
 
         return AttributedString(normalized.string)
+    }
+
+    private static func attributedMarkdown(from rawText: String) -> AttributedString? {
+        guard !looksLikeHTMLDocument(rawText) else {
+            return nil
+        }
+
+        return try? AttributedString(
+            markdown: rawText,
+            options: AttributedString.MarkdownParsingOptions(
+                interpretedSyntax: .full,
+                failurePolicy: .returnPartiallyParsedIfPossible
+            )
+        )
     }
 
     private static func htmlDocument(for rawText: String) -> String {
@@ -1044,6 +1068,26 @@ private enum AIChatResponseParser {
             "<p", "<pre", "<table", "<ul", "<ol", "<h1", "<h2", "<h3", "<iframe"
         ]
         return htmlMarkers.contains { lowercased.contains($0) }
+    }
+
+    private static func looksLikeMarkdown(_ rawText: String) -> Bool {
+        guard !looksLikeHTMLDocument(rawText) else {
+            return false
+        }
+
+        let markdownPatterns = [
+            #"(?m)^\s{0,3}#{1,6}\s+\S"#,
+            #"(?m)^\s{0,3}[-*+]\s+\S"#,
+            #"(?m)^\s{0,3}\d+\.\s+\S"#,
+            #"\*\*[^*\n]+\*\*"#,
+            #"__[^_\n]+__"#,
+            #"`[^`\n]+`"#,
+            #"(?m)^```"#
+        ]
+
+        return markdownPatterns.contains { pattern in
+            rawText.range(of: pattern, options: .regularExpression) != nil
+        }
     }
 
     private static func htmlDocumentForWebView(_ rawText: String) -> String {
