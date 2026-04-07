@@ -1603,6 +1603,50 @@ struct AIChatView: View {
         return .neutral
     }
 
+    private func assistantSectionTheme(for title: String?) -> (
+        headerGradient: [Color],
+        accent: Color,
+        titleColor: Color,
+        cardBottom: Color,
+        cardTopOpacity: (Int) -> Color
+    ) {
+        let normalized = title?.lowercased() ?? ""
+
+        if normalized.contains("solution") || normalized.contains("建议") || normalized.contains("解决") {
+            return (
+                headerGradient: [Color(hex: 0x34D399), Color(hex: 0x14B8A6)],
+                accent: Color(hex: 0x6EE7B7),
+                titleColor: Color(hex: 0xECFDF5),
+                cardBottom: Color(hex: 0x0F766E).opacity(0.12),
+                cardTopOpacity: { index in
+                    Color(hex: 0xD1FAE5).opacity(index == 0 ? 0.16 : 0.11)
+                }
+            )
+        }
+
+        if normalized.contains("reason") || normalized.contains("cause") || normalized.contains("原因") || normalized.contains("问题") {
+            return (
+                headerGradient: [Color(hex: 0xFB923C), Color(hex: 0xF43F5E)],
+                accent: Color(hex: 0xFDBA74),
+                titleColor: Color(hex: 0xFFF7ED),
+                cardBottom: Color(hex: 0x9A3412).opacity(0.12),
+                cardTopOpacity: { index in
+                    Color(hex: 0xFFEDD5).opacity(index == 0 ? 0.16 : 0.11)
+                }
+            )
+        }
+
+        return (
+            headerGradient: [Color(hex: 0x56CCF2), Color(hex: 0x8B5CFF)],
+            accent: Color(hex: 0x8B5CFF),
+            titleColor: .white.opacity(0.98),
+            cardBottom: Color(hex: 0x7C3AED).opacity(0.08),
+            cardTopOpacity: { index in
+                Color.white.opacity(index == 0 ? 0.16 : 0.11)
+            }
+        )
+    }
+
     private func stripWrappingQuotes(from text: String) -> String {
         text.trimmingCharacters(in: CharacterSet(charactersIn: "\"'“” ").union(.whitespacesAndNewlines))
     }
@@ -2944,50 +2988,6 @@ private enum AIOrbTextureFactory {
                 ]
             )
         }
-    }
-
-    private func assistantSectionTheme(for title: String?) -> (
-        headerGradient: [Color],
-        accent: Color,
-        titleColor: Color,
-        cardBottom: Color,
-        cardTopOpacity: (Int) -> Color
-    ) {
-        let normalized = title?.lowercased() ?? ""
-
-        if normalized.contains("solution") || normalized.contains("建议") || normalized.contains("解决") {
-            return (
-                headerGradient: [Color(hex: 0x34D399), Color(hex: 0x14B8A6)],
-                accent: Color(hex: 0x6EE7B7),
-                titleColor: Color(hex: 0xECFDF5),
-                cardBottom: Color(hex: 0x0F766E).opacity(0.12),
-                cardTopOpacity: { index in
-                    Color(hex: 0xD1FAE5).opacity(index == 0 ? 0.16 : 0.11)
-                }
-            )
-        }
-
-        if normalized.contains("reason") || normalized.contains("cause") || normalized.contains("原因") || normalized.contains("问题") {
-            return (
-                headerGradient: [Color(hex: 0xFB923C), Color(hex: 0xF43F5E)],
-                accent: Color(hex: 0xFDBA74),
-                titleColor: Color(hex: 0xFFF7ED),
-                cardBottom: Color(hex: 0x9A3412).opacity(0.12),
-                cardTopOpacity: { index in
-                    Color(hex: 0xFFEDD5).opacity(index == 0 ? 0.16 : 0.11)
-                }
-            )
-        }
-
-        return (
-            headerGradient: [Color(hex: 0x56CCF2), Color(hex: 0x8B5CFF)],
-            accent: Color(hex: 0x8B5CFF),
-            titleColor: .white.opacity(0.98),
-            cardBottom: Color(hex: 0x7C3AED).opacity(0.08),
-            cardTopOpacity: { index in
-                Color.white.opacity(index == 0 ? 0.16 : 0.11)
-            }
-        )
     }
 
     static func makeRadialMaskTexture(size: CGFloat = 768) -> UIImage {
