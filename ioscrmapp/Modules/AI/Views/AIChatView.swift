@@ -27,17 +27,17 @@ struct AIChatView: View {
 
     private var shouldShowPersistentComposer: Bool {
         switch viewModel.currentStep {
-        case .home, .offersList, .offerDetails, .success:
+        case .home, .offersList, .answer, .offerDetails, .success:
             return true
         }
     }
 
     private var shouldShowThinkingIndicator: Bool {
-        transientUserMessageText != nil
+        viewModel.currentStep == .home && viewModel.isSending
     }
 
     private var floatingUserMessageReserveHeight: CGFloat {
-        guard shouldShowThinkingIndicator else {
+        guard transientUserMessageText != nil else {
             return 0
         }
 
@@ -97,6 +97,13 @@ struct AIChatView: View {
                 // --- Layer 2: Offers List ---
                 if viewModel.currentStep == .offersList {
                     offersListLayer(hPad: hPad, bottomPad: bottomPad)
+                        .frame(maxWidth: .infinity)
+                        .transition(.asymmetric(insertion: .move(edge: .trailing).combined(with: .opacity), removal: .move(edge: .leading).combined(with: .opacity)))
+                        .zIndex(2)
+                }
+
+                if viewModel.currentStep == .answer {
+                    answerLayer(hPad: hPad, bottomPad: bottomPad)
                         .frame(maxWidth: .infinity)
                         .transition(.asymmetric(insertion: .move(edge: .trailing).combined(with: .opacity), removal: .move(edge: .leading).combined(with: .opacity)))
                         .zIndex(2)
@@ -187,6 +194,13 @@ struct AIChatView: View {
             isDraftFieldFocused = false
             composerMode = .text
             isVoiceListening = false
+            if viewModel.currentStep != .home {
+                floatingMessageHideWorkItem?.cancel()
+                floatingMessageHideWorkItem = nil
+                withAnimation(.spring(response: 0.42, dampingFraction: 0.86)) {
+                    transientUserMessageText = nil
+                }
+            }
         }
     }
 
@@ -496,7 +510,11 @@ struct AIChatView: View {
 
     private func promptCapsule(_ text: String, index: Int, width: CGFloat) -> some View {
         Button {
-            viewModel.sendSuggestedPrompt(text)
+            if let target = viewModel.directNavigationTarget(for: text) {
+                onNavigate(target)
+            } else {
+                viewModel.sendSuggestedPrompt(text)
+            }
         } label: {
             promptCapsuleContent(text, width: width, lineLimit: 2)
         }
@@ -743,7 +761,6 @@ struct AIChatView: View {
                 transientUserMessageText = nil
             }
             floatingMessageHideWorkItem = nil
-            viewModel.advanceFromHomeAfterTransientPrompt()
         }
         floatingMessageHideWorkItem = workItem
         DispatchQueue.main.asyncAfter(deadline: .now() + 3, execute: workItem)
@@ -864,6 +881,18 @@ struct AIChatView: View {
     }
 
     private func submitDraftFromComposer() {
+        let message = viewModel.draft.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !message.isEmpty else {
+            return
+        }
+
+        if let target = viewModel.directNavigationTarget(for: message) {
+            viewModel.draft = ""
+            isDraftFieldFocused = false
+            onNavigate(target)
+            return
+        }
+
         guard viewModel.canSend else {
             return
         }
@@ -918,14 +947,21 @@ struct AIChatView: View {
     // MARK: - New UI Layers (Layer 2, 3, 4)
 
     private func offersListLayer(hPad: CGFloat, bottomPad: CGFloat) -> some View {
-        VStack(spacing: 0) {
+        let offerIntroText = viewModel.currentAssistantMessage?
+            .text
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        let displayTitle = (offerIntroText?.isEmpty == false)
+            ? (offerIntroText ?? "")
+            : AIChatLocalizedCopy.offersResultTitle(for: viewModel.language)
+
+        return VStack(spacing: 0) {
             headerBar
 
-            Text("Here are the recommended package options for you~")
+            Text(displayTitle)
                 .font(.system(size: 16, weight: .regular, design: .rounded))
                 .foregroundColor(.white.opacity(0.85))
                 .multilineTextAlignment(.center)
-                .lineLimit(2)
+                .lineLimit(3)
                 .minimumScaleFactor(0.85)
                 .padding(.horizontal, hPad + 12)
                 .padding(.top, 16)
@@ -944,6 +980,248 @@ struct AIChatView: View {
             .frame(maxWidth: .infinity)
         }
         .padding(.top, 8)
+    }
+
+    private func answerLayer(hPad: CGFloat, bottomPad: CGFloat) -> some View {
+        let assistantMessage = viewModel.currentAssistantMessage
+        let questionText = latestUserMessage?.text.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+
+        return VStack(spacing: 0) {
+            headerBar
+
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 18) {
+                    if !questionText.isEmpty {
+                        infoGlassCard(title: AIChatLocalizedCopy.questionSectionTitle(for: viewModel.language)) {
+                            Text(questionText)
+                                .font(.system(size: 18, weight: .medium, design: .rounded))
+                                .foregroundColor(.white.opacity(0.98))
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                    }
+
+                    infoGlassCard(title: AIChatLocalizedCopy.answerSectionTitle(for: viewModel.language)) {
+                        assistantAnswerContent(message: assistantMessage)
+                    }
+
+                    if let actions = assistantMessage?.actions, !actions.isEmpty {
+                        infoGlassCard(title: AIChatLocalizedCopy.suggestedActionsTitle(for: viewModel.language)) {
+                            VStack(alignment: .leading, spacing: 14) {
+                                Text(AIChatLocalizedCopy.continueAskingHint(for: viewModel.language))
+                                    .font(.system(size: 14, weight: .medium, design: .rounded))
+                                    .foregroundColor(.white.opacity(0.68))
+                                    .fixedSize(horizontal: false, vertical: true)
+
+                                LazyVGrid(
+                                    columns: [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)],
+                                    spacing: 12
+                                ) {
+                                    ForEach(actions) { action in
+                                        actionButton(action)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                .padding(.horizontal, hPad)
+                .padding(.top, 18)
+                .padding(.bottom, bottomPad + composerReserveHeight)
+            }
+        }
+        .padding(.top, 8)
+    }
+
+    @ViewBuilder
+    private func assistantAnswerContent(message: AIChatMessage?) -> some View {
+        if let message {
+            if let richText = message.richText, attributedTextIsNotEmpty(richText) {
+                Text(richText)
+                    .font(.system(size: 15, weight: .regular, design: .rounded))
+                    .foregroundColor(.white.opacity(0.92))
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .fixedSize(horizontal: false, vertical: true)
+            } else if let htmlAttributed = attributedHTML(message.htmlContent), attributedTextIsNotEmpty(htmlAttributed) {
+                Text(htmlAttributed)
+                    .font(.system(size: 15, weight: .regular, design: .rounded))
+                    .foregroundColor(.white.opacity(0.92))
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .fixedSize(horizontal: false, vertical: true)
+            } else if !message.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                Text(message.text)
+                    .font(.system(size: 15, weight: .regular, design: .rounded))
+                    .foregroundColor(.white.opacity(0.92))
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .fixedSize(horizontal: false, vertical: true)
+            } else {
+                Text(AIChatLocalizedCopy.emptyReply(for: viewModel.language))
+                    .font(.system(size: 15, weight: .regular, design: .rounded))
+                    .foregroundColor(.white.opacity(0.72))
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        } else {
+            Text(AIChatLocalizedCopy.loadingTitle(for: viewModel.language))
+                .font(.system(size: 15, weight: .regular, design: .rounded))
+                .foregroundColor(.white.opacity(0.72))
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+    }
+
+    private func infoGlassCard<Content: View>(title: String, @ViewBuilder content: () -> Content) -> some View {
+        VStack(alignment: .leading, spacing: 18) {
+            HStack(spacing: 12) {
+                Circle()
+                    .fill(
+                        LinearGradient(
+                            colors: [Color(hex: 0x51C7FF), Color(hex: 0xC64EFF)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .frame(width: 12, height: 12)
+                    .shadow(color: Color(hex: 0xC64EFF).opacity(0.45), radius: 8, x: 0, y: 0)
+
+                Text(title)
+                    .font(.system(size: 17, weight: .semibold, design: .rounded))
+                    .foregroundColor(.white.opacity(0.94))
+            }
+
+            content()
+        }
+        .padding(20)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 28, style: .continuous)
+                .fill(
+                    LinearGradient(
+                        colors: [
+                            Color.white.opacity(0.18),
+                            Color.white.opacity(0.1),
+                            Color(hex: 0xF472B6).opacity(0.06)
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .background(
+                    RoundedRectangle(cornerRadius: 28, style: .continuous)
+                        .fill(.ultraThinMaterial)
+                        .opacity(0.78)
+                )
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 28, style: .continuous)
+                .stroke(Color.white.opacity(0.22), lineWidth: 1)
+        )
+        .shadow(color: Color.black.opacity(0.12), radius: 18, x: 0, y: 10)
+    }
+
+    private func actionButton(_ action: AIChatAction) -> some View {
+        Button {
+            handleAction(action)
+        } label: {
+            Text(action.title)
+                .font(.system(size: 14, weight: .semibold, design: .rounded))
+                .foregroundColor(.white)
+                .multilineTextAlignment(.center)
+                .frame(maxWidth: .infinity)
+                .frame(minHeight: 52)
+                .padding(.horizontal, 12)
+                .background(
+                    LinearGradient(
+                        colors: [Color(hex: 0x3CD1FF), Color(hex: 0xC349FF)],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                )
+                .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+                .shadow(color: Color(hex: 0xC349FF).opacity(0.22), radius: 10, x: 0, y: 6)
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func handleAction(_ action: AIChatAction) {
+        if let target = action.target {
+            onNavigate(target)
+            return
+        }
+
+        guard let rawValue = action.rawValue?.trimmingCharacters(in: .whitespacesAndNewlines), !rawValue.isEmpty else {
+            return
+        }
+
+        if let target = navigationTarget(from: rawValue) {
+            onNavigate(target)
+            return
+        }
+
+        guard let url = URL(string: rawValue) else {
+            return
+        }
+
+        openURL(url)
+    }
+
+    private func navigationTarget(from rawValue: String) -> AIChatNavigationTarget? {
+        let normalized = rawValue.lowercased()
+
+        if normalized.hasPrefix("app://") {
+            if normalized.contains("recharge") {
+                return .recharge
+            }
+            if normalized.contains("offer") {
+                return .offers
+            }
+            if normalized.contains("bill") {
+                return .billing
+            }
+            if normalized.contains("mall") {
+                return .mall
+            }
+            if normalized.contains("service") {
+                return .service
+            }
+            if normalized.contains("me") {
+                return .me
+            }
+            if normalized.contains("home") {
+                return .home
+            }
+        }
+
+        if let url = URL(string: rawValue), let scheme = url.scheme?.lowercased(), ["http", "https"].contains(scheme) {
+            return .external(url)
+        }
+
+        return nil
+    }
+
+    private func attributedHTML(_ html: String?) -> AttributedString? {
+        guard
+            let html,
+            let data = html.data(using: .utf8),
+            let nsAttributed = try? NSAttributedString(
+                data: data,
+                options: [
+                    .documentType: NSAttributedString.DocumentType.html,
+                    .characterEncoding: String.Encoding.utf8.rawValue
+                ],
+                documentAttributes: nil
+            )
+        else {
+            return nil
+        }
+
+        return AttributedString(nsAttributed.string)
+    }
+
+    private func attributedTextIsNotEmpty(_ text: AttributedString) -> Bool {
+        !String(text.characters)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .isEmpty
     }
 
     private func offerCard(_ offer: AIChatOffer) -> some View {
