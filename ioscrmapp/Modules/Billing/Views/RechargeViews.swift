@@ -1208,46 +1208,51 @@ private struct RechargeAcceptedView: View {
     let onShare: () -> Void
 
     var body: some View {
-        NavigationView {
-            ScrollView(showsIndicators: false) {
-                VStack(spacing: DUSpacing.lg) {
-                    Image(systemName: "checkmark.seal.fill")
-                        .font(.system(size: 56, weight: .bold))
-                        .foregroundColor(DUTheme.success)
+        ZStack {
+            DUTheme.background.ignoresSafeArea()
 
-                    VStack(spacing: DUSpacing.xs) {
-                        Text("Recharge Accepted")
-                            .font(.du(24, weight: .bold))
-                            .foregroundColor(DUTheme.ink)
-                        Text("The recharge request was accepted. Tap back to review the latest status in Orders.")
-                            .font(.du(13, weight: .medium))
-                            .foregroundColor(DUTheme.inkSecondary)
-                            .multilineTextAlignment(.center)
-                    }
+            NavigationView {
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: DUSpacing.lg) {
+                        Image(systemName: "checkmark.seal.fill")
+                            .font(.system(size: 56, weight: .bold))
+                            .foregroundColor(DUTheme.success)
 
-                    RechargeReceiptSnapshotCard(
-                        receipt: receipt,
-                        serviceNumber: serviceNumber,
-                        localizedTitle: "Recharge Receipt"
-                    )
-
-                    HStack(spacing: DUSpacing.md) {
-                        DUButton(title: "Save Screenshot", style: .secondary, fontSize: 14) {
-                            onSaveSnapshot()
+                        VStack(spacing: DUSpacing.xs) {
+                            Text("Recharge Accepted")
+                                .font(.du(24, weight: .bold))
+                                .foregroundColor(DUTheme.ink)
+                            Text("The recharge request was accepted. Tap back to review the latest status in Orders.")
+                                .font(.du(13, weight: .medium))
+                                .foregroundColor(DUTheme.inkSecondary)
+                                .multilineTextAlignment(.center)
                         }
-                        DUButton(title: "Share Receipt", style: .primary, fontSize: 14) {
-                            onShare()
+
+                        RechargeReceiptSnapshotCard(
+                            receipt: receipt,
+                            serviceNumber: serviceNumber,
+                            localizedTitle: "Recharge Receipt"
+                        )
+
+                        HStack(spacing: DUSpacing.md) {
+                            DUButton(title: "Save Screenshot", style: .secondary, fontSize: 14) {
+                                onSaveSnapshot()
+                            }
+                            DUButton(title: "Share Receipt", style: .primary, fontSize: 14) {
+                                onShare()
+                            }
+                        }
+
+                        DUButton(title: "Back to Orders", style: .primary) {
+                            onBackToOrders()
                         }
                     }
-
-                    DUButton(title: "Back to Orders", style: .primary) {
-                        onBackToOrders()
-                    }
+                    .padding(DUSpacing.lg)
+                    .padding(.bottom, DUSpacing.xxxl)
                 }
-                .padding(DUSpacing.lg)
-                .padding(.bottom, DUSpacing.xxxl)
+                .background(DUTheme.background)
+                .navigationBarHidden(true)
             }
-            .navigationBarHidden(true)
         }
         .navigationViewStyle(.stack)
     }
@@ -1261,44 +1266,49 @@ private struct RechargeFailureView: View {
     let onBack: () -> Void
 
     var body: some View {
-        NavigationView {
-            ScrollView(showsIndicators: false) {
-                VStack(spacing: DUSpacing.lg) {
-                    Image(systemName: "xmark.octagon.fill")
-                        .font(.system(size: 56, weight: .bold))
-                        .foregroundColor(DUTheme.error)
+        ZStack {
+            DUTheme.background.ignoresSafeArea()
 
-                    Text("Recharge Failed")
-                        .font(.du(24, weight: .bold))
-                        .foregroundColor(DUTheme.ink)
+            NavigationView {
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: DUSpacing.lg) {
+                        Image(systemName: "xmark.octagon.fill")
+                            .font(.system(size: 56, weight: .bold))
+                            .foregroundColor(DUTheme.error)
 
-                    Text(failure.message)
-                        .font(.du(13, weight: .medium))
-                        .foregroundColor(DUTheme.inkSecondary)
-                        .multilineTextAlignment(.center)
+                        Text("Recharge Failed")
+                            .font(.du(24, weight: .bold))
+                            .foregroundColor(DUTheme.ink)
 
-                    VStack(spacing: DUSpacing.md) {
-                        rechargeFailureMetric(title: "Amount", value: BillingNumberParser.displayMoney(amountText))
-                        rechargeFailureMetric(title: "chargeMethod", value: chargeMethod)
-                        rechargeFailureMetric(title: "Execution Route", value: "MobileMoney")
+                        Text(failure.message)
+                            .font(.du(13, weight: .medium))
+                            .foregroundColor(DUTheme.inkSecondary)
+                            .multilineTextAlignment(.center)
+
+                        VStack(spacing: DUSpacing.md) {
+                            rechargeFailureMetric(title: "Amount", value: BillingNumberParser.displayMoney(amountText))
+                            rechargeFailureMetric(title: "chargeMethod", value: chargeMethod)
+                            rechargeFailureMetric(title: "Execution Route", value: "MobileMoney")
+                        }
+                        .padding(DUSpacing.lg)
+                        .background(DUTheme.panel)
+                        .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+
+                        HStack(spacing: DUSpacing.md) {
+                            DUButton(title: "Retry", style: .primary) {
+                                onRetry()
+                            }
+                            DUButton(title: "Back", style: .secondary) {
+                                onBack()
+                            }
+                        }
                     }
                     .padding(DUSpacing.lg)
-                    .background(DUTheme.panel)
-                    .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
-
-                    HStack(spacing: DUSpacing.md) {
-                        DUButton(title: "Retry", style: .primary) {
-                            onRetry()
-                        }
-                        DUButton(title: "Back", style: .secondary) {
-                            onBack()
-                        }
-                    }
+                    .padding(.bottom, DUSpacing.xxxl)
                 }
-                .padding(DUSpacing.lg)
-                .padding(.bottom, DUSpacing.xxxl)
+                .background(DUTheme.background)
+                .navigationBarHidden(true)
             }
-            .navigationBarHidden(true)
         }
         .navigationViewStyle(.stack)
     }
