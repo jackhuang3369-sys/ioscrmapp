@@ -1062,9 +1062,9 @@ struct AIChatView: View {
 
                         Spacer()
 
-                        Image(systemName: "chevron.down")
-                            .font(.system(size: 12, weight: .semibold))
-                            .foregroundColor(.white.opacity(0.4))
+//                        Image(systemName: "chevron.down")
+//                            .font(.system(size: 12, weight: .semibold))
+//                            .foregroundColor(.white.opacity(0.4))
                     }
                     .padding(.horizontal, summaryHorizontalPadding)
                     .padding(.vertical, summaryVerticalPadding)
@@ -1151,7 +1151,7 @@ struct AIChatView: View {
                         .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(Color.white.opacity(0.1), lineWidth: 0.5))
                         .padding(.bottom, 10)
 
-                        Text("This package offers high-speed data roaming services across KSA territories. Ensure data roaming is enabled on your device Settings.")
+                        Text("This package offers high-speed data roaming services across du territories. Ensure data roaming is enabled on your device Settings.")
                             .font(.system(size: 12, weight: .regular))
                             .foregroundColor(.white.opacity(0.55))
                             .lineSpacing(3)

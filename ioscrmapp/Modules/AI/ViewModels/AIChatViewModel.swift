@@ -36,11 +36,11 @@ final class AIChatViewModel: ObservableObject {
 
     private func setupMockOffers() {
         offers = [
-            AIChatOffer(name: "DataRoamingPrice (10 GB) KSA", price: "15.00", dataAmount: "10 GB", validity: "Monthly"),
-            AIChatOffer(name: "DataRoamingPrice (20 GB) KSA", price: "35.00", dataAmount: "20 GB", validity: "Monthly"),
-            AIChatOffer(name: "DataRoamingPrice (50 GB) KSA", price: "55.00", dataAmount: "50 GB", validity: "Monthly"),
-            AIChatOffer(name: "DataRoamingPrice (100 GB) KSA", price: "75.00", dataAmount: "100 GB", validity: "Monthly"),
-            AIChatOffer(name: "DataRoamingPrice (Unlimited) KSA", price: "120.00", dataAmount: "Unlimited", validity: "Monthly")
+            AIChatOffer(name: "DataRoamingPrice (10 GB)", price: "15.00", dataAmount: "10 GB", validity: "Monthly"),
+            AIChatOffer(name: "DataRoamingPrice (20 GB)", price: "35.00", dataAmount: "20 GB", validity: "Monthly"),
+            AIChatOffer(name: "DataRoamingPrice (50 GB)", price: "55.00", dataAmount: "50 GB", validity: "Monthly"),
+            AIChatOffer(name: "DataRoamingPrice (100 GB)", price: "75.00", dataAmount: "100 GB", validity: "Monthly"),
+            AIChatOffer(name: "DataRoamingPrice (Unlimited)", price: "120.00", dataAmount: "Unlimited", validity: "Monthly")
         ]
     }
 

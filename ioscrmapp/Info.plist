@@ -37,7 +37,7 @@
 		</dict>
 	</dict>
 	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>Allow Du App to save recharge receipts to your photo library.</string>
+	<string>Allow du App to save recharge receipts to your photo library.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

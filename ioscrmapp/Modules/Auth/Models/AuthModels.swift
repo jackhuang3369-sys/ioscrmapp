@@ -360,8 +360,8 @@ enum AuthValidator {
     nonisolated static let countryCode = "971"
     nonisolated static let localPhoneLength = 9
     nonisolated static let fullPhoneLength = 12
-    nonisolated static let demoPhone = "971521234567"
-    nonisolated static let demoPassword = "111"
+    nonisolated static let demoPhone = "971583029625"
+    nonisolated static let demoPassword = "Acrosspm@123"
     nonisolated static let demoOTP = "111"
     nonisolated static let demoRegistrationOTP = "123456"
 

@@ -184,7 +184,7 @@ final class DIYOfferViewModel: ObservableObject {
     }
 
     private var defaultZeroDisplayText: String {
-        "\(pricing?.totalAmount ?? "0") \(bootstrap?.currencyName ?? "SDG")"
+        "\(pricing?.totalAmount ?? "0") \(bootstrap?.currencyName ?? "AED")"
     }
 
     private var selectedResources: [DIYOfferSelectedResource] {
@@ -274,7 +274,7 @@ final class DIYOfferViewModel: ObservableObject {
         }
 
         isPricingLoading = true
-        let currencyName = bootstrap?.currencyName ?? "SDG"
+        let currencyName = bootstrap?.currencyName ?? "AED"
         pricingTask = Task { [weak self] in
             try? await Task.sleep(nanoseconds: 300_000_000)
             guard !Task.isCancelled else {

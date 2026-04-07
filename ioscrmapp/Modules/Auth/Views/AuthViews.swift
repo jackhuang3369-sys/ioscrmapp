@@ -947,7 +947,7 @@ private struct AuthBrandMark: View {
                 .fill(DUTheme.brandGradient)
                 .frame(width: 88, height: 88)
                 .shadow(color: DUTheme.cyan.opacity(0.25), radius: 18, x: 0, y: 8)
-            Text("DU")
+            Text("du")
                 .font(.du(32, weight: .bold))
                 .foregroundColor(.white)
         }

@@ -172,8 +172,8 @@ actor MockOffersService: OffersServicing {
                     resources: []
                 )
             ],
-            currencyCode: "SDG",
-            currencyName: "SDG",
+            currencyCode: "AED",
+            currencyName: "AED",
             cbsAccuracy: 100
         )
     }
@@ -890,17 +890,17 @@ struct RemoteOffersService: OffersServicing {
             )
 
             guard let object = response.objectValue else {
-                return "SDG"
+                return "AED"
             }
 
-            return OffersResponseValue.string(in: object, keys: ["paramValue", "value"]) ?? "SDG"
+            return OffersResponseValue.string(in: object, keys: ["paramValue", "value"]) ?? "AED"
         } catch {
             throw mapError(error)
         }
     }
 
     private func fetchCurrencyName() async throws -> String {
-        let fallbackCode = (try? await fetchCurrencyCode()) ?? "SDG"
+        let fallbackCode = (try? await fetchCurrencyCode()) ?? "AED"
 
         do {
             let response = try await client.post(

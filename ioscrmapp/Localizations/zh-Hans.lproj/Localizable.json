@@ -19,7 +19,7 @@
   "auth": {
     "header": {
       "title": "欢迎回来",
-      "subtitle": "登录你的 DU 账号"
+      "subtitle": "登录你的 du 账号"
     },
     "mode": {
       "password": "密码登录",
@@ -233,7 +233,7 @@
       "viewAll": "查看全部"
     },
     "carousel": {
-      "telecomEco": "一个 DU 生态，连接每块屏幕",
+      "telecomEco": "一个 du 生态，连接每块屏幕",
       "weather3D": "3D 天气视图，出行一眼掌握",
       "movie3D": "3D 电影，立刻开启休闲时光",
       "weatherForecast": "天气预报，出行更从容",
@@ -934,7 +934,7 @@
       "displayOnly": "仅展示",
       "creditCardDesc": "成功凭证展示本次所选的 chargeMethod。",
       "applePayDesc": "界面保留展示，真实执行链路仍路由到 MobileMoney。",
-      "bankTransferDesc": "为保持 DU 支付目录设计一致性而保留。",
+      "bankTransferDesc": "为保持 du 支付目录设计一致性而保留。",
       "routeNote": "界面保留用户选择的 chargeMethod，真实执行链路仍是 MobileMoney -> paybill。"
     },
     "status": {

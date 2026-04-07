@@ -466,7 +466,7 @@ struct HomeFeatureCarouselView_Previews: PreviewProvider {
             items: [
                 .init(
                     assetName: "HomeCarouselTelecomEco",
-                    title: .literal("One DU ecosystem for every screen")
+                    title: .literal("One du ecosystem for every screen")
                 ),
                 .init(
                     assetName: "HomeCarouselWeather3D",

@@ -495,7 +495,7 @@ actor MockAuthService: AuthServicing {
     private var failuresByPhone: [String: Int] = [:]
     private var lockUntilByPhone: [String: Date] = [:]
     private var accountsByPhone: [String: MockAccount] = [
-        "971521234567": MockAccount(password: AuthValidator.demoPassword, displayName: "Ahmed Mohammed"),
+        "971583029625": MockAccount(password: AuthValidator.demoPassword, displayName: "Ahmed Mohammed"),
         "971555551111": MockAccount(password: "DuPass1!", displayName: "Mariam Al Suwaidi")
     ]
 
@@ -793,7 +793,7 @@ actor MockAuthService: AuthServicing {
 
         accountsByPhone[normalizedPhone] = MockAccount(
             password: input.password,
-            displayName: "New DU User"
+            displayName: "New du User"
         )
         registrationOTPByPhone.removeValue(forKey: normalizedPhone)
         authLogger.info("Mock registration success phone=\(normalizedPhone, privacy: .private(mask: .hash))")

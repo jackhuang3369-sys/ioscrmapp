@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		04C38BAB2F7DFDF70022C556 /* Weather in Resources */ = {isa = PBXBuildFile; fileRef = 04C38BAA2F7DFDF70022C556 /* Weather */; };
+		04C38BAB2F7DFDF70022C556 /* WeatherData in Resources */ = {isa = PBXBuildFile; fileRef = 04C38BAA2F7DFDF70022C556 /* WeatherData */; };
 		04E692C92F5EA2CE0082C59F /* ioscrmappApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04E692C82F5EA2CE0082C59F /* ioscrmappApp.swift */; };
 		04E692CB2F5EA2CE0082C59F /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04E692CA2F5EA2CE0082C59F /* ContentView.swift */; };
 		04E692CD2F5EA2CF0082C59F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 04E692CC2F5EA2CF0082C59F /* Assets.xcassets */; };
@@ -76,6 +76,16 @@
 		A10000000000000000000044 /* MallAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000044 /* MallAPI.swift */; };
 		A10000000000000000000045 /* BadgeCenterAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000045 /* BadgeCenterAPI.swift */; };
 		A10000000000000000000046 /* HomeFeatureCarouselView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000046 /* HomeFeatureCarouselView.swift */; };
+		A10000000000000000000047 /* MockWeatherData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000047 /* MockWeatherData.swift */; };
+		A10000000000000000000048 /* WeatherCondition.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000048 /* WeatherCondition.swift */; };
+		A1000000000000000000004B /* ParticleController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000004B /* ParticleController.swift */; };
+		A1000000000000000000004C /* SceneConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000004C /* SceneConstants.swift */; };
+		A1000000000000000000004D /* WeatherSceneManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000004D /* WeatherSceneManager.swift */; };
+		A1000000000000000000004E /* WeatherSceneView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000004E /* WeatherSceneView.swift */; };
+		A10000000000000000000054 /* WeatherHourlyStrip.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000054 /* WeatherHourlyStrip.swift */; };
+		A10000000000000000000055 /* WeatherMainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000055 /* WeatherMainView.swift */; };
+		A10000000000000000000060 /* WeatherAudioPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000060 /* WeatherAudioPlayer.swift */; };
+		A10000000000000000000061 /* WeatherWindBackgroundView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000061 /* WeatherWindBackgroundView.swift */; };
 		A10000000000000000000062 /* HomeParallaxCarouselView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000062 /* HomeParallaxCarouselView.swift */; };
 		A10000000000000000000063 /* HomeParallaxReelSectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000063 /* HomeParallaxReelSectionView.swift */; };
 		B10000000000000000000001 /* BillingAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000001 /* BillingAPI.swift */; };
@@ -114,21 +124,11 @@
 		F10000000000000000000003 /* AIChatViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F20000000000000000000003 /* AIChatViewModel.swift */; };
 		F10000000000000000000004 /* AIChatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F20000000000000000000004 /* AIChatView.swift */; };
 		F10000000000000000000005 /* AIAssistantEntryComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = F20000000000000000000005 /* AIAssistantEntryComponents.swift */; };
-		A10000000000000000000047 /* MockWeatherData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000047 /* MockWeatherData.swift */; };
-		A10000000000000000000048 /* WeatherCondition.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000048 /* WeatherCondition.swift */; };
-		A1000000000000000000004B /* ParticleController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000004B /* ParticleController.swift */; };
-		A1000000000000000000004C /* SceneConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000004C /* SceneConstants.swift */; };
-		A1000000000000000000004D /* WeatherSceneManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000004D /* WeatherSceneManager.swift */; };
-		A1000000000000000000004E /* WeatherSceneView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000004E /* WeatherSceneView.swift */; };
-		A10000000000000000000060 /* WeatherAudioPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000060 /* WeatherAudioPlayer.swift */; };
-		A10000000000000000000054 /* WeatherHourlyStrip.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000054 /* WeatherHourlyStrip.swift */; };
-		A10000000000000000000055 /* WeatherMainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000055 /* WeatherMainView.swift */; };
-		A10000000000000000000061 /* WeatherWindBackgroundView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000061 /* WeatherWindBackgroundView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		04C38BAA2F7DFDF70022C556 /* WeatherData */ = {isa = PBXFileReference; lastKnownFileType = folder; path = WeatherData; sourceTree = "<group>"; };
-		04E692C52F5EA2CE0082C59F /* Du App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Du App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		04E692C52F5EA2CE0082C59F /* du App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "du App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		04E692C82F5EA2CE0082C59F /* ioscrmappApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ioscrmappApp.swift; sourceTree = "<group>"; };
 		04E692CA2F5EA2CE0082C59F /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		04E692CC2F5EA2CF0082C59F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -197,6 +197,16 @@
 		A20000000000000000000044 /* MallAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MallAPI.swift; sourceTree = "<group>"; };
 		A20000000000000000000045 /* BadgeCenterAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BadgeCenterAPI.swift; sourceTree = "<group>"; };
 		A20000000000000000000046 /* HomeFeatureCarouselView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeFeatureCarouselView.swift; sourceTree = "<group>"; };
+		A20000000000000000000047 /* MockWeatherData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockWeatherData.swift; sourceTree = "<group>"; };
+		A20000000000000000000048 /* WeatherCondition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherCondition.swift; sourceTree = "<group>"; };
+		A2000000000000000000004B /* ParticleController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParticleController.swift; sourceTree = "<group>"; };
+		A2000000000000000000004C /* SceneConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneConstants.swift; sourceTree = "<group>"; };
+		A2000000000000000000004D /* WeatherSceneManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherSceneManager.swift; sourceTree = "<group>"; };
+		A2000000000000000000004E /* WeatherSceneView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherSceneView.swift; sourceTree = "<group>"; };
+		A20000000000000000000054 /* WeatherHourlyStrip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherHourlyStrip.swift; sourceTree = "<group>"; };
+		A20000000000000000000055 /* WeatherMainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherMainView.swift; sourceTree = "<group>"; };
+		A20000000000000000000060 /* WeatherAudioPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherAudioPlayer.swift; sourceTree = "<group>"; };
+		A20000000000000000000061 /* WeatherWindBackgroundView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherWindBackgroundView.swift; sourceTree = "<group>"; };
 		A20000000000000000000062 /* HomeParallaxCarouselView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeParallaxCarouselView.swift; sourceTree = "<group>"; };
 		A20000000000000000000063 /* HomeParallaxReelSectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeParallaxReelSectionView.swift; sourceTree = "<group>"; };
 		B20000000000000000000001 /* BillingAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BillingAPI.swift; sourceTree = "<group>"; };
@@ -235,16 +245,6 @@
 		F20000000000000000000003 /* AIChatViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIChatViewModel.swift; sourceTree = "<group>"; };
 		F20000000000000000000004 /* AIChatView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIChatView.swift; sourceTree = "<group>"; };
 		F20000000000000000000005 /* AIAssistantEntryComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIAssistantEntryComponents.swift; sourceTree = "<group>"; };
-		A20000000000000000000047 /* MockWeatherData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockWeatherData.swift; sourceTree = "<group>"; };
-		A20000000000000000000048 /* WeatherCondition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherCondition.swift; sourceTree = "<group>"; };
-		A2000000000000000000004B /* ParticleController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParticleController.swift; sourceTree = "<group>"; };
-		A2000000000000000000004C /* SceneConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneConstants.swift; sourceTree = "<group>"; };
-		A2000000000000000000004D /* WeatherSceneManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherSceneManager.swift; sourceTree = "<group>"; };
-		A2000000000000000000004E /* WeatherSceneView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherSceneView.swift; sourceTree = "<group>"; };
-		A20000000000000000000060 /* WeatherAudioPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherAudioPlayer.swift; sourceTree = "<group>"; };
-		A20000000000000000000054 /* WeatherHourlyStrip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherHourlyStrip.swift; sourceTree = "<group>"; };
-		A20000000000000000000055 /* WeatherMainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherMainView.swift; sourceTree = "<group>"; };
-		A20000000000000000000061 /* WeatherWindBackgroundView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherWindBackgroundView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -269,7 +269,7 @@
 		04E692C62F5EA2CE0082C59F /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				04E692C52F5EA2CE0082C59F /* Du App.app */,
+				04E692C52F5EA2CE0082C59F /* du App.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -686,6 +686,48 @@
 			path = ViewModels;
 			sourceTree = "<group>";
 		};
+		A30000000000000000000050 /* Weather */ = {
+			isa = PBXGroup;
+			children = (
+				A30000000000000000000051 /* Models */,
+				A30000000000000000000052 /* SceneKit */,
+				A30000000000000000000053 /* Views */,
+				04C38BAA2F7DFDF70022C556 /* WeatherData */,
+			);
+			path = Weather;
+			sourceTree = "<group>";
+		};
+		A30000000000000000000051 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				A20000000000000000000047 /* MockWeatherData.swift */,
+				A20000000000000000000048 /* WeatherCondition.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		A30000000000000000000052 /* SceneKit */ = {
+			isa = PBXGroup;
+			children = (
+				A2000000000000000000004B /* ParticleController.swift */,
+				A2000000000000000000004C /* SceneConstants.swift */,
+				A2000000000000000000004D /* WeatherSceneManager.swift */,
+				A2000000000000000000004E /* WeatherSceneView.swift */,
+				A20000000000000000000060 /* WeatherAudioPlayer.swift */,
+			);
+			path = SceneKit;
+			sourceTree = "<group>";
+		};
+		A30000000000000000000053 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				A20000000000000000000054 /* WeatherHourlyStrip.swift */,
+				A20000000000000000000055 /* WeatherMainView.swift */,
+				A20000000000000000000061 /* WeatherWindBackgroundView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
 		B30000000000000000000001 /* Billing */ = {
 			isa = PBXGroup;
 			children = (
@@ -876,48 +918,6 @@
 			path = Views;
 			sourceTree = "<group>";
 		};
-		A30000000000000000000050 /* Weather */ = {
-			isa = PBXGroup;
-			children = (
-				A30000000000000000000051 /* Models */,
-				A30000000000000000000052 /* SceneKit */,
-				A30000000000000000000053 /* Views */,
-				04C38BAA2F7DFDF70022C556 /* WeatherData */,
-			);
-			path = Weather;
-			sourceTree = "<group>";
-		};
-		A30000000000000000000051 /* Models */ = {
-			isa = PBXGroup;
-			children = (
-				A20000000000000000000047 /* MockWeatherData.swift */,
-				A20000000000000000000048 /* WeatherCondition.swift */,
-			);
-			path = Models;
-			sourceTree = "<group>";
-		};
-		A30000000000000000000052 /* SceneKit */ = {
-			isa = PBXGroup;
-			children = (
-				A2000000000000000000004B /* ParticleController.swift */,
-				A2000000000000000000004C /* SceneConstants.swift */,
-				A2000000000000000000004D /* WeatherSceneManager.swift */,
-				A2000000000000000000004E /* WeatherSceneView.swift */,
-				A20000000000000000000060 /* WeatherAudioPlayer.swift */,
-			);
-			path = SceneKit;
-			sourceTree = "<group>";
-		};
-		A30000000000000000000053 /* Views */ = {
-			isa = PBXGroup;
-			children = (
-				A20000000000000000000054 /* WeatherHourlyStrip.swift */,
-				A20000000000000000000055 /* WeatherMainView.swift */,
-				A20000000000000000000061 /* WeatherWindBackgroundView.swift */,
-			);
-			path = Views;
-			sourceTree = "<group>";
-		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -935,7 +935,7 @@
 			);
 			name = ioscrmapp;
 			productName = ioscrmapp;
-			productReference = 04E692C52F5EA2CE0082C59F /* Du App.app */;
+			productReference = 04E692C52F5EA2CE0082C59F /* du App.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -978,47 +978,8 @@
 			files = (
 				A10000000000000000000013 /* Localizations in Resources */,
 				04E692D02F5EA2CF0082C59F /* Preview Assets.xcassets in Resources */,
-				A5EF6DC82F7F5A060061353E /* andy-colors.json in Resources */,
-				A5EF6DCD2F7F5A060061353E /* spin-fast-4.m4a in Resources */,
-				A5EF6DCE2F7F5A060061353E /* graphite-colors.json in Resources */,
-				A5EF6DD02F7F5A060061353E /* chroma-animation.json in Resources */,
-				A5EF6DD42F7F5A060061353E /* weather-ambience-icepellets.m4a in Resources */,
-				A5EF6DD52F7F5A060061353E /* opal-colors.json in Resources */,
-				A5EF6DD92F7F5A060061353E /* PLAN-zh.md in Resources */,
-				A5EF6DE12F7F5A060061353E /* gold-dim.png in Resources */,
-				A5EF6DE22F7F5A060061353E /* weather-sting-snow.m4a in Resources */,
-				A5EF6DE32F7F5A060061353E /* weather-sting-mostlycloudy.m4a in Resources */,
-				A5EF6DE42F7F5A060061353E /* spin-slow-5.m4a in Resources */,
-				A5EF6DE52F7F5A060061353E /* ui-day-select-7.m4a in Resources */,
-				A5EF6DE82F7F5A060061353E /* shape-tap-7.m4a in Resources */,
-				A5EF6DED2F7F5A060061353E /* weather-ambience-cloudy.m4a in Resources */,
-				A5EF6DEE2F7F5A060061353E /* precip-16.png in Resources */,
-				A5EF6DF02F7F5A060061353E /* precip-64.png in Resources */,
-				A5EF6DF32F7F5A060061353E /* karat-theme.json in Resources */,
-				A5EF6DF42F7F5A060061353E /* README.md in Resources */,
-				A5EF6DF62F7F5A060061353E /* cedar-animation.json in Resources */,
-				A5EF6DF72F7F5A060061353E /* ui-day-select-1.m4a in Resources */,
-				A5EF6DF92F7F5A060061353E /* presstube-theme.json in Resources */,
-				A5EF6DFB2F7F5A060061353E /* SKILL.md in Resources */,
-				A5EF6DFE2F7F5A060061353E /* precip-128.png in Resources */,
-				A5EF6DFF2F7F5A060061353E /* cedar-theme.json in Resources */,
-				A5EF6E002F7F5A060061353E /* terrazzo-mask.png in Resources */,
-				A5EF6E012F7F5A060061353E /* depth-colors.json in Resources */,
-				A5EF6E022F7F5A060061353E /* opal-theme.json in Resources */,
-				A5EF6E042F7F5A060061353E /* unlock-1.m4a in Resources */,
-				A5EF6E052F7F5A060061353E /* precip-32.png in Resources */,
-				A5EF6E092F7F5A060061353E /* detailed-enter-1.m4a in Resources */,
-				A5EF6E0A2F7F5A060061353E /* moon-tapped-4.m4a in Resources */,
-				A5EF6E0C2F7F5A060061353E /* menu-open-1.m4a in Resources */,
-				A5EF6E0D2F7F5A060061353E /* spin-slow-4.m4a in Resources */,
-				A5EF6E132F7F5A060061353E /* PLAN.md in Resources */,
-				A5EF6E142F7F5A060061353E /* cedar-colors.json in Resources */,
-				A5EF6E152F7F5A060061353E /* ui-day-select-3.m4a in Resources */,
-				A5EF6E172F7F5A060061353E /* ui-time-scroll-click-1.m4a in Resources */,
-				A5EF6E1A2F7F5A060061353E /* shape-tap-1.m4a in Resources */,
-				A5EF6E222F7F5A060061353E /* spin-fast-5.m4a in Resources */,
 				04E692CD2F5EA2CF0082C59F /* Assets.xcassets in Resources */,
-				04C38BAB2F7DFDF70022C556 /* Weather in Resources */,
+				04C38BAB2F7DFDF70022C556 /* WeatherData in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1036,15 +997,6 @@
 				E10000000000000000000005 /* VideoViewModel.swift in Sources */,
 				E10000000000000000000004 /* VideoModels.swift in Sources */,
 				E10000000000000000000003 /* VideoService.swift in Sources */,
-				A5EF6DB62F7F5A060061353E /* ParticleController.swift in Sources */,
-				A5EF6DB72F7F5A060061353E /* WeatherCondition.swift in Sources */,
-				A5EF6DB82F7F5A060061353E /* SceneConstants.swift in Sources */,
-				A5EF6DBA2F7F5A060061353E /* MockWeatherData.swift in Sources */,
-				A5EF6DBC2F7F5A060061353E /* WeatherMainView.swift in Sources */,
-				A5EF6DBD2F7F5A060061353E /* WeatherHourlyStrip.swift in Sources */,
-				A5EF6DBF2F7F5A060061353E /* WeatherAudioPlayer.swift in Sources */,
-				A5EF6DC32F7F5A060061353E /* WeatherSceneView.swift in Sources */,
-				A5EF6DC62F7F5A060061353E /* WeatherSceneManager.swift in Sources */,
 				E10000000000000000000002 /* VideoAPI.swift in Sources */,
 				A10000000000000000000043 /* HomeViewModel.swift in Sources */,
 				A10000000000000000000042 /* HomeModels.swift in Sources */,
@@ -1276,10 +1228,11 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"ioscrmapp/Preview Content\"";
-				DEVELOPMENT_TEAM = VCCNS5F3U6;
+				DEVELOPMENT_TEAM = YT5UTK7ZC9;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = ioscrmapp/Info.plist;
@@ -1289,8 +1242,9 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.inspur.ioscrmapp;
-				PRODUCT_NAME = "Du App";
+				PRODUCT_BUNDLE_IDENTIFIER = com.inspur.crmiosapp;
+				PRODUCT_NAME = "du App";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -1302,10 +1256,11 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"ioscrmapp/Preview Content\"";
-				DEVELOPMENT_TEAM = VCCNS5F3U6;
+				DEVELOPMENT_TEAM = YT5UTK7ZC9;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = ioscrmapp/Info.plist;
@@ -1315,8 +1270,9 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.inspur.ioscrmapp;
-				PRODUCT_NAME = "Du App";
+				PRODUCT_BUNDLE_IDENTIFIER = com.inspur.crmiosapp;
+				PRODUCT_NAME = "du App";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -1493,10 +1449,11 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"ioscrmapp/Preview Content\"";
-				DEVELOPMENT_TEAM = VCCNS5F3U6;
+				DEVELOPMENT_TEAM = YT5UTK7ZC9;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = ioscrmapp/Info.plist;
@@ -1506,8 +1463,9 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.inspur.ioscrmapp;
-				PRODUCT_NAME = "Du App";
+				PRODUCT_BUNDLE_IDENTIFIER = com.inspur.crmiosapp;
+				PRODUCT_NAME = "du App";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = APP_PACKAGE_DEVELOP;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -1520,10 +1478,11 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"ioscrmapp/Preview Content\"";
-				DEVELOPMENT_TEAM = VCCNS5F3U6;
+				DEVELOPMENT_TEAM = YT5UTK7ZC9;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = ioscrmapp/Info.plist;
@@ -1533,8 +1492,9 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.inspur.ioscrmapp;
-				PRODUCT_NAME = "Du App";
+				PRODUCT_BUNDLE_IDENTIFIER = com.inspur.crmiosapp;
+				PRODUCT_NAME = "du App";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = APP_PACKAGE_TEST;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -1547,10 +1507,11 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"ioscrmapp/Preview Content\"";
-				DEVELOPMENT_TEAM = VCCNS5F3U6;
+				DEVELOPMENT_TEAM = YT5UTK7ZC9;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = ioscrmapp/Info.plist;
@@ -1560,8 +1521,9 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.inspur.ioscrmapp;
-				PRODUCT_NAME = "Du App";
+				PRODUCT_BUNDLE_IDENTIFIER = com.inspur.crmiosapp;
+				PRODUCT_NAME = "du App";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = APP_PACKAGE_PRODUCTION;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;

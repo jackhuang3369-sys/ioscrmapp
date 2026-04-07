@@ -19,7 +19,7 @@
   "auth": {
     "header": {
       "title": "Welcome back",
-      "subtitle": "Sign in to your DU account"
+      "subtitle": "Sign in to your du account"
     },
     "mode": {
       "password": "Password Login",
@@ -233,7 +233,7 @@
       "viewAll": "View all"
     },
     "carousel": {
-      "telecomEco": "One DU ecosystem for every screen",
+      "telecomEco": "One du ecosystem for every screen",
       "weather3D": "3D weather, your day at a glance",
       "movie3D": "3D movie, leisure starts now",
       "weatherForecast": "Weather forecast, plan your day",
@@ -934,7 +934,7 @@
       "displayOnly": "Display only",
       "creditCardDesc": "Success receipt shows this selected chargeMethod.",
       "applePayDesc": "Visible in UI, actual execution still routes to MobileMoney.",
-      "bankTransferDesc": "Retained for design consistency with the DU payment catalogue.",
+      "bankTransferDesc": "Retained for design consistency with the du payment catalogue.",
       "routeNote": "UI keeps the selected chargeMethod; execution remains MobileMoney -> paybill."
     },
     "status": {
