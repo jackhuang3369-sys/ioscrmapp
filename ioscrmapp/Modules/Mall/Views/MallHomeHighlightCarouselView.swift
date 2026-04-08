@@ -6,20 +6,21 @@ struct MallHomeHighlightCarouselView: View {
     let action: (MallHomeHighlightCard) -> Void
 
     @GestureState private var dragTranslation: CGFloat = 0
-    @State private var currentIndex = 0
+    @State private var carouselPosition = 0
     @State private var isAutoScrollPaused = false
+    @State private var autoScrollResumeDate = Date.distantPast
 
     private let selectionAnimation = Animation.interactiveSpring(
-        response: 0.34,
-        dampingFraction: 0.82,
-        blendDuration: 0.18
+        response: 0.68, //值越大，动画整体越慢、越从容。
+        dampingFraction: 0.88, //越小，弹性越明显，容易有一点晃动或回弹感
+        blendDuration: 0.24 //它通常不是决定“快慢”的第一参数，更多是调顺滑感。
     )
     private let dragAnimation = Animation.interactiveSpring(
-        response: 0.22,
-        dampingFraction: 0.92,
-        blendDuration: 0.12
+        response: 0.30,
+        dampingFraction: 0.90,
+        blendDuration: 0.18
     )
-    private let autoScrollTimer = Timer.publish(every: 4, on: .main, in: .common).autoconnect()
+    private let autoScrollTimer = Timer.publish(every: 3, on: .main, in: .common).autoconnect()
 
     var body: some View {
         let cardWidth = min(max(containerWidth - 72, 284), 332)
@@ -77,37 +78,69 @@ struct MallHomeHighlightCarouselView: View {
                             swipeThreshold: swipeThreshold
                         )
                         isAutoScrollPaused = false
+                        deferAutoScroll()
                     }
             )
-            .animation(selectionAnimation, value: currentIndex)
+            .animation(selectionAnimation, value: carouselPosition)
             .animation(dragAnimation, value: dragTranslation)
             .onReceive(autoScrollTimer) { _ in
-                guard cards.count > 1, dragTranslation == 0, !isAutoScrollPaused else {
+                guard
+                    cards.count > 1,
+                    dragTranslation == 0,
+                    !isAutoScrollPaused,
+                    Date() >= autoScrollResumeDate
+                else {
                     return
                 }
 
                 withAnimation(selectionAnimation) {
-                    currentIndex = wrappedIndex(currentIndex + 1)
+                    carouselPosition += 1
                 }
             }
         }
         .frame(height: carouselHeight)
         .onChange(of: cards.count) { newCount in
             guard newCount > 0 else {
-                currentIndex = 0
+                carouselPosition = 0
                 return
             }
 
-            currentIndex = min(currentIndex, newCount - 1)
+            carouselPosition = normalizedIndex(for: carouselPosition)
         }
     }
 
-    private func wrappedIndex(_ index: Int) -> Int {
+    private func normalizedIndex(for position: Int) -> Int {
         guard !cards.isEmpty else {
             return 0
         }
 
-        return index >= cards.count ? 0 : max(index, 0)
+        let remainder = position % cards.count
+        return remainder >= 0 ? remainder : remainder + cards.count
+    }
+
+    private func nearestVirtualIndex(for index: Int, around position: Int) -> Int {
+        guard !cards.isEmpty else {
+            return 0
+        }
+
+        let normalizedPosition = normalizedIndex(for: position)
+        let baseIndex = position - normalizedPosition + index
+        let candidates = [baseIndex, baseIndex - cards.count, baseIndex + cards.count]
+
+        return candidates.min { lhs, rhs in
+            let lhsDistance = abs(lhs - position)
+            let rhsDistance = abs(rhs - position)
+
+            if lhsDistance != rhsDistance {
+                return lhsDistance < rhsDistance
+            }
+
+            return (lhs - position) > (rhs - position)
+        } ?? baseIndex
+    }
+
+    private func deferAutoScroll() {
+        autoScrollResumeDate = Date().addingTimeInterval(4.2)
     }
 
     private func relativeProgress(
@@ -119,7 +152,7 @@ struct MallHomeHighlightCarouselView: View {
             return 0
         }
 
-        let base = CGFloat(index - currentIndex)
+        let base = CGFloat(nearestVirtualIndex(for: index, around: carouselPosition) - carouselPosition)
         let dragProgress = dragTranslation / (cardWidth + cardSpacing)
         return base + dragProgress
     }
@@ -154,13 +187,15 @@ struct MallHomeHighlightCarouselView: View {
             return
         }
 
-        if index == currentIndex {
+        deferAutoScroll()
+
+        if index == normalizedIndex(for: carouselPosition) {
             action(cards[index])
             return
         }
 
         withAnimation(selectionAnimation) {
-            currentIndex = index
+            carouselPosition = nearestVirtualIndex(for: index, around: carouselPosition)
         }
     }
 
@@ -181,15 +216,15 @@ struct MallHomeHighlightCarouselView: View {
         let shouldMoveByPrediction = abs(predictedTranslation) > effectiveThreshold
         let shouldMoveByTranslation = abs(translation) > effectiveThreshold
 
-        var newIndex = currentIndex
+        var newPosition = carouselPosition
 
         if shouldMoveByPrediction {
-            newIndex += predictedTranslation < 0 ? 1 : -1
+            newPosition += predictedTranslation < 0 ? 1 : -1
         } else if shouldMoveByTranslation {
-            newIndex += translation < 0 ? 1 : -1
+            newPosition += translation < 0 ? 1 : -1
         }
 
-        currentIndex = min(max(newIndex, 0), cards.count - 1)
+        carouselPosition = newPosition
     }
 }
 
