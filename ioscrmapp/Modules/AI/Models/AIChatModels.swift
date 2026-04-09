@@ -25,22 +25,32 @@ enum AIChatNavigationTarget: Equatable {
 }
 
 struct AIChatOffer: Identifiable, Equatable {
-    let id: UUID
+    let id: String
     let name: String
     let price: String
     let dataAmount: String
     let validity: String
     let currency: String
     let unit: String
+    let offerId: String?
+    let offerCode: String?
+    let offerType: String?
+    let validityRaw: String?
+    let resourceSummary: String?
 
     init(
-        id: UUID = UUID(),
+        id: String = UUID().uuidString,
         name: String,
         price: String,
         dataAmount: String,
         validity: String,
         currency: String = "AED",
-        unit: String = "Month"
+        unit: String = "Month",
+        offerId: String? = nil,
+        offerCode: String? = nil,
+        offerType: String? = nil,
+        validityRaw: String? = nil,
+        resourceSummary: String? = nil
     ) {
         self.id = id
         self.name = name
@@ -49,6 +59,38 @@ struct AIChatOffer: Identifiable, Equatable {
         self.validity = validity
         self.currency = currency
         self.unit = unit
+        self.offerId = offerId
+        self.offerCode = offerCode
+        self.offerType = offerType
+        self.validityRaw = validityRaw
+        self.resourceSummary = resourceSummary
+    }
+
+    var eventPayload: [String: Any] {
+        var payload: [String: Any] = [
+            "display_id": id,
+            "name": name,
+            "price": price,
+            "currency": currency,
+            "unit": unit,
+            "data_amount": dataAmount,
+            "validity": validityRaw ?? validity
+        ]
+
+        if let offerId, !offerId.isEmpty {
+            payload["offer_id"] = offerId
+        }
+        if let offerCode, !offerCode.isEmpty {
+            payload["offer_code"] = offerCode
+        }
+        if let offerType, !offerType.isEmpty {
+            payload["offer_type"] = offerType
+        }
+        if let resourceSummary, !resourceSummary.isEmpty {
+            payload["resource_summary"] = resourceSummary
+        }
+
+        return payload
     }
 }
 
@@ -102,6 +144,85 @@ struct AIChatContext {
     let subscriberKey: String
     let languageCode: String
     let displayName: String
+}
+
+enum AIChatOfferAgentEvent: String {
+    case recommendationSelected = "offer_recommendation_selected"
+    case subscriptionRequested = "offer_subscription_requested"
+
+    var scene: String { "offers_ai_assistant" }
+
+    var intentCategory: String {
+        switch self {
+        case .recommendationSelected:
+            return "package_selection"
+        case .subscriptionRequested:
+            return "package_subscription"
+        }
+    }
+
+    var sourcePage: String {
+        switch self {
+        case .recommendationSelected:
+            return "ai_offer_recommendation_list"
+        case .subscriptionRequested:
+            return "ai_offer_detail_process_immediately"
+        }
+    }
+
+    var classificationPrompt: String {
+        switch self {
+        case .recommendationSelected:
+            return "You are a telecom offer intent classifier. When the user taps a recommended package card, classify it as package_selection, extract the selected offer identity, and keep the response concise."
+        case .subscriptionRequested:
+            return "You are a telecom offer subscription assistant. When the user taps Process Immediately, classify it as package_subscription, validate the selected offer payload, and confirm the flow can continue to the real subscription API."
+        }
+    }
+}
+
+struct AIChatRequestMetadata {
+    let scene: String
+    let eventName: String
+    let intentCategory: String
+    let classificationPrompt: String
+    let sourcePage: String
+    let selectedOffer: AIChatOffer?
+    let businessParameters: [String: String]
+
+    func serializedVariables() -> [String: Any] {
+        var variables: [String: Any] = [
+            "interaction_scene": scene,
+            "event_name": eventName,
+            "intent_category": intentCategory,
+            "classification_prompt": classificationPrompt,
+            "source_page": sourcePage
+        ]
+
+        if let selectedOffer {
+            variables["selected_offer"] = selectedOffer.eventPayload
+        }
+
+        if !businessParameters.isEmpty {
+            variables["business_parameters"] = businessParameters
+        }
+
+        return variables
+    }
+
+    static func offerEvent(_ event: AIChatOfferAgentEvent, offer: AIChatOffer) -> AIChatRequestMetadata {
+        AIChatRequestMetadata(
+            scene: event.scene,
+            eventName: event.rawValue,
+            intentCategory: event.intentCategory,
+            classificationPrompt: event.classificationPrompt,
+            sourcePage: event.sourcePage,
+            selectedOffer: offer,
+            businessParameters: [
+                "requires_real_subscription_success": "true",
+                "success_page_strategy": "show_after_offers_api_success"
+            ]
+        )
+    }
 }
 
 struct AIChatReply {

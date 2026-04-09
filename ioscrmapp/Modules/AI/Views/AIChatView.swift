@@ -67,13 +67,15 @@ struct AIChatView: View {
         custSubInfo: CustSubInfo,
         language: AppLanguage,
         aiChatService: any AIChatServicing,
+        offersService: (any OffersServicing)? = nil,
         onNavigate: @escaping (AIChatNavigationTarget) -> Void
     ) {
         _viewModel = StateObject(
             wrappedValue: AIChatViewModel(
                 custSubInfo: custSubInfo,
                 language: language,
-                aiChatService: aiChatService
+                aiChatService: aiChatService,
+                offersService: offersService
             )
         )
         self.onNavigate = onNavigate
@@ -169,6 +171,22 @@ struct AIChatView: View {
             .animation(.spring(response: 0.42, dampingFraction: 0.86), value: transientUserMessageText)
         }
         .ignoresSafeArea(.keyboard, edges: .bottom)
+        .alert(isPresented: Binding(
+            get: { viewModel.subscriptionErrorMessage != nil },
+            set: { isPresented in
+                if !isPresented {
+                    viewModel.subscriptionErrorMessage = nil
+                }
+            }
+        )) {
+            Alert(
+                title: Text("Subscription Failed"),
+                message: Text(viewModel.subscriptionErrorMessage ?? ""),
+                dismissButton: .default(Text("OK")) {
+                    viewModel.subscriptionErrorMessage = nil
+                }
+            )
+        }
         .onAppear {
             withAnimation(.easeInOut(duration: 8).repeatForever(autoreverses: true)) {
                 isAnimatingCore = true
@@ -2066,18 +2084,32 @@ struct AIChatView: View {
                     Button {
                         viewModel.processImmediately()
                     } label: {
-                        Text("Process Immediately")
-                            .font(.system(size: 16, weight: .bold))
+                        HStack(spacing: 10) {
+                            if viewModel.isProcessingSubscription {
+                                ProgressView()
+                                    .progressViewStyle(.circular)
+                                    .tint(.white)
+                            }
+
+                            Text(viewModel.processImmediatelyButtonTitle)
+                                .font(.system(size: 16, weight: .bold))
+                        }
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
                             .frame(height: actionButtonHeight)
                             .background(
-                                LinearGradient(colors: [Color(hex: 0x38bdf8), Color(hex: 0xc148ff)], startPoint: .leading, endPoint: .trailing)
+                                LinearGradient(
+                                    colors: [Color(hex: 0x38bdf8), Color(hex: 0xc148ff)],
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                )
                             )
+                            .opacity(viewModel.isProcessingSubscription ? 0.78 : 1)
                             .clipShape(Capsule())
                             .shadow(color: Color(hex: 0xc148ff).opacity(0.35), radius: 12, x: 0, y: 6)
                     }
                     .buttonStyle(.plain)
+                    .disabled(viewModel.isProcessingSubscription)
                     .padding(.top, 2)
                 }
                 .padding(.horizontal, hPad + 4)
@@ -2094,7 +2126,7 @@ struct AIChatView: View {
             
             Spacer()
             
-            VStack(spacing: 40) {
+            VStack(spacing: 28) {
                 // Success illustration built with SwiftUI shapes
                 ZStack {
                     // Document Body
@@ -2140,11 +2172,19 @@ struct AIChatView: View {
                 }
                 .frame(width: 200, height: 200)
                 
-                Text("Congratulations on your successful application")
+                Text(viewModel.subscriptionSuccessTitle)
                     .font(.system(size: 26, weight: .semibold))
                     .foregroundColor(.white)
                     .multilineTextAlignment(.center)
-                    .padding(.horizontal, 40)
+                    .padding(.horizontal, hPad + 20)
+                    .shadow(color: .black.opacity(0.2), radius: 10, x: 0, y: 4)
+
+                Text(viewModel.subscriptionSuccessDetail)
+                    .font(.system(size: 15, weight: .medium))
+                    .foregroundColor(.white.opacity(0.78))
+                    .multilineTextAlignment(.center)
+                    .lineSpacing(4)
+                    .padding(.horizontal, hPad + 24)
                     .shadow(color: .black.opacity(0.2), radius: 10, x: 0, y: 4)
             }
             .offset(y: -60)

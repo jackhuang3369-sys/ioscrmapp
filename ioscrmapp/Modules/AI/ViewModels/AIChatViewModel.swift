@@ -10,6 +10,9 @@ final class AIChatViewModel: ObservableObject {
     @Published var currentStep: AIChatViewStep = .home
     @Published var selectedOffer: AIChatOffer?
     @Published var offers: [AIChatOffer] = []
+    @Published var isProcessingSubscription = false
+    @Published var subscriptionErrorMessage: String?
+    @Published var acceptedResult: OfferAcceptedResult?
 
     let language: AppLanguage
     let title: String
@@ -18,17 +21,20 @@ final class AIChatViewModel: ObservableObject {
 
     private let custSubInfo: CustSubInfo
     private let aiChatService: any AIChatServicing
+    private let offersService: any OffersServicing
     private var conversationID: String?
     private var activeAssistantMessageID: UUID?
 
     init(
         custSubInfo: CustSubInfo,
         language: AppLanguage,
-        aiChatService: any AIChatServicing
+        aiChatService: any AIChatServicing,
+        offersService: (any OffersServicing)? = nil
     ) {
         self.custSubInfo = custSubInfo
         self.language = language
         self.aiChatService = aiChatService
+        self.offersService = offersService ?? AppServices().offersService
         title = AIChatLocalizedCopy.title(for: language)
         subtitle = AIChatLocalizedCopy.subtitle(for: language)
         suggestedPrompts = AIChatLocalizedCopy.suggestedPrompts(for: language)
@@ -126,22 +132,58 @@ final class AIChatViewModel: ObservableObject {
         messages.removeAll()
         draft = ""
         isSending = false
+        isProcessingSubscription = false
         currentStep = .home
         selectedOffer = nil
         offers = []
+        acceptedResult = nil
+        subscriptionErrorMessage = nil
         activeAssistantMessageID = nil
     }
 
     func selectOffer(_ offer: AIChatOffer) {
         selectedOffer = offer
+        acceptedResult = nil
+        subscriptionErrorMessage = nil
         withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
             currentStep = .offerDetails(offer)
+        }
+
+        Task {
+            try? await notifyOfferEvent(.recommendationSelected, offer: offer)
         }
     }
 
     func processImmediately() {
-        withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
-            currentStep = .success
+        guard !isProcessingSubscription else {
+            return
+        }
+
+        guard let selectedOffer else {
+            subscriptionErrorMessage = missingOfferConfigurationMessage()
+            return
+        }
+
+        subscriptionErrorMessage = nil
+        isProcessingSubscription = true
+
+        Task {
+            do {
+                _ = try await notifyOfferEvent(.subscriptionRequested, offer: selectedOffer)
+
+                await MainActor.run {
+                    acceptedResult = nil
+                    isProcessingSubscription = false
+                    withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
+                        currentStep = .success
+                    }
+                }
+            } catch {
+                await MainActor.run {
+                    isProcessingSubscription = false
+                    subscriptionErrorMessage = errorMessage(for: error)
+                }
+            }
         }
     }
 
@@ -284,6 +326,8 @@ final class AIChatViewModel: ObservableObject {
         activeAssistantMessageID = placeholderID
         offers = recommendedOffers
         selectedOffer = nil
+        acceptedResult = nil
+        subscriptionErrorMessage = nil
         isSending = false
 
         withAnimation(.spring(response: 0.5, dampingFraction: 0.82)) {
@@ -327,9 +371,280 @@ final class AIChatViewModel: ObservableObject {
             authorization: accessToken.isEmpty ? "" : "Bearer \(accessToken)",
             userID: custSubInfo.userID ?? "",
             serviceNumber: serviceNumber,
-            subscriberKey: "",
+            subscriberKey: custSubInfo.subscriberKey ?? "",
             languageCode: language.rawValue,
             displayName: custSubInfo.displayName
         )
+    }
+
+    private func notifyOfferEvent(
+        _ event: AIChatOfferAgentEvent,
+        offer: AIChatOffer
+    ) async throws -> AIChatReply {
+        let context = buildContext()
+        let prompt = buildOfferEventPrompt(event: event, offer: offer)
+        let metadata = AIChatRequestMetadata.offerEvent(event, offer: offer)
+
+        return try await aiChatService.sendMessage(
+            prompt,
+            conversationID: nil,
+            context: context,
+            metadata: metadata
+        )
+    }
+
+    private func buildOfferEventPrompt(
+        event: AIChatOfferAgentEvent,
+        offer: AIChatOffer
+    ) -> String {
+        [
+            event.classificationPrompt,
+            "event_name: \(event.rawValue)",
+            "intent_category: \(event.intentCategory)",
+            "source_page: \(event.sourcePage)",
+            "offer_name: \(offer.name)",
+            "offer_id: \(offer.offerId ?? "")",
+            "offer_code: \(offer.offerCode ?? "")",
+            "offer_type: \(offer.offerType ?? "")",
+            "price: \(offer.price)",
+            "currency: \(offer.currency)",
+            "unit: \(offer.unit)",
+            "data_amount: \(offer.dataAmount)",
+            "validity: \(offer.validityRaw ?? offer.validity)"
+        ]
+        .joined(separator: "\n")
+    }
+
+    private func resolveEligibleOffer(from offer: AIChatOffer) async throws -> EligibleOfferItem {
+        if let mapped = mappedEligibleOffer(from: offer) {
+            return mapped
+        }
+
+        let fetchedOffers = try await offersService.fetchEligibleOffers(
+            session: custSubInfo,
+            resourceType: .all,
+            categoryId: nil
+        )
+
+        if let matched = fetchedOffers.first(where: { eligibleOffer in
+            matches(eligibleOffer, to: offer)
+        }) {
+            return matched
+        }
+
+        throw OffersServiceError.featureUnavailable(message: missingOfferConfigurationMessage())
+    }
+
+    private func mappedEligibleOffer(from offer: AIChatOffer) -> EligibleOfferItem? {
+        let resolvedOfferId = offer.offerId?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        guard !resolvedOfferId.isEmpty else {
+            return nil
+        }
+
+        let resolvedOfferType = resolvedOfferType(for: offer)
+
+        return EligibleOfferItem(
+            id: resolvedOfferId,
+            offerId: resolvedOfferId,
+            offerCode: offer.offerCode ?? resolvedOfferId,
+            offerName: offer.name,
+            offerType: resolvedOfferType,
+            validityRaw: offer.validityRaw ?? offer.validity,
+            validityBucket: validityBucket(for: offer.validityRaw ?? offer.validity),
+            resourceSummary: offer.resourceSummary ?? offer.dataAmount,
+            displayPriceText: offer.price,
+            displayPriceValue: decimalValue(from: offer.price),
+            popularRank: nil,
+            originalIndex: 0
+        )
+    }
+
+    private func matches(_ eligibleOffer: EligibleOfferItem, to offer: AIChatOffer) -> Bool {
+        let normalizedSelectedOfferName = normalizedOfferName(offer.name)
+        let normalizedEligibleOfferName = normalizedOfferName(eligibleOffer.offerName)
+
+        if let offerId = offer.offerId?.trimmingCharacters(in: .whitespacesAndNewlines),
+           !offerId.isEmpty,
+           eligibleOffer.offerId == offerId
+        {
+            return true
+        }
+
+        if let offerCode = offer.offerCode?.trimmingCharacters(in: .whitespacesAndNewlines),
+           !offerCode.isEmpty,
+           eligibleOffer.offerCode == offerCode
+        {
+            return true
+        }
+
+        guard normalizedSelectedOfferName == normalizedEligibleOfferName else {
+            return false
+        }
+
+        if let eligiblePrice = eligibleOffer.displayPriceValue,
+           let selectedPrice = decimalValue(from: offer.price),
+           eligiblePrice != selectedPrice
+        {
+            return false
+        }
+
+        return true
+    }
+
+    private func normalizedOfferName(_ value: String) -> String {
+        value
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .lowercased()
+            .replacingOccurrences(
+                of: #"[^a-z0-9\u{4e00}-\u{9fff}\u{0600}-\u{06ff}]+"#,
+                with: "",
+                options: .regularExpression
+            )
+    }
+
+    private func resolvedOfferType(for offer: AIChatOffer) -> String {
+        if let offerType = offer.offerType?.trimmingCharacters(in: .whitespacesAndNewlines),
+           !offerType.isEmpty
+        {
+            return offerType
+        }
+
+        if offer.dataAmount != "--" {
+            return "Data"
+        }
+
+        return ""
+    }
+
+    private func validityBucket(for rawValue: String?) -> OffersValidityBucket? {
+        let normalized = rawValue?
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .lowercased() ?? ""
+
+        if normalized.contains("daily") {
+            return .daily
+        }
+        if normalized.contains("weekly") {
+            return .weekly
+        }
+        if normalized.contains("monthly") {
+            return .monthly
+        }
+
+        return nil
+    }
+
+    private func decimalValue(from rawValue: String?) -> Decimal? {
+        guard let rawValue else {
+            return nil
+        }
+
+        let allowedScalars = CharacterSet(charactersIn: "0123456789.,")
+        let normalized = rawValue.unicodeScalars
+            .filter { allowedScalars.contains($0) }
+            .map(String.init)
+            .joined()
+            .replacingOccurrences(of: ",", with: "")
+
+        guard !normalized.isEmpty else {
+            return nil
+        }
+
+        return Decimal(string: normalized, locale: Locale(identifier: "en_US_POSIX"))
+    }
+
+    private func missingOfferConfigurationMessage() -> String {
+        switch language {
+        case .english:
+            return "The selected package is missing backend identifiers. Please configure the AI agent to return offerId, offerCode, and offerType."
+        case .simplifiedChinese:
+            return "当前选中套餐缺少后端标识，请给 AI 智能体返回 `offerId`、`offerCode`、`offerType`。"
+        case .arabic:
+            return "الحزمة المحددة تفتقد معرّفات الخلفية. يرجى تهيئة الوكيل لإرجاع offerId و offerCode و offerType."
+        }
+    }
+
+    private func errorMessage(for error: Error) -> String {
+        if let aiError = error as? AIChatServiceError {
+            return AIChatLocalizedCopy.errorMessage(for: language, error: aiError)
+        }
+
+        if let offersError = error as? OffersServiceError {
+            switch offersError {
+            case let .featureUnavailable(message):
+                return message
+            case .tooManyRequests:
+                switch language {
+                case .english:
+                    return "Too many requests. Please try again later."
+                case .simplifiedChinese:
+                    return "请求过于频繁，请稍后重试。"
+                case .arabic:
+                    return "الطلبات كثيرة جدًا. حاول مرة أخرى لاحقًا."
+                }
+            case .missingIdentity, .networkUnavailable, .requestCancelled:
+                break
+            }
+        }
+
+        switch language {
+        case .english:
+            return "Subscription failed. Please try again."
+        case .simplifiedChinese:
+            return "订阅失败，请稍后重试。"
+        case .arabic:
+            return "فشل الاشتراك. حاول مرة أخرى."
+        }
+    }
+
+    var processImmediatelyButtonTitle: String {
+        switch (language, isProcessingSubscription) {
+        case (.english, true):
+            return "Processing..."
+        case (.english, false):
+            return "Process Immediately"
+        case (.simplifiedChinese, true):
+            return "办理中..."
+        case (.simplifiedChinese, false):
+            return "立即办理"
+        case (.arabic, true):
+            return "جارٍ التنفيذ..."
+        case (.arabic, false):
+            return "تنفيذ فوري"
+        }
+    }
+
+    var subscriptionSuccessTitle: String {
+        switch language {
+        case .english:
+            return "Subscription successful"
+        case .simplifiedChinese:
+            return "订阅成功"
+        case .arabic:
+            return "تم الاشتراك بنجاح"
+        }
+    }
+
+    var subscriptionSuccessDetail: String {
+        let offerName = acceptedResult?.offerName ?? selectedOffer?.name ?? ""
+        let orderId = acceptedResult?.orderId ?? ""
+
+        switch language {
+        case .english:
+            if orderId.isEmpty {
+                return "\(offerName) has been submitted successfully."
+            }
+            return "\(offerName) has been submitted successfully.\nOrder ID: \(orderId)"
+        case .simplifiedChinese:
+            if orderId.isEmpty {
+                return "\(offerName) 已提交成功。"
+            }
+            return "\(offerName) 已提交成功。\n订单号：\(orderId)"
+        case .arabic:
+            if orderId.isEmpty {
+                return "تم تقديم \(offerName) بنجاح."
+            }
+            return "تم تقديم \(offerName) بنجاح.\nرقم الطلب: \(orderId)"
+        }
     }
 }

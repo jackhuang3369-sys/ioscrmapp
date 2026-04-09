@@ -246,6 +246,7 @@ struct HomeView: View {
                     custSubInfo: custSubInfo,
                     language: languageStore.currentLanguage,
                     aiChatService: aiChatService,
+                    offersService: offersService,
                     onNavigate: handleAIChatNavigation(_:)
                 )
             }
