@@ -25,7 +25,7 @@ struct MallProductDetailView: View {
     @State private var detailSectionMinY: CGFloat = .greatestFiniteMagnitude
     @State private var activeSection: MallProductDetailSection = .product
     @State private var pendingSelectionAction: SelectionAction = .selectOnly
-    @State private var activeNotice: MallProductDetailNotice?
+    @State private var activeAlert: MallProductDetailNotice?
 
     private let productSectionAnchorID = "mall-product-detail-product-section"
     private let detailSectionAnchorID = "mall-product-detail-detail-section"
@@ -76,7 +76,7 @@ struct MallProductDetailView: View {
         .onDisappear {
             homeChromeState.showBottomTabBar(for: mallProductDetailBottomTabBarKey)
         }
-        .alert(item: $activeNotice) { notice in
+        .alert(item: $activeAlert) { notice in
             Alert(
                 title: Text(notice.title),
                 message: Text(notice.message),
@@ -342,23 +342,19 @@ struct MallProductDetailView: View {
         case .selectOnly:
             break
         case .addToCart:
-            Task {
+            Task { @MainActor in
                 do {
                     try await viewModel.addCartItem(
                         product: product,
                         detailSnapshot: snapshot,
                         sku: matchedSKU
                     )
-                    activeNotice = MallProductDetailNotice(
-                        title: languageStore.string("mall.detail.addToCart"),
-                        message: languageStore.string("mall.cart.addedToCart")
-                    )
                 } catch {
                     presentCartError(error)
                 }
             }
         case .buyNow:
-            activeNotice = MallProductDetailNotice(
+            activeAlert = MallProductDetailNotice(
                 title: languageStore.string("mall.cart.checkout.title"),
                 message: languageStore.string("mall.cart.checkout.placeholder")
             )
@@ -379,16 +375,20 @@ struct MallProductDetailView: View {
 
         try? await Task.sleep(nanoseconds: 120_000_000)
 
-        let loadedSnapshot = MallProductDetailMockData.snapshot(for: product)
-        guard let defaultSKU = loadedSnapshot.defaultSKU else {
-            screenState = .failed
-            return
-        }
+        do {
+            let entry = try await viewModel.fetchProductDetailEntry(productID: product.id)
+            guard let defaultSKU = entry.snapshot.defaultSKU else {
+                screenState = .failed
+                return
+            }
 
-        snapshot = loadedSnapshot
-        selectedValueIDs = Set(defaultSKU.valueIDs)
-        draftValueIDs = Set(defaultSKU.valueIDs)
-        screenState = .loaded
+            snapshot = entry.snapshot
+            selectedValueIDs = Set(defaultSKU.valueIDs)
+            draftValueIDs = Set(defaultSKU.valueIDs)
+            screenState = .loaded
+        } catch {
+            screenState = .failed
+        }
     }
 
     private func applySelection(
@@ -427,7 +427,7 @@ struct MallProductDetailView: View {
             message = languageStore.string("mall.cart.error.subtitle")
         }
 
-        activeNotice = MallProductDetailNotice(
+        activeAlert = MallProductDetailNotice(
             title: languageStore.string("mall.cart.error.title"),
             message: message
         )

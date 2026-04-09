@@ -559,11 +559,26 @@ struct RemoteMallService: MallServicing {
         session: CustSubInfo
     ) async throws -> MallProductDetailEntry {
         do {
-            return try MallMockData.makeProductDetailEntry(productID: productID)
+            let responseData = try await client.get(
+                MallAPI.productDetail,
+                query: [
+                    "productId": productID,
+                    "lang": MallRequestLanguage.currentCode()
+                ]
+            )
+            return try MallResponseMapper.mapProductDetailEntry(
+                from: responseData,
+                requestedProductID: productID
+            )
+        } catch let error as HTTPClient.ClientError {
+            mallLogger.error(
+                "Fetch mall product detail failed productID=\(productID, privacy: .public) error=\(String(describing: error), privacy: .public)"
+            )
+            throw mapClientError(error, fallback: .productDetailUnavailable)
         } catch let error as MallServiceError {
             throw error
         } catch {
-            throw MallServiceError.productDetailUnavailable
+            throw MallServiceError.networkUnavailable
         }
     }
 
@@ -632,6 +647,8 @@ struct RemoteMallService: MallServicing {
                 return .keywordInvalid
             case 50_019:
                 return .pageInvalid
+            case 50_030, 50_031, 50_032:
+                return .productDetailUnavailable
             default:
                 let trimmedMessage = message.trimmingCharacters(in: .whitespacesAndNewlines)
                 return trimmedMessage.isEmpty ? fallback : .featureUnavailable(message: trimmedMessage)
@@ -709,6 +726,27 @@ private enum MallResponseMapper {
             hasMore: bool(in: payload, keys: ["hasMore"]) ?? false,
             products: try objectArray(in: payload, keys: ["products"]).map(mapProduct)
         )
+    }
+
+    static func mapProductDetailEntry(
+        from responseData: HTTPClient.ResponseData,
+        requestedProductID: String
+    ) throws -> MallProductDetailEntry {
+        let payload = try object(from: responseData)
+        let fallbackEntry = try? MallMockData.makeProductDetailEntry(productID: requestedProductID)
+        let snapshot = try mapProductDetailSnapshot(
+            payload,
+            requestedProductID: requestedProductID,
+            fallback: fallbackEntry?.snapshot
+        )
+        let product = mapProductDetailProduct(
+            payload,
+            requestedProductID: requestedProductID,
+            snapshot: snapshot,
+            fallback: fallbackEntry?.product
+        )
+
+        return MallProductDetailEntry(product: product, snapshot: snapshot)
     }
 
     static func mapBoolean(from responseData: HTTPClient.ResponseData) -> Bool {
@@ -824,6 +862,138 @@ private enum MallResponseMapper {
         )
     }
 
+    private static func mapProductDetailSnapshot(
+        _ dictionary: [String: HTTPClient.ResponseData],
+        requestedProductID: String,
+        fallback: MallProductDetailSnapshot?
+    ) throws -> MallProductDetailSnapshot {
+        let productID = string(in: dictionary, keys: ["id"]) ?? requestedProductID
+        let fallbackHeroMedia = fallback?.heroMedia ?? []
+        let mappedHeroMedia = heroMediaList(in: dictionary, keys: ["heroMedia"])
+        let heroMedia: [MallProductDetailHeroMedia]
+
+        if mappedHeroMedia.isEmpty {
+            if fallbackHeroMedia.isEmpty {
+                heroMedia = [
+                    MallProductDetailHeroMedia(
+                        id: "\(productID)-hero-1",
+                        type: .image,
+                        previewImage: fallbackImageSource()
+                    )
+                ]
+            } else {
+                heroMedia = fallbackHeroMedia
+            }
+        } else {
+            heroMedia = mappedHeroMedia
+        }
+
+        let specificationGroups = try productDetailSpecificationGroups(
+            in: dictionary,
+            keys: ["specificationGroups"],
+            fallback: fallback?.specificationGroups ?? []
+        )
+        let defaultPreviewImage = heroMedia.first?.previewImage
+            ?? fallback?.defaultSKU?.previewImage
+            ?? fallback?.heroMedia.first?.previewImage
+            ?? fallbackImageSource()
+        let skus = try productDetailSKUs(
+            in: dictionary,
+            keys: ["skus"],
+            fallback: fallback?.skus ?? [],
+            defaultPreviewImage: defaultPreviewImage
+        )
+
+        return MallProductDetailSnapshot(
+            id: productID,
+            searchPlaceholder: nonEmptyLocalizedString(
+                in: dictionary,
+                keys: ["searchPlaceholder"],
+                fallback: fallback?.searchPlaceholder ?? MallLocalizedString("Search...", "Search...", "ابحث...")
+            ),
+            cartBadgeCount: int(in: dictionary, keys: ["cartBadgeCount"]) ?? fallback?.cartBadgeCount ?? 0,
+            heroMedia: heroMedia,
+            saleLabel: nonEmptyLocalizedString(
+                in: dictionary,
+                keys: ["saleLabel"],
+                fallback: fallback?.saleLabel ?? fallbackLocalizedValue
+            ),
+            title: nonEmptyLocalizedString(
+                in: dictionary,
+                keys: ["title"],
+                fallback: fallback?.title ?? emptyLocalizedString()
+            ),
+            subtitle: nonEmptyLocalizedString(
+                in: dictionary,
+                keys: ["subtitle"],
+                fallback: fallback?.subtitle ?? emptyLocalizedString()
+            ),
+            brandText: localizedTextOrNil(in: dictionary, keys: ["brandText"]) ?? fallback?.brandText,
+            shipmentSummary: nonEmptyLocalizedString(
+                in: dictionary,
+                keys: ["shipmentSummary"],
+                fallback: fallback?.shipmentSummary ?? emptyLocalizedString()
+            ),
+            deliveryAddressSummary: nonEmptyLocalizedString(
+                in: dictionary,
+                keys: ["deliveryAddressSummary"],
+                fallback: fallback?.deliveryAddressSummary ?? emptyLocalizedString()
+            ),
+            detailSectionTitle: nonEmptyLocalizedString(
+                in: dictionary,
+                keys: ["detailSectionTitle"],
+                fallback: fallback?.detailSectionTitle ?? MallLocalizedString("Product Details", "Product Details", "تفاصيل المنتج")
+            ),
+            detailHTML: nonEmptyLocalizedString(
+                in: dictionary,
+                keys: ["detailHTML", "detailHtml"],
+                fallback: fallback?.detailHTML ?? emptyLocalizedString()
+            ),
+            selectionQuantitySuffix: nonEmptyLocalizedString(
+                in: dictionary,
+                keys: ["selectionQuantitySuffix"],
+                fallback: fallback?.selectionQuantitySuffix ?? MallLocalizedString("1 piece", "1 piece", "قطعة واحدة")
+            ),
+            specificationGroups: specificationGroups,
+            skus: skus
+        )
+    }
+
+    private static func mapProductDetailProduct(
+        _ dictionary: [String: HTTPClient.ResponseData],
+        requestedProductID: String,
+        snapshot: MallProductDetailSnapshot,
+        fallback: MallProduct?
+    ) -> MallProduct {
+        let productID = string(in: dictionary, keys: ["id"]) ?? requestedProductID
+        let coverImage = snapshot.defaultSKU?.previewImage
+            ?? snapshot.heroMedia.first?.previewImage
+            ?? fallback?.coverImage
+            ?? fallbackImageSource()
+
+        return MallProduct(
+            id: productID,
+            categoryID: string(in: dictionary, keys: ["categoryID", "categoryId"]) ?? fallback?.categoryID ?? "",
+            subcategoryID: string(in: dictionary, keys: ["subcategoryID", "subcategoryId"]) ?? fallback?.subcategoryID ?? "",
+            thirdCategoryID: string(in: dictionary, keys: ["thirdCategoryID", "thirdCategoryId"]) ?? fallback?.thirdCategoryID ?? "",
+            title: nonEmptyLocalizedString(snapshot.title, fallback: fallback?.title ?? emptyLocalizedString()),
+            subtitle: nonEmptyLocalizedString(snapshot.subtitle, fallback: fallback?.subtitle ?? emptyLocalizedString()),
+            coverImage: coverImage,
+            detailMediaList: productDetailMediaList(
+                from: snapshot.heroMedia,
+                fallback: fallback?.detailMediaList ?? []
+            ),
+            price: snapshot.defaultSKU?.price ?? fallback?.price ?? .zero,
+            originalPrice: snapshot.defaultSKU?.originalPrice ?? fallback?.originalPrice,
+            badge: productDetailBadge(for: snapshot.saleLabel, fallback: fallback?.badge),
+            tags: fallback?.tags ?? [],
+            salesCount: fallback?.salesCount ?? 0,
+            sortWeight: fallback?.sortWeight ?? 0,
+            updatedAt: fallback?.updatedAt ?? .distantPast,
+            detailTarget: fallback?.detailTarget ?? "mall://product/\(productID)"
+        )
+    }
+
     private static func mapProductDetailMedia(
         _ dictionary: [String: HTTPClient.ResponseData]
     ) -> MallProductDetailMedia? {
@@ -838,6 +1008,67 @@ private enum MallResponseMapper {
             .flatMap { MallProductDetailMediaType(rawValue: $0.lowercased()) }
             ?? .image
         return MallProductDetailMedia(id: id, type: type, url: url)
+    }
+
+    private static func mapHeroMedia(
+        _ dictionary: [String: HTTPClient.ResponseData]
+    ) -> MallProductDetailHeroMedia? {
+        guard
+            let id = string(in: dictionary, keys: ["id"]),
+            let url = url(in: dictionary, keys: ["url", "mediaUrl"])
+        else {
+            return nil
+        }
+
+        let type = string(in: dictionary, keys: ["type", "mediaType"])
+            .flatMap { MallProductDetailHeroMediaType(rawValue: $0.lowercased()) }
+            ?? .image
+        return MallProductDetailHeroMedia(
+            id: id,
+            type: type,
+            previewImage: .remote(url: url)
+        )
+    }
+
+    private static func mapProductDetailSpecificationGroup(
+        _ dictionary: [String: HTTPClient.ResponseData]
+    ) throws -> MallProductDetailSpecificationGroup {
+        let displayMode = string(in: dictionary, keys: ["displayMode"])
+            .flatMap { MallProductDetailSpecificationDisplayMode(rawValue: $0.lowercased()) }
+            ?? .chip
+
+        return MallProductDetailSpecificationGroup(
+            id: string(in: dictionary, keys: ["id"]) ?? "",
+            title: localizedString(in: dictionary, keys: ["title"]),
+            displayMode: displayMode,
+            values: try objectArray(in: dictionary, keys: ["values"]).map(mapProductDetailSpecificationValue)
+        )
+    }
+
+    private static func mapProductDetailSpecificationValue(
+        _ dictionary: [String: HTTPClient.ResponseData]
+    ) -> MallProductDetailSpecificationValue {
+        MallProductDetailSpecificationValue(
+            id: string(in: dictionary, keys: ["id"]) ?? "",
+            title: localizedString(in: dictionary, keys: ["title"]),
+            image: optionalImageSource(in: dictionary, keys: ["image"]),
+            swatchHex: uint32(in: dictionary, keys: ["swatchHex"])
+        )
+    }
+
+    private static func mapProductDetailSKU(
+        _ dictionary: [String: HTTPClient.ResponseData],
+        defaultPreviewImage: MallImageSource
+    ) -> MallProductDetailSKU {
+        MallProductDetailSKU(
+            id: string(in: dictionary, keys: ["id"]) ?? "",
+            valueIDs: stringArray(in: dictionary, keys: ["valueIDs", "valueIds"]),
+            price: decimal(in: dictionary, keys: ["price"]) ?? .zero,
+            originalPrice: decimal(in: dictionary, keys: ["originalPrice"]),
+            saleEndsText: localizedTextOrNil(in: dictionary, keys: ["saleEndsText"]) ?? emptyLocalizedString(),
+            previewImage: optionalImageSource(in: dictionary, keys: ["previewImage"]) ?? defaultPreviewImage,
+            isDefault: bool(in: dictionary, keys: ["isDefault"]) ?? false
+        )
     }
 
     private static func mapHotKeyword(_ dictionary: [String: HTTPClient.ResponseData]) throws -> MallHotKeyword {
@@ -872,6 +1103,29 @@ private enum MallResponseMapper {
             return emptyLocalizedString()
         }
         return localizedString(from: payload)
+    }
+
+    private static func nonEmptyLocalizedString(
+        in dictionary: [String: HTTPClient.ResponseData],
+        keys: [String],
+        fallback: MallLocalizedString
+    ) -> MallLocalizedString {
+        nonEmptyLocalizedString(localizedString(in: dictionary, keys: keys), fallback: fallback)
+    }
+
+    private static func nonEmptyLocalizedString(
+        _ value: MallLocalizedString,
+        fallback: MallLocalizedString
+    ) -> MallLocalizedString {
+        isEmpty(value) ? fallback : value
+    }
+
+    private static func localizedTextOrNil(
+        in dictionary: [String: HTTPClient.ResponseData],
+        keys: [String]
+    ) -> MallLocalizedString? {
+        let value = localizedString(in: dictionary, keys: keys)
+        return isEmpty(value) ? nil : value
     }
 
     private static func localizedString(from dictionary: [String: HTTPClient.ResponseData]) -> MallLocalizedString {
@@ -948,6 +1202,16 @@ private enum MallResponseMapper {
         return fallbackImageSource()
     }
 
+    private static func optionalImageSource(
+        in dictionary: [String: HTTPClient.ResponseData],
+        keys: [String]
+    ) -> MallImageSource? {
+        guard object(in: dictionary, keys: keys) != nil else {
+            return nil
+        }
+        return imageSource(in: dictionary, keys: keys)
+    }
+
     private static func detailMediaList(
         in dictionary: [String: HTTPClient.ResponseData],
         keys: [String]
@@ -962,6 +1226,88 @@ private enum MallResponseMapper {
             }
             return mapProductDetailMedia(payload)
         }
+    }
+
+    private static func heroMediaList(
+        in dictionary: [String: HTTPClient.ResponseData],
+        keys: [String]
+    ) -> [MallProductDetailHeroMedia] {
+        guard let responseArray = array(in: dictionary, keys: keys) else {
+            return []
+        }
+
+        return responseArray.compactMap { responseData in
+            guard let payload = responseData.objectValue else {
+                return nil
+            }
+            return mapHeroMedia(payload)
+        }
+    }
+
+    private static func productDetailSpecificationGroups(
+        in dictionary: [String: HTTPClient.ResponseData],
+        keys: [String],
+        fallback: [MallProductDetailSpecificationGroup]
+    ) throws -> [MallProductDetailSpecificationGroup] {
+        guard let responseArray = array(in: dictionary, keys: keys) else {
+            return fallback
+        }
+
+        let groups = try responseArray.map { responseData in
+            guard let payload = responseData.objectValue else {
+                throw HTTPClient.ClientError.invalidResponse
+            }
+            return try mapProductDetailSpecificationGroup(payload)
+        }
+
+        return groups.isEmpty ? fallback : groups
+    }
+
+    private static func productDetailSKUs(
+        in dictionary: [String: HTTPClient.ResponseData],
+        keys: [String],
+        fallback: [MallProductDetailSKU],
+        defaultPreviewImage: MallImageSource
+    ) throws -> [MallProductDetailSKU] {
+        guard let responseArray = array(in: dictionary, keys: keys) else {
+            return fallback
+        }
+
+        let skus = try responseArray.map { responseData in
+            guard let payload = responseData.objectValue else {
+                throw HTTPClient.ClientError.invalidResponse
+            }
+            return mapProductDetailSKU(payload, defaultPreviewImage: defaultPreviewImage)
+        }
+
+        return skus.isEmpty ? fallback : skus
+    }
+
+    private static func productDetailMediaList(
+        from heroMedia: [MallProductDetailHeroMedia],
+        fallback: [MallProductDetailMedia]
+    ) -> [MallProductDetailMedia] {
+        let media = heroMedia.compactMap { item -> MallProductDetailMedia? in
+            guard case let .remote(url) = item.previewImage else {
+                return nil
+            }
+
+            let type: MallProductDetailMediaType = item.type == .video ? .video : .image
+            return MallProductDetailMedia(id: item.id, type: type, url: url)
+        }
+
+        return media.isEmpty ? fallback : media
+    }
+
+    private static func productDetailBadge(
+        for saleLabel: MallLocalizedString,
+        fallback: MallProductBadge?
+    ) -> MallProductBadge {
+        if !isEmpty(saleLabel) {
+            return MallProductBadge(title: saleLabel, style: .sale)
+        }
+
+        return fallback ?? MallProductBadge(title: fallbackLocalizedValue, style: .featured)
     }
 
     private static func emptyLocalizedString() -> MallLocalizedString {

@@ -25,6 +25,12 @@ enum MallAPI {
         requiresAuthorization: true
     )
 
+    static let productDetail = HTTPClient.Endpoint(
+        path: "ser-query/api/mall/products/detail",
+        method: .get,
+        requiresAuthorization: true
+    )
+
     static let deleteSearchHistory = HTTPClient.Endpoint(
         path: "ser-query/api/mall/search/history/delete",
         method: .post,
