@@ -28,14 +28,46 @@ protocol MallServicing: Sendable {
     ) async throws -> MallSearchResultSnapshot
     func deleteSearchHistory(keyword: String, session: CustSubInfo) async throws
     func clearSearchHistory(session: CustSubInfo) async throws
+    func fetchProductDetailEntry(
+        productID: String,
+        session: CustSubInfo
+    ) async throws -> MallProductDetailEntry
+    func fetchCart(session: CustSubInfo) async throws -> MallCartSnapshot
+    func addCartItem(
+        _ request: MallCartAddItemRequest,
+        session: CustSubInfo
+    ) async throws -> MallCartSnapshot
+    func updateCartItemQuantity(
+        _ request: MallCartQuantityUpdateRequest,
+        session: CustSubInfo
+    ) async throws -> MallCartSnapshot
+    func updateCartItemSKU(
+        _ request: MallCartSKUUpdateRequest,
+        session: CustSubInfo
+    ) async throws -> MallCartSnapshot
+    func updateCartItemSelection(
+        _ request: MallCartSelectionUpdateRequest,
+        session: CustSubInfo
+    ) async throws -> MallCartSnapshot
+    func deleteCartItems(
+        _ request: MallCartDeleteItemsRequest,
+        session: CustSubInfo
+    ) async throws -> MallCartSnapshot
+    func prepareCartCheckout(
+        _ request: MallCartCheckoutRequest,
+        session: CustSubInfo
+    ) async throws -> MallCartCheckoutPreview
 }
 
 enum MallServiceError: Error {
     case homeUnavailable
     case homeProductFeedUnavailable
     case searchUnavailable
+    case productDetailUnavailable
+    case cartUnavailable
     case keywordInvalid
     case pageInvalid
+    case cartSelectionEmpty
     case featureUnavailable(message: String)
     case tooManyRequests
     case networkUnavailable
@@ -48,10 +80,16 @@ enum MallServiceError: Error {
             return .key("mall.state.error.subtitle")
         case .searchUnavailable:
             return .key("mall.search.error.subtitle")
+        case .productDetailUnavailable:
+            return .key("mall.detail.state.error.subtitle")
+        case .cartUnavailable:
+            return .key("mall.cart.error.subtitle")
         case .keywordInvalid:
             return .key("mall.search.validation.empty")
         case .pageInvalid:
             return .key("mall.search.error.subtitle")
+        case .cartSelectionEmpty:
+            return .key("mall.cart.checkout.validation")
         case let .featureUnavailable(message):
             return .literal(message)
         case .tooManyRequests:
@@ -181,6 +219,67 @@ actor MockMallService: MallServicing {
 
     func clearSearchHistory(session: CustSubInfo) async throws {
         searchHistory.removeAll()
+    }
+
+    func fetchProductDetailEntry(
+        productID: String,
+        session: CustSubInfo
+    ) async throws -> MallProductDetailEntry {
+        try await Task.sleep(nanoseconds: 70_000_000)
+        return try MallMockData.makeProductDetailEntry(productID: productID)
+    }
+
+    func fetchCart(session: CustSubInfo) async throws -> MallCartSnapshot {
+        try await Task.sleep(nanoseconds: 90_000_000)
+        return await mallMockCartStore.fetchSnapshot()
+    }
+
+    func addCartItem(
+        _ request: MallCartAddItemRequest,
+        session: CustSubInfo
+    ) async throws -> MallCartSnapshot {
+        try await Task.sleep(nanoseconds: 70_000_000)
+        return await mallMockCartStore.addItem(request)
+    }
+
+    func updateCartItemQuantity(
+        _ request: MallCartQuantityUpdateRequest,
+        session: CustSubInfo
+    ) async throws -> MallCartSnapshot {
+        try await Task.sleep(nanoseconds: 60_000_000)
+        return try await mallMockCartStore.updateQuantity(request)
+    }
+
+    func updateCartItemSKU(
+        _ request: MallCartSKUUpdateRequest,
+        session: CustSubInfo
+    ) async throws -> MallCartSnapshot {
+        try await Task.sleep(nanoseconds: 60_000_000)
+        return try await mallMockCartStore.updateSKU(request)
+    }
+
+    func updateCartItemSelection(
+        _ request: MallCartSelectionUpdateRequest,
+        session: CustSubInfo
+    ) async throws -> MallCartSnapshot {
+        try await Task.sleep(nanoseconds: 60_000_000)
+        return try await mallMockCartStore.updateSelection(request)
+    }
+
+    func deleteCartItems(
+        _ request: MallCartDeleteItemsRequest,
+        session: CustSubInfo
+    ) async throws -> MallCartSnapshot {
+        try await Task.sleep(nanoseconds: 70_000_000)
+        return await mallMockCartStore.deleteItems(request)
+    }
+
+    func prepareCartCheckout(
+        _ request: MallCartCheckoutRequest,
+        session: CustSubInfo
+    ) async throws -> MallCartCheckoutPreview {
+        try await Task.sleep(nanoseconds: 90_000_000)
+        return try await mallMockCartStore.prepareCheckout(request)
     }
 
     private func homeProducts(
@@ -453,6 +552,67 @@ struct RemoteMallService: MallServicing {
         } catch {
             throw MallServiceError.networkUnavailable
         }
+    }
+
+    func fetchProductDetailEntry(
+        productID: String,
+        session: CustSubInfo
+    ) async throws -> MallProductDetailEntry {
+        do {
+            return try MallMockData.makeProductDetailEntry(productID: productID)
+        } catch let error as MallServiceError {
+            throw error
+        } catch {
+            throw MallServiceError.productDetailUnavailable
+        }
+    }
+
+    func fetchCart(session: CustSubInfo) async throws -> MallCartSnapshot {
+        // Remote cart endpoint will land in a later iteration. Keep the service seam stable
+        // and let the current remote mode reuse the same local mock cart experience.
+        await mallMockCartStore.fetchSnapshot()
+    }
+
+    func addCartItem(
+        _ request: MallCartAddItemRequest,
+        session: CustSubInfo
+    ) async throws -> MallCartSnapshot {
+        await mallMockCartStore.addItem(request)
+    }
+
+    func updateCartItemQuantity(
+        _ request: MallCartQuantityUpdateRequest,
+        session: CustSubInfo
+    ) async throws -> MallCartSnapshot {
+        try await mallMockCartStore.updateQuantity(request)
+    }
+
+    func updateCartItemSKU(
+        _ request: MallCartSKUUpdateRequest,
+        session: CustSubInfo
+    ) async throws -> MallCartSnapshot {
+        try await mallMockCartStore.updateSKU(request)
+    }
+
+    func updateCartItemSelection(
+        _ request: MallCartSelectionUpdateRequest,
+        session: CustSubInfo
+    ) async throws -> MallCartSnapshot {
+        try await mallMockCartStore.updateSelection(request)
+    }
+
+    func deleteCartItems(
+        _ request: MallCartDeleteItemsRequest,
+        session: CustSubInfo
+    ) async throws -> MallCartSnapshot {
+        await mallMockCartStore.deleteItems(request)
+    }
+
+    func prepareCartCheckout(
+        _ request: MallCartCheckoutRequest,
+        session: CustSubInfo
+    ) async throws -> MallCartCheckoutPreview {
+        try await mallMockCartStore.prepareCheckout(request)
     }
 
     private func mapClientError(
@@ -1078,6 +1238,239 @@ private enum MallResponseDateParser {
     }
 }
 
+enum MallProductDetailMockData {
+    static func snapshot(for product: MallProduct) -> MallProductDetailSnapshot {
+        MallMockData.makeProductDetailSnapshot(for: product)
+    }
+}
+
+private let mallMockCartStore = MallMockCartStore()
+
+private actor MallMockCartStore {
+    private var items: [MallCartItem]
+
+    init(items: [MallCartItem] = MallMockData.makeSeedCartItems()) {
+        self.items = items.sorted { $0.updatedAt > $1.updatedAt }
+    }
+
+    func fetchSnapshot() -> MallCartSnapshot {
+        MallCartSnapshot(items: sortedItems)
+    }
+
+    func addItem(_ request: MallCartAddItemRequest) -> MallCartSnapshot {
+        let nextQuantity = max(1, request.quantity)
+
+        if let existingIndex = items.firstIndex(where: { $0.skuID == request.skuID }) {
+            let existingItem = items[existingIndex]
+            items[existingIndex] = MallCartItem(
+                id: existingItem.id,
+                productID: request.productID,
+                skuID: request.skuID,
+                title: request.title,
+                selectedSummary: request.selectedSummary,
+                image: request.image,
+                saleLabel: request.saleLabel,
+                saleEndsText: request.saleEndsText,
+                price: request.price,
+                originalPrice: request.originalPrice,
+                quantity: min(existingItem.quantity + nextQuantity, 99),
+                isSelected: existingItem.isSelectable ? true : existingItem.isSelected,
+                isInvalid: existingItem.isInvalid,
+                invalidReason: existingItem.invalidReason,
+                updatedAt: Date()
+            )
+            return MallCartSnapshot(items: sortedItems)
+        }
+
+        items.append(
+            MallCartItem(
+                id: request.skuID,
+                productID: request.productID,
+                skuID: request.skuID,
+                title: request.title,
+                selectedSummary: request.selectedSummary,
+                image: request.image,
+                saleLabel: request.saleLabel,
+                saleEndsText: request.saleEndsText,
+                price: request.price,
+                originalPrice: request.originalPrice,
+                quantity: nextQuantity,
+                isSelected: true,
+                isInvalid: false,
+                invalidReason: nil,
+                updatedAt: Date()
+            )
+        )
+
+        return MallCartSnapshot(items: sortedItems)
+    }
+
+    func updateQuantity(_ request: MallCartQuantityUpdateRequest) throws -> MallCartSnapshot {
+        guard let existingIndex = items.firstIndex(where: { $0.id == request.itemID }) else {
+            throw MallServiceError.cartUnavailable
+        }
+
+        let existingItem = items[existingIndex]
+        items[existingIndex] = MallCartItem(
+            id: existingItem.id,
+            productID: existingItem.productID,
+            skuID: existingItem.skuID,
+            title: existingItem.title,
+            selectedSummary: existingItem.selectedSummary,
+            image: existingItem.image,
+            saleLabel: existingItem.saleLabel,
+            saleEndsText: existingItem.saleEndsText,
+            price: existingItem.price,
+            originalPrice: existingItem.originalPrice,
+            quantity: min(max(request.quantity, 1), 99),
+            isSelected: existingItem.isSelected,
+            isInvalid: existingItem.isInvalid,
+            invalidReason: existingItem.invalidReason,
+            updatedAt: Date()
+        )
+
+        return MallCartSnapshot(items: sortedItems)
+    }
+
+    func updateSKU(_ request: MallCartSKUUpdateRequest) throws -> MallCartSnapshot {
+        guard let existingIndex = items.firstIndex(where: { $0.id == request.itemID }) else {
+            throw MallServiceError.cartUnavailable
+        }
+
+        let existingItem = items[existingIndex]
+
+        if let duplicateIndex = items.firstIndex(where: { $0.skuID == request.skuID && $0.id != request.itemID }) {
+            let duplicateItem = items[duplicateIndex]
+            items[duplicateIndex] = MallCartItem(
+                id: request.skuID,
+                productID: request.productID,
+                skuID: request.skuID,
+                title: existingItem.title,
+                selectedSummary: request.selectedSummary,
+                image: request.image,
+                saleLabel: request.saleLabel,
+                saleEndsText: request.saleEndsText,
+                price: request.price,
+                originalPrice: request.originalPrice,
+                quantity: min(existingItem.quantity + duplicateItem.quantity, 99),
+                isSelected: existingItem.isSelected || duplicateItem.isSelected,
+                isInvalid: existingItem.isInvalid || duplicateItem.isInvalid,
+                invalidReason: existingItem.invalidReason ?? duplicateItem.invalidReason,
+                updatedAt: Date()
+            )
+            items.remove(at: existingIndex)
+            return MallCartSnapshot(items: sortedItems)
+        }
+
+        items[existingIndex] = MallCartItem(
+            id: request.skuID,
+            productID: request.productID,
+            skuID: request.skuID,
+            title: existingItem.title,
+            selectedSummary: request.selectedSummary,
+            image: request.image,
+            saleLabel: request.saleLabel,
+            saleEndsText: request.saleEndsText,
+            price: request.price,
+            originalPrice: request.originalPrice,
+            quantity: existingItem.quantity,
+            isSelected: existingItem.isSelected,
+            isInvalid: existingItem.isInvalid,
+            invalidReason: existingItem.invalidReason,
+            updatedAt: Date()
+        )
+
+        return MallCartSnapshot(items: sortedItems)
+    }
+
+    func updateSelection(_ request: MallCartSelectionUpdateRequest) throws -> MallCartSnapshot {
+        let targetIDs = Set(request.itemIDs)
+        guard !targetIDs.isEmpty else {
+            return MallCartSnapshot(items: sortedItems)
+        }
+
+        var didUpdate = false
+        for index in items.indices where targetIDs.contains(items[index].id) {
+            let existingItem = items[index]
+            guard existingItem.isSelectable else {
+                continue
+            }
+
+            items[index] = MallCartItem(
+                id: existingItem.id,
+                productID: existingItem.productID,
+                skuID: existingItem.skuID,
+                title: existingItem.title,
+                selectedSummary: existingItem.selectedSummary,
+                image: existingItem.image,
+                saleLabel: existingItem.saleLabel,
+                saleEndsText: existingItem.saleEndsText,
+                price: existingItem.price,
+                originalPrice: existingItem.originalPrice,
+                quantity: existingItem.quantity,
+                isSelected: request.isSelected,
+                isInvalid: existingItem.isInvalid,
+                invalidReason: existingItem.invalidReason,
+                updatedAt: existingItem.updatedAt
+            )
+            didUpdate = true
+        }
+
+        guard didUpdate else {
+            throw MallServiceError.cartUnavailable
+        }
+
+        return MallCartSnapshot(items: sortedItems)
+    }
+
+    func deleteItems(_ request: MallCartDeleteItemsRequest) -> MallCartSnapshot {
+        let targetIDs = Set(request.itemIDs)
+        items.removeAll { item in
+            targetIDs.contains(item.id)
+        }
+        return MallCartSnapshot(items: sortedItems)
+    }
+
+    func prepareCheckout(_ request: MallCartCheckoutRequest) throws -> MallCartCheckoutPreview {
+        let snapshot = MallCartSnapshot(items: sortedItems)
+        let targetIDs = Set(request.itemIDs)
+        let selectedItems = snapshot.items.filter { item in
+            targetIDs.contains(item.id) && item.isSelected && item.isSelectable
+        }
+
+        guard !selectedItems.isEmpty else {
+            throw MallServiceError.cartSelectionEmpty
+        }
+
+        let subtotal = selectedItems.reduce(.zero) { partialResult, item in
+            partialResult + item.lineSubtotal
+        }
+        let selectedQuantity = selectedItems.reduce(0) { partialResult, item in
+            partialResult + item.quantity
+        }
+
+        return MallCartCheckoutPreview(
+            items: selectedItems,
+            subtotal: subtotal,
+            selectedQuantity: selectedQuantity,
+            title: MallLocalizedString(
+                "结算占位已就绪",
+                "Checkout placeholder ready",
+                "واجهة الدفع التجريبية جاهزة"
+            ),
+            message: MallLocalizedString(
+                "本轮先使用 mock 结算承接，你已带着所选商品进入下一步。",
+                "This iteration uses a local checkout placeholder with your selected items.",
+                "يستخدم هذا الإصدار شاشة دفع تجريبية بالعناصر المحددة."
+            )
+        )
+    }
+
+    private var sortedItems: [MallCartItem] {
+        items.sorted { $0.updatedAt > $1.updatedAt }
+    }
+}
+
 private enum MallMockData {
     static let defaultSearchHistory = [
         "MacBook Air",
@@ -1120,7 +1513,9 @@ private enum MallMockData {
             primaryCategories: primaryCategories,
             products: products,
             defaultCategoryID: "electronics",
-            cartBadgeCount: 4
+            cartBadgeCount: makeSeedCartItems().reduce(0) { partialResult, item in
+                partialResult + item.quantity
+            }
         )
     }
 
@@ -1149,8 +1544,210 @@ private enum MallMockData {
         ]
     }
 
+    static func makeProductDetailSnapshot(for product: MallProduct) -> MallProductDetailSnapshot {
+        let groupIDPrefix = product.id
+        let sizeGroupID = "\(groupIDPrefix)-size"
+        let colorGroupID = "\(groupIDPrefix)-color"
+        let styleGroupID = "\(groupIDPrefix)-style"
+
+        let sizeValues = [
+            specificationValue(
+                id: "\(sizeGroupID)-small",
+                title: MallLocalizedString("Small", "Small", "صغير")
+            ),
+            specificationValue(
+                id: "\(sizeGroupID)-middle",
+                title: MallLocalizedString("Middle", "Middle", "متوسط")
+            ),
+            specificationValue(
+                id: "\(sizeGroupID)-big",
+                title: MallLocalizedString("Big", "Big", "كبير")
+            ),
+        ]
+
+        let colorValues = [
+            specificationValue(
+                id: "\(colorGroupID)-black",
+                title: MallLocalizedString("Black", "Black", "أسود"),
+                image: product.coverImage,
+                swatchHex: 0x1B2430
+            ),
+            specificationValue(
+                id: "\(colorGroupID)-blue",
+                title: MallLocalizedString("Blue", "Blue", "أزرق"),
+                image: product.coverImage,
+                swatchHex: 0x415A9C
+            ),
+            specificationValue(
+                id: "\(colorGroupID)-white",
+                title: MallLocalizedString("White", "White", "أبيض"),
+                image: product.coverImage,
+                swatchHex: 0xF4F5F7
+            ),
+        ]
+
+        let styleValues = [
+            specificationValue(
+                id: "\(styleGroupID)-classic",
+                title: MallLocalizedString("Classic", "Classic", "كلاسيكي")
+            ),
+            specificationValue(
+                id: "\(styleGroupID)-sport",
+                title: MallLocalizedString("Sport", "Sport", "رياضي")
+            ),
+        ]
+
+        let specificationGroups = [
+            MallProductDetailSpecificationGroup(
+                id: sizeGroupID,
+                title: MallLocalizedString("Size", "Size", "الحجم"),
+                displayMode: .chip,
+                values: sizeValues
+            ),
+            MallProductDetailSpecificationGroup(
+                id: colorGroupID,
+                title: MallLocalizedString("Color", "Color", "اللون"),
+                displayMode: .imageTile,
+                values: colorValues
+            ),
+            MallProductDetailSpecificationGroup(
+                id: styleGroupID,
+                title: MallLocalizedString("Style", "Style", "النمط"),
+                displayMode: .chip,
+                values: styleValues
+            ),
+        ]
+
+        let skus = makeProductDetailSKUs(
+            for: product,
+            sizeValues: sizeValues,
+            colorValues: colorValues,
+            styleValues: styleValues
+        )
+
+        return MallProductDetailSnapshot(
+            id: product.id,
+            searchPlaceholder: MallLocalizedString(
+                "Search...",
+                "Search...",
+                "ابحث..."
+            ),
+            cartBadgeCount: 7,
+            heroMedia: makeHeroMedia(for: product),
+            saleLabel: MallLocalizedString("Sale", "Sale", "تخفيض"),
+            title: product.title,
+            subtitle: product.subtitle,
+            brandText: nil,
+            shipmentSummary: MallLocalizedString(
+                "Amazon UAE Sales Shipping",
+                "Amazon UAE Sales Shipping",
+                "شحن Amazon UAE Sales"
+            ),
+            deliveryAddressSummary: MallLocalizedString(
+                "Packages usually take 4-12 days to arrive\nHouse number 1177",
+                "Packages usually take 4-12 days to arrive\nHouse number 1177",
+                "تستغرق الشحنات عادة من 4 إلى 12 يومًا للوصول\nرقم المنزل 1177"
+            ),
+            detailSectionTitle: MallLocalizedString(
+                "Product Details",
+                "Product Details",
+                "تفاصيل المنتج"
+            ),
+            detailHTML: makeDetailHTML(for: product),
+            selectionQuantitySuffix: MallLocalizedString(
+                "1 piece",
+                "1 piece",
+                "قطعة واحدة"
+            ),
+            specificationGroups: specificationGroups,
+            skus: skus
+        )
+    }
+
+    static func makeProductDetailEntry(productID: String) throws -> MallProductDetailEntry {
+        guard let product = makeProducts().first(where: { $0.id == productID }) else {
+            throw MallServiceError.productDetailUnavailable
+        }
+
+        return MallProductDetailEntry(
+            product: product,
+            snapshot: makeProductDetailSnapshot(for: product)
+        )
+    }
+
+    static func makeSeedCartItems() -> [MallCartItem] {
+        [
+            makeSeedCartItem(
+                productID: "airpods-pro",
+                selectedValueIDs: [
+                    "airpods-pro-size-small",
+                    "airpods-pro-color-black",
+                    "airpods-pro-style-classic",
+                ],
+                quantity: 1
+            ),
+            makeSeedCartItem(
+                productID: "macbook-air-m4",
+                selectedValueIDs: [
+                    "macbook-air-m4-size-middle",
+                    "macbook-air-m4-color-blue",
+                    "macbook-air-m4-style-classic",
+                ],
+                quantity: 1
+            ),
+            makeSeedCartItem(
+                productID: "repair-serum-kit",
+                selectedValueIDs: [
+                    "repair-serum-kit-size-small",
+                    "repair-serum-kit-color-white",
+                    "repair-serum-kit-style-classic",
+                ],
+                quantity: 1
+            ),
+            makeSeedCartItem(
+                productID: "city-tote-bag",
+                selectedValueIDs: [
+                    "city-tote-bag-size-big",
+                    "city-tote-bag-color-black",
+                    "city-tote-bag-style-classic",
+                ],
+                quantity: 1
+            ),
+        ]
+    }
+
     private static func assetImage(_ assetName: MallMockAssetName) -> MallImageSource {
         .asset(name: assetName.rawValue)
+    }
+
+    private static func makeSeedCartItem(
+        productID: String,
+        selectedValueIDs: [String],
+        quantity: Int,
+        isSelected: Bool = false
+    ) -> MallCartItem {
+        let product = makeProducts().first { $0.id == productID } ?? makeProducts()[0]
+        let detailSnapshot = makeProductDetailSnapshot(for: product)
+        let fallbackSKU = detailSnapshot.defaultSKU ?? detailSnapshot.skus[0]
+        let matchedSKU = detailSnapshot.currentSKU(for: Set(selectedValueIDs)) ?? fallbackSKU
+
+        return MallCartItem(
+            id: matchedSKU.id,
+            productID: product.id,
+            skuID: matchedSKU.id,
+            title: product.title,
+            selectedSummary: detailSnapshot.specificationSummaryValue(for: matchedSKU),
+            image: matchedSKU.previewImage,
+            saleLabel: detailSnapshot.saleLabel,
+            saleEndsText: matchedSKU.originalPrice == nil ? nil : matchedSKU.saleEndsText,
+            price: matchedSKU.price,
+            originalPrice: matchedSKU.originalPrice,
+            quantity: quantity,
+            isSelected: isSelected,
+            isInvalid: false,
+            invalidReason: nil,
+            updatedAt: product.updatedAt
+        )
     }
 
     private static func makeElectronicsCategory() -> MallPrimaryCategory {
@@ -1994,6 +2591,121 @@ private enum MallMockData {
         _ = slug
         _ = includesVideo
         return []
+    }
+
+    private static func makeHeroMedia(for product: MallProduct) -> [MallProductDetailHeroMedia] {
+        let startsWithVideo = product.badge.style == .sale
+        return [
+            MallProductDetailHeroMedia(
+                id: "\(product.id)-hero-1",
+                type: startsWithVideo ? .video : .image,
+                previewImage: product.coverImage
+            ),
+            MallProductDetailHeroMedia(
+                id: "\(product.id)-hero-2",
+                type: .image,
+                previewImage: product.coverImage
+            ),
+            MallProductDetailHeroMedia(
+                id: "\(product.id)-hero-3",
+                type: .image,
+                previewImage: product.coverImage
+            ),
+        ]
+    }
+
+    private static func makeProductDetailSKUs(
+        for product: MallProduct,
+        sizeValues: [MallProductDetailSpecificationValue],
+        colorValues: [MallProductDetailSpecificationValue],
+        styleValues: [MallProductDetailSpecificationValue]
+    ) -> [MallProductDetailSKU] {
+        let combos: [(String, Int, Int, Int, Decimal, Bool)] = [
+            ("small-black-classic", 0, 0, 0, Decimal(0), true),
+            ("small-blue-classic", 0, 1, 0, Decimal(8), false),
+            ("small-white-classic", 0, 2, 0, Decimal(10), false),
+            ("middle-black-classic", 1, 0, 0, Decimal(12), false),
+            ("middle-blue-sport", 1, 1, 1, Decimal(18), false),
+            ("big-white-sport", 2, 2, 1, Decimal(26), false),
+        ]
+
+        return combos.map { combo in
+            let sizeValue = sizeValues[combo.1]
+            let colorValue = colorValues[combo.2]
+            let styleValue = styleValues[combo.3]
+            let price = product.price + combo.4
+            let originalPrice = product.originalPrice.map { $0 + combo.4 }
+
+            return MallProductDetailSKU(
+                id: "\(product.id)-\(combo.0)",
+                valueIDs: [sizeValue.id, colorValue.id, styleValue.id],
+                price: price,
+                originalPrice: originalPrice,
+                saleEndsText: MallLocalizedString(
+                    "4 days at 12:00:00",
+                    "4 days at 12:00:00",
+                    "4 أيام عند 12:00:00"
+                ),
+                previewImage: colorValue.image ?? product.coverImage,
+                isDefault: combo.5
+            )
+        }
+    }
+
+    private static func specificationValue(
+        id: String,
+        title: MallLocalizedString,
+        image: MallImageSource? = nil,
+        swatchHex: UInt32? = nil
+    ) -> MallProductDetailSpecificationValue {
+        MallProductDetailSpecificationValue(
+            id: id,
+            title: title,
+            image: image,
+            swatchHex: swatchHex
+        )
+    }
+
+    private static func makeDetailHTML(for product: MallProduct) -> MallLocalizedString {
+        let englishTitle = product.title.english
+        let chineseTitle = product.title.simplifiedChinese
+        let arabicTitle = product.title.arabic
+
+        let firstImageURL = "https://picsum.photos/seed/\(product.id)-detail-1/900/980"
+        let secondImageURL = "https://picsum.photos/seed/\(product.id)-detail-2/900/1100"
+
+        return MallLocalizedString(
+            """
+            <section class="mall-detail">
+              <p class="eyebrow">DU Mall</p>
+              <h2>\(chineseTitle)</h2>
+              <p>精选组合围绕轻便佩戴、日常通勤与高频使用场景设计，当前详情页使用 iOS 本地 mock 数据驱动。</p>
+              <img src="\(firstImageURL)" alt="\(chineseTitle)" />
+              <p>支持多规格切换、价格联动和底部操作栏占位交互，后续可按同一页面结构切换到真实接口。</p>
+              <img src="\(secondImageURL)" alt="\(chineseTitle) detail" />
+            </section>
+            """,
+            """
+            <section class="mall-detail">
+              <p class="eyebrow">DU Mall</p>
+              <h2>\(englishTitle)</h2>
+              <p>This detail page is driven by iOS local mock data and mirrors the approved product-detail layout with SKU selection.</p>
+              <img src="\(firstImageURL)" alt="\(englishTitle)" />
+              <p>The page keeps the selected SKU, price card, and buy-now button in sync while remote detail APIs are still pending.</p>
+              <img src="\(secondImageURL)" alt="\(englishTitle) detail" />
+            </section>
+            """,
+            """
+            <section class="mall-detail">
+              <p class="eyebrow">DU Mall</p>
+              <h2>\(arabicTitle)</h2>
+              <p>تعتمد صفحة التفاصيل الحالية على بيانات mock محلية في iOS وتعرض نفس هيكل الصفحة المعتمد مع اختيار SKU.</p>
+              <img src="\(firstImageURL)" alt="\(arabicTitle)" />
+              <p>تتزامن المواصفات المحددة مع بطاقة السعر وزر الشراء الآن، بينما يتم تأجيل الواجهة الخلفية الفعلية إلى مرحلة لاحقة.</p>
+              <img src="\(secondImageURL)" alt="\(arabicTitle) detail" />
+            </section>
+            """
+        )
     }
 
     private static func makeSubcategory(

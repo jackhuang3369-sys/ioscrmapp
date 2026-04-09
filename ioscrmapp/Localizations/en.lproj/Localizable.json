@@ -374,7 +374,61 @@
     },
     "detail": {
       "title": "Detail target reserved",
-      "subtitle": "This mock currently shows the reserved detailTarget: %@."
+      "subtitle": "This mock currently shows the reserved detailTarget: %@.",
+      "selected": {
+        "label": "Selected"
+      },
+      "shipment": {
+        "label": "Shipment"
+      },
+      "deliveredTo": {
+        "label": "Delivered to"
+      },
+      "home": "Home",
+      "shoppingCart": "Shopping cart",
+      "addToCart": "Add to Cart",
+      "buyNow": "Buy Now",
+      "confirm": "Confirm",
+      "saleEnds": {
+        "label": "Until the end:"
+      },
+      "html": {
+        "loading": "Loading product details...",
+        "error": "Couldn't load the HTML detail section."
+      },
+      "state": {
+        "loading": "Loading product detail...",
+        "error": {
+          "title": "Couldn't load product detail",
+          "subtitle": "We couldn't build the local product detail mock right now."
+        }
+      }
+    },
+    "cart": {
+      "title": "Shopping cart",
+      "manage": "Manage",
+      "close": "Close",
+      "selectAll": "Select All",
+      "selectedLabel": "Selected",
+      "subtotal": "Subtotal",
+      "delete": "Delete",
+      "continueShopping": "Continue Shopping",
+      "invalid": "Unavailable",
+      "addedToCart": "The selected SKU was added to your mock cart.",
+      "checkout": {
+        "button": "Checkout",
+        "title": "Checkout placeholder ready",
+        "placeholder": "This release uses a local mock checkout handoff for the selected items.",
+        "validation": "Select at least one valid cart item before checkout."
+      },
+      "empty": {
+        "title": "Your cart is empty",
+        "subtitle": "Add products from the mall and they will appear here."
+      },
+      "error": {
+        "title": "Couldn't load the cart",
+        "subtitle": "We couldn't refresh your local mall cart right now."
+      }
     }
   },
   "messageCenter": {

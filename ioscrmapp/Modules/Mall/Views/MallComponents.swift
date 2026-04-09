@@ -4,6 +4,49 @@ enum MallTheme {
     static let headerGradient = DUTheme.brandGradient
 }
 
+struct MallBottomActionBarMetrics {
+    let topPadding: CGFloat
+    let bottomPadding: CGFloat
+    let reservedHeight: CGFloat
+    let verticalOffset: CGFloat
+}
+
+enum MallBottomActionBarLayout {
+    // 商城页底栏顶部统一保留轻微留白，避免按钮主体显得过厚。
+    static let topPadding: CGFloat = 6
+    // 有 Home Indicator 时不再额外撑高底部，让底栏真正压进安全区。
+    static let bottomPaddingWithSafeArea: CGFloat = 0
+    // 无 Home Indicator 设备保留最小缓冲，避免按钮视觉上贴边。
+    static let bottomPaddingWithoutSafeArea: CGFloat = 10
+
+    static func metrics(
+        buttonHeight: CGFloat,
+        bottomSafeInset: CGFloat
+    ) -> MallBottomActionBarMetrics {
+        let resolvedBottomPadding: CGFloat
+        if bottomSafeInset > 0 {
+            resolvedBottomPadding = bottomPaddingWithSafeArea
+        } else {
+            resolvedBottomPadding = bottomPaddingWithoutSafeArea
+        }
+
+        let resolvedVerticalOffset: CGFloat
+        if bottomSafeInset > 0 {
+            // 与商品详情页一致：让整条底栏继续压进 Home Indicator 区域。
+            resolvedVerticalOffset = bottomSafeInset * 0.55
+        } else {
+            resolvedVerticalOffset = 0
+        }
+
+        return MallBottomActionBarMetrics(
+            topPadding: topPadding,
+            bottomPadding: resolvedBottomPadding,
+            reservedHeight: topPadding + buttonHeight + resolvedBottomPadding,
+            verticalOffset: resolvedVerticalOffset
+        )
+    }
+}
+
 struct MallImageView: View {
     let image: MallImageSource
     var cornerRadius: CGFloat = 18

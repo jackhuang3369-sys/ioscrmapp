@@ -2,19 +2,23 @@ import SwiftUI
 
 struct MallHomeView: View {
     @EnvironmentObject private var languageStore: AppLanguageStore
+    @EnvironmentObject private var homeChromeState: HomeChromeState
 
     @ObservedObject var viewModel: MallViewModel
+    let onBackToAppHome: () -> Void
 
     @State private var selectedCategoryID = ""
     @State private var selectedSubcategoryID = ""
     @State private var isSearchPresented = false
     @State private var isCategoryPresented = false
+    @State private var isCartPresented = false
     @State private var selectedProduct: MallProduct?
     @State private var searchResultRoute: MallBrowseSearchRoute?
     @State private var productSectionViewportHeight: CGFloat = 0
     @State private var hasArmedProductSectionLoadMore = false
 
     private let recommendedCategoryID = "mall-recommended"
+    private let mallHomeBottomTabBarKey = "mall-home"
     private let contentTopAnchorID = "mall-home-content-top"
     private let scrollCoordinateSpaceName = "MallHomeScroll"
     private let maxVisibleThirdLevelCount = 15
@@ -33,18 +37,27 @@ struct MallHomeView: View {
         .background(DUTheme.background.ignoresSafeArea())
         .navigationBarHidden(true)
         .task {
+            await MainActor.run {
+                homeChromeState.hideBottomTabBar(for: mallHomeBottomTabBarKey)
+            }
             await viewModel.loadIfNeeded()
             syncSelection()
             await loadSelectedProductFeed(forceRefresh: false)
+        }
+        .onAppear {
+            Task { @MainActor in
+                await Task.yield()
+                homeChromeState.hideBottomTabBar(for: mallHomeBottomTabBarKey)
+            }
+        }
+        .onDisappear {
+            homeChromeState.showBottomTabBar(for: mallHomeBottomTabBarKey)
         }
         .onChange(of: viewModel.homeSnapshot?.defaultCategoryID ?? "") { _ in
             syncSelection()
             Task {
                 await loadSelectedProductFeed(forceRefresh: false)
             }
-        }
-        .sheet(item: $selectedProduct) { product in
-            MallProductTargetSheet(product: product)
         }
     }
 
@@ -124,6 +137,19 @@ struct MallHomeView: View {
 
     private var homeSearchRow: some View {
         HStack(spacing: DUSpacing.md) {
+            Button(action: onBackToAppHome) {
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .fill(Color.white.opacity(0.96))
+                    .frame(width: 50, height: 50)
+                    .shadow(color: Color.black.opacity(0.12), radius: 18, x: 0, y: 10)
+                    .overlay(
+                        Image(systemName: "chevron.left")
+                            .font(.du(20, weight: .bold))
+                            .foregroundColor(Color(hex: 0x156B92))
+                    )
+            }
+            .buttonStyle(.plain)
+
             Button {
                 isSearchPresented = true
             } label: {
@@ -147,28 +173,33 @@ struct MallHomeView: View {
             }
             .buttonStyle(.plain)
 
-            ZStack(alignment: .topTrailing) {
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .fill(Color.white.opacity(0.96))
-                    .frame(width: 50, height: 50)
-                    .shadow(color: Color.black.opacity(0.12), radius: 18, x: 0, y: 10)
-                    .overlay(
-                        Image(systemName: "cart.fill")
-                            .font(.du(20, weight: .semibold))
-                            .foregroundColor(Color(hex: 0x156B92))
-                    )
+            Button {
+                isCartPresented = true
+            } label: {
+                ZStack(alignment: .topTrailing) {
+                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                        .fill(Color.white.opacity(0.96))
+                        .frame(width: 50, height: 50)
+                        .shadow(color: Color.black.opacity(0.12), radius: 18, x: 0, y: 10)
+                        .overlay(
+                            Image(systemName: "cart.fill")
+                                .font(.du(20, weight: .semibold))
+                                .foregroundColor(Color(hex: 0x156B92))
+                        )
 
-                if let cartBadgeCount = homeSnapshot?.cartBadgeCount, cartBadgeCount > 0 {
-                    Text("\(cartBadgeCount)")
-                        .font(.du(10, weight: .bold))
-                        .foregroundColor(.white)
-                        .padding(.horizontal, 5)
-                        .frame(height: 18)
-                        .background(Color(hex: 0xFF394D))
-                        .clipShape(Capsule())
-                        .offset(x: 6, y: -6)
+                    if viewModel.cartBadgeCount > 0 {
+                        Text("\(viewModel.cartBadgeCount)")
+                            .font(.du(10, weight: .bold))
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 5)
+                            .frame(height: 18)
+                            .background(Color(hex: 0xFF394D))
+                            .clipShape(Capsule())
+                            .offset(x: 6, y: -6)
+                    }
                 }
             }
+            .buttonStyle(.plain)
         }
     }
 
@@ -538,6 +569,22 @@ struct MallHomeView: View {
                 EmptyView()
             }
             .hidden()
+
+            NavigationLink(
+                destination: MallCartView(viewModel: viewModel),
+                isActive: $isCartPresented
+            ) {
+                EmptyView()
+            }
+            .hidden()
+
+            NavigationLink(
+                destination: productDetailDestination,
+                isActive: selectedProductPresentedBinding
+            ) {
+                EmptyView()
+            }
+            .hidden()
         }
     }
 
@@ -746,6 +793,29 @@ struct MallHomeView: View {
             set: { isPresented in
                 if !isPresented {
                     searchResultRoute = nil
+                }
+            }
+        )
+    }
+
+    @ViewBuilder
+    private var productDetailDestination: some View {
+        if let selectedProduct {
+            MallProductDetailView(
+                viewModel: viewModel,
+                product: selectedProduct
+            )
+        } else {
+            EmptyView()
+        }
+    }
+
+    private var selectedProductPresentedBinding: Binding<Bool> {
+        Binding(
+            get: { selectedProduct != nil },
+            set: { isPresented in
+                if !isPresented {
+                    selectedProduct = nil
                 }
             }
         )

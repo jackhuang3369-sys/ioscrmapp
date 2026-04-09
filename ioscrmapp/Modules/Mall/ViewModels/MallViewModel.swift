@@ -17,6 +17,13 @@ final class MallViewModel: ObservableObject {
         case failed(LocalizedTextValue)
     }
 
+    enum CartState: Equatable {
+        case idle
+        case loading
+        case loaded
+        case failed(LocalizedTextValue)
+    }
+
     @Published private(set) var screenState: ScreenState = .idle
     @Published private(set) var homeSnapshot: MallHomeSnapshot?
     @Published private(set) var homeProductFeedState: ProductFeedState = .idle
@@ -25,6 +32,8 @@ final class MallViewModel: ObservableObject {
     @Published private(set) var homeProductFeedLoadMoreError: LocalizedTextValue?
     @Published private(set) var searchBootstrap: MallSearchBootstrap?
     @Published private(set) var bannerMessage: LocalizedTextValue?
+    @Published private(set) var cartState: CartState = .idle
+    @Published private(set) var cartSnapshot: MallCartSnapshot?
 
     private let session: CustSubInfo
     private let mallService: any MallServicing
@@ -235,6 +244,111 @@ final class MallViewModel: ObservableObject {
         homeSnapshot?.primaryCategories.first { $0.id == id }
     }
 
+    var cartBadgeCount: Int {
+        cartSnapshot?.badgeCount ?? homeSnapshot?.cartBadgeCount ?? 0
+    }
+
+    func loadCartIfNeeded() async {
+        guard cartState == .idle else {
+            return
+        }
+
+        await reloadCart(showLoading: true)
+    }
+
+    func refreshCart() async {
+        await reloadCart(showLoading: cartSnapshot == nil)
+    }
+
+    func fetchProductDetailEntry(productID: String) async throws -> MallProductDetailEntry {
+        try await mallService.fetchProductDetailEntry(
+            productID: productID,
+            session: session
+        )
+    }
+
+    func addCartItem(
+        product: MallProduct,
+        detailSnapshot: MallProductDetailSnapshot,
+        sku: MallProductDetailSKU,
+        quantity: Int = 1
+    ) async throws {
+        let snapshot = try await mallService.addCartItem(
+            MallCartAddItemRequest(
+                productID: product.id,
+                skuID: sku.id,
+                title: product.title,
+                selectedSummary: detailSnapshot.specificationSummaryValue(for: sku),
+                image: sku.previewImage,
+                saleLabel: detailSnapshot.saleLabel,
+                saleEndsText: sku.originalPrice == nil ? nil : sku.saleEndsText,
+                price: sku.price,
+                originalPrice: sku.originalPrice,
+                quantity: quantity
+            ),
+            session: session
+        )
+        cartSnapshot = snapshot
+        cartState = .loaded
+    }
+
+    func updateCartQuantity(itemID: String, quantity: Int) async throws {
+        let snapshot = try await mallService.updateCartItemQuantity(
+            MallCartQuantityUpdateRequest(itemID: itemID, quantity: quantity),
+            session: session
+        )
+        cartSnapshot = snapshot
+        cartState = .loaded
+    }
+
+    func updateCartItemSKU(
+        item: MallCartItem,
+        detailSnapshot: MallProductDetailSnapshot,
+        sku: MallProductDetailSKU
+    ) async throws {
+        let snapshot = try await mallService.updateCartItemSKU(
+            MallCartSKUUpdateRequest(
+                itemID: item.id,
+                productID: item.productID,
+                skuID: sku.id,
+                selectedSummary: detailSnapshot.specificationSummaryValue(for: sku),
+                image: sku.previewImage,
+                saleLabel: detailSnapshot.saleLabel,
+                saleEndsText: sku.originalPrice == nil ? nil : sku.saleEndsText,
+                price: sku.price,
+                originalPrice: sku.originalPrice
+            ),
+            session: session
+        )
+        cartSnapshot = snapshot
+        cartState = .loaded
+    }
+
+    func updateCartSelection(itemIDs: [String], isSelected: Bool) async throws {
+        let snapshot = try await mallService.updateCartItemSelection(
+            MallCartSelectionUpdateRequest(itemIDs: itemIDs, isSelected: isSelected),
+            session: session
+        )
+        cartSnapshot = snapshot
+        cartState = .loaded
+    }
+
+    func deleteCartItems(itemIDs: [String]) async throws {
+        let snapshot = try await mallService.deleteCartItems(
+            MallCartDeleteItemsRequest(itemIDs: itemIDs),
+            session: session
+        )
+        cartSnapshot = snapshot
+        cartState = .loaded
+    }
+
+    func prepareCartCheckout(itemIDs: [String]) async throws -> MallCartCheckoutPreview {
+        try await mallService.prepareCartCheckout(
+            MallCartCheckoutRequest(itemIDs: itemIDs),
+            session: session
+        )
+    }
+
     private func load(showLoading: Bool) async {
         if showLoading {
             screenState = .loading
@@ -246,9 +360,20 @@ final class MallViewModel: ObservableObject {
             // 首页快照和搜索引导并发加载，减少商城首屏等待时间。
             async let loadedHome = mallService.fetchHome(session: session)
             async let loadedBootstrap = mallService.fetchSearchBootstrap(session: session)
+            async let loadedCart = mallService.fetchCart(session: session)
 
             homeSnapshot = try await loadedHome
             searchBootstrap = try await loadedBootstrap
+            do {
+                cartSnapshot = try await loadedCart
+                cartState = .loaded
+            } catch let error as MallServiceError {
+                cartSnapshot = nil
+                cartState = .failed(error.textValue)
+            } catch {
+                cartSnapshot = nil
+                cartState = .failed(MallServiceError.cartUnavailable.textValue)
+            }
             hasLoaded = true
             screenState = .loaded
         } catch let error as MallServiceError {
@@ -261,6 +386,23 @@ final class MallViewModel: ObservableObject {
     private func reloadBootstrap() async throws {
         // 搜索历史删除、清空、搜索成功后都复用同一刷新入口。
         searchBootstrap = try await mallService.fetchSearchBootstrap(session: session)
+    }
+
+    private func reloadCart(showLoading: Bool) async {
+        if showLoading {
+            cartState = .loading
+        }
+
+        do {
+            cartSnapshot = try await mallService.fetchCart(session: session)
+            cartState = .loaded
+        } catch let error as MallServiceError {
+            cartSnapshot = nil
+            cartState = .failed(error.textValue)
+        } catch {
+            cartSnapshot = nil
+            cartState = .failed(MallServiceError.cartUnavailable.textValue)
+        }
     }
 
     private func normalizedCategoryID(

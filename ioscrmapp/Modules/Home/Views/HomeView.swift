@@ -4,6 +4,23 @@ import WebKit
 import UIKit
 #endif
 
+final class HomeChromeState: ObservableObject {
+    // 用页面标识追踪底部导航隐藏请求，避免 A 页面隐藏、B 页面继续隐藏时互相覆盖。
+    @Published private var bottomTabBarHiddenKeys: Set<String> = []
+
+    var isBottomTabBarHidden: Bool {
+        !bottomTabBarHiddenKeys.isEmpty
+    }
+
+    func hideBottomTabBar(for key: String) {
+        bottomTabBarHiddenKeys.insert(key)
+    }
+
+    func showBottomTabBar(for key: String) {
+        bottomTabBarHiddenKeys.remove(key)
+    }
+}
+
 struct HomeView: View {
     @EnvironmentObject private var languageStore: AppLanguageStore
 
@@ -39,6 +56,7 @@ struct HomeView: View {
     @State private var isParallaxCarouselDraggingHorizontally = false
     @State private var tabBarBounceTarget: HomeTab?
     @State private var tabBarBounceToken = 0
+    @StateObject private var chromeState = HomeChromeState()
 
     private let pageHorizontalPadding: CGFloat = DUSpacing.sm
     private let headerContentHorizontalPadding: CGFloat = 14
@@ -135,6 +153,7 @@ struct HomeView: View {
     var body: some View {
         ZStack {
             tabScaffold
+                .environmentObject(chromeState)
                 .task {
                     await viewModel.loadIfNeeded()
                 }
@@ -232,7 +251,7 @@ struct HomeView: View {
             }
         }
         .safeAreaInset(edge: .bottom, spacing: 0) {
-            if !isAIChatPresented {
+            if !isAIChatPresented && !chromeState.isBottomTabBarHidden {
                 homeTabBar
             }
         }
@@ -273,7 +292,10 @@ struct HomeView: View {
 
             MallContainerView(
                 session: custSubInfo,
-                mallService: mallService
+                mallService: mallService,
+                onBackToAppHome: {
+                    selectedTab = .home
+                }
             )
             .tabItem {
                 Image(HomeTab.mall.assetName)

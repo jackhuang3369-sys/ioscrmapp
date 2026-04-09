@@ -2,11 +2,14 @@ import SwiftUI
 
 struct MallContainerView: View {
     @StateObject private var viewModel: MallViewModel
+    private let onBackToAppHome: () -> Void
 
     init(
         session: CustSubInfo,
-        mallService: any MallServicing
+        mallService: any MallServicing,
+        onBackToAppHome: @escaping () -> Void
     ) {
+        self.onBackToAppHome = onBackToAppHome
         _viewModel = StateObject(
             wrappedValue: MallViewModel(
                 session: session,
@@ -17,7 +20,10 @@ struct MallContainerView: View {
 
     var body: some View {
         NavigationView {
-            MallHomeView(viewModel: viewModel)
+            MallHomeView(
+                viewModel: viewModel,
+                onBackToAppHome: onBackToAppHome
+            )
         }
         .navigationViewStyle(.stack)
     }
