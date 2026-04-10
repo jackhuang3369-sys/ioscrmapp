@@ -59,7 +59,8 @@ struct WeatherMainView: View {
     }
     
     private func mainScene(in proxy: GeometryProxy) -> some View {
-        let mainSceneHeight = proxy.size.height * 0.78
+        let mainSceneHeight = mainSceneHeight(for: proxy)
+        let hourlyStripBottomPadding = hourlyStripBottomPadding(for: proxy)
 
         return ZStack {
             background
@@ -106,7 +107,7 @@ struct WeatherMainView: View {
                     detailSceneManager.setTemperature(entry.temperature, animated: false)
                 }
                 .frame(width: proxy.size.width * 0.8)
-                .padding(.bottom, 20)
+                .padding(.bottom, hourlyStripBottomPadding)
             }
         }
         .ignoresSafeArea()
@@ -177,6 +178,24 @@ struct WeatherMainView: View {
                 .foregroundColor(Color.black.opacity(0.30))
         }
         .frame(maxWidth: .infinity)
+    }
+
+    private func mainSceneHeight(for proxy: GeometryProxy) -> CGFloat {
+        let adaptationProgress = heightAdaptationProgress(for: proxy.size.height)
+        let sceneHeightRatio = 0.74 + adaptationProgress * 0.04
+        return proxy.size.height * sceneHeightRatio
+    }
+
+    private func hourlyStripBottomPadding(for proxy: GeometryProxy) -> CGFloat {
+        let adaptationProgress = heightAdaptationProgress(for: proxy.size.height)
+        return 36 - adaptationProgress * 12
+    }
+
+    private func heightAdaptationProgress(for screenHeight: CGFloat) -> CGFloat {
+        let minimumReferenceHeight: CGFloat = 844
+        let maximumReferenceHeight: CGFloat = 956
+        let clampedHeight = min(max(screenHeight, minimumReferenceHeight), maximumReferenceHeight)
+        return (clampedHeight - minimumReferenceHeight) / (maximumReferenceHeight - minimumReferenceHeight)
     }
     
     private func enterSunDetail() {
