@@ -111,15 +111,6 @@ final class WeatherSceneManager: ObservableObject {
         keyNode.eulerAngles = SCNVector3(-0.4, 0.55, 0)
         scene.rootNode.addChildNode(keyNode)
 
-        let rim = SCNLight()
-        rim.type = .directional
-        rim.intensity = isDetailMode ? 520 : 420
-        rim.color = UIColor(red: 0.92, green: 0.94, blue: 1.0, alpha: 1)
-        let rimNode = SCNNode()
-        rimNode.light = rim
-        rimNode.eulerAngles = SCNVector3(0.35, -.pi + 0.3, 0)
-        scene.rootNode.addChildNode(rimNode)
-
         // ── 右侧棱角补光：从摄像机右上方照射，照亮数字有棱角的右侧面 ──
         // 调整 intensity 控制强度，eulerAngles.y 控制左右方向（负值=来自右侧）
         let rightFill = SCNLight()
