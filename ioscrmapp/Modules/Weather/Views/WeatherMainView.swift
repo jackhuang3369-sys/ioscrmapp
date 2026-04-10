@@ -120,21 +120,10 @@ struct WeatherMainView: View {
     
     private var background: some View {
         ZStack {
-            LinearGradient(
-                colors: [Color(hex: 0xFCFCFA), Color(hex: 0xF2F0EB)],
-                startPoint: .top,
-                endPoint: .bottom
-            )
+            Color.white
             
             WeatherWindBackgroundView()
                 .opacity(0.95)
-            
-            RadialGradient(
-                colors: [Color(hex: 0xFF6B6B, opacity: 0.08), .clear],
-                center: .top,
-                startRadius: 10,
-                endRadius: 280
-            )
         }
     }
     
@@ -245,16 +234,12 @@ struct WeatherMainView: View {
         
         var body: some View {
             ZStack {
-                LinearGradient(
-                    colors: [Color(hex: 0xFBFBF8), Color(hex: 0xF0ECE7)],
-                    startPoint: .top,
-                    endPoint: .bottom
-                )
+                Color.white
                 
                 WeatherWindBackgroundView()
                     .opacity(0.95)
-                
-                WeatherSunDynamicBackdrop(glowStrength: 0.18)
+
+                WeatherSunDetailBackdrop()
                 
                 WeatherSunDismissEdges(onDismiss: onClose)
                 
@@ -298,6 +283,113 @@ struct WeatherMainView: View {
         }
     }
     
+    private struct WeatherSunDetailBackdrop: View {
+        var body: some View {
+            GeometryReader { proxy in
+                let size = proxy.size
+                let shortestSide = min(size.width, size.height)
+                let longestSide = max(size.width, size.height)
+                let cornerRadius = shortestSide * 0.145
+                
+                ZStack {
+                    RadialGradient(
+                        stops: [
+                            .init(color: .clear, location: 0.42),
+                            .init(color: Color.black.opacity(0.08), location: 0.70),
+                            .init(color: Color.black.opacity(0.22), location: 0.86),
+                            .init(color: Color.black.opacity(0.40), location: 1.0)
+                        ],
+                        center: .center,
+                        startRadius: shortestSide * 0.12,
+                        endRadius: longestSide * 0.78
+                    )
+                    .blendMode(.multiply)
+                    
+                    VStack(spacing: 0) {
+                        LinearGradient(
+                            colors: [Color.black.opacity(0.22), .clear],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                        .frame(height: size.height * 0.14)
+                        
+                        Spacer(minLength: 0)
+                        
+                        LinearGradient(
+                            colors: [.clear, Color.black.opacity(0.28)],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                        .frame(height: size.height * 0.18)
+                    }
+                    .blendMode(.multiply)
+                    
+                    HStack(spacing: 0) {
+                        LinearGradient(
+                            colors: [Color.black.opacity(0.24), .clear],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                        .frame(width: size.width * 0.11)
+                        
+                        Spacer(minLength: 0)
+                        
+                        LinearGradient(
+                            colors: [.clear, Color.black.opacity(0.24)],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                        .frame(width: size.width * 0.11)
+                    }
+                    .blendMode(.multiply)
+                    
+                    RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                        .strokeBorder(Color.white.opacity(0.62), lineWidth: 12)
+                        .blur(radius: 16)
+                        .padding(-8)
+                        .mask(
+                            LinearGradient(
+                                colors: [
+                                    Color.white,
+                                    Color.white.opacity(0.34),
+                                    .clear
+                                ],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .opacity(0.78)
+                    
+                    RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                        .strokeBorder(Color.black.opacity(0.24), lineWidth: 16)
+                        .blur(radius: 10)
+                        .padding(-4)
+                        .mask(
+                            LinearGradient(
+                                colors: [
+                                    .clear,
+                                    Color.white.opacity(0.45),
+                                    Color.white
+                                ],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .opacity(0.95)
+                    
+                    RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                        .strokeBorder(Color.black.opacity(0.26), lineWidth: 24)
+                        .blur(radius: 26)
+                        .padding(-16)
+                        .opacity(0.92)
+                }
+                .compositingGroup()
+            }
+            .allowsHitTesting(false)
+            .accessibilityHidden(true)
+        }
+    }
+    
     private struct WeatherSunDismissEdges: View {
         let onDismiss: () -> Void
         
@@ -325,34 +417,6 @@ struct WeatherMainView: View {
                             .contentShape(Rectangle())
                             .onTapGesture(perform: onDismiss)
                     }
-                }
-            }
-        }
-    }
-    
-    private struct WeatherSunDynamicBackdrop: View {
-        let glowStrength: Double
-        
-        var body: some View {
-            TimelineView(.animation(minimumInterval: 1.0 / 30.0, paused: false)) { context in
-                let t = context.date.timeIntervalSinceReferenceDate
-                let drift = CGFloat(sin(t * 0.36))
-                let glowOffset = CGFloat(cos(t * 0.24))
-                
-                ZStack {
-                    RadialGradient(
-                        colors: [Color(hex: 0xFF2A2A, opacity: glowStrength), .clear],
-                        center: .init(x: 0.48 + drift * 0.03, y: 0.2 + glowOffset * 0.02),
-                        startRadius: 22,
-                        endRadius: 360
-                    )
-                    
-                    RadialGradient(
-                        colors: [.clear, Color.black.opacity(glowStrength * 0.82)],
-                        center: .center,
-                        startRadius: 180,
-                        endRadius: 860
-                    )
                 }
             }
         }

@@ -19,8 +19,10 @@ struct ioscrmappApp: App {
         _languageStore = StateObject(wrappedValue: AppLanguageStore())
         
         do {
-            try AVAudioSession.sharedInstance().setCategory(.playback)
+            // 保留 .mixWithOthers 避免中断其他音频
+            try AVAudioSession.sharedInstance().setCategory(.playback, mode: .default,options: [.mixWithOthers])
             try AVAudioSession.sharedInstance().setActive(true)
+        
         } catch {
             print("音频设置成功")
         }
