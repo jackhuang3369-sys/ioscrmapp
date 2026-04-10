@@ -96,6 +96,8 @@ struct WeatherMainView: View {
                     },
                     selectedID: selectedTimelineID
                 ) { entry in
+                    guard entry.id != selectedTimelineID else { return }
+                    WeatherAudioPlayer.shared.playShapeTap()
                     withAnimation(.spring(response: 0.28, dampingFraction: 0.82)) {
                         selectedTimelineID = entry.id
                     }
