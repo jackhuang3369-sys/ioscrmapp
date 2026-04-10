@@ -78,7 +78,16 @@ struct WeatherSceneView: UIViewRepresentable {
             case horizontalYawOnly
         }
 
-        private struct YawMomentumAnimation {
+        private enum EasingCurve {
+            case easeOutQuad
+            case easeOutCubic
+            case easeOutQuart
+            case easeOutQuint
+        }
+
+        private struct OrientationAnimation {
+            let yawCurve: EasingCurve
+            let tiltCurve: EasingCurve
             let startYaw: Float
             let endYaw: Float
             let startPitch: Float
@@ -104,7 +113,7 @@ struct WeatherSceneView: UIViewRepresentable {
         private var displayLink: CADisplayLink?
         private var hintTimer:   Timer?
         private var lastPanPoint: CGPoint?
-        private var yawMomentumAnimation: YawMomentumAnimation?
+        private var orientationAnimation: OrientationAnimation?
         private var hasUserInteracted: Bool = false
 
         // Tuning constants
@@ -126,6 +135,10 @@ struct WeatherSceneView: UIViewRepresentable {
         private let horizontalSpinTurnRange: ClosedRange<Int> = 8...9
         private let horizontalSpinVelocityRange: ClosedRange<CGFloat> = 650...2200
         private let horizontalSpinDurationRange: ClosedRange<CFTimeInterval> = 3.3...4.4
+        private let reverseReturnDurationPerTurn: Float = 0.28
+        private let reverseReturnTiltWeight: Float = 0.72
+        private let reverseReturnDurationRange: ClosedRange<Float> = 0.34...2.2
+        private let reverseReturnVelocityRange: ClosedRange<CGFloat> = 180...2200
 
         init(manager: WeatherSceneManager?, onSunTap: (() -> Void)?) {
             self.manager = manager
@@ -169,7 +182,7 @@ struct WeatherSceneView: UIViewRepresentable {
             let frameDuration = max(link.targetTimestamp - link.timestamp, 1.0 / 60.0)
 
             if !isPanning {
-                if advanceYawMomentum(by: frameDuration) {
+                if advanceOrientationAnimation(by: frameDuration) {
                     applyOrientation(to: node)
                     manager?.syncDisplayGroupRotation(to: node.eulerAngles)
                     return
@@ -247,13 +260,16 @@ struct WeatherSceneView: UIViewRepresentable {
             currentRoll += (0 - currentRoll) * horizontalRollSnapStrength
         }
 
-        private func advanceYawMomentum(by deltaTime: CFTimeInterval) -> Bool {
-            guard var animation = yawMomentumAnimation else { return false }
+        private func advanceOrientationAnimation(by deltaTime: CFTimeInterval) -> Bool {
+            guard var animation = orientationAnimation else { return false }
 
             animation.elapsed = min(animation.elapsed + deltaTime, animation.duration)
             let progress = max(0, min(Float(animation.elapsed / animation.duration), 1))
-            let easedYaw = easeOutQuad(progress)
-            let easedTilt = easeOutCubic(min(progress * 1.18, 1))
+            let easedYaw = easedProgress(for: animation.yawCurve, progress: progress)
+            let easedTilt = easedProgress(
+                for: animation.tiltCurve,
+                progress: min(progress * 1.12, 1)
+            )
 
             currentYaw = interpolate(animation.startYaw, animation.endYaw, progress: easedYaw)
             targetYaw = currentYaw
@@ -266,9 +282,15 @@ struct WeatherSceneView: UIViewRepresentable {
             rollVelocity = 0
 
             if progress >= 0.999 {
-                yawMomentumAnimation = nil
+                currentYaw = 0
+                targetYaw = 0
+                currentPitch = animation.endPitch
+                targetPitch = animation.endPitch
+                currentRoll = animation.endRoll
+                targetRoll = animation.endRoll
+                orientationAnimation = nil
             } else {
-                yawMomentumAnimation = animation
+                orientationAnimation = animation
             }
 
             return true
@@ -291,7 +313,9 @@ struct WeatherSceneView: UIViewRepresentable {
             )
             let destinationYaw = frontFacingYaw(from: currentYaw, direction: direction, extraTurns: turns)
 
-            yawMomentumAnimation = YawMomentumAnimation(
+            orientationAnimation = OrientationAnimation(
+                yawCurve: .easeOutQuad,
+                tiltCurve: .easeOutCubic,
                 startYaw: currentYaw,
                 endYaw: destinationYaw,
                 startPitch: currentPitch,
@@ -308,8 +332,46 @@ struct WeatherSceneView: UIViewRepresentable {
             rollVelocity = 0
         }
 
+        private func startReverseReturnAnimation(with velocity: CGPoint, restPitch: Float) {
+            let fullRotation = Float.pi * 2
+            let yawTurns = abs(currentYaw) / fullRotation
+            let tiltDistance = abs(currentPitch - restPitch) + abs(currentRoll)
+            let weightedTravel = yawTurns + tiltDistance * reverseReturnTiltWeight
+            let baseDuration = max(
+                reverseReturnDurationRange.lowerBound,
+                min(
+                    reverseReturnDurationRange.upperBound,
+                    Float(0.18) + weightedTravel * reverseReturnDurationPerTurn
+                )
+            )
+            let speedProgress = normalizedProgress(
+                value: hypot(velocity.x, velocity.y),
+                lowerBound: reverseReturnVelocityRange.lowerBound,
+                upperBound: reverseReturnVelocityRange.upperBound
+            )
+            let duration = interpolate(baseDuration * 0.9, baseDuration * 0.64, progress: speedProgress)
+
+            orientationAnimation = OrientationAnimation(
+                yawCurve: .easeOutQuint,
+                tiltCurve: .easeOutQuart,
+                startYaw: currentYaw,
+                endYaw: 0,
+                startPitch: currentPitch,
+                endPitch: restPitch,
+                startRoll: currentRoll,
+                endRoll: 0,
+                duration: CFTimeInterval(duration)
+            )
+            targetYaw = currentYaw
+            targetPitch = currentPitch
+            targetRoll = currentRoll
+            yawVelocity = 0
+            pitchVelocity = 0
+            rollVelocity = 0
+        }
+
         private func stopMomentumAnimations() {
-            yawMomentumAnimation = nil
+            orientationAnimation = nil
             targetYaw = currentYaw
             targetPitch = currentPitch
             targetRoll = currentRoll
@@ -346,9 +408,32 @@ struct WeatherSceneView: UIViewRepresentable {
             start + (end - start) * progress
         }
 
+        private func easedProgress(for curve: EasingCurve, progress: Float) -> Float {
+            switch curve {
+            case .easeOutQuad:
+                easeOutQuad(progress)
+            case .easeOutCubic:
+                easeOutCubic(progress)
+            case .easeOutQuart:
+                easeOutQuart(progress)
+            case .easeOutQuint:
+                easeOutQuint(progress)
+            }
+        }
+
         private func easeOutCubic(_ progress: Float) -> Float {
             let reversed = 1 - progress
             return 1 - reversed * reversed * reversed
+        }
+
+        private func easeOutQuart(_ progress: Float) -> Float {
+            let reversed = 1 - progress
+            return 1 - reversed * reversed * reversed * reversed
+        }
+
+        private func easeOutQuint(_ progress: Float) -> Float {
+            let reversed = 1 - progress
+            return 1 - reversed * reversed * reversed * reversed * reversed
         }
 
         private func easeOutQuad(_ progress: Float) -> Float {
@@ -419,9 +504,7 @@ struct WeatherSceneView: UIViewRepresentable {
                         rollVelocity = 0
                     }
                 } else {
-                    yawVelocity = Float(v.x) * yawSensitivity / 108
-                    pitchVelocity = Float(v.y) * pitchSensitivity / 110
-                    rollVelocity = Float(v.x) * -rollSensitivity / 118
+                    startReverseReturnAnimation(with: v, restPitch: restPitch)
                 }
                 let fast = hypot(v.x, v.y) > 650
                 WeatherAudioPlayer.shared.playSpinLoop(fast: fast)
