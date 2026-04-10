@@ -50,9 +50,7 @@ struct MallSearchResultView: View {
                 await performSearch()
             }
         }
-        .sheet(item: $selectedProduct) { product in
-            MallProductTargetSheet(product: product)
-        }
+        .overlay(productDetailLink)
     }
 
     private var header: some View {
@@ -370,6 +368,39 @@ struct MallSearchResultView: View {
                 }
             }
         }
+    }
+
+    private var productDetailLink: some View {
+        NavigationLink(
+            destination: productDetailDestination,
+            isActive: selectedProductPresentedBinding
+        ) {
+            EmptyView()
+        }
+        .hidden()
+    }
+
+    @ViewBuilder
+    private var productDetailDestination: some View {
+        if let selectedProduct {
+            MallProductDetailView(
+                viewModel: viewModel,
+                product: selectedProduct
+            )
+        } else {
+            EmptyView()
+        }
+    }
+
+    private var selectedProductPresentedBinding: Binding<Bool> {
+        Binding(
+            get: { selectedProduct != nil },
+            set: { isPresented in
+                if !isPresented {
+                    selectedProduct = nil
+                }
+            }
+        )
     }
 }
 

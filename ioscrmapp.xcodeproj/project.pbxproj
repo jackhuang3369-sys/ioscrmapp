@@ -70,6 +70,10 @@
 		A10000000000000000000037 /* MallCategoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000037 /* MallCategoryView.swift */; };
 		A10000000000000000000038 /* MallSearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000038 /* MallSearchView.swift */; };
 		A10000000000000000000039 /* MallSearchResultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000039 /* MallSearchResultView.swift */; };
+		A10000000000000000000065 /* MallProductDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000065 /* MallProductDetailView.swift */; };
+		A10000000000000000000066 /* MallProductSelectionSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000066 /* MallProductSelectionSheet.swift */; };
+		A10000000000000000000067 /* MallCartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000067 /* MallCartView.swift */; };
+		A10000000000000000000068 /* MallImagePreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000068 /* MallImagePreviewView.swift */; };
 		A10000000000000000000040 /* HomeAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000040 /* HomeAPI.swift */; };
 		A10000000000000000000041 /* HomeService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000041 /* HomeService.swift */; };
 		A10000000000000000000042 /* HomeModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000042 /* HomeModels.swift */; };
@@ -192,6 +196,10 @@
 		A20000000000000000000037 /* MallCategoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MallCategoryView.swift; sourceTree = "<group>"; };
 		A20000000000000000000038 /* MallSearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MallSearchView.swift; sourceTree = "<group>"; };
 		A20000000000000000000039 /* MallSearchResultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MallSearchResultView.swift; sourceTree = "<group>"; };
+		A20000000000000000000065 /* MallProductDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MallProductDetailView.swift; sourceTree = "<group>"; };
+		A20000000000000000000066 /* MallProductSelectionSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MallProductSelectionSheet.swift; sourceTree = "<group>"; };
+		A20000000000000000000067 /* MallCartView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MallCartView.swift; sourceTree = "<group>"; };
+		A20000000000000000000068 /* MallImagePreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MallImagePreviewView.swift; sourceTree = "<group>"; };
 		A20000000000000000000040 /* HomeAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeAPI.swift; sourceTree = "<group>"; };
 		A20000000000000000000041 /* HomeService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeService.swift; sourceTree = "<group>"; };
 		A20000000000000000000042 /* HomeModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeModels.swift; sourceTree = "<group>"; };
@@ -669,6 +677,10 @@
 				A20000000000000000000037 /* MallCategoryView.swift */,
 				A20000000000000000000038 /* MallSearchView.swift */,
 				A20000000000000000000039 /* MallSearchResultView.swift */,
+				A20000000000000000000065 /* MallProductDetailView.swift */,
+				A20000000000000000000066 /* MallProductSelectionSheet.swift */,
+				A20000000000000000000067 /* MallCartView.swift */,
+				A20000000000000000000068 /* MallImagePreviewView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -1025,6 +1037,10 @@
 				A10000000000000000000036 /* MallHomeView.swift in Sources */,
 				A10000000000000000000035 /* MallContainerView.swift in Sources */,
 				A10000000000000000000034 /* MallComponents.swift in Sources */,
+				A10000000000000000000065 /* MallProductDetailView.swift in Sources */,
+				A10000000000000000000066 /* MallProductSelectionSheet.swift in Sources */,
+				A10000000000000000000067 /* MallCartView.swift in Sources */,
+				A10000000000000000000068 /* MallImagePreviewView.swift in Sources */,
 				A10000000000000000000033 /* MallViewModel.swift in Sources */,
 				A10000000000000000000032 /* MallModels.swift in Sources */,
 				A10000000000000000000031 /* MallService.swift in Sources */,

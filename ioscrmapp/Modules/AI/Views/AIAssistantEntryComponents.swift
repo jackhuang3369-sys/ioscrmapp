@@ -12,6 +12,7 @@ struct AIAssistantChatOverlay: View {
     let custSubInfo: CustSubInfo
     let language: AppLanguage
     let aiChatService: any AIChatServicing
+    let offersService: (any OffersServicing)?
     let onNavigate: (AIChatNavigationTarget) -> Void
 
     var body: some View {
@@ -69,7 +70,8 @@ struct AIAssistantChatOverlay: View {
                     AIChatView(
                         custSubInfo: custSubInfo,
                         language: language,
-                        aiChatService: aiChatService
+                        aiChatService: aiChatService,
+                        offersService: offersService
                     ) { target in
                         dismiss()
                         onNavigate(target)
@@ -198,6 +200,7 @@ struct BusinessPageAIAssistantModifier: ViewModifier {
 
     let session: CustSubInfo
     let aiChatService: any AIChatServicing
+    let offersService: (any OffersServicing)?
     let onNavigate: (AIChatNavigationTarget) -> Void
 
     func body(content: Content) -> some View {
@@ -289,6 +292,7 @@ struct BusinessPageAIAssistantModifier: ViewModifier {
                     custSubInfo: session,
                     language: languageStore.currentLanguage,
                     aiChatService: aiChatService,
+                    offersService: offersService,
                     onNavigate: onNavigate
                 )
             }
@@ -328,12 +332,14 @@ extension View {
     func businessAIAssistant(
         session: CustSubInfo,
         aiChatService: any AIChatServicing,
+        offersService: (any OffersServicing)? = nil,
         onNavigate: @escaping (AIChatNavigationTarget) -> Void = { _ in }
     ) -> some View {
         modifier(
             BusinessPageAIAssistantModifier(
                 session: session,
                 aiChatService: aiChatService,
+                offersService: offersService,
                 onNavigate: onNavigate
             )
         )

@@ -374,7 +374,61 @@
     },
     "detail": {
       "title": "详情跳转已预留",
-      "subtitle": "当前通过 mock 展示预留的 detailTarget：%@。"
+      "subtitle": "当前通过 mock 展示预留的 detailTarget：%@。",
+      "selected": {
+        "label": "已选"
+      },
+      "shipment": {
+        "label": "配送方式"
+      },
+      "deliveredTo": {
+        "label": "送至"
+      },
+      "home": "首页",
+      "shoppingCart": "购物车",
+      "addToCart": "加入购物车",
+      "buyNow": "立即购买",
+      "confirm": "确认",
+      "saleEnds": {
+        "label": "活动截止："
+      },
+      "html": {
+        "loading": "正在加载商品详情...",
+        "error": "当前无法加载商品 HTML 详情。"
+      },
+      "state": {
+        "loading": "正在加载商品详情...",
+        "error": {
+          "title": "商品详情加载失败",
+          "subtitle": "当前无法生成本地商品详情 mock，请稍后重试。"
+        }
+      }
+    },
+    "cart": {
+      "title": "购物车",
+      "manage": "管理",
+      "close": "关闭",
+      "selectAll": "全选",
+      "selectedLabel": "已选",
+      "subtotal": "合计",
+      "delete": "删除",
+      "continueShopping": "继续逛逛",
+      "invalid": "已失效",
+      "addedToCart": "已将所选规格加入 mock 购物车。",
+      "checkout": {
+        "button": "去结算",
+        "title": "结算占位已就绪",
+        "placeholder": "当前版本先使用本地 mock 结算承接流程。",
+        "validation": "请先选择至少一个有效商品再去结算。"
+      },
+      "empty": {
+        "title": "购物车还是空的",
+        "subtitle": "去商城挑几件商品，加入后会显示在这里。"
+      },
+      "error": {
+        "title": "购物车加载失败",
+        "subtitle": "当前无法刷新本地商城购物车，请稍后重试。"
+      }
     }
   },
   "messageCenter": {

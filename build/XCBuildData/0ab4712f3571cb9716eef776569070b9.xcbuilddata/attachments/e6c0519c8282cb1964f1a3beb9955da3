@@ -1,0 +1,1179 @@
+{
+  "" : {
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/ioscrmapp-primary.dia",
+    "emit-module-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/ioscrmapp-primary-emit-module.d",
+    "emit-module-diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/ioscrmapp-primary-emit-module.dia",
+    "pch" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/ioscrmapp-primary-Bridging-header.pch",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/ioscrmapp-primary.swiftdeps"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/DerivedSources/GeneratedAssetSymbols.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/GeneratedAssetSymbols.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/GeneratedAssetSymbols.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/GeneratedAssetSymbols.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/GeneratedAssetSymbols.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/GeneratedAssetSymbols.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/GeneratedAssetSymbols.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/GeneratedAssetSymbols.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/GeneratedAssetSymbols~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Common/Components/Buttons/DUButton.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DUButton.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DUButton.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DUButton.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DUButton.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DUButton.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DUButton.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DUButton.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DUButton~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Common/Components/Buttons/DUIconButton.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DUIconButton.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DUIconButton.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DUIconButton.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DUIconButton.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DUIconButton.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DUIconButton.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DUIconButton.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DUIconButton~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Common/Components/Buttons/DUSplashSkipButton.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DUSplashSkipButton.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DUSplashSkipButton.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DUSplashSkipButton.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DUSplashSkipButton.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DUSplashSkipButton.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DUSplashSkipButton.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DUSplashSkipButton.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DUSplashSkipButton~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Common/Components/Buttons/DUTextButton.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DUTextButton.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DUTextButton.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DUTextButton.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DUTextButton.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DUTextButton.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DUTextButton.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DUTextButton.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DUTextButton~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Common/Components/Containers/DUSectionCard.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DUSectionCard.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DUSectionCard.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DUSectionCard.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DUSectionCard.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DUSectionCard.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DUSectionCard.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DUSectionCard.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DUSectionCard~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Common/Components/DUBottomSheet.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DUBottomSheet.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DUBottomSheet.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DUBottomSheet.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DUBottomSheet.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DUBottomSheet.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DUBottomSheet.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DUBottomSheet.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DUBottomSheet~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Common/Components/Fields/DUPhoneField.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DUPhoneField.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DUPhoneField.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DUPhoneField.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DUPhoneField.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DUPhoneField.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DUPhoneField.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DUPhoneField.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DUPhoneField~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Common/Components/Fields/DUTextField.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DUTextField.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DUTextField.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DUTextField.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DUTextField.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DUTextField.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DUTextField.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DUTextField.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DUTextField~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Common/Components/Lists/DUListItem.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DUListItem.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DUListItem.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DUListItem.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DUListItem.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DUListItem.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DUListItem.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DUListItem.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DUListItem~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Common/Components/States/DUFeaturePlaceholderView.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DUFeaturePlaceholderView.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DUFeaturePlaceholderView.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DUFeaturePlaceholderView.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DUFeaturePlaceholderView.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DUFeaturePlaceholderView.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DUFeaturePlaceholderView.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DUFeaturePlaceholderView.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DUFeaturePlaceholderView~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Common/Components/States/DUStateView.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DUStateView.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DUStateView.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DUStateView.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DUStateView.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DUStateView.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DUStateView.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DUStateView.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DUStateView~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/ContentView.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/ContentView.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/ContentView.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/ContentView.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/ContentView.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/ContentView.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/ContentView.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/ContentView.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/ContentView~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Core/Config/AppEnvironment.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AppEnvironment.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AppEnvironment.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AppEnvironment.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AppEnvironment.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AppEnvironment.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AppEnvironment.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AppEnvironment.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AppEnvironment~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Core/Localization/AppLanguage.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AppLanguage.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AppLanguage.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AppLanguage.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AppLanguage.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AppLanguage.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AppLanguage.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AppLanguage.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AppLanguage~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Core/Localization/AppLanguageStore.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AppLanguageStore.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AppLanguageStore.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AppLanguageStore.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AppLanguageStore.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AppLanguageStore.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AppLanguageStore.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AppLanguageStore.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AppLanguageStore~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Core/Localization/LocalizedTextValue.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/LocalizedTextValue.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/LocalizedTextValue.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/LocalizedTextValue.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/LocalizedTextValue.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/LocalizedTextValue.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/LocalizedTextValue.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/LocalizedTextValue.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/LocalizedTextValue~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Core/Networking/AdvertisementAPI.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AdvertisementAPI.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AdvertisementAPI.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AdvertisementAPI.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AdvertisementAPI.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AdvertisementAPI.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AdvertisementAPI.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AdvertisementAPI.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AdvertisementAPI~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Core/Networking/AuthAPI.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AuthAPI.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AuthAPI.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AuthAPI.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AuthAPI.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AuthAPI.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AuthAPI.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AuthAPI.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AuthAPI~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Core/Networking/BadgeCenterAPI.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BadgeCenterAPI.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BadgeCenterAPI.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BadgeCenterAPI.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BadgeCenterAPI.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BadgeCenterAPI.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BadgeCenterAPI.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BadgeCenterAPI.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BadgeCenterAPI~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Core/Networking/BillingAPI.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BillingAPI.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BillingAPI.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BillingAPI.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BillingAPI.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BillingAPI.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BillingAPI.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BillingAPI.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BillingAPI~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Core/Networking/DeviceIdentityProvider.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DeviceIdentityProvider.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DeviceIdentityProvider.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DeviceIdentityProvider.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DeviceIdentityProvider.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DeviceIdentityProvider.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DeviceIdentityProvider.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DeviceIdentityProvider.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DeviceIdentityProvider~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Core/Networking/HTTPClient.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/HTTPClient.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/HTTPClient.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/HTTPClient.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/HTTPClient.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/HTTPClient.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/HTTPClient.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/HTTPClient.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/HTTPClient~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Core/Networking/HomeAPI.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/HomeAPI.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/HomeAPI.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/HomeAPI.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/HomeAPI.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/HomeAPI.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/HomeAPI.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/HomeAPI.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/HomeAPI~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Core/Networking/MallAPI.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallAPI.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallAPI.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallAPI.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallAPI.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallAPI.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallAPI.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallAPI.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallAPI~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Core/Networking/NetworkContextBuilder.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/NetworkContextBuilder.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/NetworkContextBuilder.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/NetworkContextBuilder.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/NetworkContextBuilder.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/NetworkContextBuilder.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/NetworkContextBuilder.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/NetworkContextBuilder.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/NetworkContextBuilder~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Core/Networking/NotificationAPI.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/NotificationAPI.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/NotificationAPI.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/NotificationAPI.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/NotificationAPI.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/NotificationAPI.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/NotificationAPI.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/NotificationAPI.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/NotificationAPI~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Core/Networking/OffersAPI.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/OffersAPI.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/OffersAPI.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/OffersAPI.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/OffersAPI.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/OffersAPI.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/OffersAPI.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/OffersAPI.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/OffersAPI~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Core/Networking/VideoAPI.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/VideoAPI.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/VideoAPI.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/VideoAPI.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/VideoAPI.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/VideoAPI.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/VideoAPI.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/VideoAPI.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/VideoAPI~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Core/Storage/SessionKeychainStores.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/SessionKeychainStores.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/SessionKeychainStores.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/SessionKeychainStores.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/SessionKeychainStores.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/SessionKeychainStores.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/SessionKeychainStores.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/SessionKeychainStores.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/SessionKeychainStores~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Core/Storage/SessionStore.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/SessionStore.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/SessionStore.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/SessionStore.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/SessionStore.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/SessionStore.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/SessionStore.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/SessionStore.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/SessionStore~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Core/Storage/SessionUserDefaultsStore.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/SessionUserDefaultsStore.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/SessionUserDefaultsStore.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/SessionUserDefaultsStore.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/SessionUserDefaultsStore.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/SessionUserDefaultsStore.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/SessionUserDefaultsStore.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/SessionUserDefaultsStore.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/SessionUserDefaultsStore~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/DesignSystem/DesignSystem.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DesignSystem.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DesignSystem.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DesignSystem.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DesignSystem.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DesignSystem.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DesignSystem.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DesignSystem.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DesignSystem~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Modules/AI/Models/AIChatModels.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AIChatModels.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AIChatModels.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AIChatModels.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AIChatModels.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AIChatModels.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AIChatModels.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AIChatModels.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AIChatModels~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Modules/AI/ViewModels/AIChatViewModel.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AIChatViewModel.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AIChatViewModel.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AIChatViewModel.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AIChatViewModel.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AIChatViewModel.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AIChatViewModel.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AIChatViewModel.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AIChatViewModel~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Modules/AI/Views/AIAssistantEntryComponents.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AIAssistantEntryComponents.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AIAssistantEntryComponents.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AIAssistantEntryComponents.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AIAssistantEntryComponents.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AIAssistantEntryComponents.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AIAssistantEntryComponents.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AIAssistantEntryComponents.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AIAssistantEntryComponents~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Modules/AI/Views/AIChatView.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AIChatView.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AIChatView.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AIChatView.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AIChatView.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AIChatView.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AIChatView.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AIChatView.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AIChatView~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Modules/Auth/Models/AuthModels.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AuthModels.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AuthModels.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AuthModels.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AuthModels.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AuthModels.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AuthModels.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AuthModels.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AuthModels~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Modules/Auth/ViewModels/AuthLoginViewModel.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AuthLoginViewModel.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AuthLoginViewModel.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AuthLoginViewModel.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AuthLoginViewModel.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AuthLoginViewModel.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AuthLoginViewModel.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AuthLoginViewModel.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AuthLoginViewModel~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Modules/Auth/Views/AuthViews.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AuthViews.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AuthViews.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AuthViews.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AuthViews.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AuthViews.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AuthViews.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AuthViews.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AuthViews~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Modules/BadgeCenter/Models/BadgeCenterModels.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BadgeCenterModels.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BadgeCenterModels.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BadgeCenterModels.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BadgeCenterModels.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BadgeCenterModels.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BadgeCenterModels.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BadgeCenterModels.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BadgeCenterModels~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Modules/BadgeCenter/ViewModels/BadgeCenterViewModel.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BadgeCenterViewModel.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BadgeCenterViewModel.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BadgeCenterViewModel.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BadgeCenterViewModel.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BadgeCenterViewModel.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BadgeCenterViewModel.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BadgeCenterViewModel.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BadgeCenterViewModel~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Modules/BadgeCenter/Views/BadgeCenterView.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BadgeCenterView.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BadgeCenterView.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BadgeCenterView.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BadgeCenterView.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BadgeCenterView.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BadgeCenterView.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BadgeCenterView.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BadgeCenterView~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Modules/BadgeCenter/Views/Components/BadgeCenterListComponents.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BadgeCenterListComponents.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BadgeCenterListComponents.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BadgeCenterListComponents.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BadgeCenterListComponents.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BadgeCenterListComponents.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BadgeCenterListComponents.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BadgeCenterListComponents.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BadgeCenterListComponents~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Modules/BadgeCenter/Views/Components/BadgeCenterSharedComponents.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BadgeCenterSharedComponents.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BadgeCenterSharedComponents.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BadgeCenterSharedComponents.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BadgeCenterSharedComponents.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BadgeCenterSharedComponents.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BadgeCenterSharedComponents.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BadgeCenterSharedComponents.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BadgeCenterSharedComponents~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Modules/BadgeCenter/Views/Components/BadgeDetailContentView.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BadgeDetailContentView.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BadgeDetailContentView.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BadgeDetailContentView.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BadgeDetailContentView.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BadgeDetailContentView.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BadgeDetailContentView.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BadgeDetailContentView.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BadgeDetailContentView~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Modules/BadgeCenter/Views/Components/BadgeUnlockPromptView.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BadgeUnlockPromptView.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BadgeUnlockPromptView.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BadgeUnlockPromptView.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BadgeUnlockPromptView.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BadgeUnlockPromptView.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BadgeUnlockPromptView.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BadgeUnlockPromptView.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BadgeUnlockPromptView~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Modules/Billing/Models/BillingModels.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BillingModels.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BillingModels.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BillingModels.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BillingModels.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BillingModels.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BillingModels.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BillingModels.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BillingModels~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Modules/Billing/ViewModels/BillingViewModel.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BillingViewModel.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BillingViewModel.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BillingViewModel.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BillingViewModel.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BillingViewModel.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BillingViewModel.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BillingViewModel.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BillingViewModel~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Modules/Billing/Views/BillingViews.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BillingViews.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BillingViews.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BillingViews.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BillingViews.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BillingViews.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BillingViews.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BillingViews.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BillingViews~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Modules/Billing/Views/RechargeViews.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/RechargeViews.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/RechargeViews.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/RechargeViews.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/RechargeViews.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/RechargeViews.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/RechargeViews.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/RechargeViews.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/RechargeViews~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Modules/Home/Models/HomeModels.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/HomeModels.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/HomeModels.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/HomeModels.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/HomeModels.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/HomeModels.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/HomeModels.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/HomeModels.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/HomeModels~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Modules/Home/ViewModels/HomeViewModel.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/HomeViewModel.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/HomeViewModel.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/HomeViewModel.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/HomeViewModel.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/HomeViewModel.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/HomeViewModel.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/HomeViewModel.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/HomeViewModel~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Modules/Home/Views/HomeFeatureCarouselView.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/HomeFeatureCarouselView.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/HomeFeatureCarouselView.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/HomeFeatureCarouselView.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/HomeFeatureCarouselView.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/HomeFeatureCarouselView.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/HomeFeatureCarouselView.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/HomeFeatureCarouselView.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/HomeFeatureCarouselView~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Modules/Home/Views/HomeParallaxCarouselView.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/HomeParallaxCarouselView.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/HomeParallaxCarouselView.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/HomeParallaxCarouselView.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/HomeParallaxCarouselView.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/HomeParallaxCarouselView.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/HomeParallaxCarouselView.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/HomeParallaxCarouselView.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/HomeParallaxCarouselView~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Modules/Home/Views/HomeParallaxReelSectionView.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/HomeParallaxReelSectionView.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/HomeParallaxReelSectionView.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/HomeParallaxReelSectionView.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/HomeParallaxReelSectionView.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/HomeParallaxReelSectionView.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/HomeParallaxReelSectionView.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/HomeParallaxReelSectionView.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/HomeParallaxReelSectionView~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Modules/Home/Views/HomeView.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/HomeView.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/HomeView.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/HomeView.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/HomeView.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/HomeView.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/HomeView.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/HomeView.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/HomeView~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Modules/Launch/Models/SplashAdModels.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/SplashAdModels.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/SplashAdModels.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/SplashAdModels.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/SplashAdModels.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/SplashAdModels.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/SplashAdModels.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/SplashAdModels.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/SplashAdModels~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Modules/Launch/ViewModels/AppLaunchContainerViewModel.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AppLaunchContainerViewModel.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AppLaunchContainerViewModel.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AppLaunchContainerViewModel.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AppLaunchContainerViewModel.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AppLaunchContainerViewModel.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AppLaunchContainerViewModel.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AppLaunchContainerViewModel.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AppLaunchContainerViewModel~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Modules/Launch/ViewModels/SplashAdViewModel.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/SplashAdViewModel.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/SplashAdViewModel.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/SplashAdViewModel.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/SplashAdViewModel.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/SplashAdViewModel.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/SplashAdViewModel.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/SplashAdViewModel.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/SplashAdViewModel~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Modules/Launch/Views/AppLaunchContainerView.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AppLaunchContainerView.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AppLaunchContainerView.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AppLaunchContainerView.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AppLaunchContainerView.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AppLaunchContainerView.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AppLaunchContainerView.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AppLaunchContainerView.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AppLaunchContainerView~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Modules/Launch/Views/SplashAdView.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/SplashAdView.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/SplashAdView.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/SplashAdView.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/SplashAdView.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/SplashAdView.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/SplashAdView.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/SplashAdView.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/SplashAdView~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Modules/Mall/Models/MallModels.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallModels.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallModels.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallModels.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallModels.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallModels.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallModels.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallModels.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallModels~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Modules/Mall/ViewModels/MallViewModel.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallViewModel.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallViewModel.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallViewModel.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallViewModel.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallViewModel.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallViewModel.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallViewModel.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallViewModel~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Modules/Mall/Views/MallCategoryView.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallCategoryView.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallCategoryView.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallCategoryView.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallCategoryView.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallCategoryView.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallCategoryView.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallCategoryView.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallCategoryView~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Modules/Mall/Views/MallComponents.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallComponents.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallComponents.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallComponents.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallComponents.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallComponents.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallComponents.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallComponents.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallComponents~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Modules/Mall/Views/MallContainerView.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallContainerView.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallContainerView.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallContainerView.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallContainerView.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallContainerView.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallContainerView.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallContainerView.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallContainerView~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Modules/Mall/Views/MallHomeHighlightCarouselView.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallHomeHighlightCarouselView.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallHomeHighlightCarouselView.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallHomeHighlightCarouselView.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallHomeHighlightCarouselView.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallHomeHighlightCarouselView.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallHomeHighlightCarouselView.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallHomeHighlightCarouselView.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallHomeHighlightCarouselView~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Modules/Mall/Views/MallHomeView.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallHomeView.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallHomeView.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallHomeView.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallHomeView.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallHomeView.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallHomeView.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallHomeView.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallHomeView~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Modules/Mall/Views/MallProductDetailView.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallProductDetailView.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallProductDetailView.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallProductDetailView.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallProductDetailView.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallProductDetailView.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallProductDetailView.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallProductDetailView.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallProductDetailView~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Modules/Mall/Views/MallProductSelectionSheet.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallProductSelectionSheet.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallProductSelectionSheet.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallProductSelectionSheet.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallProductSelectionSheet.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallProductSelectionSheet.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallProductSelectionSheet.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallProductSelectionSheet.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallProductSelectionSheet~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Modules/Mall/Views/MallSearchResultView.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallSearchResultView.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallSearchResultView.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallSearchResultView.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallSearchResultView.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallSearchResultView.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallSearchResultView.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallSearchResultView.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallSearchResultView~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Modules/Mall/Views/MallSearchView.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallSearchView.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallSearchView.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallSearchView.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallSearchView.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallSearchView.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallSearchView.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallSearchView.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallSearchView~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Modules/Me/Models/MeModels.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MeModels.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MeModels.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MeModels.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MeModels.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MeModels.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MeModels.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MeModels.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MeModels~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Modules/Me/ViewModels/MeViewModel.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MeViewModel.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MeViewModel.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MeViewModel.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MeViewModel.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MeViewModel.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MeViewModel.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MeViewModel.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MeViewModel~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Modules/Me/Views/LanguageSettingsView.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/LanguageSettingsView.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/LanguageSettingsView.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/LanguageSettingsView.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/LanguageSettingsView.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/LanguageSettingsView.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/LanguageSettingsView.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/LanguageSettingsView.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/LanguageSettingsView~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Modules/Me/Views/MeViews.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MeViews.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MeViews.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MeViews.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MeViews.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MeViews.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MeViews.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MeViews.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MeViews~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Modules/MessageCenter/Models/MessageCenterModels.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MessageCenterModels.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MessageCenterModels.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MessageCenterModels.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MessageCenterModels.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MessageCenterModels.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MessageCenterModels.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MessageCenterModels.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MessageCenterModels~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Modules/MessageCenter/ViewModels/MessageCenterViewModel.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MessageCenterViewModel.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MessageCenterViewModel.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MessageCenterViewModel.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MessageCenterViewModel.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MessageCenterViewModel.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MessageCenterViewModel.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MessageCenterViewModel.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MessageCenterViewModel~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Modules/MessageCenter/Views/MessageCenterView.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MessageCenterView.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MessageCenterView.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MessageCenterView.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MessageCenterView.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MessageCenterView.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MessageCenterView.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MessageCenterView.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MessageCenterView~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Modules/MessageCenter/Views/MessageDetailContentView.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MessageDetailContentView.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MessageDetailContentView.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MessageDetailContentView.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MessageDetailContentView.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MessageDetailContentView.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MessageDetailContentView.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MessageDetailContentView.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MessageDetailContentView~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Modules/Offers/Models/OffersModels.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/OffersModels.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/OffersModels.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/OffersModels.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/OffersModels.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/OffersModels.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/OffersModels.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/OffersModels.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/OffersModels~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Modules/Offers/ViewModels/DIYOfferViewModel.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DIYOfferViewModel.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DIYOfferViewModel.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DIYOfferViewModel.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DIYOfferViewModel.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DIYOfferViewModel.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DIYOfferViewModel.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DIYOfferViewModel.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DIYOfferViewModel~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Modules/Offers/ViewModels/OffersViewModel.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/OffersViewModel.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/OffersViewModel.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/OffersViewModel.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/OffersViewModel.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/OffersViewModel.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/OffersViewModel.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/OffersViewModel.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/OffersViewModel~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Modules/Offers/Views/DIYOfferViews.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DIYOfferViews.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DIYOfferViews.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DIYOfferViews.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DIYOfferViews.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DIYOfferViews.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DIYOfferViews.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DIYOfferViews.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/DIYOfferViews~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Modules/Offers/Views/OffersContainerView.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/OffersContainerView.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/OffersContainerView.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/OffersContainerView.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/OffersContainerView.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/OffersContainerView.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/OffersContainerView.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/OffersContainerView.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/OffersContainerView~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Modules/Offers/Views/OffersViews.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/OffersViews.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/OffersViews.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/OffersViews.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/OffersViews.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/OffersViews.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/OffersViews.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/OffersViews.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/OffersViews~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Modules/Video/Models/VideoModels.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/VideoModels.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/VideoModels.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/VideoModels.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/VideoModels.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/VideoModels.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/VideoModels.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/VideoModels.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/VideoModels~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Modules/Video/ViewModels/VideoViewModel.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/VideoViewModel.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/VideoViewModel.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/VideoViewModel.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/VideoViewModel.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/VideoViewModel.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/VideoViewModel.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/VideoViewModel.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/VideoViewModel~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Modules/Video/Views/CRMVideoExperienceViews.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/CRMVideoExperienceViews.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/CRMVideoExperienceViews.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/CRMVideoExperienceViews.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/CRMVideoExperienceViews.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/CRMVideoExperienceViews.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/CRMVideoExperienceViews.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/CRMVideoExperienceViews.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/CRMVideoExperienceViews~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Modules/Video/Views/VideoComponents.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/VideoComponents.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/VideoComponents.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/VideoComponents.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/VideoComponents.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/VideoComponents.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/VideoComponents.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/VideoComponents.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/VideoComponents~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Modules/Video/Views/VideoContainerView.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/VideoContainerView.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/VideoContainerView.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/VideoContainerView.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/VideoContainerView.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/VideoContainerView.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/VideoContainerView.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/VideoContainerView.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/VideoContainerView~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Modules/Video/Views/VideoViews.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/VideoViews.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/VideoViews.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/VideoViews.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/VideoViews.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/VideoViews.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/VideoViews.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/VideoViews.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/VideoViews~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Modules/Weather/Models/MockWeatherData.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MockWeatherData.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MockWeatherData.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MockWeatherData.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MockWeatherData.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MockWeatherData.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MockWeatherData.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MockWeatherData.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MockWeatherData~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Modules/Weather/Models/WeatherCondition.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/WeatherCondition.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/WeatherCondition.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/WeatherCondition.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/WeatherCondition.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/WeatherCondition.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/WeatherCondition.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/WeatherCondition.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/WeatherCondition~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Modules/Weather/SceneKit/ParticleController.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/ParticleController.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/ParticleController.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/ParticleController.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/ParticleController.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/ParticleController.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/ParticleController.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/ParticleController.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/ParticleController~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Modules/Weather/SceneKit/SceneConstants.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/SceneConstants.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/SceneConstants.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/SceneConstants.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/SceneConstants.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/SceneConstants.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/SceneConstants.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/SceneConstants.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/SceneConstants~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Modules/Weather/SceneKit/WeatherAudioPlayer.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/WeatherAudioPlayer.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/WeatherAudioPlayer.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/WeatherAudioPlayer.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/WeatherAudioPlayer.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/WeatherAudioPlayer.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/WeatherAudioPlayer.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/WeatherAudioPlayer.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/WeatherAudioPlayer~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Modules/Weather/SceneKit/WeatherSceneManager.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/WeatherSceneManager.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/WeatherSceneManager.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/WeatherSceneManager.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/WeatherSceneManager.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/WeatherSceneManager.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/WeatherSceneManager.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/WeatherSceneManager.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/WeatherSceneManager~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Modules/Weather/SceneKit/WeatherSceneView.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/WeatherSceneView.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/WeatherSceneView.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/WeatherSceneView.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/WeatherSceneView.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/WeatherSceneView.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/WeatherSceneView.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/WeatherSceneView.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/WeatherSceneView~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Modules/Weather/Views/WeatherHourlyStrip.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/WeatherHourlyStrip.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/WeatherHourlyStrip.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/WeatherHourlyStrip.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/WeatherHourlyStrip.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/WeatherHourlyStrip.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/WeatherHourlyStrip.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/WeatherHourlyStrip.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/WeatherHourlyStrip~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Modules/Weather/Views/WeatherMainView.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/WeatherMainView.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/WeatherMainView.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/WeatherMainView.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/WeatherMainView.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/WeatherMainView.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/WeatherMainView.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/WeatherMainView.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/WeatherMainView~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Modules/Weather/Views/WeatherWindBackgroundView.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/WeatherWindBackgroundView.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/WeatherWindBackgroundView.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/WeatherWindBackgroundView.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/WeatherWindBackgroundView.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/WeatherWindBackgroundView.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/WeatherWindBackgroundView.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/WeatherWindBackgroundView.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/WeatherWindBackgroundView~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Services/AIChatService.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AIChatService.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AIChatService.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AIChatService.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AIChatService.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AIChatService.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AIChatService.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AIChatService.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AIChatService~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Services/AppServices.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AppServices.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AppServices.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AppServices.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AppServices.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AppServices.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AppServices.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AppServices.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AppServices~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Services/AuthService.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AuthService.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AuthService.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AuthService.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AuthService.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AuthService.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AuthService.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AuthService.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/AuthService~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Services/BadgeCenterService.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BadgeCenterService.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BadgeCenterService.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BadgeCenterService.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BadgeCenterService.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BadgeCenterService.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BadgeCenterService.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BadgeCenterService.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BadgeCenterService~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Services/BillingService.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BillingService.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BillingService.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BillingService.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BillingService.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BillingService.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BillingService.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BillingService.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/BillingService~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Services/HomeService.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/HomeService.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/HomeService.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/HomeService.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/HomeService.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/HomeService.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/HomeService.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/HomeService.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/HomeService~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Services/MallService.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallService.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallService.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallService.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallService.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallService.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallService.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallService.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MallService~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Services/MeService.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MeService.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MeService.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MeService.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MeService.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MeService.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MeService.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MeService.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/MeService~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Services/NotificationService.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/NotificationService.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/NotificationService.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/NotificationService.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/NotificationService.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/NotificationService.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/NotificationService.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/NotificationService.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/NotificationService~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Services/OffersService.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/OffersService.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/OffersService.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/OffersService.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/OffersService.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/OffersService.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/OffersService.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/OffersService.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/OffersService~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Services/RegistrationRequestEncryptor.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/RegistrationRequestEncryptor.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/RegistrationRequestEncryptor.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/RegistrationRequestEncryptor.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/RegistrationRequestEncryptor.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/RegistrationRequestEncryptor.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/RegistrationRequestEncryptor.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/RegistrationRequestEncryptor.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/RegistrationRequestEncryptor~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Services/SplashAdService.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/SplashAdService.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/SplashAdService.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/SplashAdService.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/SplashAdService.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/SplashAdService.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/SplashAdService.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/SplashAdService.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/SplashAdService~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/Services/VideoService.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/VideoService.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/VideoService.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/VideoService.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/VideoService.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/VideoService.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/VideoService.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/VideoService.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/VideoService~partial.swiftmodule"
+  },
+  "/Users/opencode/Documents/ioscrmapp/ioscrmapp/ioscrmapp/ioscrmappApp.swift" : {
+    "const-values" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/ioscrmappApp.swiftconstvalues",
+    "dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/ioscrmappApp.d",
+    "diagnostics" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/ioscrmappApp.dia",
+    "index-unit-output-path" : "/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/ioscrmappApp.o",
+    "llvm-bc" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/ioscrmappApp.bc",
+    "object" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/ioscrmappApp.o",
+    "swift-dependencies" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/ioscrmappApp.swiftdeps",
+    "swiftmodule" : "/Users/opencode/Documents/ioscrmapp/ioscrmapp/build/ioscrmapp.build/Debug-iphoneos/ioscrmapp.build/Objects-normal/arm64/ioscrmappApp~partial.swiftmodule"
+  }
+}

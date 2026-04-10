@@ -13,8 +13,24 @@ protocol AIChatServicing {
     func sendMessage(
         _ text: String,
         conversationID: String?,
-        context: AIChatContext
+        context: AIChatContext,
+        metadata: AIChatRequestMetadata?
     ) async throws -> AIChatReply
+}
+
+extension AIChatServicing {
+    func sendMessage(
+        _ text: String,
+        conversationID: String?,
+        context: AIChatContext
+    ) async throws -> AIChatReply {
+        try await sendMessage(
+            text,
+            conversationID: conversationID,
+            context: context,
+            metadata: nil
+        )
+    }
 }
 
 struct AIChatConfiguration: Sendable {
@@ -41,10 +57,22 @@ struct MockAIChatService: AIChatServicing {
     func sendMessage(
         _ text: String,
         conversationID: String?,
-        context: AIChatContext
+        context: AIChatContext,
+        metadata: AIChatRequestMetadata?
     ) async throws -> AIChatReply {
         let normalized = text.lowercased()
         let language = AppLanguage(rawValue: context.languageCode) ?? .fallback
+
+        if let metadata,
+           metadata.intentCategory == AIChatOfferAgentEvent.subscriptionRequested.intentCategory
+        {
+            return AIChatReply(
+                conversationID: conversationID ?? UUID().uuidString,
+                text: "Subscription event acknowledged.",
+                thinkingText: "",
+                actions: []
+            )
+        }
 
         if normalized.contains("offer")
             || normalized.contains("优惠")
@@ -106,11 +134,66 @@ struct MockAIChatService: AIChatServicing {
 
     private func mockOffers() -> [AIChatOffer] {
         [
-            AIChatOffer(name: "DataRoamingPrice (10 GB)", price: "15.00", dataAmount: "10 GB", validity: "Monthly"),
-            AIChatOffer(name: "DataRoamingPrice (20 GB)", price: "35.00", dataAmount: "20 GB", validity: "Monthly"),
-            AIChatOffer(name: "DataRoamingPrice (50 GB)", price: "55.00", dataAmount: "50 GB", validity: "Monthly"),
-            AIChatOffer(name: "DataRoamingPrice (100 GB)", price: "75.00", dataAmount: "100 GB", validity: "Monthly"),
-            AIChatOffer(name: "DataRoamingPrice (Unlimited)", price: "120.00", dataAmount: "Unlimited", validity: "Monthly")
+            AIChatOffer(
+                id: "offer-roaming-10g",
+                name: "DataRoamingPrice (10 GB)",
+                price: "15.00",
+                dataAmount: "10 GB",
+                validity: "Monthly",
+                offerId: "offer-roaming-10g",
+                offerCode: "ROAM-10G",
+                offerType: "Data",
+                validityRaw: "Monthly",
+                resourceSummary: "10 GB"
+            ),
+            AIChatOffer(
+                id: "offer-roaming-20g",
+                name: "DataRoamingPrice (20 GB)",
+                price: "35.00",
+                dataAmount: "20 GB",
+                validity: "Monthly",
+                offerId: "offer-roaming-20g",
+                offerCode: "ROAM-20G",
+                offerType: "Data",
+                validityRaw: "Monthly",
+                resourceSummary: "20 GB"
+            ),
+            AIChatOffer(
+                id: "offer-roaming-50g",
+                name: "DataRoamingPrice (50 GB)",
+                price: "55.00",
+                dataAmount: "50 GB",
+                validity: "Monthly",
+                offerId: "offer-roaming-50g",
+                offerCode: "ROAM-50G",
+                offerType: "Data",
+                validityRaw: "Monthly",
+                resourceSummary: "50 GB"
+            ),
+            AIChatOffer(
+                id: "offer-roaming-100g",
+                name: "DataRoamingPrice (100 GB)",
+                price: "75.00",
+                dataAmount: "100 GB",
+                validity: "Monthly",
+                offerId: "offer-roaming-100g",
+                offerCode: "ROAM-100G",
+                offerType: "Data",
+                validityRaw: "Monthly",
+                resourceSummary: "100 GB"
+            ),
+            AIChatOffer(
+                id: "offer-roaming-unlimited",
+                name: "DataRoamingPrice (Unlimited)",
+                price: "120.00",
+                dataAmount: "Unlimited",
+                validity: "Monthly",
+                offerId: "offer-roaming-unlimited",
+                offerCode: "ROAM-UNLIMITED",
+                offerType: "Data",
+                validityRaw: "Monthly",
+                resourceSummary: "Unlimited"
+            )
         ]
     }
 }
@@ -138,7 +221,8 @@ struct RemoteAIChatService: AIChatServicing {
     func sendMessage(
         _ text: String,
         conversationID: String?,
-        context: AIChatContext
+        context: AIChatContext,
+        metadata: AIChatRequestMetadata?
     ) async throws -> AIChatReply {
         guard
             let url = configuration.chatCompletionsURL,
@@ -159,7 +243,8 @@ struct RemoteAIChatService: AIChatServicing {
             withJSONObject: buildRequestBody(
                 message: text,
                 conversationID: conversationID,
-                context: context
+                context: context,
+                metadata: metadata
             )
         )
 
@@ -209,45 +294,60 @@ struct RemoteAIChatService: AIChatServicing {
     private func buildRequestBody(
         message: String,
         conversationID: String?,
-        context: AIChatContext
+        context: AIChatContext,
+        metadata: AIChatRequestMetadata?
     ) -> [String: Any] {
-        [
+        let currentUserContext: [String: Any] = [
+            "display_name": context.displayName,
+            "is_logged_in": !context.accessToken.isEmpty,
+            "access_token": context.accessToken,
+            "authorization": context.authorization,
+            "user_id": context.userID,
+            "service_number": context.serviceNumber,
+            "subscriber_key": context.subscriberKey,
+            "language": context.languageCode
+        ]
+
+        var variables: [String: Any] = [
+            "uuid": "",
+            "seqid": "",
+            "encrypted_code": "",
+            "app_id": configuration.appID,
+            "api_key": configuration.apiKey,
+            "items": [Any](),
+            "preview_file_urls": [Any](),
+            "auth_token": context.accessToken,
+            "authorization": context.authorization,
+            "user_id": context.userID,
+            "service_number": context.serviceNumber,
+            "subscriber_key": context.subscriberKey,
+            "lang": context.languageCode,
+            "current_user_context": currentUserContext
+        ]
+
+        if let metadata {
+            variables.merge(metadata.serializedVariables()) { _, newValue in
+                newValue
+            }
+        }
+
+        let messages: [[String: Any]] = [
+            [
+                "content": message,
+                "role": "user"
+            ]
+        ]
+
+        let requestBody: [String: Any] = [
             "chatId": conversationID ?? "",
             "msgId": "\(Int(Date().timeIntervalSince1970 * 1000))\(UUID().uuidString.replacingOccurrences(of: "-", with: "").prefix(8))",
             "stream": false,
             "detail": true,
-            "variables": [
-                "uuid": "",
-                "seqid": "",
-                "encrypted_code": "",
-                "app_id": configuration.appID,
-                "api_key": configuration.apiKey,
-                "items": [],
-                "preview_file_urls": [],
-                "auth_token": context.accessToken,
-                "authorization": context.authorization,
-                "user_id": context.userID,
-                "service_number": context.serviceNumber,
-                "subscriber_key": context.subscriberKey,
-                "lang": context.languageCode,
-                "current_user_context": [
-                    "display_name": context.displayName,
-                    "is_logged_in": !context.accessToken.isEmpty,
-                    "access_token": context.accessToken,
-                    "authorization": context.authorization,
-                    "user_id": context.userID,
-                    "service_number": context.serviceNumber,
-                    "subscriber_key": context.subscriberKey,
-                    "language": context.languageCode
-                ]
-            ],
-            "messages": [
-                [
-                    "content": message,
-                    "role": "user"
-                ]
-            ]
+            "variables": variables,
+            "messages": messages
         ]
+
+        return requestBody
     }
 }
 
@@ -471,6 +571,22 @@ private enum AIChatResponseParser {
             in: dictionary,
             keys: ["unit", "periodUnit", "validityUnit", "billingUnit"]
         )
+        let offerId = firstString(
+            in: dictionary,
+            keys: ["offerId", "productOfferingId", "offeringId", "productId", "id"]
+        )
+        let offerCode = firstString(
+            in: dictionary,
+            keys: ["offerCode", "cbsCode", "productCode", "code"]
+        )
+        let offerType = firstString(
+            in: dictionary,
+            keys: ["offerType", "offerCategory", "category", "resourceType", "type"]
+        )
+        let resourceSummary = firstString(
+            in: dictionary,
+            keys: ["quota", "resourceSummary", "resourceDesc", "benefitSummary", "description"]
+        )
 
         let score = [name, price, dataAmount, validity].filter { !$0.isEmpty }.count
         let normalizedKeys = dictionary.keys.map { $0.lowercased() }
@@ -493,12 +609,18 @@ private enum AIChatResponseParser {
         }
 
         return AIChatOffer(
+            id: offerId.isEmpty ? UUID().uuidString : offerId,
             name: name,
             price: price.isEmpty ? "--" : price,
             dataAmount: dataAmount.isEmpty ? "--" : dataAmount,
             validity: validity.isEmpty ? "Monthly" : validity,
             currency: currency.isEmpty ? "AED" : currency,
-            unit: unit.isEmpty ? "Month" : unit
+            unit: unit.isEmpty ? "Month" : unit,
+            offerId: offerId.isEmpty ? nil : offerId,
+            offerCode: offerCode.isEmpty ? nil : offerCode,
+            offerType: offerType.isEmpty ? nil : offerType,
+            validityRaw: directValidity.isEmpty ? nil : directValidity,
+            resourceSummary: resourceSummary.isEmpty ? nil : resourceSummary
         )
     }
 
