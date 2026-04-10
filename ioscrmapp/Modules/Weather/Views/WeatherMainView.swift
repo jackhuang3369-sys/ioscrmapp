@@ -254,6 +254,8 @@ struct WeatherMainView: View {
                     .frame(height: min(size.height * 0.56, 470))
                     .padding(.top, 2)
                     .padding(.horizontal, 6)
+                    .contentShape(Rectangle())
+                    .onTapGesture(perform: onClose)
                     
                     Spacer(minLength: 0)
                     
