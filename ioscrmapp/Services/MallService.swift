@@ -583,51 +583,143 @@ struct RemoteMallService: MallServicing {
     }
 
     func fetchCart(session: CustSubInfo) async throws -> MallCartSnapshot {
-        // Remote cart endpoint will land in a later iteration. Keep the service seam stable
-        // and let the current remote mode reuse the same local mock cart experience.
-        await mallMockCartStore.fetchSnapshot()
+        do {
+            let responseData = try await client.get(MallAPI.cart)
+            return try MallResponseMapper.mapCartSnapshot(from: responseData)
+        } catch let error as HTTPClient.ClientError {
+            mallLogger.error("Fetch mall cart failed: \(String(describing: error), privacy: .public)")
+            throw mapClientError(error, fallback: .cartUnavailable)
+        } catch let error as MallServiceError {
+            throw error
+        } catch {
+            throw MallServiceError.networkUnavailable
+        }
     }
 
     func addCartItem(
         _ request: MallCartAddItemRequest,
         session: CustSubInfo
     ) async throws -> MallCartSnapshot {
-        await mallMockCartStore.addItem(request)
+        do {
+            let responseData = try await client.post(
+                MallAPI.cartItems,
+                body: cartAddItemBody(from: request)
+            )
+            return try MallResponseMapper.mapCartSnapshot(from: responseData)
+        } catch let error as HTTPClient.ClientError {
+            mallLogger.error("Add mall cart item failed: \(String(describing: error), privacy: .public)")
+            throw mapClientError(error, fallback: .cartUnavailable)
+        } catch let error as MallServiceError {
+            throw error
+        } catch {
+            throw MallServiceError.networkUnavailable
+        }
     }
 
     func updateCartItemQuantity(
         _ request: MallCartQuantityUpdateRequest,
         session: CustSubInfo
     ) async throws -> MallCartSnapshot {
-        try await mallMockCartStore.updateQuantity(request)
+        do {
+            let responseData = try await client.post(
+                MallAPI.cartItemQuantity,
+                body: [
+                    "itemId": request.itemID,
+                    "quantity": request.quantity
+                ]
+            )
+            return try MallResponseMapper.mapCartSnapshot(from: responseData)
+        } catch let error as HTTPClient.ClientError {
+            mallLogger.error("Update mall cart quantity failed: \(String(describing: error), privacy: .public)")
+            throw mapClientError(error, fallback: .cartUnavailable)
+        } catch let error as MallServiceError {
+            throw error
+        } catch {
+            throw MallServiceError.networkUnavailable
+        }
     }
 
     func updateCartItemSKU(
         _ request: MallCartSKUUpdateRequest,
         session: CustSubInfo
     ) async throws -> MallCartSnapshot {
-        try await mallMockCartStore.updateSKU(request)
+        do {
+            let responseData = try await client.post(
+                MallAPI.cartItemSKU,
+                body: cartSKUUpdateBody(from: request)
+            )
+            return try MallResponseMapper.mapCartSnapshot(from: responseData)
+        } catch let error as HTTPClient.ClientError {
+            mallLogger.error("Update mall cart sku failed: \(String(describing: error), privacy: .public)")
+            throw mapClientError(error, fallback: .cartUnavailable)
+        } catch let error as MallServiceError {
+            throw error
+        } catch {
+            throw MallServiceError.networkUnavailable
+        }
     }
 
     func updateCartItemSelection(
         _ request: MallCartSelectionUpdateRequest,
         session: CustSubInfo
     ) async throws -> MallCartSnapshot {
-        try await mallMockCartStore.updateSelection(request)
+        do {
+            let responseData = try await client.post(
+                MallAPI.cartItemSelection,
+                body: [
+                    "itemIds": request.itemIDs,
+                    "isSelected": request.isSelected
+                ]
+            )
+            return try MallResponseMapper.mapCartSnapshot(from: responseData)
+        } catch let error as HTTPClient.ClientError {
+            mallLogger.error("Update mall cart selection failed: \(String(describing: error), privacy: .public)")
+            throw mapClientError(error, fallback: .cartUnavailable)
+        } catch let error as MallServiceError {
+            throw error
+        } catch {
+            throw MallServiceError.networkUnavailable
+        }
     }
 
     func deleteCartItems(
         _ request: MallCartDeleteItemsRequest,
         session: CustSubInfo
     ) async throws -> MallCartSnapshot {
-        await mallMockCartStore.deleteItems(request)
+        do {
+            let responseData = try await client.post(
+                MallAPI.cartItemDelete,
+                body: ["itemIds": request.itemIDs]
+            )
+            return try MallResponseMapper.mapCartSnapshot(from: responseData)
+        } catch let error as HTTPClient.ClientError {
+            mallLogger.error("Delete mall cart items failed: \(String(describing: error), privacy: .public)")
+            throw mapClientError(error, fallback: .cartUnavailable)
+        } catch let error as MallServiceError {
+            throw error
+        } catch {
+            throw MallServiceError.networkUnavailable
+        }
     }
 
     func prepareCartCheckout(
         _ request: MallCartCheckoutRequest,
         session: CustSubInfo
     ) async throws -> MallCartCheckoutPreview {
-        try await mallMockCartStore.prepareCheckout(request)
+        do {
+            let responseData = try await client.post(
+                MallAPI.cartCheckoutPrepare,
+                body: ["itemIds": request.itemIDs]
+            )
+            return try MallResponseMapper.mapCartCheckoutPreview(from: responseData)
+        } catch let error as HTTPClient.ClientError {
+            mallLogger.error("Prepare mall cart checkout failed: \(String(describing: error), privacy: .public)")
+            throw mapClientError(error, fallback: .cartUnavailable)
+        } catch let error as MallServiceError {
+            throw error
+        } catch {
+            throw MallServiceError.networkUnavailable
+        }
     }
 
     private func mapClientError(
@@ -649,6 +741,10 @@ struct RemoteMallService: MallServicing {
                 return .pageInvalid
             case 50_030, 50_031, 50_032:
                 return .productDetailUnavailable
+            case 50_033, 50_034, 50_035, 50_036, 50_038:
+                return .cartUnavailable
+            case 50_037:
+                return .cartSelectionEmpty
             default:
                 let trimmedMessage = message.trimmingCharacters(in: .whitespacesAndNewlines)
                 return trimmedMessage.isEmpty ? fallback : .featureUnavailable(message: trimmedMessage)
@@ -659,6 +755,68 @@ struct RemoteMallService: MallServicing {
             return .networkUnavailable
         default:
             return fallback
+        }
+    }
+
+    private func cartAddItemBody(from request: MallCartAddItemRequest) -> [String: Any] {
+        [
+            "productId": request.productID,
+            "skuId": request.skuID,
+            "title": localizedTextPayload(request.title) as Any,
+            "selectedSummary": localizedTextPayload(request.selectedSummary) as Any,
+            "image": imagePayload(request.image),
+            "saleLabel": localizedTextPayload(request.saleLabel) as Any,
+            "saleEndsText": localizedTextPayload(request.saleEndsText) as Any,
+            "price": NSDecimalNumber(decimal: request.price),
+            "originalPrice": request.originalPrice.map { NSDecimalNumber(decimal: $0) } as Any,
+            "quantity": request.quantity
+        ]
+    }
+
+    private func cartSKUUpdateBody(from request: MallCartSKUUpdateRequest) -> [String: Any] {
+        [
+            "itemId": request.itemID,
+            "productId": request.productID,
+            "skuId": request.skuID,
+            "selectedSummary": localizedTextPayload(request.selectedSummary) as Any,
+            "image": imagePayload(request.image),
+            "saleLabel": localizedTextPayload(request.saleLabel) as Any,
+            "saleEndsText": localizedTextPayload(request.saleEndsText) as Any,
+            "price": NSDecimalNumber(decimal: request.price),
+            "originalPrice": request.originalPrice.map { NSDecimalNumber(decimal: $0) } as Any
+        ]
+    }
+
+    private func localizedTextPayload(_ value: MallLocalizedString?) -> [String: Any]? {
+        guard let value else {
+            return nil
+        }
+        return [
+            "simplifiedChinese": value.simplifiedChinese,
+            "english": value.english,
+            "arabic": value.arabic
+        ]
+    }
+
+    private func imagePayload(_ image: MallImageSource) -> [String: Any] {
+        switch image {
+        case let .asset(name):
+            return [
+                "type": "asset",
+                "assetName": name
+            ]
+        case let .system(name, backgroundHex, tintHex):
+            return [
+                "type": "system",
+                "systemName": name,
+                "backgroundHex": Int(backgroundHex),
+                "tintHex": Int(tintHex)
+            ]
+        case let .remote(url):
+            return [
+                "type": "remote",
+                "url": url.absoluteString
+            ]
         }
     }
 }
@@ -762,6 +920,24 @@ private enum MallResponseMapper {
         default:
             return false
         }
+    }
+
+    static func mapCartSnapshot(from responseData: HTTPClient.ResponseData) throws -> MallCartSnapshot {
+        let payload = try object(from: responseData)
+        return MallCartSnapshot(
+            items: try objectArray(in: payload, keys: ["items"]).map(mapCartItem)
+        )
+    }
+
+    static func mapCartCheckoutPreview(from responseData: HTTPClient.ResponseData) throws -> MallCartCheckoutPreview {
+        let payload = try object(from: responseData)
+        return MallCartCheckoutPreview(
+            items: try objectArray(in: payload, keys: ["items"]).map(mapCartItem),
+            subtotal: decimal(in: payload, keys: ["subtotal"]) ?? .zero,
+            selectedQuantity: int(in: payload, keys: ["selectedQuantity"]) ?? 0,
+            title: localizedString(in: payload, keys: ["title"]),
+            message: localizedString(in: payload, keys: ["message"])
+        )
     }
 
     private static func mapRecommendation(
@@ -1068,6 +1244,26 @@ private enum MallResponseMapper {
             saleEndsText: localizedTextOrNil(in: dictionary, keys: ["saleEndsText"]) ?? emptyLocalizedString(),
             previewImage: optionalImageSource(in: dictionary, keys: ["previewImage"]) ?? defaultPreviewImage,
             isDefault: bool(in: dictionary, keys: ["isDefault"]) ?? false
+        )
+    }
+
+    private static func mapCartItem(_ dictionary: [String: HTTPClient.ResponseData]) throws -> MallCartItem {
+        MallCartItem(
+            id: string(in: dictionary, keys: ["id"]) ?? "",
+            productID: string(in: dictionary, keys: ["productID", "productId"]) ?? "",
+            skuID: string(in: dictionary, keys: ["skuID", "skuId"]) ?? "",
+            title: localizedString(in: dictionary, keys: ["title"]),
+            selectedSummary: localizedString(in: dictionary, keys: ["selectedSummary"]),
+            image: imageSource(in: dictionary, keys: ["image"]),
+            saleLabel: localizedTextOrNil(in: dictionary, keys: ["saleLabel"]),
+            saleEndsText: localizedTextOrNil(in: dictionary, keys: ["saleEndsText"]),
+            price: decimal(in: dictionary, keys: ["price"]) ?? .zero,
+            originalPrice: decimal(in: dictionary, keys: ["originalPrice"]),
+            quantity: int(in: dictionary, keys: ["quantity"]) ?? 1,
+            isSelected: bool(in: dictionary, keys: ["isSelected"]) ?? false,
+            isInvalid: bool(in: dictionary, keys: ["isInvalid"]) ?? false,
+            invalidReason: localizedTextOrNil(in: dictionary, keys: ["invalidReason"]),
+            updatedAt: date(in: dictionary, keys: ["updatedAt"]) ?? .distantPast
         )
     }
 
