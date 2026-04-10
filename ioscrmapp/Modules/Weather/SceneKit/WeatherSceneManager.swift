@@ -23,6 +23,7 @@ final class WeatherSceneManager: ObservableObject {
     private var isTemperatureHidden: Bool = false
     private var _birdsScene: SCNScene?   // 防止 ARC 过早释放鸟群场景
     private let weatherDataSubdirectory = "WeatherData"
+    private let mainTemperatureScale: Float = 1.2
 
     init(temperature: Int = MockWeatherData.today.temperature, mode: WeatherSceneMode = .main) {
         self.scene = SCNScene()
@@ -286,7 +287,7 @@ final class WeatherSceneManager: ObservableObject {
         let width = maxBounds.x - minBounds.x
         let height = maxBounds.y - minBounds.y
         node.pivot = SCNMatrix4MakeTranslation(minBounds.x + width / 2, minBounds.y + height / 2, 0)
-        node.scale = SCNVector3(0.6, 0.6, 0.6)
+        node.scale = SCNVector3(0.6 * mainTemperatureScale, 0.6 * mainTemperatureScale, 0.6 * mainTemperatureScale)
         node.eulerAngles = SCNVector3(0.02, -0.05, 0.01)
         return node
     }
@@ -464,6 +465,7 @@ final class WeatherSceneManager: ObservableObject {
             child.position.x -= totalWidth / 2
         }
 
+        container.scale = SCNVector3(mainTemperatureScale, mainTemperatureScale, mainTemperatureScale)
         container.eulerAngles = SCNVector3(0.02, -0.05, 0.01)
         return container
     }
