@@ -32,7 +32,13 @@ struct WeatherSceneView: UIViewRepresentable {
 
     // MARK: UIViewRepresentable
 
-    func makeCoordinator() -> Coordinator { Coordinator(manager: manager, onSunTap: onSunTap) }
+    func makeCoordinator() -> Coordinator {
+        Coordinator(
+            manager: manager,
+            onSunTap: onSunTap,
+            allowsInteraction: allowsInteraction
+        )
+    }
 
     func makeUIView(context: Context) -> SCNView {
         let scnView = SCNView()
@@ -98,8 +104,9 @@ struct WeatherSceneView: UIViewRepresentable {
             var elapsed: CFTimeInterval = 0
         }
 
-        private let manager:     WeatherSceneManager?
-        private var onSunTap:    (() -> Void)?
+        private let manager: WeatherSceneManager?
+        private let allowsInteraction: Bool
+        private var onSunTap: (() -> Void)?
         private var currentYaw:     Float = 0
         private var currentPitch:   Float = 0
         private var currentRoll:    Float = 0
@@ -111,7 +118,6 @@ struct WeatherSceneView: UIViewRepresentable {
         private var rollVelocity:  Float = 0
         private var isPanning:     Bool  = false
         private var displayLink: CADisplayLink?
-        private var hintTimer:   Timer?
         private var lastPanPoint: CGPoint?
         private var orientationAnimation: OrientationAnimation?
         private var hasUserInteracted: Bool = false
@@ -140,8 +146,9 @@ struct WeatherSceneView: UIViewRepresentable {
         private let reverseReturnDurationRange: ClosedRange<Float> = 0.34...2.2
         private let reverseReturnVelocityRange: ClosedRange<CGFloat> = 180...2200
 
-        init(manager: WeatherSceneManager?, onSunTap: (() -> Void)?) {
+        init(manager: WeatherSceneManager?, onSunTap: (() -> Void)?, allowsInteraction: Bool) {
             self.manager = manager
+            self.allowsInteraction = allowsInteraction
             self.onSunTap = onSunTap
             let restPitch = manager?.restTiltX ?? 0
             currentPitch = restPitch
@@ -152,7 +159,7 @@ struct WeatherSceneView: UIViewRepresentable {
             self.onSunTap = onSunTap
         }
 
-        deinit { displayLink?.invalidate(); hintTimer?.invalidate() }
+        deinit { displayLink?.invalidate() }
 
         // MARK: Display link
 
@@ -161,17 +168,6 @@ struct WeatherSceneView: UIViewRepresentable {
             displayLink?.invalidate()
             displayLink = CADisplayLink(target: self, selector: #selector(step))
             displayLink?.add(to: .main, forMode: .common)
-            // 延迟 0.8s 播放一次左右摇摆提示，让用户知道可以拖拽
-            hintTimer = Timer.scheduledTimer(withTimeInterval: 0.8, repeats: false) { [weak self] _ in
-                self?.playDragHint()
-            }
-        }
-
-        // 首次加载时给模型一个左右摇摆速度，提示可拖拽
-        private func playDragHint() {
-            guard !isPanning else { return }
-            yawVelocity = 0.024
-            rollVelocity = -0.008
         }
 
         /// Advances inertial motion and eases the model back toward its resting pose.
