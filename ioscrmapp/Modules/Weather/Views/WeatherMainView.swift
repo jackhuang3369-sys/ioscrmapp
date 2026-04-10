@@ -279,7 +279,7 @@ struct WeatherMainView: View {
                         scene: manager.scene,
                         manager: manager,
                         onSunTap: nil,
-                        allowsInteraction: false
+                        allowsInteraction: true
                     )
                     .frame(height: min(size.height * 0.56, 470))
                     .padding(.top, 2)

@@ -58,12 +58,14 @@ struct WeatherSceneView: UIViewRepresentable {
             pan.maximumNumberOfTouches = 1
             scnView.addGestureRecognizer(pan)
 
-            let tap = UITapGestureRecognizer(
-                target: context.coordinator,
-                action: #selector(Coordinator.handleTap(_:))
-            )
-            tap.require(toFail: pan)
-            scnView.addGestureRecognizer(tap)
+            if onSunTap != nil {
+                let tap = UITapGestureRecognizer(
+                    target: context.coordinator,
+                    action: #selector(Coordinator.handleTap(_:))
+                )
+                tap.require(toFail: pan)
+                scnView.addGestureRecognizer(tap)
+            }
         }
 
         context.coordinator.startDisplayLink()
@@ -184,7 +186,7 @@ struct WeatherSceneView: UIViewRepresentable {
                     return
                 }
 
-                targetYaw += autoSpinSpeed + yawVelocity
+                targetYaw += autoSpinSpeed * Float(frameDuration) + yawVelocity
                 targetPitch += pitchVelocity
                 targetRoll += rollVelocity
 
@@ -285,6 +287,7 @@ struct WeatherSceneView: UIViewRepresentable {
                 currentRoll = animation.endRoll
                 targetRoll = animation.endRoll
                 orientationAnimation = nil
+                manager?.resumeAutomaticSpinAfterInteraction()
             } else {
                 orientationAnimation = animation
             }
@@ -294,19 +297,28 @@ struct WeatherSceneView: UIViewRepresentable {
 
         private func startHorizontalYawMomentum(with velocityX: CGFloat, restPitch: Float) {
             let direction: Float = velocityX >= 0 ? 1 : -1
+            let horizontalVelocity = abs(velocityX)
             let normalizedSpeed = normalizedProgress(
-                value: abs(velocityX),
+                value: horizontalVelocity,
                 lowerBound: horizontalSpinVelocityRange.lowerBound,
                 upperBound: horizontalSpinVelocityRange.upperBound
             )
-            let turns = normalizedSpeed >= 0.55
-                ? horizontalSpinTurnRange.upperBound
-                : horizontalSpinTurnRange.lowerBound
-            let duration = interpolate(
-                Float(horizontalSpinDurationRange.upperBound),
-                Float(horizontalSpinDurationRange.lowerBound),
-                progress: normalizedSpeed
-            )
+            let turns: Int
+            let duration: Float
+
+            if horizontalVelocity < minimumHorizontalMomentumVelocity {
+                turns = 0
+                duration = 0.62
+            } else {
+                turns = normalizedSpeed >= 0.55
+                    ? horizontalSpinTurnRange.upperBound
+                    : horizontalSpinTurnRange.lowerBound
+                duration = interpolate(
+                    Float(horizontalSpinDurationRange.upperBound),
+                    Float(horizontalSpinDurationRange.lowerBound),
+                    progress: normalizedSpeed
+                )
+            }
             let destinationYaw = frontFacingYaw(from: currentYaw, direction: direction, extraTurns: turns)
 
             orientationAnimation = OrientationAnimation(
@@ -449,6 +461,7 @@ struct WeatherSceneView: UIViewRepresentable {
             case .began:
                 isPanning = true
                 hasUserInteracted = true
+                manager?.pauseAutomaticSpinForInteraction()
                 lastPanPoint = gesture.location(in: gesture.view)
                 stopMomentumAnimations()
                 WeatherAudioPlayer.shared.playShapeTap()
@@ -487,18 +500,9 @@ struct WeatherSceneView: UIViewRepresentable {
                 isPanning = false
                 lastPanPoint = nil
                 let v = gesture.velocity(in: gesture.view)
-                let yawSensitivity = yawSensitivity(for: gesture.view)
                 let interactionMode = panInteractionMode(for: gesture)
                 if interactionMode == .horizontalYawOnly {
-                    if abs(v.x) >= minimumHorizontalMomentumVelocity {
-                        startHorizontalYawMomentum(with: v.x, restPitch: restPitch)
-                    } else {
-                        yawVelocity = Float(v.x) * yawSensitivity / 168
-                        targetPitch = restPitch
-                        targetRoll = 0
-                        pitchVelocity = 0
-                        rollVelocity = 0
-                    }
+                    startHorizontalYawMomentum(with: v.x, restPitch: restPitch)
                 } else {
                     startReverseReturnAnimation(with: v, restPitch: restPitch)
                 }

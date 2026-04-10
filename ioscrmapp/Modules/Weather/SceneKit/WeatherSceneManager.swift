@@ -23,6 +23,8 @@ final class WeatherSceneManager: ObservableObject {
     private var isTemperatureHidden: Bool = false
     private var _birdsScene: SCNScene?   // 防止 ARC 过早释放鸟群场景
     private let weatherDataSubdirectory = "WeatherData"
+    private let sunSpinAnimationKey = "sun_spin"
+    private let detailAutoSpinSpeed = -Float.pi * 2 / 30
     private let mainTemperatureScale: Float = 1.5
     private let mainSunScale: CGFloat = 1.12
     private let mainSunPositionY: Float = 4.40
@@ -60,13 +62,25 @@ final class WeatherSceneManager: ObservableObject {
         displayGroupRotation = angles
     }
 
+    func pauseAutomaticSpinForInteraction() {
+        guard mode == .sunDetail else { return }
+
+        autoSpinSpeed = 0
+    }
+
+    func resumeAutomaticSpinAfterInteraction() {
+        guard mode == .sunDetail else { return }
+        autoSpinSpeed = detailAutoSpinSpeed
+    }
+
     private func buildScene() {
         scene.background.contents = UIColor.clear
         scene.rootNode.childNodes.forEach { $0.removeFromParentNode() }
+        detailTitleNode = nil
 
         let isDetailMode = mode == .sunDetail
         restTiltX = isDetailMode ? -0.004 : -0.012
-        autoSpinSpeed = 0
+        autoSpinSpeed = isDetailMode ? detailAutoSpinSpeed : 0
 
         let camera = SCNCamera()
         camera.fieldOfView = isDetailMode ? 24 : 31
@@ -164,9 +178,8 @@ final class WeatherSceneManager: ObservableObject {
 
         attachFloatAnimation(to: root)
         attachSunPulse(to: sun)
-        attachSunSpin(to: sun)
-        if let detailTitleNode {
-            attachSunSpin(to: detailTitleNode)
+        if mode == .main {
+            attachSunSpin(to: sun)
         }
     }
 
@@ -654,13 +667,13 @@ final class WeatherSceneManager: ObservableObject {
     }
 
     private func attachSunSpin(to node: SCNNode) {
-        let spin = CABasicAnimation(keyPath: "rotation")
-        spin.fromValue = NSValue(scnVector4: SCNVector4(0, 1, 0, 0))
-        spin.toValue = NSValue(scnVector4: SCNVector4(0, 1, 0, -Float.pi * 2))
+        let spin = CABasicAnimation(keyPath: "eulerAngles.y")
+        spin.fromValue = 0
+        spin.toValue = -Float.pi * 2
         spin.duration = 30   // 原 18s，降到 60% 速度
         spin.repeatCount = .infinity
         spin.timingFunction = CAMediaTimingFunction(name: .linear)
-        node.addAnimation(spin, forKey: "sun_spin")
+        node.addAnimation(spin, forKey: sunSpinAnimationKey)
     }
 
 }
