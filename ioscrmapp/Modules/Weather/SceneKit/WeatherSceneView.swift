@@ -83,7 +83,8 @@ struct WeatherSceneView: UIViewRepresentable {
         private var lastPanPoint: CGPoint?
 
         // Tuning constants
-        private let yawSensitivity:   Float = 0.0155
+        private let yawTurnsPerFullWidthPan: Float = 4.8
+        private let minimumPanReferenceWidth: Float = 280
         private let pitchSensitivity: Float = 0.0125
         private let rollSensitivity:  Float = 0.0038
         private let velocityDamping:  Float = 0.93
@@ -168,6 +169,11 @@ struct WeatherSceneView: UIViewRepresentable {
             node.simdOrientation = simd_normalize(yaw * pitch * roll)
         }
 
+        private func yawSensitivity(for view: UIView?) -> Float {
+            let referenceWidth = max(Float(view?.bounds.width ?? 0), minimumPanReferenceWidth)
+            return (.pi * 2 * yawTurnsPerFullWidthPan) / referenceWidth
+        }
+
         // MARK: Pan gesture
 
         @objc func handlePan(_ gesture: UIPanGestureRecognizer) {
@@ -191,6 +197,7 @@ struct WeatherSceneView: UIViewRepresentable {
                 let deltaY = point.y - previousPoint.y
                 lastPanPoint = point
 
+                let yawSensitivity = yawSensitivity(for: gesture.view)
                 let yawDelta = Float(deltaX) * yawSensitivity
                 let pitchDelta = Float(deltaY) * pitchSensitivity
                 let rollDelta = Float(deltaX) * -rollSensitivity
@@ -209,6 +216,7 @@ struct WeatherSceneView: UIViewRepresentable {
                 isPanning = false
                 lastPanPoint = nil
                 let v = gesture.velocity(in: gesture.view)
+                let yawSensitivity = yawSensitivity(for: gesture.view)
                 yawVelocity = Float(v.x) * yawSensitivity / 92
                 pitchVelocity = Float(v.y) * pitchSensitivity / 110
                 rollVelocity = Float(v.x) * -rollSensitivity / 118
