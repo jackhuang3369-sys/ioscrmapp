@@ -59,12 +59,13 @@ struct WeatherMainView: View {
     }
     
     private func mainScene(in proxy: GeometryProxy) -> some View {
-        ZStack {
+        let mainSceneHeight = proxy.size.height * 0.78
+
+        return ZStack {
             background
             
             VStack(spacing: 0) {
-                topBar
-                cityHeader
+                headerBar
                     .zIndex(2)
                 
                 WeatherSceneView(
@@ -72,15 +73,15 @@ struct WeatherMainView: View {
                     manager: sceneManager,
                     onSunTap: enterSunDetail
                 )
-                .frame(height: proxy.size.height * 0.59)
-                .padding(.top, 28)
-                .padding(.horizontal, 10)
+                .frame(height: mainSceneHeight)
+                .padding(.top, 8)
+                .padding(.horizontal, 0)
                 .zIndex(1)
                 
-                Spacer(minLength: max(4, proxy.size.height * 0.01))
+                Spacer(minLength: 0)
                 
                 Text(weather.title)
-                    .font(.du(24, weight: .bold))
+                    .font(.du(26, weight: .bold))
                     .foregroundColor(Color.black.opacity(0.92))
                     .padding(.bottom, 8)
                 
@@ -105,9 +106,10 @@ struct WeatherMainView: View {
                     detailSceneManager.setTemperature(entry.temperature, animated: false)
                 }
                 .frame(width: proxy.size.width * 0.8)
-                .padding(.bottom, max(proxy.safeAreaInsets.bottom, 12) + 24)
+                .padding(.bottom, 20)
             }
         }
+        .ignoresSafeArea()
         .businessAIAssistant(
             session: session,
             aiChatService: aiChatService,
@@ -135,24 +137,31 @@ struct WeatherMainView: View {
         }
     }
     
-    private var topBar: some View {
-        HStack {
-            Button {
-                dismiss()
-            } label: {
-                Image(systemName: "chevron.left")
-                    .font(.system(size: 17, weight: .semibold))
-                    .foregroundColor(Color.black.opacity(0.9))
-                    .frame(width: 38, height: 38)
-                    .background(Color.white.opacity(0.9))
-                    .clipShape(Circle())
-                    .shadow(color: .black.opacity(0.08), radius: 14, x: 0, y: 8)
+    private var headerBar: some View {
+        ZStack(alignment: .top) {
+            HStack {
+                backButton
+                Spacer()
             }
             
-            Spacer()
+            cityHeader
         }
         .padding(.horizontal, 18)
         .padding(.top, 56)
+    }
+    
+    private var backButton: some View {
+        Button {
+            dismiss()
+        } label: {
+            Image(systemName: "chevron.left")
+                .font(.system(size: 17, weight: .semibold))
+                .foregroundColor(Color.black.opacity(0.9))
+                .frame(width: 38, height: 38)
+                .background(Color.white.opacity(0.9))
+                .clipShape(Circle())
+                .shadow(color: .black.opacity(0.08), radius: 14, x: 0, y: 8)
+        }
     }
     
     private var cityHeader: some View {
@@ -167,7 +176,7 @@ struct WeatherMainView: View {
                 .kerning(1.8)
                 .foregroundColor(Color.black.opacity(0.30))
         }
-        .padding(.top, 12)
+        .frame(maxWidth: .infinity)
     }
     
     private func enterSunDetail() {

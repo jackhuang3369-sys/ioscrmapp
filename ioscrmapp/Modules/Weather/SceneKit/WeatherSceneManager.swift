@@ -23,7 +23,11 @@ final class WeatherSceneManager: ObservableObject {
     private var isTemperatureHidden: Bool = false
     private var _birdsScene: SCNScene?   // 防止 ARC 过早释放鸟群场景
     private let weatherDataSubdirectory = "WeatherData"
-    private let mainTemperatureScale: Float = 1.2
+    private let mainTemperatureScale: Float = 1.5
+    private let mainSunScale: CGFloat = 1.12
+    private let mainSunPositionY: Float = 4.40
+    private let mainTemperaturePositionY: Float = -2.4
+    private let mainCameraPosition = SCNVector3(0, 0.02, 24.9)
 
     init(temperature: Int = MockWeatherData.today.temperature, mode: WeatherSceneMode = .main) {
         self.scene = SCNScene()
@@ -73,7 +77,7 @@ final class WeatherSceneManager: ObservableObject {
         cameraNode.camera = camera
         cameraNode.position = isDetailMode
             ? SCNVector3(0, 0.38, 18.8)
-            : SCNVector3(0, 0.02, 20.8)
+            : mainCameraPosition
         scene.rootNode.addChildNode(cameraNode)
 
         let ambient = SCNLight()
@@ -143,7 +147,7 @@ final class WeatherSceneManager: ObservableObject {
 
             sunNode = sunAssembly
         } else {
-            sun.position = SCNVector3(0, 3.26, -0.1)
+            sun.position = SCNVector3(0, mainSunPositionY, -0.1)
             rotatingGroup.addChildNode(sun)
             sunNode = sun
         }
@@ -151,7 +155,7 @@ final class WeatherSceneManager: ObservableObject {
         if mode == .main {
             let digits = makeTemperatureNode(text: "\(currentTemperature)")
             // ── 数字位置：Y 值越小越靠下（如需微调往下移，减小 Y 值）──
-            digits.position = SCNVector3(0, -2.3, 0.12)
+            digits.position = SCNVector3(0, mainTemperaturePositionY, 0.12)
             rotatingGroup.addChildNode(digits)
             temperatureNode = digits
         } else {
@@ -178,7 +182,7 @@ final class WeatherSceneManager: ObservableObject {
         let root = SCNNode()
         root.name = SceneNode.sun
 
-        let sphere = SCNSphere(radius: mode == .sunDetail ? 2.37 : 2.16)
+        let sphere = SCNSphere(radius: mode == .sunDetail ? 2.37 : 2.16 * mainSunScale)
         sphere.segmentCount = 80
 
         let material = SCNMaterial()
@@ -293,7 +297,7 @@ final class WeatherSceneManager: ObservableObject {
     }
 
     private func makeSunModelNode() -> SCNNode? {
-        let targetHeight: Float = mode == .sunDetail ? 4.72 : 4.02
+        let targetHeight: Float = mode == .sunDetail ? 4.72 : 4.02 * Float(mainSunScale)
         guard let payload = loadNormalizedModelNode(named: "sun", fileExtension: "obj", targetHeight: targetHeight) else {
             return nil
         }
@@ -604,7 +608,7 @@ final class WeatherSceneManager: ObservableObject {
 
         let replacement = makeTemperatureNode(text: "\(currentTemperature)")
         replacement.name = SceneNode.temperature
-        replacement.position = SCNVector3(0, -2.3, 0.12) // 同步 buildScene 数字位置
+        replacement.position = SCNVector3(0, mainTemperaturePositionY, 0.12) // 同步 buildScene 数字位置
         let targetOpacity: CGFloat = isTemperatureHidden ? 0 : 1
         replacement.opacity = animated ? 0 : targetOpacity
         root.addChildNode(replacement)
@@ -626,9 +630,10 @@ final class WeatherSceneManager: ObservableObject {
     }
 
     private func attachFloatAnimation(to node: SCNNode) {
+        let offsetRange: Float = mode == .sunDetail ? 0.14 : 0.08
         let animation = CABasicAnimation(keyPath: "position.y")
-        animation.fromValue = Float(-0.14)
-        animation.toValue = Float(0.14)
+        animation.fromValue = -offsetRange
+        animation.toValue = offsetRange
         animation.duration = 4.8
         animation.autoreverses = true
         animation.repeatCount = .infinity
@@ -637,9 +642,10 @@ final class WeatherSceneManager: ObservableObject {
     }
 
     private func attachSunPulse(to node: SCNNode) {
+        let pulseScale: Float = mode == .sunDetail ? 1.045 : 1.03
         let pulse = CABasicAnimation(keyPath: "scale")
         pulse.fromValue = NSValue(scnVector3: SCNVector3(1, 1, 1))
-        pulse.toValue = NSValue(scnVector3: SCNVector3(1.045, 1.045, 1.045))
+        pulse.toValue = NSValue(scnVector3: SCNVector3(pulseScale, pulseScale, pulseScale))
         pulse.duration = 2.6
         pulse.autoreverses = true
         pulse.repeatCount = .infinity
