@@ -7,6 +7,10 @@ struct WeatherMainView: View {
     @StateObject private var detailSceneManager = WeatherSceneManager(temperature: MockWeatherData.today.temperature, mode: .sunDetail)
     @State private var selectedTimelineID = MockWeatherData.timeline.first?.id ?? "now"
     @State private var isSunDetailPresented = false
+    @State private var mainSceneScale: CGFloat = 1.0
+    @State private var mainSceneBlur: CGFloat = 0
+    @State private var mainSceneOpacity: Double = 1.0
+    @State private var detailSceneScale: CGFloat = 0.85
     
     private let session: CustSubInfo
     private let aiChatService: any AIChatServicing
@@ -31,12 +35,15 @@ struct WeatherMainView: View {
         GeometryReader { proxy in
             ZStack {
                 mainScene(in: proxy)
-                    .scaleEffect(isSunDetailPresented ? 0.985 : 1)
-                    .blur(radius: isSunDetailPresented ? 6 : 0)
-                    .opacity(isSunDetailPresented ? 0.22 : 1)
+                    .scaleEffect(mainSceneScale)
+                    .blur(radius: mainSceneBlur)
+                    .opacity(mainSceneOpacity)
+                    .offset(y: mainSceneScale < 1 ? 20 : 0)
                     .allowsHitTesting(!isSunDetailPresented)
-                    .animation(.easeInOut(duration: 0.24), value: isSunDetailPresented)
-                
+                    .animation(.easeInOut(duration: 0.40), value: mainSceneScale)
+                    .animation(.easeInOut(duration: 0.40), value: mainSceneBlur)
+                    .animation(.easeInOut(duration: 0.40), value: mainSceneOpacity)
+
                 if isSunDetailPresented {
                     WeatherSunDetailOverlay(
                         manager: detailSceneManager,
@@ -44,7 +51,8 @@ struct WeatherMainView: View {
                         safeAreaInsets: proxy.safeAreaInsets,
                         onClose: exitSunDetail
                     )
-                    .transition(.opacity.combined(with: .scale(scale: 0.97)))
+                    .scaleEffect(detailSceneScale)
+                    .transition(.opacity)
                     .zIndex(10)
                 }
             }
@@ -61,29 +69,30 @@ struct WeatherMainView: View {
     private func mainScene(in proxy: GeometryProxy) -> some View {
         ZStack {
             background
-            
+
             VStack(spacing: 0) {
                 topBar
                 cityHeader
                     .zIndex(2)
-                
+
                 WeatherSceneView(
                     scene: sceneManager.scene,
                     manager: sceneManager,
                     onSunTap: enterSunDetail
                 )
-                .frame(height: proxy.size.height * 0.59)
-                .padding(.top, 28)
+                // SceneKit 视图高度：屏幕高度的 62%，给太阳和数字更多垂直空间
+                .frame(height: proxy.size.height * 0.62)
+                .padding(.top, 8)  // 减少顶部间距，让太阳更靠上
                 .padding(.horizontal, 10)
                 .zIndex(1)
-                
+
                 Spacer(minLength: max(4, proxy.size.height * 0.01))
-                
+
                 Text(weather.title)
                     .font(.du(24, weight: .bold))
                     .foregroundColor(Color.black.opacity(0.92))
                     .padding(.bottom, 8)
-                
+
                 WeatherHourlyStrip(
                     timeline: MockWeatherData.timeline.map { entry in
                         WeatherTimelineEntry(
@@ -170,21 +179,56 @@ struct WeatherMainView: View {
     
     private func enterSunDetail() {
         guard !isSunDetailPresented else { return }
-        detailSceneManager.setTemperature(selectedEntry.temperature, animated: false)
-        sceneManager.setTemperatureVisibility(isHidden: true, animated: true)
-        withAnimation(.spring(response: 0.56, dampingFraction: 0.88, blendDuration: 0.12)) {
-            isSunDetailPresented = true
+
+        // 阶段 1: 点击反馈（立即执行）
+        sceneManager.applySunTapFeedback()
+        WeatherAudioPlayer.shared.playShapeTap()
+
+        // 阶段 2: 主场景推进缩小（延迟 0.15s）
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+            mainSceneScale = 0.85
+            mainSceneBlur = 8
+            mainSceneOpacity = 0.25
+            sceneManager.applyEnterDetailPushAnimation()
+
+            detailSceneManager.setTemperature(selectedEntry.temperature, animated: false)
+
+            // 阶段 3: 详情页展开（延迟 0.40s）
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.40) {
+                sceneManager.setTemperatureVisibility(isHidden: true, animated: true)
+                detailSceneScale = 0.85
+
+                withAnimation(.spring(response: 0.50, dampingFraction: 0.88)) {
+                    isSunDetailPresented = true
+                    detailSceneScale = 1.0
+                    mainSceneOpacity = 0
+                }
+                WeatherAudioPlayer.shared.playDetailedEnter()
+            }
         }
-        WeatherAudioPlayer.shared.playDetailedEnter()
     }
-    
+
     private func exitSunDetail() {
         guard isSunDetailPresented else { return }
-        sceneManager.setTemperatureVisibility(isHidden: false, animated: true)
-        withAnimation(.spring(response: 0.48, dampingFraction: 0.86, blendDuration: 0.08)) {
-            isSunDetailPresented = false
+
+        // 阶段 1: 详情页缩小淡出
+        withAnimation(.easeInOut(duration: 0.30)) {
+            detailSceneScale = 0.85
+            mainSceneOpacity = 0.25
         }
         WeatherAudioPlayer.shared.playShapeTap()
+
+        // 阶段 2: 主场景恢复
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.30) {
+            withAnimation(.spring(response: 0.45, dampingFraction: 0.86)) {
+                isSunDetailPresented = false
+                mainSceneScale = 1.0
+                mainSceneBlur = 0
+                mainSceneOpacity = 1.0
+            }
+            sceneManager.resetSunFromDetail()
+            sceneManager.setTemperatureVisibility(isHidden: false, animated: true)
+        }
     }
     private func handleAIChatNavigation(_ target: AIChatNavigationTarget) {
         guard shouldForwardAIChatNavigation(target) else {
