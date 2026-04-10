@@ -16,6 +16,13 @@ struct WeatherSceneView: UIViewRepresentable {
     let onSunTap: (() -> Void)?
     let allowsInteraction: Bool
 
+    /// Creates a SceneKit weather container with optional gesture interaction.
+    ///
+    /// - Parameters:
+    ///   - scene: The SceneKit scene rendered by the underlying `SCNView`.
+    ///   - manager: Provides the rotatable weather node and resting orientation values.
+    ///   - onSunTap: Called when the interactive weather model is tapped.
+    ///   - allowsInteraction: Enables drag and tap gestures when `true`.
     init(scene: SCNScene, manager: WeatherSceneManager?, onSunTap: (() -> Void)? = nil, allowsInteraction: Bool = true) {
         self.scene = scene
         self.manager = manager
@@ -66,6 +73,11 @@ struct WeatherSceneView: UIViewRepresentable {
 
     final class Coordinator: NSObject {
 
+        private enum PanInteractionMode {
+            case freeform
+            case horizontalYawOnly
+        }
+
         private let manager:     WeatherSceneManager?
         private var onSunTap:    (() -> Void)?
         private var currentYaw:     Float = 0
@@ -87,6 +99,10 @@ struct WeatherSceneView: UIViewRepresentable {
         private let minimumPanReferenceWidth: Float = 280
         private let pitchSensitivity: Float = 0.0125
         private let rollSensitivity:  Float = 0.0038
+        private let horizontalPanActivationDistance: CGFloat = 10
+        private let horizontalPanLockAngle: CGFloat = .pi / 10
+        private let horizontalPitchSnapStrength: Float = 0.42
+        private let horizontalRollSnapStrength: Float = 0.48
         private let velocityDamping:  Float = 0.93
         private let followStrength:   Float = 0.72
         private let idleFollow:       Float = 0.36
@@ -128,6 +144,7 @@ struct WeatherSceneView: UIViewRepresentable {
             rollVelocity = -0.008
         }
 
+        /// Advances inertial motion and eases the model back toward its resting pose.
         @objc private func step(_ link: CADisplayLink) {
             guard let node = manager?.conditionGroup else { return }
             let restPitch = manager?.restTiltX ?? 0
@@ -174,10 +191,44 @@ struct WeatherSceneView: UIViewRepresentable {
             return (.pi * 2 * yawTurnsPerFullWidthPan) / referenceWidth
         }
 
+        /// Treats nearly horizontal drags as yaw-only interactions so the model does not tilt diagonally.
+        ///
+        /// - Parameter gesture: The active pan gesture used to infer drag direction.
+        /// - Returns: `.horizontalYawOnly` for mostly horizontal drags, otherwise `.freeform`.
+        private func panInteractionMode(for gesture: UIPanGestureRecognizer) -> PanInteractionMode {
+            let translation = gesture.translation(in: gesture.view)
+            let horizontalDistance = abs(translation.x)
+            let verticalDistance = abs(translation.y)
+            let dominantDistance = max(horizontalDistance, verticalDistance)
+
+            guard dominantDistance >= horizontalPanActivationDistance else {
+                return .freeform
+            }
+
+            let dragAngle = atan2(verticalDistance, horizontalDistance)
+            return dragAngle <= horizontalPanLockAngle ? .horizontalYawOnly : .freeform
+        }
+
+        /// Pulls pitch and roll back toward the resting pose while the user is dragging horizontally.
+        ///
+        /// - Parameter restPitch: The default X-axis tilt configured by the scene manager.
+        private func settleHorizontalTilt(restPitch: Float) {
+            pitchVelocity = 0
+            rollVelocity = 0
+            targetPitch += (restPitch - targetPitch) * horizontalPitchSnapStrength
+            targetRoll += (0 - targetRoll) * horizontalRollSnapStrength
+            currentPitch += (restPitch - currentPitch) * horizontalPitchSnapStrength
+            currentRoll += (0 - currentRoll) * horizontalRollSnapStrength
+        }
+
         // MARK: Pan gesture
 
+        /// Maps pan gestures to model rotation, locking pure horizontal drags to yaw-only motion.
+        ///
+        /// - Parameter gesture: The pan gesture attached to the SceneKit view.
         @objc func handlePan(_ gesture: UIPanGestureRecognizer) {
             guard let node = manager?.conditionGroup else { return }
+            let restPitch = manager?.restTiltX ?? 0
             switch gesture.state {
             case .began:
                 isPanning = true
@@ -199,16 +250,21 @@ struct WeatherSceneView: UIViewRepresentable {
 
                 let yawSensitivity = yawSensitivity(for: gesture.view)
                 let yawDelta = Float(deltaX) * yawSensitivity
-                let pitchDelta = Float(deltaY) * pitchSensitivity
-                let rollDelta = Float(deltaX) * -rollSensitivity
+                let interactionMode = panInteractionMode(for: gesture)
+                let pitchDelta = interactionMode == .horizontalYawOnly ? 0 : Float(deltaY) * pitchSensitivity
+                let rollDelta = interactionMode == .horizontalYawOnly ? 0 : Float(deltaX) * -rollSensitivity
 
                 targetYaw += yawDelta
                 targetPitch += pitchDelta
                 targetRoll += rollDelta
 
                 currentYaw += yawDelta * 0.34
-                currentPitch += pitchDelta * 0.28
-                currentRoll += rollDelta * 0.30
+                if interactionMode == .horizontalYawOnly {
+                    settleHorizontalTilt(restPitch: restPitch)
+                } else {
+                    currentPitch += pitchDelta * 0.28
+                    currentRoll += rollDelta * 0.30
+                }
                 applyOrientation(to: node)
 
                 manager?.syncDisplayGroupRotation(to: node.eulerAngles)
@@ -217,9 +273,19 @@ struct WeatherSceneView: UIViewRepresentable {
                 lastPanPoint = nil
                 let v = gesture.velocity(in: gesture.view)
                 let yawSensitivity = yawSensitivity(for: gesture.view)
+                let interactionMode = panInteractionMode(for: gesture)
                 yawVelocity = Float(v.x) * yawSensitivity / 92
-                pitchVelocity = Float(v.y) * pitchSensitivity / 110
-                rollVelocity = Float(v.x) * -rollSensitivity / 118
+                if interactionMode == .horizontalYawOnly {
+                    targetPitch = restPitch
+                    targetRoll = 0
+                    currentPitch = restPitch
+                    currentRoll = 0
+                    pitchVelocity = 0
+                    rollVelocity = 0
+                } else {
+                    pitchVelocity = Float(v.y) * pitchSensitivity / 110
+                    rollVelocity = Float(v.x) * -rollSensitivity / 118
+                }
                 let fast = hypot(v.x, v.y) > 650
                 WeatherAudioPlayer.shared.playSpinLoop(fast: fast)
                 SCNTransaction.begin()
