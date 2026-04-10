@@ -116,7 +116,7 @@ private enum Catalog {
         }
 
         if isLocalDebugRun {
-            return .mock
+            return .remote
         }
 
         return fallback

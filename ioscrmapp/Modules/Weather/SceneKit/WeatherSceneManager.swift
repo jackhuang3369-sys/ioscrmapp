@@ -142,16 +142,15 @@ final class WeatherSceneManager: ObservableObject {
 
             sunNode = sunAssembly
         } else {
-            // 太阳位置：Y 值向上调整，让太阳位于城市名下方、数字上方
-            sun.position = SCNVector3(0, 3.8, -0.1)  // 原来 3.26 → 3.8（向上移动）
+            sun.position = SCNVector3(0, 3.26, -0.1)
             rotatingGroup.addChildNode(sun)
             sunNode = sun
         }
 
         if mode == .main {
             let digits = makeTemperatureNode(text: "\(currentTemperature)")
-            // 数字位置：Y 值调整后让数字位于太阳下方、屏幕垂直中心偏下
-            digits.position = SCNVector3(0, -1.2, 0.12)  // 原来 -2.3 → -1.2（向上移动，更接近太阳）
+            // ── 数字位置：Y 值越小越靠下（如需微调往下移，减小 Y 值）──
+            digits.position = SCNVector3(0, -2.3, 0.12)
             rotatingGroup.addChildNode(digits)
             temperatureNode = digits
         } else {
@@ -178,29 +177,17 @@ final class WeatherSceneManager: ObservableObject {
         let root = SCNNode()
         root.name = SceneNode.sun
 
-        // 太阳规格：直径为屏幕宽度的 55-60%
-        // 在 SceneKit 中，radius 2.4 对应约 58% 屏幕宽度（iPhone 15 Pro）
-        let sphere = SCNSphere(radius: mode == .sunDetail ? 2.6 : 2.4)
-        sphere.segmentCount = 100  // 提高细分度，让圆形更平滑
-
-        // 生成颗粒噪波纹理
-        let noiseImage = createGrainNoiseImage(size: 256)
+        let sphere = SCNSphere(radius: mode == .sunDetail ? 2.37 : 2.16)
+        sphere.segmentCount = 80
 
         let material = SCNMaterial()
         material.lightingModel = .physicallyBased
-        // 高饱和度红色 #FF2B2B 近似值
-        material.diffuse.contents = UIColor(red: 1.0, green: 0.17, blue: 0.17, alpha: 0.98)
-        material.emission.contents = UIColor(red: 0.85, green: 0.0, blue: 0.0, alpha: 0.28)
-        material.roughness.contents = Float(0.72)  // 稍高粗糙度，营造磨砂质感
+        material.diffuse.contents = UIColor(red: 1.0, green: 0.32, blue: 0.26, alpha: 0.96)
+        material.emission.contents = UIColor(red: 1.0, green: 0.22, blue: 0.18, alpha: 0.34)
+        material.roughness.contents = Float(0.68)
         material.metalness.contents = Float(0.0)
-        material.transparency = 0.98
+        material.transparency = 0.96
         material.blendMode = .alpha
-
-        // 将噪波纹理应用到粗糙度，创造表面颗粒感
-        if let noiseImage {
-            material.roughness.contents = noiseImage
-        }
-
         sphere.materials = [material]
 
         let body = SCNNode(geometry: sphere)
@@ -209,31 +196,16 @@ final class WeatherSceneManager: ObservableObject {
 
         let glow = SCNLight()
         glow.type = .omni
-        glow.intensity = 820
-        glow.color = UIColor(red: 1.0, green: 0.17, blue: 0.17, alpha: 1)
+        glow.intensity = 760
+        glow.color = UIColor(red: 1.0, green: 0.24, blue: 0.18, alpha: 1)
         glow.attenuationStartDistance = 0
-        glow.attenuationEndDistance = 28
+        glow.attenuationEndDistance = 24
 
         let glowNode = SCNNode()
         glowNode.light = glow
         root.addChildNode(glowNode)
 
         return root
-    }
-
-    /// 创建颗粒噪波纹理（用于太阳表面磨砂质感）
-    private func createGrainNoiseImage(size: Int) -> UIImage? {
-        let renderer = UIGraphicsImageRenderer(size: CGSize(width: size, height: size))
-        return renderer.image { ctx in
-            for _ in 0..<(size * size / 4) {
-                let x = CGFloat.random(in: 0..<CGFloat(size))
-                let y = CGFloat.random(in: 0..<CGFloat(size))
-                let alpha = CGFloat.random(in: 0.08..<0.18)
-                UIColor(white: CGFloat.random(in: 0.7...1.0), alpha: alpha).setFill()
-                let rect = CGRect(x: x, y: y, width: 1.5, height: 1.5)
-                ctx.fill(rect)
-            }
-        }
     }
 
     private func makeTemperatureNode(text: String) -> SCNNode {
@@ -288,28 +260,23 @@ final class WeatherSceneManager: ObservableObject {
     }
 
     private func makeFallbackTemperatureNode(text: String) -> SCNNode {
-        // 数字规格：高度为屏幕高度的 35-40%，3D 厚度为数字宽度的 15-20%
-        // extrusionDepth 1.85 提供约 18% 的厚度比
-        let textGeometry = SCNText(string: text, extrusionDepth: 1.85)
-        textGeometry.flatness = 0.06  // 提高平滑度
-        // 使用更粗的字体，System Ultra Thin 改为 Black
-        textGeometry.font = UIFont.systemFont(ofSize: 10.5, weight: .black)
-        textGeometry.chamferRadius = 0.18  // 增大倒角，让边缘更圆润
+        let textGeometry = SCNText(string: text, extrusionDepth: 1.45)
+        textGeometry.flatness = 0.08
+        textGeometry.font = UIFont.systemFont(ofSize: 9.6, weight: .black)
+        textGeometry.chamferRadius = 0.14
 
         let front = SCNMaterial()
         front.lightingModel = .physicallyBased
-        front.diffuse.contents = UIColor(red: 0.08, green: 0.08, blue: 0.09, alpha: 1)
-        front.metalness.contents = Float(0.45)
-        front.roughness.contents = Float(0.28)
-        front.specular.contents = UIColor(white: 0.92, alpha: 1)
-        // 顶部红色反光效果：通过环境光遮蔽模拟
-        front.ambient.contents = UIColor(red: 0.18, green: 0.0, blue: 0.0, alpha: 0.12)
+        front.diffuse.contents = UIColor(red: 0.10, green: 0.10, blue: 0.11, alpha: 1)
+        front.metalness.contents = Float(0.55)
+        front.roughness.contents = Float(0.24)
+        front.specular.contents = UIColor(white: 0.95, alpha: 1)
 
         let side = SCNMaterial()
         side.lightingModel = .physicallyBased
-        side.diffuse.contents = UIColor(red: 0.05, green: 0.05, blue: 0.06, alpha: 1)
-        side.metalness.contents = Float(0.75)
-        side.roughness.contents = Float(0.22)
+        side.diffuse.contents = UIColor(red: 0.06, green: 0.06, blue: 0.07, alpha: 1)
+        side.metalness.contents = Float(0.85)
+        side.roughness.contents = Float(0.18)
 
         textGeometry.materials = [front, side, side, side, front]
 
@@ -319,8 +286,7 @@ final class WeatherSceneManager: ObservableObject {
         let width = maxBounds.x - minBounds.x
         let height = maxBounds.y - minBounds.y
         node.pivot = SCNMatrix4MakeTranslation(minBounds.x + width / 2, minBounds.y + height / 2, 0)
-        // scale 0.72 让数字高度达到约 38% 屏幕高度
-        node.scale = SCNVector3(0.72, 0.72, 0.72)
+        node.scale = SCNVector3(0.6, 0.6, 0.6)
         node.eulerAngles = SCNVector3(0.02, -0.05, 0.01)
         return node
     }
@@ -505,47 +471,15 @@ final class WeatherSceneManager: ObservableObject {
     private func makeDigitGlyph(for character: Character) -> (node: SCNNode, width: Float)? {
         guard character.isNumber else { return nil }
         let digitName = String(character)
-
-        // 尝试加载 OBJ 模型
-        if let payload = loadNormalizedModelNode(named: digitName, fileExtension: "obj", targetHeight: 7.5) {
-            let normalized = normalizeDigitPayload(payload, for: digitName)
-            applyTemperatureDigitMaterial(to: normalized.node)
-            normalized.node.name = "digit_\(digitName)"
-            return normalized
+        // ── 数字大小调整入口：修改 targetHeight 可整体缩放字体（数值越大越大）──
+        guard let payload = loadNormalizedModelNode(named: digitName, fileExtension: "obj", targetHeight: 7.5) else {
+            return nil
         }
 
-        // OBJ 模型不存在时，使用 SCNText 作为 fallback
-        return makeFallbackDigitGlyph(for: digitName)
-    }
-
-    private func makeFallbackDigitGlyph(for digitName: String) -> (node: SCNNode, width: Float)? {
-        let textGeometry = SCNText(string: digitName, extrusionDepth: 1.85)
-        textGeometry.flatness = 0.06
-        textGeometry.font = UIFont.systemFont(ofSize: 10.5, weight: .black)
-        textGeometry.chamferRadius = 0.18
-
-        let front = SCNMaterial()
-        front.lightingModel = .physicallyBased
-        front.diffuse.contents = UIColor(red: 0.08, green: 0.08, blue: 0.09, alpha: 1)
-        front.metalness.contents = Float(0.45)
-        front.roughness.contents = Float(0.28)
-        front.specular.contents = UIColor(white: 0.92, alpha: 1)
-
-        let side = SCNMaterial()
-        side.lightingModel = .physicallyBased
-        side.diffuse.contents = UIColor(red: 0.05, green: 0.05, blue: 0.06, alpha: 1)
-        side.metalness.contents = Float(0.75)
-        side.roughness.contents = Float(0.22)
-
-        textGeometry.materials = [front, side, side, side, front]
-
-        let node = SCNNode(geometry: textGeometry)
-        let (minBounds, maxBounds) = node.boundingBox
-        let width = maxBounds.x - minBounds.x
-        let height = maxBounds.y - minBounds.y
-        node.pivot = SCNMatrix4MakeTranslation(minBounds.x + width / 2, minBounds.y + height / 2, 0)
-        node.scale = SCNVector3(0.72, 0.72, 0.72)
-        return (node, width * 0.72)
+        let normalized = normalizeDigitPayload(payload, for: digitName)
+        applyTemperatureDigitMaterial(to: normalized.node)
+        normalized.node.name = "digit_\(digitName)"
+        return normalized
     }
 
     private func normalizeDigitPayload(_ payload: (node: SCNNode, size: SCNVector3), for digitName: String) -> (node: SCNNode, width: Float) {
@@ -556,28 +490,17 @@ final class WeatherSceneManager: ObservableObject {
         let depthScale = payload.size.z > maxDepth ? maxDepth / payload.size.z : 1
         let manualScale: Float
 
-        // 数字 1 偏窄，需要缩小；数字 2 偏宽，保持原样；其他数字统一缩放
         switch digitName {
         case "1":
-            manualScale = 0.72
+            manualScale = 0.74
         case "2":
-            manualScale = 0.90
+            manualScale = 0.92
         case "3":
-            manualScale = 0.72
+            manualScale = 0.74
         case "4":
-            manualScale = 0.72
+            manualScale = 0.74 // 字形偏宽，手动收窄保持视觉等高
         case "5":
-            manualScale = 0.72
-        case "6":
-            manualScale = 0.72
-        case "7":
-            manualScale = 0.88
-        case "8":
-            manualScale = 0.72
-        case "9":
-            manualScale = 0.72
-        case "0":
-            manualScale = 0.75
+            manualScale = 0.74
         default:
             manualScale = 1
         }
@@ -636,32 +559,16 @@ final class WeatherSceneManager: ObservableObject {
     }
 
     private func applySunMaterialToGeometry(_ geometry: SCNGeometry) {
-        // 尝试加载纹理图片，如果不存在则使用程序化噪声
-        let textureImage: UIImage? = Bundle.main.url(forResource: "texture", withExtension: "png", subdirectory: weatherDataSubdirectory)
-            .flatMap { UIImage(contentsOfFile: $0.path) }
-
+        guard let textureURL = Bundle.main.url(forResource: "texture", withExtension: "png", subdirectory: weatherDataSubdirectory),
+              let image = UIImage(contentsOfFile: textureURL.path) else { return }
         let material = SCNMaterial()
-        material.lightingModel = .physicallyBased
-
-        if let texture = textureImage {
-            // 有纹理图片时使用
-            material.diffuse.contents = texture
-            material.emission.contents = UIColor(red: 0.45, green: 0.0, blue: 0.0, alpha: 0.18)
-            material.roughness.contents = Float(0.68)
-        } else {
-            // 无纹理图片时，使用程序化噪声模拟颗粒质感
-            material.diffuse.contents = UIColor(red: 1.0, green: 0.17, blue: 0.17, alpha: 0.98)
-            material.emission.contents = UIColor(red: 0.65, green: 0.0, blue: 0.0, alpha: 0.22)
-            material.roughness.contents = Float(0.75)
-
-            // 使用生成的噪波图像应用到粗糙度
-            if let noiseImage = createGrainNoiseImage(size: 256) {
-                material.roughness.contents = noiseImage
-            }
-        }
-
+        material.lightingModel     = .physicallyBased
+        material.diffuse.contents  = image
+        // emission 改为低强度暖色，避免全强度叠加纹理图片导致表面发糊
+        material.emission.contents = UIColor(red: 0.55, green: 0.06, blue: 0.02, alpha: 1)
         material.metalness.contents = Float(0.0)
-        material.isDoubleSided = true
+        material.roughness.contents = Float(0.62)  // 稍降粗糙度，纹理细节更清晰
+        material.isDoubleSided     = true
         geometry.materials = [material]
     }
 
@@ -695,7 +602,7 @@ final class WeatherSceneManager: ObservableObject {
 
         let replacement = makeTemperatureNode(text: "\(currentTemperature)")
         replacement.name = SceneNode.temperature
-        replacement.position = SCNVector3(0, -1.2, 0.12) // 同步 buildScene 数字位置
+        replacement.position = SCNVector3(0, -2.3, 0.12) // 同步 buildScene 数字位置
         let targetOpacity: CGFloat = isTemperatureHidden ? 0 : 1
         replacement.opacity = animated ? 0 : targetOpacity
         root.addChildNode(replacement)
@@ -714,52 +621,6 @@ final class WeatherSceneManager: ObservableObject {
             temperatureNode?.removeFromParentNode()
             temperatureNode = replacement
         }
-    }
-
-    // MARK: - Sun Transition Animations
-
-    /// 点击太阳时的即时反馈动画（放大）
-    func applySunTapFeedback() {
-        guard let sunNode = sunNode else { return }
-
-        SCNTransaction.begin()
-        SCNTransaction.animationDuration = 0.15
-        SCNTransaction.animationTimingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
-
-        sunNode.scale = SCNVector3(
-            sunNode.scale.x * 1.15,
-            sunNode.scale.y * 1.15,
-            sunNode.scale.z * 1.15
-        )
-
-        SCNTransaction.commit()
-    }
-
-    /// 进入详情页前的推进动画（太阳继续放大）
-    func applyEnterDetailPushAnimation(completion: (() -> Void)? = nil) {
-        guard let sunNode = sunNode else { return }
-
-        SCNTransaction.begin()
-        SCNTransaction.animationDuration = 0.40
-        SCNTransaction.animationTimingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
-        SCNTransaction.completionBlock = completion
-
-        sunNode.scale = SCNVector3(1.6, 1.6, 1.6)
-
-        SCNTransaction.commit()
-    }
-
-    /// 从详情页返回时恢复太阳状态
-    func resetSunFromDetail() {
-        guard let sunNode = sunNode else { return }
-
-        SCNTransaction.begin()
-        SCNTransaction.animationDuration = 0.28
-        SCNTransaction.animationTimingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
-
-        sunNode.scale = SCNVector3(1.0, 1.0, 1.0)
-
-        SCNTransaction.commit()
     }
 
     private func attachFloatAnimation(to node: SCNNode) {
