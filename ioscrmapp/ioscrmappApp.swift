@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import AVFoundation
 
 @main
 struct ioscrmappApp: App {
@@ -16,6 +17,13 @@ struct ioscrmappApp: App {
     init() {
         _sessionStore = StateObject(wrappedValue: SessionStore())
         _languageStore = StateObject(wrappedValue: AppLanguageStore())
+        
+        do {
+            try AVAudioSession.sharedInstance().setCategory(.playback)
+            try AVAudioSession.sharedInstance().setActive(true)
+        } catch {
+            print("音频设置成功")
+        }
     }
 
     var body: some Scene {
