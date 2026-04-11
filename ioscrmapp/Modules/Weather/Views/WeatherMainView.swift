@@ -339,52 +339,78 @@ struct WeatherMainView: View {
                 ZStack {
                     RadialGradient(
                         stops: [
-                            .init(color: .clear, location: 0.42),
-                            .init(color: Color.black.opacity(0.08), location: 0.70),
-                            .init(color: Color.black.opacity(0.22), location: 0.86),
-                            .init(color: Color.black.opacity(0.40), location: 1.0)
+                            .init(color: .clear, location: 0.28),
+                            .init(color: Color.black.opacity(0.03), location: 0.44),
+                            .init(color: Color.black.opacity(0.10), location: 0.60),
+                            .init(color: Color.black.opacity(0.22), location: 0.78),
+                            .init(color: Color.black.opacity(0.38), location: 0.90),
+                            .init(color: Color.black.opacity(0.50), location: 1.0)
                         ],
                         center: .center,
                         startRadius: shortestSide * 0.12,
-                        endRadius: longestSide * 0.78
+                        endRadius: longestSide * 0.82
                     )
                     .blendMode(.multiply)
                     
                     VStack(spacing: 0) {
                         LinearGradient(
-                            colors: [Color.black.opacity(0.22), .clear],
-                            startPoint: .top,
-                            endPoint: .bottom
-                        )
-                        .frame(height: size.height * 0.14)
-                        
-                        Spacer(minLength: 0)
-                        
-                        LinearGradient(
-                            colors: [.clear, Color.black.opacity(0.28)],
+                            stops: [
+                                .init(color: Color.black.opacity(0.34), location: 0.0),
+                                .init(color: Color.black.opacity(0.20), location: 0.32),
+                                .init(color: Color.black.opacity(0.08), location: 0.68),
+                                .init(color: .clear, location: 1.0)
+                            ],
                             startPoint: .top,
                             endPoint: .bottom
                         )
                         .frame(height: size.height * 0.18)
+                        .blur(radius: 10)
+                        
+                        Spacer(minLength: 0)
+                        
+                        LinearGradient(
+                            stops: [
+                                .init(color: .clear, location: 0.0),
+                                .init(color: Color.black.opacity(0.10), location: 0.30),
+                                .init(color: Color.black.opacity(0.24), location: 0.66),
+                                .init(color: Color.black.opacity(0.40), location: 1.0)
+                            ],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                        .frame(height: size.height * 0.22)
+                        .blur(radius: 12)
                     }
                     .blendMode(.multiply)
                     
                     HStack(spacing: 0) {
                         LinearGradient(
-                            colors: [Color.black.opacity(0.24), .clear],
+                            stops: [
+                                .init(color: Color.black.opacity(0.34), location: 0.0),
+                                .init(color: Color.black.opacity(0.20), location: 0.34),
+                                .init(color: Color.black.opacity(0.08), location: 0.70),
+                                .init(color: .clear, location: 1.0)
+                            ],
                             startPoint: .leading,
                             endPoint: .trailing
                         )
-                        .frame(width: size.width * 0.11)
+                        .frame(width: size.width * 0.14)
+                        .blur(radius: 12)
                         
                         Spacer(minLength: 0)
                         
                         LinearGradient(
-                            colors: [.clear, Color.black.opacity(0.24)],
+                            stops: [
+                                .init(color: .clear, location: 0.0),
+                                .init(color: Color.black.opacity(0.08), location: 0.30),
+                                .init(color: Color.black.opacity(0.20), location: 0.66),
+                                .init(color: Color.black.opacity(0.34), location: 1.0)
+                            ],
                             startPoint: .leading,
                             endPoint: .trailing
                         )
-                        .frame(width: size.width * 0.11)
+                        .frame(width: size.width * 0.14)
+                        .blur(radius: 12)
                     }
                     .blendMode(.multiply)
                     
@@ -406,9 +432,9 @@ struct WeatherMainView: View {
                         .opacity(0.78)
                     
                     RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                        .strokeBorder(Color.black.opacity(0.24), lineWidth: 16)
-                        .blur(radius: 10)
-                        .padding(-4)
+                        .strokeBorder(Color.black.opacity(0.28), lineWidth: 18)
+                        .blur(radius: 14)
+                        .padding(-6)
                         .mask(
                             LinearGradient(
                                 colors: [
@@ -423,10 +449,10 @@ struct WeatherMainView: View {
                         .opacity(0.95)
                     
                     RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                        .strokeBorder(Color.black.opacity(0.26), lineWidth: 24)
-                        .blur(radius: 26)
-                        .padding(-16)
-                        .opacity(0.92)
+                        .strokeBorder(Color.black.opacity(0.32), lineWidth: 28)
+                        .blur(radius: 34)
+                        .padding(-20)
+                        .opacity(0.84)
                 }
                 .compositingGroup()
             }

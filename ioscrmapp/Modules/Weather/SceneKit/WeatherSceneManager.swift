@@ -48,7 +48,7 @@ final class WeatherSceneManager: ObservableObject {
     private let mainRootPosition = SCNVector3(0, -1.94, 0)
     private let detailRootPosition = SCNVector3(0, -0.42, 0)
     private let mainPresentationRotation = SCNVector3(-0.012, 0, 0)
-    private let detailSunPosition = SCNVector3(0, -0.08, -0.1) //太阳离SUN的距离
+    private let detailSunPosition = SCNVector3(0, -0.04, -0.1) //太阳离SUN的距离
     private let detailSunScale: Float = 0.84
     private let detailTitlePosition = SCNVector3(0, 2.9, 0.34)
     private let transitionRestRotation = SCNVector3(-0.004, 0, 0)
