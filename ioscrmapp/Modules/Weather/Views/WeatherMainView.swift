@@ -8,6 +8,7 @@ struct WeatherMainView: View {
     @State private var isSunDetailPresented = false
     @State private var isSunTransitionActive = false
     @State private var detailOverlayOpacity = 0.0
+    @State private var sceneInteractionResetVersion = 0
     
     private let session: CustSubInfo
     private let aiChatService: any AIChatServicing
@@ -70,7 +71,9 @@ struct WeatherMainView: View {
                 WeatherSceneView(
                     scene: sceneManager.scene,
                     manager: sceneManager,
-                    onSunTap: enterSunDetail
+                    onSunTap: enterSunDetail,
+                    onBackgroundTap: isSunDetailPresented ? exitSunDetail : nil,
+                    interactionResetVersion: sceneInteractionResetVersion
                 )
                 .frame(height: mainSceneHeight)
                 .padding(.top, 8)
@@ -78,36 +81,11 @@ struct WeatherMainView: View {
                 .zIndex(1)
                 
                 Spacer(minLength: 0)
-                
-                Text(weather.title)
-                    .font(.du(26, weight: .bold))
-                    .foregroundColor(Color.black.opacity(0.92))
-                    .opacity(isSunDetailPresented ? 0 : 1)
-                    .offset(y: isSunDetailPresented ? 138 : 0)
-                    .animation(.easeIn(duration: 0.24), value: isSunDetailPresented)
-                    .padding(.bottom, 8)
-                
-                WeatherHourlyStrip(
-                    timeline: MockWeatherData.timeline.map { entry in
-                        WeatherTimelineEntry(
-                            id: entry.id,
-                            label: entry.label,
-                            temperature: entry.temperature,
-                            symbolName: entry.symbolName,
-                            isCurrent: entry.isCurrent
-                        )
-                    },
-                    selectedID: selectedTimelineID
-                ) { entry in
-                    guard entry.id != selectedTimelineID else { return }
-                    WeatherAudioPlayer.shared.playShapeTap()
-                    withAnimation(.spring(response: 0.28, dampingFraction: 0.82)) {
-                        selectedTimelineID = entry.id
-                    }
-                    sceneManager.setTemperature(entry.temperature, animated: true)
-                }
-                .frame(width: proxy.size.width * 0.8)
-                .padding(.bottom, hourlyStripBottomPadding)
+
+                mainForecastSection(
+                    width: proxy.size.width * 0.8,
+                    bottomPadding: hourlyStripBottomPadding
+                )
             }
         }
         .ignoresSafeArea()
@@ -125,6 +103,41 @@ struct WeatherMainView: View {
             WeatherWindBackgroundView()
                 .opacity(0.95)
         }
+    }
+
+    private func mainForecastSection(width: CGFloat, bottomPadding: CGFloat) -> some View {
+        VStack(spacing: 0) {
+            Text(weather.title)
+                .font(.du(26, weight: .bold))
+                .foregroundColor(Color.black.opacity(0.92))
+                .padding(.bottom, 8)
+
+            WeatherHourlyStrip(
+                timeline: MockWeatherData.timeline.map { entry in
+                    WeatherTimelineEntry(
+                        id: entry.id,
+                        label: entry.label,
+                        temperature: entry.temperature,
+                        symbolName: entry.symbolName,
+                        isCurrent: entry.isCurrent
+                    )
+                },
+                selectedID: selectedTimelineID
+            ) { entry in
+                guard entry.id != selectedTimelineID else { return }
+                WeatherAudioPlayer.shared.playShapeTap()
+                withAnimation(.spring(response: 0.28, dampingFraction: 0.82)) {
+                    selectedTimelineID = entry.id
+                }
+                sceneManager.setTemperature(entry.temperature, animated: true)
+            }
+            .frame(width: width)
+        }
+        .opacity(isSunDetailPresented ? 0 : 1)
+        .offset(y: isSunDetailPresented ? 138 : 0)
+        .allowsHitTesting(!isSunDetailPresented)
+        .animation(.easeInOut(duration: 0.24), value: isSunDetailPresented)
+        .padding(.bottom, bottomPadding)
     }
     
     private var headerBar: some View {
@@ -199,13 +212,13 @@ struct WeatherMainView: View {
         detailOverlayOpacity = 0
         isSunTransitionActive = true
 
-        withAnimation(.spring(response: 0.56, dampingFraction: 0.88, blendDuration: 0.12)) {
+        withAnimation(.spring(response: 0.42, dampingFraction: 0.88, blendDuration: 0.10)) {
             isSunDetailPresented = true
         }
 
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.12) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.08) {
             guard isSunDetailPresented else { return }
-            withAnimation(.easeOut(duration: 0.52)) {
+            withAnimation(.easeOut(duration: 0.34)) {
                 detailOverlayOpacity = 1
             }
         }
@@ -213,6 +226,7 @@ struct WeatherMainView: View {
         sceneManager.startSunDetailTransition {
             guard isSunDetailPresented else { return }
 
+            sceneInteractionResetVersion += 1
             isSunTransitionActive = false
         }
         WeatherAudioPlayer.shared.playDetailedEnter()
@@ -222,7 +236,10 @@ struct WeatherMainView: View {
         guard isSunDetailPresented, !isSunTransitionActive else { return }
 
         isSunTransitionActive = true
-        withAnimation(.easeInOut(duration: 0.36)) {
+        sceneManager.alignDetailSceneToFront()
+        sceneInteractionResetVersion += 1
+
+        withAnimation(.easeInOut(duration: 0.24)) {
             detailOverlayOpacity = 0
         }
 
@@ -230,6 +247,7 @@ struct WeatherMainView: View {
             sceneManager.setTemperatureVisibility(isHidden: false, animated: false)
             isSunDetailPresented = false
             isSunTransitionActive = false
+            sceneInteractionResetVersion += 1
         }
         WeatherAudioPlayer.shared.playShapeTap()
     }
@@ -291,7 +309,7 @@ struct WeatherMainView: View {
                     .padding(.top, 56)
                     .allowsHitTesting(allowsInteraction)
 
-                    WeatherSunDismissSurface(
+                    WeatherSunInteractionSurface(
                         sceneViewportHeight: sceneViewportHeight,
                         onDismiss: onClose
                     )
@@ -449,7 +467,7 @@ struct WeatherMainView: View {
         }
     }
 
-    private struct WeatherSunDismissSurface: View {
+    private struct WeatherSunInteractionSurface: View {
         let sceneViewportHeight: CGFloat
         let onDismiss: () -> Void
 
@@ -457,11 +475,13 @@ struct WeatherMainView: View {
             VStack(spacing: 0) {
                 Color.clear
                     .frame(height: sceneViewportHeight)
+                    .allowsHitTesting(false)
 
-                Spacer(minLength: 0)
+                Color.clear
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .contentShape(Rectangle())
+                    .onTapGesture(perform: onDismiss)
             }
-            .contentShape(Rectangle())
-            .onTapGesture(perform: onDismiss)
         }
     }
     

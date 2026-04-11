@@ -14,7 +14,9 @@ struct WeatherSceneView: UIViewRepresentable {
     /// Access to the rotatable model node. Pass nil for non-interactive scene views (e.g. Page B panels).
     let manager: WeatherSceneManager?
     let onSunTap: (() -> Void)?
+    let onBackgroundTap: (() -> Void)?
     let allowsInteraction: Bool
+    let interactionResetVersion: Int
 
     /// Creates a SceneKit weather container with optional gesture interaction.
     ///
@@ -23,11 +25,20 @@ struct WeatherSceneView: UIViewRepresentable {
     ///   - manager: Provides the rotatable weather node and resting orientation values.
     ///   - onSunTap: Called when the interactive weather model is tapped.
     ///   - allowsInteraction: Enables drag and tap gestures when `true`.
-    init(scene: SCNScene, manager: WeatherSceneManager?, onSunTap: (() -> Void)? = nil, allowsInteraction: Bool = true) {
+    init(
+        scene: SCNScene,
+        manager: WeatherSceneManager?,
+        onSunTap: (() -> Void)? = nil,
+        onBackgroundTap: (() -> Void)? = nil,
+        allowsInteraction: Bool = true,
+        interactionResetVersion: Int = 0
+    ) {
         self.scene = scene
         self.manager = manager
         self.onSunTap = onSunTap
+        self.onBackgroundTap = onBackgroundTap
         self.allowsInteraction = allowsInteraction
+        self.interactionResetVersion = interactionResetVersion
     }
 
     // MARK: UIViewRepresentable
@@ -36,6 +47,7 @@ struct WeatherSceneView: UIViewRepresentable {
         Coordinator(
             manager: manager,
             onSunTap: onSunTap,
+            onBackgroundTap: onBackgroundTap,
             allowsInteraction: allowsInteraction
         )
     }
@@ -58,14 +70,12 @@ struct WeatherSceneView: UIViewRepresentable {
             pan.maximumNumberOfTouches = 1
             scnView.addGestureRecognizer(pan)
 
-            if onSunTap != nil {
-                let tap = UITapGestureRecognizer(
-                    target: context.coordinator,
-                    action: #selector(Coordinator.handleTap(_:))
-                )
-                tap.require(toFail: pan)
-                scnView.addGestureRecognizer(tap)
-            }
+            let tap = UITapGestureRecognizer(
+                target: context.coordinator,
+                action: #selector(Coordinator.handleTap(_:))
+            )
+            tap.require(toFail: pan)
+            scnView.addGestureRecognizer(tap)
         }
 
         context.coordinator.startDisplayLink()
@@ -74,7 +84,15 @@ struct WeatherSceneView: UIViewRepresentable {
 
     func updateUIView(_ uiView: SCNView, context: Context) {
         if uiView.scene !== scene { uiView.scene = scene }
-        context.coordinator.updateSunTap(onSunTap)
+        context.coordinator.updateInteractionCallbacks(
+            onSunTap: onSunTap,
+            onBackgroundTap: onBackgroundTap
+        )
+        context.coordinator.applyInteractionResetIfNeeded(
+            interactionResetVersion,
+            rotation: manager?.displayGroupRotation ?? SCNVector3(0, 0, 0),
+            restPitch: manager?.restTiltX ?? 0
+        )
     }
 
     // MARK: – Coordinator (gesture + CADisplayLink spin)
@@ -109,6 +127,7 @@ struct WeatherSceneView: UIViewRepresentable {
         private let manager: WeatherSceneManager?
         private let allowsInteraction: Bool
         private var onSunTap: (() -> Void)?
+        private var onBackgroundTap: (() -> Void)?
         private var currentYaw:     Float = 0
         private var currentPitch:   Float = 0
         private var currentRoll:    Float = 0
@@ -123,6 +142,7 @@ struct WeatherSceneView: UIViewRepresentable {
         private var lastPanPoint: CGPoint?
         private var orientationAnimation: OrientationAnimation?
         private var hasUserInteracted: Bool = false
+        private var lastInteractionResetVersion: Int = 0
 
         // Tuning constants
         private let yawTurnsPerFullWidthPan: Float = 4.8
@@ -148,17 +168,48 @@ struct WeatherSceneView: UIViewRepresentable {
         private let reverseReturnDurationRange: ClosedRange<Float> = 0.34...2.2
         private let reverseReturnVelocityRange: ClosedRange<CGFloat> = 180...2200
 
-        init(manager: WeatherSceneManager?, onSunTap: (() -> Void)?, allowsInteraction: Bool) {
+        init(
+            manager: WeatherSceneManager?,
+            onSunTap: (() -> Void)?,
+            onBackgroundTap: (() -> Void)?,
+            allowsInteraction: Bool
+        ) {
             self.manager = manager
             self.allowsInteraction = allowsInteraction
             self.onSunTap = onSunTap
+            self.onBackgroundTap = onBackgroundTap
             let restPitch = manager?.restTiltX ?? 0
             currentPitch = restPitch
             targetPitch = restPitch
         }
 
-        func updateSunTap(_ onSunTap: (() -> Void)?) {
+        func updateInteractionCallbacks(onSunTap: (() -> Void)?, onBackgroundTap: (() -> Void)?) {
             self.onSunTap = onSunTap
+            self.onBackgroundTap = onBackgroundTap
+        }
+
+        func applyInteractionResetIfNeeded(_ version: Int, rotation: SCNVector3, restPitch: Float) {
+            guard version != lastInteractionResetVersion else { return }
+
+            lastInteractionResetVersion = version
+            orientationAnimation = nil
+            isPanning = false
+            lastPanPoint = nil
+            hasUserInteracted = false
+            yawVelocity = 0
+            pitchVelocity = 0
+            rollVelocity = 0
+            currentYaw = rotation.y
+            targetYaw = rotation.y
+            currentPitch = abs(rotation.x) < 0.0001 ? restPitch : rotation.x
+            targetPitch = currentPitch
+            currentRoll = rotation.z
+            targetRoll = rotation.z
+
+            if let node = manager?.conditionGroup {
+                applyOrientation(to: node)
+                manager?.syncDisplayGroupRotation(to: node.eulerAngles)
+            }
         }
 
         deinit { displayLink?.invalidate() }
@@ -525,10 +576,10 @@ struct WeatherSceneView: UIViewRepresentable {
 
             let location = gesture.location(in: scnView)
             let hits = scnView.hitTest(location, options: [SCNHitTestOption.searchMode: SCNHitTestSearchMode.all.rawValue])
-            guard !hits.isEmpty else { return }
-
             if hits.contains(where: { isInteractiveNode($0.node) }) {
                 onSunTap?()
+            } else {
+                onBackgroundTap?()
             }
         }
 

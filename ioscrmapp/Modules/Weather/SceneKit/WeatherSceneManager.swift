@@ -10,8 +10,9 @@ enum WeatherSceneMode {
 
 final class WeatherSceneManager: ObservableObject {
 
-    static let sunDetailTransitionDuration: TimeInterval = 0.96
+    static let sunDetailTransitionDuration: TimeInterval = 0.5 //入场动画，第一屏到第二屏的时间。
     static let sunDetailCrossfadeDuration: TimeInterval = 0.20
+    static let sunReturnTransitionDuration: TimeInterval = 0.2 //回场动画，第二屏回到第一屏的时间。
 
     @Published private(set) var displayGroupRotation: SCNVector3 = SCNVector3(0, 0, 0)
     private(set) var scene: SCNScene
@@ -46,7 +47,8 @@ final class WeatherSceneManager: ObservableObject {
     private let detailCameraPosition = SCNVector3(0, 0.38, 18.8)
     private let mainRootPosition = SCNVector3(0, -1.94, 0)
     private let detailRootPosition = SCNVector3(0, -0.42, 0)
-    private let detailSunPosition = SCNVector3(0, -0.18, -0.1)
+    private let mainPresentationRotation = SCNVector3(-0.012, 0, 0)
+    private let detailSunPosition = SCNVector3(0, -0.08, -0.1) //太阳离SUN的距离
     private let detailSunScale: Float = 0.84
     private let detailTitlePosition = SCNVector3(0, 2.9, 0.34)
     private let transitionRestRotation = SCNVector3(-0.004, 0, 0)
@@ -98,6 +100,13 @@ final class WeatherSceneManager: ObservableObject {
         resetSunBurstState()
     }
 
+    func alignDetailSceneToFront() {
+        guard mode == .sunTransition else { return }
+
+        autoSpinSpeed = 0
+        applyDisplayGroupRotation(transitionRestRotation)
+    }
+
     func resetToMainPresentation(temperature: Int) {
         guard mode == .sunTransition else { return }
 
@@ -123,6 +132,7 @@ final class WeatherSceneManager: ObservableObject {
         cancelPendingTransitionWork()
         autoSpinSpeed = 0
         restTiltX = -0.012
+        applyDisplayGroupRotation(transitionRestRotation)
 
         rotatingGroup.removeAllActions()
         root.removeAllActions()
@@ -144,12 +154,12 @@ final class WeatherSceneManager: ObservableObject {
         runDetailTitleHide(on: detailTitleNode)
 
         let completionWorkItem = DispatchWorkItem { [weak self] in
-            self?.applyDisplayGroupRotation(self?.transitionSourceRotation ?? SCNVector3(0, 0, 0))
+            self?.applyDisplayGroupRotation(self?.mainPresentationRotation ?? SCNVector3(0, 0, 0))
             completion()
         }
         transitionCompletionWorkItem = completionWorkItem
         DispatchQueue.main.asyncAfter(
-            deadline: .now() + 0.74,
+            deadline: .now() + Self.sunReturnTransitionDuration,
             execute: completionWorkItem
         )
     }
@@ -277,9 +287,11 @@ final class WeatherSceneManager: ObservableObject {
 
         let rotatingGroup = SCNNode()
         rotatingGroup.name = "weather_rotating_group"
+        let initialRotation = isDetailMode ? transitionRestRotation : mainPresentationRotation
+        rotatingGroup.eulerAngles = initialRotation
         root.addChildNode(rotatingGroup)
         conditionGroup = rotatingGroup
-        displayGroupRotation = SCNVector3(0, 0, 0)
+        displayGroupRotation = initialRotation
 
         let sun = makeSunNode()
         if isDetailMode {
@@ -913,13 +925,16 @@ final class WeatherSceneManager: ObservableObject {
     }
 
     private func runSunReturnAnimation(on node: SCNNode) {
-        let moveAction = SCNAction.move(to: SCNVector3(0, mainSunPositionY, -0.1), duration: 0.74)
+        let moveAction = SCNAction.move(
+            to: SCNVector3(0, mainSunPositionY, -0.1),
+            duration: Self.sunReturnTransitionDuration
+        )
         moveAction.timingMode = .easeInEaseOut
 
         let scaleAction = makeScaleAction(
             from: node.scale,
             to: SCNVector3(1, 1, 1),
-            duration: 0.74,
+            duration: Self.sunReturnTransitionDuration,
             easing: easeInOutCubic
         )
 
@@ -951,24 +966,30 @@ final class WeatherSceneManager: ObservableObject {
     }
 
     private func runSceneReturnAnimation(root: SCNNode, cameraNode: SCNNode, rotatingGroup: SCNNode) {
-        let rootMove = SCNAction.move(to: mainRootPosition, duration: 0.74)
+        let rootMove = SCNAction.move(
+            to: mainRootPosition,
+            duration: Self.sunReturnTransitionDuration
+        )
         rootMove.timingMode = .easeInEaseOut
         root.runAction(rootMove)
 
-        let cameraMove = SCNAction.move(to: mainCameraPosition, duration: 0.74)
+        let cameraMove = SCNAction.move(
+            to: mainCameraPosition,
+            duration: Self.sunReturnTransitionDuration
+        )
         cameraMove.timingMode = .easeInEaseOut
         let fieldOfViewAction = makeFieldOfViewAction(
             from: cameraNode.camera?.fieldOfView ?? 24,
             to: 31,
-            duration: 0.74
+            duration: Self.sunReturnTransitionDuration
         )
         cameraNode.runAction(.group([cameraMove, fieldOfViewAction]))
 
         rotatingGroup.runAction(
             makeEulerAnglesAction(
                 from: rotatingGroup.eulerAngles,
-                to: transitionSourceRotation,
-                duration: 0.74,
+                to: mainPresentationRotation,
+                duration: Self.sunReturnTransitionDuration,
                 easing: easeInOutCubic
             )
         )
@@ -1031,11 +1052,18 @@ final class WeatherSceneManager: ObservableObject {
         sunBurstNode.isHidden = false
         sunBurstNode.opacity = 0
 
-        let burstDelay = Self.sunDetailTransitionDuration * 0.27
-        let burstFlyDuration = Self.sunDetailTransitionDuration * 0.34
-        let burstFadeDuration = Self.sunDetailTransitionDuration * 0.16
+        let burstDelay = Self.sunDetailTransitionDuration * 0.30
+        let burstFlyDuration = Self.sunDetailTransitionDuration * 0.38
+        let burstFadeDuration = Self.sunDetailTransitionDuration * 0.18
+        let burstStagger = Self.sunDetailTransitionDuration * 0.022
+        let fadeInDuration = Self.sunDetailTransitionDuration * 0.10
+        let maxRayWaveOffset = burstStagger * 4
+        let burstHoldDuration = max(
+            burstFlyDuration + maxRayWaveOffset - fadeInDuration,
+            Self.sunDetailTransitionDuration * 0.08
+        )
 
-        let fadeInAction = SCNAction.fadeOpacity(to: 1, duration: Self.sunDetailTransitionDuration * 0.08)
+        let fadeInAction = SCNAction.fadeOpacity(to: 1, duration: fadeInDuration)
         fadeInAction.timingMode = .easeOut
         let fadeOutAction = SCNAction.fadeOut(duration: burstFadeDuration)
         fadeOutAction.timingMode = .easeIn
@@ -1044,7 +1072,7 @@ final class WeatherSceneManager: ObservableObject {
             .sequence([
                 .wait(duration: burstDelay),
                 fadeInAction,
-                .wait(duration: Self.sunDetailTransitionDuration * 0.14),
+                .wait(duration: burstHoldDuration),
                 fadeOutAction,
                 .run { node in
                     node.opacity = 0
@@ -1054,7 +1082,7 @@ final class WeatherSceneManager: ObservableObject {
         )
 
         for (index, rayNode) in sunBurstNode.childNodes.enumerated() {
-            let rayDelay = burstDelay + Double(index % 4) * 0.016
+            let rayDelay = burstDelay + Double(index % 5) * burstStagger
             let outwardDistance = Float(0.66 + Double(index % 3) * 0.08)
             let direction = rayDirection(for: rayNode)
             let startPosition = initialRayPosition(for: rayNode)
