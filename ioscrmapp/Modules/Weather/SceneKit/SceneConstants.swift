@@ -10,6 +10,8 @@ enum SceneNode {
     static let sun           = "weather_sun"
     static let temperature   = "weather_temperature"
     static let birds         = "weather_birds"
+    static let sunBurst      = "weather_sun_burst"
+    static let sunTitle      = "weather_sun_title"
     static let cloudMain     = "weather_cloud_main"
     static let cloudLeft     = "weather_cloud_left"
     static let cloudRight    = "weather_cloud_right"

@@ -5,9 +5,13 @@ import UIKit
 enum WeatherSceneMode {
     case main
     case sunDetail
+    case sunTransition
 }
 
 final class WeatherSceneManager: ObservableObject {
+
+    static let sunDetailTransitionDuration: TimeInterval = 0.96
+    static let sunDetailCrossfadeDuration: TimeInterval = 0.20
 
     @Published private(set) var displayGroupRotation: SCNVector3 = SCNVector3(0, 0, 0)
     private(set) var scene: SCNScene
@@ -18,18 +22,34 @@ final class WeatherSceneManager: ObservableObject {
     private(set) var currentTemperature: Int
 
     private let mode: WeatherSceneMode
+    private var cameraNode: SCNNode?
+    private var sceneRootNode: SCNNode?
     private var detailTitleNode: SCNNode?
+    private var sunBurstNode: SCNNode?
     private var temperatureNode: SCNNode?
+    private var sunBurstRayDirections: [ObjectIdentifier: SCNVector3] = [:]
+    private var sunBurstRayStartPositions: [ObjectIdentifier: SCNVector3] = [:]
+    private var sunBurstRayBaseOpacities: [ObjectIdentifier: CGFloat] = [:]
+    private var transitionSourceRotation = SCNVector3(0, 0, 0)
     private var isTemperatureHidden: Bool = false
+    private var transitionCompletionWorkItem: DispatchWorkItem?
     private var _birdsScene: SCNScene?   // 防止 ARC 过早释放鸟群场景
     private let weatherDataSubdirectory = "WeatherData"
     private let sunSpinAnimationKey = "sun_spin"
+    private let sunTitleSpinAnimationKey = "sun_title_spin"
     private let detailAutoSpinSpeed = -Float.pi * 2 / 30
     private let mainTemperatureScale: Float = 1.5
     private let mainSunScale: CGFloat = 1.12
     private let mainSunPositionY: Float = 4.40
     private let mainTemperaturePositionY: Float = -2.4
     private let mainCameraPosition = SCNVector3(0, 0.02, 24.9)
+    private let detailCameraPosition = SCNVector3(0, 0.38, 18.8)
+    private let mainRootPosition = SCNVector3(0, -1.94, 0)
+    private let detailRootPosition = SCNVector3(0, -0.42, 0)
+    private let detailSunPosition = SCNVector3(0, -0.18, -0.1)
+    private let detailSunScale: Float = 0.84
+    private let detailTitlePosition = SCNVector3(0, 2.9, 0.34)
+    private let transitionRestRotation = SCNVector3(-0.004, 0, 0)
 
     init(temperature: Int = MockWeatherData.today.temperature, mode: WeatherSceneMode = .main) {
         self.scene = SCNScene()
@@ -62,23 +82,146 @@ final class WeatherSceneManager: ObservableObject {
         displayGroupRotation = angles
     }
 
+    func applyDisplayGroupRotation(_ angles: SCNVector3) {
+        displayGroupRotation = angles
+        conditionGroup?.eulerAngles = angles
+    }
+
+    func prepareSunDetailTransition(temperature: Int, sourceRotation: SCNVector3) {
+        guard mode == .sunTransition else { return }
+
+        currentTemperature = temperature
+        isTemperatureHidden = false
+        cancelPendingTransitionWork()
+        transitionSourceRotation = sourceRotation
+        applyDisplayGroupRotation(sourceRotation)
+        resetSunBurstState()
+    }
+
+    func resetToMainPresentation(temperature: Int) {
+        guard mode == .sunTransition else { return }
+
+        currentTemperature = temperature
+        isTemperatureHidden = false
+        autoSpinSpeed = 0
+        buildScene()
+    }
+
+    func startReturnToMainTransition(temperature: Int, completion: @escaping () -> Void) {
+        guard mode == .sunTransition,
+              let rotatingGroup = conditionGroup,
+              let root = sceneRootNode,
+              let cameraNode,
+              let sunNode,
+              let detailTitleNode
+        else {
+            completion()
+            return
+        }
+
+        currentTemperature = temperature
+        cancelPendingTransitionWork()
+        autoSpinSpeed = 0
+        restTiltX = -0.012
+
+        rotatingGroup.removeAllActions()
+        root.removeAllActions()
+        cameraNode.removeAllActions()
+        sunNode.removeAllActions()
+        detailTitleNode.removeAllActions()
+        resetSunBurstState()
+
+        if let digits = prepareTemperatureNodeForReturn() {
+            runTemperatureReturnAnimation(on: digits)
+        }
+
+        runSunReturnAnimation(on: sunNode)
+        runSceneReturnAnimation(
+            root: root,
+            cameraNode: cameraNode,
+            rotatingGroup: rotatingGroup
+        )
+        runDetailTitleHide(on: detailTitleNode)
+
+        let completionWorkItem = DispatchWorkItem { [weak self] in
+            self?.applyDisplayGroupRotation(self?.transitionSourceRotation ?? SCNVector3(0, 0, 0))
+            completion()
+        }
+        transitionCompletionWorkItem = completionWorkItem
+        DispatchQueue.main.asyncAfter(
+            deadline: .now() + 0.74,
+            execute: completionWorkItem
+        )
+    }
+
+    func startSunDetailTransition(completion: @escaping () -> Void) {
+        guard mode == .sunTransition,
+              let rotatingGroup = conditionGroup,
+              let root = sceneRootNode,
+              let cameraNode,
+              let sunNode,
+              let temperatureNode,
+              let detailTitleNode
+        else {
+            completion()
+            return
+        }
+
+        cancelPendingTransitionWork()
+        rotatingGroup.removeAllActions()
+        sunNode.removeAllActions()
+        root.removeAllActions()
+        cameraNode.removeAllActions()
+        temperatureNode.removeAllActions()
+        detailTitleNode.removeAllActions()
+        resetSunBurstState()
+
+        runTemperatureDepartureAnimation(on: temperatureNode)
+        runSunExpansionAnimation(on: sunNode)
+        runSceneShiftAnimation(root: root, cameraNode: cameraNode, rotatingGroup: rotatingGroup)
+        runDetailTitleReveal(on: detailTitleNode)
+        runSunBurstAnimation()
+
+        let completionWorkItem = DispatchWorkItem { [weak self] in
+            self?.restTiltX = -0.004
+            self?.autoSpinSpeed = self?.detailAutoSpinSpeed ?? 0
+            self?.applyDisplayGroupRotation(self?.transitionRestRotation ?? SCNVector3(0, 0, 0))
+            completion()
+        }
+        transitionCompletionWorkItem = completionWorkItem
+        DispatchQueue.main.asyncAfter(
+            deadline: .now() + Self.sunDetailTransitionDuration,
+            execute: completionWorkItem
+        )
+    }
+
     func pauseAutomaticSpinForInteraction() {
-        guard mode == .sunDetail else { return }
+        guard mode == .sunDetail || mode == .sunTransition else { return }
 
         autoSpinSpeed = 0
     }
 
     func resumeAutomaticSpinAfterInteraction() {
-        guard mode == .sunDetail else { return }
+        guard mode == .sunDetail || mode == .sunTransition else { return }
         autoSpinSpeed = detailAutoSpinSpeed
     }
 
     private func buildScene() {
+        cancelPendingTransitionWork()
         scene.background.contents = UIColor.clear
         scene.rootNode.childNodes.forEach { $0.removeFromParentNode() }
+        cameraNode = nil
+        sceneRootNode = nil
         detailTitleNode = nil
+        sunBurstNode = nil
+        temperatureNode = nil
+        sunNode = nil
+        sunBurstRayDirections.removeAll()
+        sunBurstRayStartPositions.removeAll()
+        sunBurstRayBaseOpacities.removeAll()
 
         let isDetailMode = mode == .sunDetail
+        let isTransitionMode = mode == .sunTransition
         restTiltX = isDetailMode ? -0.004 : -0.012
         autoSpinSpeed = isDetailMode ? detailAutoSpinSpeed : 0
 
@@ -90,13 +233,14 @@ final class WeatherSceneManager: ObservableObject {
         let cameraNode = SCNNode()
         cameraNode.camera = camera
         cameraNode.position = isDetailMode
-            ? SCNVector3(0, 0.38, 18.8)
+            ? detailCameraPosition
             : mainCameraPosition
         scene.rootNode.addChildNode(cameraNode)
+        self.cameraNode = cameraNode
 
         let ambient = SCNLight()
         ambient.type = .ambient
-        ambient.intensity = isDetailMode ? 1120 : 1000   // 提高环境光，防止暗部全黑
+        ambient.intensity = isDetailMode ? 1120 : (isTransitionMode ? 1080 : 1000)
         ambient.color = UIColor(white: 0.85, alpha: 1)
         let ambientNode = SCNNode()
         ambientNode.light = ambient
@@ -104,7 +248,7 @@ final class WeatherSceneManager: ObservableObject {
 
         let key = SCNLight()
         key.type = .directional
-        key.intensity = isDetailMode ? 1380 : 1200
+        key.intensity = isDetailMode ? 1380 : (isTransitionMode ? 1320 : 1200)
         key.color = UIColor(red: 1.0, green: 0.96, blue: 0.90, alpha: 1)
         let keyNode = SCNNode()
         keyNode.light = key
@@ -115,7 +259,7 @@ final class WeatherSceneManager: ObservableObject {
         // 调整 intensity 控制强度，eulerAngles.y 控制左右方向（负值=来自右侧）
         let rightFill = SCNLight()
         rightFill.type = .directional
-        rightFill.intensity = isDetailMode ? 840 : 700
+        rightFill.intensity = isDetailMode ? 840 : (isTransitionMode ? 780 : 700)
         rightFill.color = UIColor(red: 0.95, green: 0.97, blue: 1.0, alpha: 1)
         let rightFillNode = SCNNode()
         rightFillNode.light = rightFill
@@ -126,29 +270,57 @@ final class WeatherSceneManager: ObservableObject {
         let root = SCNNode()
         root.name = "weather_root"
         root.position = isDetailMode
-            ? SCNVector3(0, -0.42, 0)
-            : SCNVector3(0, -1.94, 0)
+            ? detailRootPosition
+            : mainRootPosition
         scene.rootNode.addChildNode(root)
+        sceneRootNode = root
 
         let rotatingGroup = SCNNode()
         rotatingGroup.name = "weather_rotating_group"
         root.addChildNode(rotatingGroup)
         conditionGroup = rotatingGroup
+        displayGroupRotation = SCNVector3(0, 0, 0)
 
         let sun = makeSunNode()
         if isDetailMode {
             let sunAssembly = SCNNode()
             sunAssembly.name = "weather_sun_detail_assembly"
-            sunAssembly.position = SCNVector3(0, -0.44, -0.1)
+            sunAssembly.position = detailSunPosition
 
             sun.position = SCNVector3(0, 0, 0)
             sunAssembly.addChildNode(sun)
             rotatingGroup.addChildNode(sunAssembly)
 
             let title = makeSunDetailTitleNode(text: "Sun")
-            title.position = SCNVector3(0, 2.9, 0.34)
+            title.position = detailTitlePosition
             rotatingGroup.addChildNode(title)
             detailTitleNode = title
+            attachSunSpin(to: title, animationKey: sunTitleSpinAnimationKey)
+
+            sunNode = sunAssembly
+        } else if isTransitionMode {
+            let sunAssembly = SCNNode()
+            sunAssembly.name = "weather_sun_transition_assembly"
+            sunAssembly.position = SCNVector3(0, mainSunPositionY, -0.1)
+
+            sun.position = SCNVector3(0, 0, 0)
+            sunAssembly.addChildNode(sun)
+
+            let burstNode = makeSunBurstNode()
+            burstNode.position = SCNVector3(0, 0, 0)
+            sunAssembly.addChildNode(burstNode)
+            sunBurstNode = burstNode
+
+            rotatingGroup.addChildNode(sunAssembly)
+
+            let title = makeSunDetailTitleNode(text: "Sun")
+            title.name = SceneNode.sunTitle
+            title.position = detailTitlePosition
+            title.opacity = 0
+            title.scale = SCNVector3(0.88, 0.88, 0.88)
+            rotatingGroup.addChildNode(title)
+            detailTitleNode = title
+            attachSunSpin(to: title, animationKey: sunTitleSpinAnimationKey)
 
             sunNode = sunAssembly
         } else {
@@ -157,20 +329,20 @@ final class WeatherSceneManager: ObservableObject {
             sunNode = sun
         }
 
-        if mode == .main {
+        if mode == .main || mode == .sunTransition {
             let digits = makeTemperatureNode(text: "\(currentTemperature)")
             // ── 数字位置：Y 值越小越靠下（如需微调往下移，减小 Y 值）──
             digits.position = SCNVector3(0, mainTemperaturePositionY, 0.12)
             rotatingGroup.addChildNode(digits)
             temperatureNode = digits
-        } else {
-            temperatureNode = nil
         }
 
-        attachFloatAnimation(to: root)
+        if mode != .sunDetail {
+            attachFloatAnimation(to: root)
+        }
         attachSunPulse(to: sun)
-        if mode == .main {
-            attachSunSpin(to: sun)
+        if mode == .main || mode == .sunTransition {
+            attachSunSpin(to: sun, animationKey: sunSpinAnimationKey)
         }
     }
 
@@ -227,6 +399,7 @@ final class WeatherSceneManager: ObservableObject {
 
     private func makeSunDetailTitleNode(text: String) -> SCNNode {
         let container = SCNNode()
+        container.name = SceneNode.sunTitle
         let frontTitle = makeSingleSunDetailTitleNode(text: text)
         frontTitle.position.z = 0
         container.addChildNode(frontTitle)
@@ -234,6 +407,89 @@ final class WeatherSceneManager: ObservableObject {
         container.eulerAngles = SCNVector3(0.02, -0.04, 0.01)
         container.castsShadow = false
         return container
+    }
+
+    private func makeSunBurstNode() -> SCNNode {
+        let container = SCNNode()
+        container.name = SceneNode.sunBurst
+        container.opacity = 0
+        container.isHidden = true
+
+        let directions: [SIMD3<Float>] = [
+            SIMD3<Float>(0.00, 1.00, 0.32),
+            SIMD3<Float>(0.44, 0.92, 0.26),
+            SIMD3<Float>(0.82, 0.48, 0.18),
+            SIMD3<Float>(0.98, 0.06, -0.05),
+            SIMD3<Float>(0.72, -0.52, 0.16),
+            SIMD3<Float>(0.34, -0.92, 0.24),
+            SIMD3<Float>(-0.05, -1.00, -0.10),
+            SIMD3<Float>(-0.40, -0.86, -0.24),
+            SIMD3<Float>(-0.84, -0.44, 0.04),
+            SIMD3<Float>(-1.00, 0.04, -0.12),
+            SIMD3<Float>(-0.76, 0.58, -0.26),
+            SIMD3<Float>(-0.30, 0.94, 0.08)
+        ]
+
+        for (index, direction) in directions.enumerated() {
+            container.addChildNode(
+                makeSunBurstRayNode(
+                    direction: direction,
+                    index: index
+                )
+            )
+        }
+
+        return container
+    }
+
+    private func makeSunBurstRayNode(direction: SIMD3<Float>, index: Int) -> SCNNode {
+        let normalizedDirection = simd_normalize(direction)
+        let isFrontRay = normalizedDirection.z >= 0
+        let length = CGFloat(isFrontRay ? 2.73 : 2.31) + CGFloat(index % 3) * 0.14
+        let thickness = CGFloat(isFrontRay ? 0.052 : 0.038)
+
+        let rayGeometry = SCNBox(
+            width: thickness,
+            height: length,
+            length: thickness * 1.35,
+            chamferRadius: thickness * 0.4
+        )
+
+        let material = SCNMaterial()
+        material.lightingModel = .physicallyBased
+        material.diffuse.contents = UIColor(
+            white: 0.03,
+            alpha: isFrontRay ? 0.88 : 0.36
+        )
+        material.emission.contents = UIColor(
+            white: 0.0,
+            alpha: isFrontRay ? 0.08 : 0.02
+        )
+        material.metalness.contents = Float(0.05)
+        material.roughness.contents = Float(0.95)
+        material.isDoubleSided = true
+        rayGeometry.materials = Array(repeating: material, count: 6)
+
+        let rayNode = SCNNode(geometry: rayGeometry)
+        let sunRadius: Float = 2.44
+        let halfLength = Float(length) / 2
+        let distanceFromCenter = sunRadius + halfLength
+        let placement = normalizedDirection * distanceFromCenter
+        rayNode.position = SCNVector3(placement.x, placement.y, placement.z)
+        rayNode.simdOrientation = simd_quatf(
+            from: SIMD3<Float>(0, 1, 0),
+            to: normalizedDirection
+        )
+        rayNode.scale = SCNVector3(1, 1, 1)
+        rayNode.opacity = isFrontRay ? 1 : 0.82
+        sunBurstRayDirections[ObjectIdentifier(rayNode)] = SCNVector3(
+            normalizedDirection.x,
+            normalizedDirection.y,
+            normalizedDirection.z
+        )
+        sunBurstRayStartPositions[ObjectIdentifier(rayNode)] = rayNode.position
+        sunBurstRayBaseOpacities[ObjectIdentifier(rayNode)] = rayNode.opacity
+        return rayNode
     }
 
     private func makeSingleSunDetailTitleNode(text: String) -> SCNNode {
@@ -606,8 +862,390 @@ final class WeatherSceneManager: ObservableObject {
         return material
     }
 
+    private func cancelPendingTransitionWork() {
+        transitionCompletionWorkItem?.cancel()
+        transitionCompletionWorkItem = nil
+    }
+
+    private func runTemperatureDepartureAnimation(on node: SCNNode) {
+        let moveAction = SCNAction.move(to: SCNVector3(-10.4, mainTemperaturePositionY, -1.9), duration: 0.42)
+        moveAction.timingMode = .easeOut
+
+        let spinAction = makeEulerAnglesAction(
+            from: node.eulerAngles,
+            to: SCNVector3(0.16, -Float.pi * 1.42, -0.18),
+            duration: 0.42,
+            easing: easeOutCubic
+        )
+
+        let scaleAction = makeScaleAction(
+            from: node.scale,
+            to: SCNVector3(0.54, 0.54, 0.54),
+            duration: 0.42,
+            easing: easeOutCubic
+        )
+
+        let fadeAction = SCNAction.fadeOut(duration: 0.30)
+        fadeAction.timingMode = .easeOut
+
+        node.runAction(
+            .group([moveAction, spinAction, scaleAction, fadeAction])
+        ) { [weak self, weak node] in
+            node?.removeFromParentNode()
+            if self?.temperatureNode === node {
+                self?.temperatureNode = nil
+            }
+        }
+    }
+
+    private func runSunExpansionAnimation(on node: SCNNode) {
+        let moveAction = SCNAction.move(to: detailSunPosition, duration: Self.sunDetailTransitionDuration)
+        moveAction.timingMode = .easeInEaseOut
+
+        let scaleAction = makeScaleAction(
+            from: node.scale,
+            to: SCNVector3(detailSunScale, detailSunScale, detailSunScale),
+            duration: Self.sunDetailTransitionDuration,
+            easing: easeInOutCubic
+        )
+
+        node.runAction(.group([moveAction, scaleAction]))
+    }
+
+    private func runSunReturnAnimation(on node: SCNNode) {
+        let moveAction = SCNAction.move(to: SCNVector3(0, mainSunPositionY, -0.1), duration: 0.74)
+        moveAction.timingMode = .easeInEaseOut
+
+        let scaleAction = makeScaleAction(
+            from: node.scale,
+            to: SCNVector3(1, 1, 1),
+            duration: 0.74,
+            easing: easeInOutCubic
+        )
+
+        node.runAction(.group([moveAction, scaleAction]))
+    }
+
+    private func runSceneShiftAnimation(root: SCNNode, cameraNode: SCNNode, rotatingGroup: SCNNode) {
+        let rootMove = SCNAction.move(to: detailRootPosition, duration: Self.sunDetailTransitionDuration)
+        rootMove.timingMode = .easeInEaseOut
+        root.runAction(rootMove)
+
+        let cameraMove = SCNAction.move(to: detailCameraPosition, duration: Self.sunDetailTransitionDuration)
+        cameraMove.timingMode = .easeInEaseOut
+        let fieldOfViewAction = makeFieldOfViewAction(
+            from: cameraNode.camera?.fieldOfView ?? 31,
+            to: 24,
+            duration: Self.sunDetailTransitionDuration
+        )
+        cameraNode.runAction(.group([cameraMove, fieldOfViewAction]))
+
+        rotatingGroup.runAction(
+            makeEulerAnglesAction(
+                from: rotatingGroup.eulerAngles,
+                to: transitionRestRotation,
+                duration: Self.sunDetailTransitionDuration,
+                easing: easeInOutCubic
+            )
+        )
+    }
+
+    private func runSceneReturnAnimation(root: SCNNode, cameraNode: SCNNode, rotatingGroup: SCNNode) {
+        let rootMove = SCNAction.move(to: mainRootPosition, duration: 0.74)
+        rootMove.timingMode = .easeInEaseOut
+        root.runAction(rootMove)
+
+        let cameraMove = SCNAction.move(to: mainCameraPosition, duration: 0.74)
+        cameraMove.timingMode = .easeInEaseOut
+        let fieldOfViewAction = makeFieldOfViewAction(
+            from: cameraNode.camera?.fieldOfView ?? 24,
+            to: 31,
+            duration: 0.74
+        )
+        cameraNode.runAction(.group([cameraMove, fieldOfViewAction]))
+
+        rotatingGroup.runAction(
+            makeEulerAnglesAction(
+                from: rotatingGroup.eulerAngles,
+                to: transitionSourceRotation,
+                duration: 0.74,
+                easing: easeInOutCubic
+            )
+        )
+    }
+
+    private func runDetailTitleReveal(on node: SCNNode) {
+        let revealDelay = Self.sunDetailTransitionDuration * 0.60
+        let revealDuration = Self.sunDetailTransitionDuration * 0.24
+
+        let moveAction = SCNAction.move(
+            to: detailTitlePosition,
+            duration: revealDuration
+        )
+        moveAction.timingMode = .easeOut
+
+        let scaleAction = makeScaleAction(
+            from: node.scale,
+            to: SCNVector3(1, 1, 1),
+            duration: revealDuration,
+            easing: easeOutCubic
+        )
+
+        let fadeAction = SCNAction.fadeOpacity(to: 1, duration: revealDuration * 0.78)
+        fadeAction.timingMode = .easeOut
+
+        node.position = SCNVector3(
+            detailTitlePosition.x,
+            detailTitlePosition.y + 0.18,
+            detailTitlePosition.z
+        )
+
+        node.runAction(
+            .sequence([
+                .wait(duration: revealDelay),
+                .group([moveAction, scaleAction, fadeAction])
+            ])
+        )
+    }
+
+    private func runDetailTitleHide(on node: SCNNode) {
+        let fadeAction = SCNAction.fadeOut(duration: 0.18)
+        fadeAction.timingMode = .easeIn
+        let moveAction = SCNAction.move(
+            to: SCNVector3(
+                detailTitlePosition.x,
+                detailTitlePosition.y - 0.14,
+                detailTitlePosition.z
+            ),
+            duration: 0.18
+        )
+        moveAction.timingMode = .easeIn
+
+        node.runAction(.group([fadeAction, moveAction]))
+    }
+
+    private func runSunBurstAnimation() {
+        guard let sunBurstNode else { return }
+
+        resetSunBurstState()
+        sunBurstNode.isHidden = false
+        sunBurstNode.opacity = 0
+
+        let burstDelay = Self.sunDetailTransitionDuration * 0.27
+        let burstFlyDuration = Self.sunDetailTransitionDuration * 0.34
+        let burstFadeDuration = Self.sunDetailTransitionDuration * 0.16
+
+        let fadeInAction = SCNAction.fadeOpacity(to: 1, duration: Self.sunDetailTransitionDuration * 0.08)
+        fadeInAction.timingMode = .easeOut
+        let fadeOutAction = SCNAction.fadeOut(duration: burstFadeDuration)
+        fadeOutAction.timingMode = .easeIn
+
+        sunBurstNode.runAction(
+            .sequence([
+                .wait(duration: burstDelay),
+                fadeInAction,
+                .wait(duration: Self.sunDetailTransitionDuration * 0.14),
+                fadeOutAction,
+                .run { node in
+                    node.opacity = 0
+                    node.isHidden = true
+                }
+            ])
+        )
+
+        for (index, rayNode) in sunBurstNode.childNodes.enumerated() {
+            let rayDelay = burstDelay + Double(index % 4) * 0.016
+            let outwardDistance = Float(0.66 + Double(index % 3) * 0.08)
+            let direction = rayDirection(for: rayNode)
+            let startPosition = initialRayPosition(for: rayNode)
+            let endPosition = SCNVector3(
+                startPosition.x + direction.x * outwardDistance,
+                startPosition.y + direction.y * outwardDistance,
+                startPosition.z + direction.z * outwardDistance
+            )
+
+            rayNode.runAction(
+                .sequence([
+                    .wait(duration: rayDelay),
+                    .group([
+                        makeMoveAction(
+                            from: startPosition,
+                            to: endPosition,
+                            duration: burstFlyDuration,
+                            easing: easeOutCubic
+                        ),
+                        makeScaleYAction(
+                            from: 1,
+                            to: 0.5,
+                            duration: burstFlyDuration,
+                            easing: easeInOutCubic
+                        )
+                    ]),
+                    SCNAction.fadeOut(duration: burstFadeDuration)
+                ])
+            )
+        }
+    }
+
+    private func prepareTemperatureNodeForReturn() -> SCNNode? {
+        guard let root = conditionGroup else { return nil }
+
+        if let existingNode = temperatureNode, existingNode.parent != nil {
+            return existingNode
+        }
+
+        let digits = makeTemperatureNode(text: "\(currentTemperature)")
+        digits.position = SCNVector3(-1.2, mainTemperaturePositionY, -0.48)
+        digits.scale = SCNVector3(0.54, 0.54, 0.54)
+        digits.opacity = 0
+        root.addChildNode(digits)
+        temperatureNode = digits
+        return digits
+    }
+
+    private func runTemperatureReturnAnimation(on node: SCNNode) {
+        let moveAction = SCNAction.move(to: SCNVector3(0, mainTemperaturePositionY, 0.12), duration: 0.38)
+        moveAction.timingMode = .easeOut
+
+        let scaleAction = makeScaleAction(
+            from: node.scale,
+            to: SCNVector3(mainTemperatureScale, mainTemperatureScale, mainTemperatureScale),
+            duration: 0.38,
+            easing: easeOutCubic
+        )
+
+        let rotationAction = makeEulerAnglesAction(
+            from: node.eulerAngles,
+            to: SCNVector3(0.02, -0.05, 0.01),
+            duration: 0.38,
+            easing: easeOutCubic
+        )
+
+        let fadeAction = SCNAction.fadeOpacity(to: 1, duration: 0.26)
+        fadeAction.timingMode = .easeOut
+
+        node.runAction(.group([moveAction, scaleAction, rotationAction, fadeAction]))
+    }
+
+    private func rayDirection(for node: SCNNode) -> SCNVector3 {
+        sunBurstRayDirections[ObjectIdentifier(node)] ?? SCNVector3(0, 1, 0)
+    }
+
+    private func initialRayPosition(for node: SCNNode) -> SCNVector3 {
+        sunBurstRayStartPositions[ObjectIdentifier(node)] ?? node.position
+    }
+
+    private func baseRayOpacity(for node: SCNNode) -> CGFloat {
+        sunBurstRayBaseOpacities[ObjectIdentifier(node)] ?? 1
+    }
+
+    private func resetSunBurstState() {
+        guard let sunBurstNode else { return }
+
+        sunBurstNode.removeAllActions()
+        sunBurstNode.opacity = 0
+        sunBurstNode.isHidden = true
+        sunBurstNode.childNodes.forEach { rayNode in
+            rayNode.removeAllActions()
+            rayNode.position = initialRayPosition(for: rayNode)
+            rayNode.scale = SCNVector3(1, 1, 1)
+            rayNode.opacity = baseRayOpacity(for: rayNode)
+        }
+    }
+
+    private func makeMoveAction(
+        from startPosition: SCNVector3,
+        to endPosition: SCNVector3,
+        duration: TimeInterval,
+        easing: @escaping (CGFloat) -> CGFloat
+    ) -> SCNAction {
+        SCNAction.customAction(duration: duration) { node, elapsed in
+            let rawProgress = elapsed / CGFloat(max(duration, 0.0001))
+            let progress = easing(rawProgress)
+            node.position = SCNVector3(
+                startPosition.x + Float(progress) * (endPosition.x - startPosition.x),
+                startPosition.y + Float(progress) * (endPosition.y - startPosition.y),
+                startPosition.z + Float(progress) * (endPosition.z - startPosition.z)
+            )
+        }
+    }
+
+    private func makeFieldOfViewAction(
+        from startFieldOfView: CGFloat,
+        to endFieldOfView: CGFloat,
+        duration: TimeInterval
+    ) -> SCNAction {
+        SCNAction.customAction(duration: duration) { [weak self] node, elapsed in
+            let rawProgress = elapsed / CGFloat(max(duration, 0.0001))
+            let progress = self?.easeInOutCubic(rawProgress) ?? rawProgress
+            node.camera?.fieldOfView = startFieldOfView + (endFieldOfView - startFieldOfView) * progress
+        }
+    }
+
+    private func makeEulerAnglesAction(
+        from startAngles: SCNVector3,
+        to endAngles: SCNVector3,
+        duration: TimeInterval,
+        easing: @escaping (CGFloat) -> CGFloat
+    ) -> SCNAction {
+        SCNAction.customAction(duration: duration) { node, elapsed in
+            let rawProgress = elapsed / CGFloat(max(duration, 0.0001))
+            let progress = easing(rawProgress)
+            node.eulerAngles = SCNVector3(
+                startAngles.x + Float(progress) * (endAngles.x - startAngles.x),
+                startAngles.y + Float(progress) * (endAngles.y - startAngles.y),
+                startAngles.z + Float(progress) * (endAngles.z - startAngles.z)
+            )
+        }
+    }
+
+    private func makeScaleAction(
+        from startScale: SCNVector3,
+        to endScale: SCNVector3,
+        duration: TimeInterval,
+        easing: @escaping (CGFloat) -> CGFloat
+    ) -> SCNAction {
+        SCNAction.customAction(duration: duration) { node, elapsed in
+            let rawProgress = elapsed / CGFloat(max(duration, 0.0001))
+            let progress = easing(rawProgress)
+            node.scale = SCNVector3(
+                startScale.x + Float(progress) * (endScale.x - startScale.x),
+                startScale.y + Float(progress) * (endScale.y - startScale.y),
+                startScale.z + Float(progress) * (endScale.z - startScale.z)
+            )
+        }
+    }
+
+    private func makeScaleYAction(
+        from startScaleY: Float,
+        to endScaleY: Float,
+        duration: TimeInterval,
+        easing: @escaping (CGFloat) -> CGFloat
+    ) -> SCNAction {
+        SCNAction.customAction(duration: duration) { node, elapsed in
+            let rawProgress = elapsed / CGFloat(max(duration, 0.0001))
+            let progress = easing(rawProgress)
+            node.scale.y = startScaleY + Float(progress) * (endScaleY - startScaleY)
+        }
+    }
+
+    private func easeOutCubic(_ value: CGFloat) -> CGFloat {
+        let clamped = min(max(value, 0), 1)
+        return 1 - pow(1 - clamped, 3)
+    }
+
+    private func easeInOutCubic(_ value: CGFloat) -> CGFloat {
+        let clamped = min(max(value, 0), 1)
+        if clamped < 0.5 {
+            return 4 * clamped * clamped * clamped
+        }
+
+        let offset = -2 * clamped + 2
+        return 1 - pow(offset, 3) / 2
+    }
+
     private func updateTemperature(animated: Bool) {
-        guard mode == .main else { return }
+        guard mode == .main || mode == .sunTransition else { return }
         guard let root = conditionGroup else { return }
 
         let replacement = makeTemperatureNode(text: "\(currentTemperature)")
@@ -657,14 +1295,14 @@ final class WeatherSceneManager: ObservableObject {
         node.addAnimation(pulse, forKey: "sun_pulse")
     }
 
-    private func attachSunSpin(to node: SCNNode) {
+    private func attachSunSpin(to node: SCNNode, animationKey: String = "sun_spin") {
         let spin = CABasicAnimation(keyPath: "eulerAngles.y")
         spin.fromValue = 0
         spin.toValue = -Float.pi * 2
         spin.duration = 30   // 原 18s，降到 60% 速度
         spin.repeatCount = .infinity
         spin.timingFunction = CAMediaTimingFunction(name: .linear)
-        node.addAnimation(spin, forKey: sunSpinAnimationKey)
+        node.addAnimation(spin, forKey: animationKey)
     }
 
 }

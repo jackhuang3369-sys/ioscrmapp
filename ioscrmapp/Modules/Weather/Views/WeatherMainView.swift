@@ -3,10 +3,11 @@ import SceneKit
 
 struct WeatherMainView: View {
     @Environment(\.dismiss) private var dismiss
-    @StateObject private var sceneManager = WeatherSceneManager(temperature: MockWeatherData.today.temperature, mode: .main)
-    @StateObject private var detailSceneManager = WeatherSceneManager(temperature: MockWeatherData.today.temperature, mode: .sunDetail)
+    @StateObject private var sceneManager = WeatherSceneManager(temperature: MockWeatherData.today.temperature, mode: .sunTransition)
     @State private var selectedTimelineID = MockWeatherData.timeline.first?.id ?? "now"
     @State private var isSunDetailPresented = false
+    @State private var isSunTransitionActive = false
+    @State private var detailOverlayOpacity = 0.0
     
     private let session: CustSubInfo
     private let aiChatService: any AIChatServicing
@@ -31,21 +32,19 @@ struct WeatherMainView: View {
         GeometryReader { proxy in
             ZStack {
                 mainScene(in: proxy)
-                    .scaleEffect(isSunDetailPresented ? 0.985 : 1)
-                    .blur(radius: isSunDetailPresented ? 6 : 0)
-                    .opacity(isSunDetailPresented ? 0.22 : 1)
-                    .allowsHitTesting(!isSunDetailPresented)
-                    .animation(.easeInOut(duration: 0.24), value: isSunDetailPresented)
+                    .allowsHitTesting(!isSunTransitionActive)
                 
                 if isSunDetailPresented {
                     WeatherSunDetailOverlay(
-                        manager: detailSceneManager,
+                        manager: sceneManager,
                         size: proxy.size,
                         safeAreaInsets: proxy.safeAreaInsets,
+                        interfaceOpacity: detailOverlayOpacity,
+                        allowsInteraction: !isSunTransitionActive,
                         onClose: exitSunDetail
                     )
                     .transition(.opacity.combined(with: .scale(scale: 0.97)))
-                    .zIndex(10)
+                    .zIndex(8)
                 }
             }
             .ignoresSafeArea()
@@ -54,7 +53,6 @@ struct WeatherMainView: View {
         .onAppear {
             WeatherAudioPlayer.shared.playDetailedEnter()
             sceneManager.setTemperature(selectedEntry.temperature, animated: false)
-            detailSceneManager.setTemperature(selectedEntry.temperature, animated: false)
         }
     }
     
@@ -84,6 +82,9 @@ struct WeatherMainView: View {
                 Text(weather.title)
                     .font(.du(26, weight: .bold))
                     .foregroundColor(Color.black.opacity(0.92))
+                    .opacity(isSunDetailPresented ? 0 : 1)
+                    .offset(y: isSunDetailPresented ? 138 : 0)
+                    .animation(.easeIn(duration: 0.24), value: isSunDetailPresented)
                     .padding(.bottom, 8)
                 
                 WeatherHourlyStrip(
@@ -104,7 +105,6 @@ struct WeatherMainView: View {
                         selectedTimelineID = entry.id
                     }
                     sceneManager.setTemperature(entry.temperature, animated: true)
-                    detailSceneManager.setTemperature(entry.temperature, animated: false)
                 }
                 .frame(width: proxy.size.width * 0.8)
                 .padding(.bottom, hourlyStripBottomPadding)
@@ -188,20 +188,48 @@ struct WeatherMainView: View {
     }
     
     private func enterSunDetail() {
-        guard !isSunDetailPresented else { return }
-        detailSceneManager.setTemperature(selectedEntry.temperature, animated: false)
+        guard !isSunDetailPresented, !isSunTransitionActive else { return }
+
+        sceneManager.prepareSunDetailTransition(
+            temperature: selectedEntry.temperature,
+            sourceRotation: sceneManager.displayGroupRotation
+        )
         sceneManager.setTemperatureVisibility(isHidden: true, animated: true)
+
+        detailOverlayOpacity = 0
+        isSunTransitionActive = true
+
         withAnimation(.spring(response: 0.56, dampingFraction: 0.88, blendDuration: 0.12)) {
             isSunDetailPresented = true
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.12) {
+            guard isSunDetailPresented else { return }
+            withAnimation(.easeOut(duration: 0.52)) {
+                detailOverlayOpacity = 1
+            }
+        }
+
+        sceneManager.startSunDetailTransition {
+            guard isSunDetailPresented else { return }
+
+            isSunTransitionActive = false
         }
         WeatherAudioPlayer.shared.playDetailedEnter()
     }
     
     private func exitSunDetail() {
-        guard isSunDetailPresented else { return }
-        sceneManager.setTemperatureVisibility(isHidden: false, animated: true)
-        withAnimation(.spring(response: 0.48, dampingFraction: 0.86, blendDuration: 0.08)) {
+        guard isSunDetailPresented, !isSunTransitionActive else { return }
+
+        isSunTransitionActive = true
+        withAnimation(.easeInOut(duration: 0.36)) {
+            detailOverlayOpacity = 0
+        }
+
+        sceneManager.startReturnToMainTransition(temperature: selectedEntry.temperature) {
+            sceneManager.setTemperatureVisibility(isHidden: false, animated: false)
             isSunDetailPresented = false
+            isSunTransitionActive = false
         }
         WeatherAudioPlayer.shared.playShapeTap()
     }
@@ -230,18 +258,20 @@ struct WeatherMainView: View {
         let manager: WeatherSceneManager
         let size: CGSize
         let safeAreaInsets: EdgeInsets
+        let interfaceOpacity: Double
+        let allowsInteraction: Bool
         let onClose: () -> Void
         
         var body: some View {
-            ZStack {
-                Color.white
-                
-                WeatherWindBackgroundView()
-                    .opacity(0.95)
+            let sceneViewportHeight = min(size.height * 0.56, 470)
 
+            ZStack {
                 WeatherSunDetailBackdrop()
+                    .opacity(interfaceOpacity)
                 
                 WeatherSunDismissEdges(onDismiss: onClose)
+                    .opacity(interfaceOpacity)
+                    .allowsHitTesting(allowsInteraction)
                 
                 VStack(spacing: 0) {
                     HStack {
@@ -259,25 +289,22 @@ struct WeatherMainView: View {
                     }
                     .padding(.horizontal, 18)
                     .padding(.top, 56)
-                    
-                    WeatherSceneView(
-                        scene: manager.scene,
-                        manager: manager,
-                        onSunTap: nil,
-                        allowsInteraction: true
+                    .allowsHitTesting(allowsInteraction)
+
+                    WeatherSunDismissSurface(
+                        sceneViewportHeight: sceneViewportHeight,
+                        onDismiss: onClose
                     )
-                    .frame(height: min(size.height * 0.56, 470))
                     .padding(.top, 2)
                     .padding(.horizontal, 6)
-                    .contentShape(Rectangle())
-                    .onTapGesture(perform: onClose)
-                    
-                    Spacer(minLength: 0)
+                    .allowsHitTesting(allowsInteraction)
                     
                     WeatherSunInsightPanel()
                         .padding(.horizontal, 28)
                         .padding(.bottom, max(safeAreaInsets.bottom, 14) + 2)
+                        .offset(y: (1 - interfaceOpacity) * 180)
                 }
+                .opacity(interfaceOpacity)
             }
             .ignoresSafeArea()
         }
@@ -419,6 +446,22 @@ struct WeatherMainView: View {
                     }
                 }
             }
+        }
+    }
+
+    private struct WeatherSunDismissSurface: View {
+        let sceneViewportHeight: CGFloat
+        let onDismiss: () -> Void
+
+        var body: some View {
+            VStack(spacing: 0) {
+                Color.clear
+                    .frame(height: sceneViewportHeight)
+
+                Spacer(minLength: 0)
+            }
+            .contentShape(Rectangle())
+            .onTapGesture(perform: onDismiss)
         }
     }
     
