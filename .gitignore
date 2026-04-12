@@ -1,2 +1,22 @@
-ioscrmapp.xcodeproj/project.xcworkspace/xcuserdata/opencode.xcuserdatad/UserInterfaceState.xcuserstate
-ioscrmapp.xcodeproj/xcuserdata/opencode.xcuserdatad/xcschemes/xcschememanagement.plist
+# macOS
+.DS_Store
+
+# Xcode user-specific data
+**/xcuserdata/
+**/*.xcuserstate
+
+# Xcode build artifacts
+build/
+DerivedData/
+*.moved-aside
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# Swift Package Manager
+.build/
+
+# Local editor/assistant settings
+.vscode/
+ioscrmapp/.claude/settings.local.json
