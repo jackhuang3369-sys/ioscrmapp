@@ -88,7 +88,7 @@ struct WeatherHourlyStrip: View {
     }
 
     private func timelineIcon(for item: WeatherTimelineEntry) -> some View {
-        Image(systemName: item.symbolName)
+        Image(systemName: item.sfSymbol)
             .font(.system(size: 13, weight: item.id == selectedID ? .semibold : .regular))
             .symbolRenderingMode(.palette)
             .foregroundStyle(iconPrimaryColor(for: item), iconSecondaryColor(for: item))
@@ -97,26 +97,18 @@ struct WeatherHourlyStrip: View {
     }
 
     private func iconPrimaryColor(for item: WeatherTimelineEntry) -> Color {
-        if item.symbolName.contains("moon") {
-            return Color(hex: 0xF4C95D)
+        switch item.condition {
+        case .night:  return Color(hex: 0xF4C95D)
+        case .sunset: return Color(hex: 0xF28C52)
+        default:      return Color(hex: 0xF6B73C)
         }
-
-        if item.symbolName.contains("sunset") {
-            return Color(hex: 0xF28C52)
-        }
-
-        return Color(hex: 0xF6B73C)
     }
 
     private func iconSecondaryColor(for item: WeatherTimelineEntry) -> Color {
-        if item.symbolName.contains("moon") {
-            return Color(hex: 0xB8B5C0)
+        switch item.condition {
+        case .night:  return Color(hex: 0xB8B5C0)
+        case .sunset: return Color(hex: 0xF8CF8A)
+        default:      return Color(hex: 0xFDE7A1)
         }
-
-        if item.symbolName.contains("sunset") {
-            return Color(hex: 0xF8CF8A)
-        }
-
-        return Color(hex: 0xFDE7A1)
     }
 }

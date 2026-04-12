@@ -33,6 +33,7 @@ final class WeatherSceneManager: ObservableObject {
     private var sunBurstRayBaseOpacities: [ObjectIdentifier: CGFloat] = [:]
     private var transitionSourceRotation = SCNVector3(0, 0, 0)
     private var isTemperatureHidden: Bool = false
+    private var autoSpinSpeedBeforeInteraction: Float?
     private var transitionCompletionWorkItem: DispatchWorkItem?
     private var _birdsScene: SCNScene?   // 防止 ARC 过早释放鸟群场景
     private let weatherDataSubdirectory = "WeatherData"
@@ -105,6 +106,37 @@ final class WeatherSceneManager: ObservableObject {
 
         autoSpinSpeed = 0
         applyDisplayGroupRotation(transitionRestRotation)
+    }
+
+    func isDisplayGroupFrontFacing(toleranceDegrees: CGFloat = 8) -> Bool {
+        let yawDegrees = CGFloat(displayGroupRotation.y) * 180 / .pi
+        return WeatherSpinController(tuning: .default).isFrontFacing(
+            yawDegrees: yawDegrees,
+            toleranceDegrees: toleranceDegrees
+        )
+    }
+
+    func alignDisplayGroupToFrontForDetail(
+        duration: TimeInterval = 0.24,
+        completion: @escaping () -> Void
+    ) {
+        guard mode == .sunTransition, let rotatingGroup = conditionGroup else {
+            completion()
+            return
+        }
+
+        autoSpinSpeed = 0
+        rotatingGroup.removeAllActions()
+        let nearestFrontYaw = nearestFrontFacingYaw(from: rotatingGroup.eulerAngles.y)
+        SCNTransaction.begin()
+        SCNTransaction.animationDuration = duration
+        SCNTransaction.animationTimingFunction = CAMediaTimingFunction(name: .easeOut)
+        SCNTransaction.completionBlock = { [weak self] in
+            self?.syncDisplayGroupRotation(to: rotatingGroup.eulerAngles)
+            completion()
+        }
+        rotatingGroup.eulerAngles = SCNVector3(restTiltX, nearestFrontYaw, 0)
+        SCNTransaction.commit()
     }
 
     func resetToMainPresentation(temperature: Int) {
@@ -207,13 +239,23 @@ final class WeatherSceneManager: ObservableObject {
 
     func pauseAutomaticSpinForInteraction() {
         guard mode == .sunDetail || mode == .sunTransition else { return }
-
+        autoSpinSpeedBeforeInteraction = autoSpinSpeed
         autoSpinSpeed = 0
     }
 
     func resumeAutomaticSpinAfterInteraction() {
         guard mode == .sunDetail || mode == .sunTransition else { return }
-        autoSpinSpeed = detailAutoSpinSpeed
+        autoSpinSpeed = WeatherAutoSpinRecovery.resumedSpeed(
+            speedBeforeInteraction: autoSpinSpeedBeforeInteraction,
+            fallbackCurrentSpeed: autoSpinSpeed
+        )
+        autoSpinSpeedBeforeInteraction = nil
+    }
+
+    private func nearestFrontFacingYaw(from yaw: Float) -> Float {
+        let fullRotation = Float.pi * 2
+        let nearestTurn = round(yaw / fullRotation)
+        return nearestTurn * fullRotation
     }
 
     private func buildScene() {
@@ -1142,17 +1184,10 @@ final class WeatherSceneManager: ObservableObject {
             easing: easeOutCubic
         )
 
-        let rotationAction = makeEulerAnglesAction(
-            from: node.eulerAngles,
-            to: SCNVector3(0.02, -0.05, 0.01),
-            duration: 0.38,
-            easing: easeOutCubic
-        )
-
         let fadeAction = SCNAction.fadeOpacity(to: 1, duration: 0.26)
         fadeAction.timingMode = .easeOut
 
-        node.runAction(.group([moveAction, scaleAction, rotationAction, fadeAction]))
+        node.runAction(.group([moveAction, scaleAction, fadeAction]))
     }
 
     private func rayDirection(for node: SCNNode) -> SCNVector3 {

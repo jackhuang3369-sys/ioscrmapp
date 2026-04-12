@@ -20,3 +20,5 @@ DerivedData/
 # Local editor/assistant settings
 .vscode/
 ioscrmapp/.claude/settings.local.json
+.github/
+.agents/

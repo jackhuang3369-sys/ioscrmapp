@@ -118,7 +118,7 @@ struct WeatherMainView: View {
                         id: entry.id,
                         label: entry.label,
                         temperature: entry.temperature,
-                        symbolName: entry.symbolName,
+                        condition: entry.condition,
                         isCurrent: entry.isCurrent
                     )
                 },
@@ -201,6 +201,22 @@ struct WeatherMainView: View {
     }
     
     private func enterSunDetail() {
+        guard !isSunDetailPresented, !isSunTransitionActive else { return }
+
+        guard sceneManager.isDisplayGroupFrontFacing() else {
+            isSunTransitionActive = true
+            sceneManager.alignDisplayGroupToFrontForDetail { [self] in
+                sceneInteractionResetVersion += 1
+                isSunTransitionActive = false
+                beginSunDetailPresentation()
+            }
+            return
+        }
+
+        beginSunDetailPresentation()
+    }
+
+    private func beginSunDetailPresentation() {
         guard !isSunDetailPresented, !isSunTransitionActive else { return }
 
         sceneManager.prepareSunDetailTransition(

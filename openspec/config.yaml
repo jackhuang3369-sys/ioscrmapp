@@ -1,0 +1,36 @@
+schema: spec-driven
+
+context: |
+  Product: iOS app for UAE operator du.
+  Stack: Swift, SwiftUI, Xcode.
+  Artifacts: English only.
+  User communication: Chinese.
+  Style: concise, direct, low-token.
+  Reuse existing patterns first.
+  Flow: explore -> propose -> specs -> design -> tasks -> plan -> implement -> verify -> review -> sync/archive.
+  Skills: openspec-explore, brainstorming, writing-plans, test-driven-development, systematic-debugging, verification-before-completion, requesting-code-review or review-swarm.
+
+rules:
+  proposal:
+    - English only.
+    - Max 200 words.
+    - "Sections: Problem, Goal, Scope, Non-goals, Risks."
+
+  specs:
+    - English only.
+    - One capability per spec.
+    - Use short SHALL statements.
+    - Include acceptance criteria.
+    - No design or code detail.
+
+  design:
+    - English only.
+    - Max 300 words.
+    - Cover architecture, data flow, errors, tests, rollout.
+    - Note localization or performance when relevant.
+
+  tasks:
+    - English only.
+    - Short checklist items.
+    - One deliverable per item.
+    - "Order: tests or spike, implementation, verification, review, archive."

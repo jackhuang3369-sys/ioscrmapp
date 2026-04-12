@@ -1,0 +1,165 @@
+{
+  "version": 1,
+  "skills": {
+    "app-store-changelog": {
+      "source": "Dimillian/Skills",
+      "sourceType": "github",
+      "computedHash": "51fb0879570cbb60b5e59f922a30a966ac33d7cad39baffc64c4d5b9d17ebfcc"
+    },
+    "brainstorming": {
+      "source": "obra/superpowers",
+      "sourceType": "github",
+      "computedHash": "8df9b47092524833138b58682d03f2e153a242e550d1693657afdbee0cc9cdb0"
+    },
+    "bug-hunt-swarm": {
+      "source": "Dimillian/Skills",
+      "sourceType": "github",
+      "computedHash": "7a4b4e7fd6590e9ee4d8b8540cf214aeb1d9d875c23a0382cd0f61980b89169f"
+    },
+    "dispatching-parallel-agents": {
+      "source": "obra/superpowers",
+      "sourceType": "github",
+      "computedHash": "e21044ae7496fc285f1df9ff3fb518a3a20bea6f5216c1f59f4987e12c769a0a"
+    },
+    "executing-plans": {
+      "source": "obra/superpowers",
+      "sourceType": "github",
+      "computedHash": "2f709d1a2c7564f8ce6a9bb707e7f5451117ba80f8e8e2302662c29bc61246a6"
+    },
+    "finishing-a-development-branch": {
+      "source": "obra/superpowers",
+      "sourceType": "github",
+      "computedHash": "9edba9a38684c060fdc38290f640e1dc0c37de286723ac9be73bacacf7cd6f3d"
+    },
+    "github": {
+      "source": "Dimillian/Skills",
+      "sourceType": "github",
+      "computedHash": "339dd13ebe4fd3f72273bd12eec49356cdf235866ad2c7b75588eeddb3e993d2"
+    },
+    "ios-debugger-agent": {
+      "source": "Dimillian/Skills",
+      "sourceType": "github",
+      "computedHash": "cc28bb00c138bf1d8c841c5a137185a63d05a4b3197f5d360de0534b5e492c1a"
+    },
+    "macos-menubar-tuist-app": {
+      "source": "Dimillian/Skills",
+      "sourceType": "github",
+      "computedHash": "8724ada68cf08a1a965321a688969825bf33be8d344ba2ce67207c6ce604e76a"
+    },
+    "macos-spm-app-packaging": {
+      "source": "Dimillian/Skills",
+      "sourceType": "github",
+      "computedHash": "dd9fba9ca23b45f1c12db08470da9726b294bd6fb334f63d3447872efdf392c3"
+    },
+    "orchestrate-batch-refactor": {
+      "source": "Dimillian/Skills",
+      "sourceType": "github",
+      "computedHash": "1c585aac66e9eb6200316be826cd2c8fe384722c9e30775029a7fc9e5f17dd2f"
+    },
+    "project-skill-audit": {
+      "source": "Dimillian/Skills",
+      "sourceType": "github",
+      "computedHash": "29d50ebe7302acf46580a42df68739b192a7e8ab913c3125f9c65350ffe7c29d"
+    },
+    "react-component-performance": {
+      "source": "Dimillian/Skills",
+      "sourceType": "github",
+      "computedHash": "8eb290f593f272bc305e204f23eeb414140d6417022613970d5435189c084623"
+    },
+    "receiving-code-review": {
+      "source": "obra/superpowers",
+      "sourceType": "github",
+      "computedHash": "2760c85d4f4117b0006e7ba755f4bbd61f8f4c185f347999763c97f507274e30"
+    },
+    "requesting-code-review": {
+      "source": "obra/superpowers",
+      "sourceType": "github",
+      "computedHash": "246e65cd72a7e360987d94e6c61564ce6d71c6361d1784d529d70e4cbbe8522d"
+    },
+    "review-and-simplify-changes": {
+      "source": "Dimillian/Skills",
+      "sourceType": "github",
+      "computedHash": "eadd2aaf9e6526e7ff807b0ee1eeb20a4f317f6b2a9111cfea39e288c1d5a696"
+    },
+    "review-swarm": {
+      "source": "Dimillian/Skills",
+      "sourceType": "github",
+      "computedHash": "bbba1b61ca2817847089ad1cf794b2dde2d2b4215540f441105ac4d186f28d51"
+    },
+    "subagent-driven-development": {
+      "source": "obra/superpowers",
+      "sourceType": "github",
+      "computedHash": "a197f8e5fba5ea59013e1adbaa90dd42db35de8f074feca200c8038de584a83b"
+    },
+    "swift-concurrency-expert": {
+      "source": "Dimillian/Skills",
+      "sourceType": "github",
+      "computedHash": "638744d687dfc9fdde7a14f5496b053f409c7bc1b26c13a4a3c39cb0afb398f9"
+    },
+    "swiftui-expert-skill": {
+      "source": "avdlee/swiftui-agent-skill",
+      "sourceType": "github",
+      "computedHash": "928de140d60315991491c302d337d36155e1b0942b25fbc603dd0052dc535f17"
+    },
+    "swiftui-liquid-glass": {
+      "source": "Dimillian/Skills",
+      "sourceType": "github",
+      "computedHash": "e4d3634171bc6caa7cc8d15f58cd2fb848dab4744493edc56ec14f4b2c8521a0"
+    },
+    "swiftui-performance-audit": {
+      "source": "Dimillian/Skills",
+      "sourceType": "github",
+      "computedHash": "4c153a7401d4d878fad3b7b83ca3d29f43245f8404dd34b7beb400cdfcab46f7"
+    },
+    "swiftui-ui-patterns": {
+      "source": "Dimillian/Skills",
+      "sourceType": "github",
+      "computedHash": "f58d51fe4569f9eff10c45a4ed6859c9f5e3eefca7827e819de840141da67995"
+    },
+    "swiftui-view-refactor": {
+      "source": "Dimillian/Skills",
+      "sourceType": "github",
+      "computedHash": "eefd3e1e72a17ca627f8e50fce173efafaa23eb66515f562f4b5fca88325cb33"
+    },
+    "systematic-debugging": {
+      "source": "obra/superpowers",
+      "sourceType": "github",
+      "computedHash": "72e9ab72627e4fd8ed26a582e82309a98ecdc4f6e1c99418430ac05682c9e91d"
+    },
+    "test-driven-development": {
+      "source": "obra/superpowers",
+      "sourceType": "github",
+      "computedHash": "126f1ebf6ccd414f42544f6e83d8cc5adb089e1108eaffb7c400701e37eecd9f"
+    },
+    "update-swiftui-apis": {
+      "source": "avdlee/swiftui-agent-skill",
+      "sourceType": "github",
+      "computedHash": "cd1d2af833b4f98836bbd98684880c73d3a17556d216fe6f4d6eb7149c6dfa3f"
+    },
+    "using-git-worktrees": {
+      "source": "obra/superpowers",
+      "sourceType": "github",
+      "computedHash": "52bbb4b6e80918e83e92a1514f3b3757712154c2a8a42de24919e48a794c54fc"
+    },
+    "using-superpowers": {
+      "source": "obra/superpowers",
+      "sourceType": "github",
+      "computedHash": "e0eced9fbb205c212f420aded0c6f2bf5d5f059254679a8459b4fe72390160be"
+    },
+    "verification-before-completion": {
+      "source": "obra/superpowers",
+      "sourceType": "github",
+      "computedHash": "9b446f0c7fe1cfb560b1d34439523b1a76d5f177290007b2c053a1c749a4a8ba"
+    },
+    "writing-plans": {
+      "source": "obra/superpowers",
+      "sourceType": "github",
+      "computedHash": "bfaed11054ad8021c66860244e2d2e0d1eca483ae9f5fbfcb956e99c61f5c3d7"
+    },
+    "writing-skills": {
+      "source": "obra/superpowers",
+      "sourceType": "github",
+      "computedHash": "c0a92e629e39ea91b1f54da67a6aa92723008a8ef5b500c6de078f55485937c7"
+    }
+  }
+}

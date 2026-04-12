@@ -66,14 +66,9 @@
 		A10000000000000000000034 /* MallComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000034 /* MallComponents.swift */; };
 		A10000000000000000000035 /* MallContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000035 /* MallContainerView.swift */; };
 		A10000000000000000000036 /* MallHomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000036 /* MallHomeView.swift */; };
-		A10000000000000000000064 /* MallHomeHighlightCarouselView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000064 /* MallHomeHighlightCarouselView.swift */; };
 		A10000000000000000000037 /* MallCategoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000037 /* MallCategoryView.swift */; };
 		A10000000000000000000038 /* MallSearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000038 /* MallSearchView.swift */; };
 		A10000000000000000000039 /* MallSearchResultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000039 /* MallSearchResultView.swift */; };
-		A10000000000000000000065 /* MallProductDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000065 /* MallProductDetailView.swift */; };
-		A10000000000000000000066 /* MallProductSelectionSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000066 /* MallProductSelectionSheet.swift */; };
-		A10000000000000000000067 /* MallCartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000067 /* MallCartView.swift */; };
-		A10000000000000000000068 /* MallImagePreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000068 /* MallImagePreviewView.swift */; };
 		A10000000000000000000040 /* HomeAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000040 /* HomeAPI.swift */; };
 		A10000000000000000000041 /* HomeService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000041 /* HomeService.swift */; };
 		A10000000000000000000042 /* HomeModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000042 /* HomeModels.swift */; };
@@ -93,6 +88,12 @@
 		A10000000000000000000061 /* WeatherWindBackgroundView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000061 /* WeatherWindBackgroundView.swift */; };
 		A10000000000000000000062 /* HomeParallaxCarouselView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000062 /* HomeParallaxCarouselView.swift */; };
 		A10000000000000000000063 /* HomeParallaxReelSectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000063 /* HomeParallaxReelSectionView.swift */; };
+		A10000000000000000000064 /* MallHomeHighlightCarouselView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000064 /* MallHomeHighlightCarouselView.swift */; };
+		A10000000000000000000065 /* MallProductDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000065 /* MallProductDetailView.swift */; };
+		A10000000000000000000066 /* MallProductSelectionSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000066 /* MallProductSelectionSheet.swift */; };
+		A10000000000000000000067 /* MallCartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000067 /* MallCartView.swift */; };
+		A10000000000000000000068 /* MallImagePreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000068 /* MallImagePreviewView.swift */; };
+		A10000000000000000000069 /* WeatherSpinCore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000069 /* WeatherSpinCore.swift */; };
 		B10000000000000000000001 /* BillingAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000001 /* BillingAPI.swift */; };
 		B10000000000000000000002 /* BillingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000002 /* BillingService.swift */; };
 		B10000000000000000000003 /* BillingModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000003 /* BillingModels.swift */; };
@@ -192,14 +193,9 @@
 		A20000000000000000000034 /* MallComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MallComponents.swift; sourceTree = "<group>"; };
 		A20000000000000000000035 /* MallContainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MallContainerView.swift; sourceTree = "<group>"; };
 		A20000000000000000000036 /* MallHomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MallHomeView.swift; sourceTree = "<group>"; };
-		A20000000000000000000064 /* MallHomeHighlightCarouselView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MallHomeHighlightCarouselView.swift; sourceTree = "<group>"; };
 		A20000000000000000000037 /* MallCategoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MallCategoryView.swift; sourceTree = "<group>"; };
 		A20000000000000000000038 /* MallSearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MallSearchView.swift; sourceTree = "<group>"; };
 		A20000000000000000000039 /* MallSearchResultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MallSearchResultView.swift; sourceTree = "<group>"; };
-		A20000000000000000000065 /* MallProductDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MallProductDetailView.swift; sourceTree = "<group>"; };
-		A20000000000000000000066 /* MallProductSelectionSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MallProductSelectionSheet.swift; sourceTree = "<group>"; };
-		A20000000000000000000067 /* MallCartView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MallCartView.swift; sourceTree = "<group>"; };
-		A20000000000000000000068 /* MallImagePreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MallImagePreviewView.swift; sourceTree = "<group>"; };
 		A20000000000000000000040 /* HomeAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeAPI.swift; sourceTree = "<group>"; };
 		A20000000000000000000041 /* HomeService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeService.swift; sourceTree = "<group>"; };
 		A20000000000000000000042 /* HomeModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeModels.swift; sourceTree = "<group>"; };
@@ -219,6 +215,12 @@
 		A20000000000000000000061 /* WeatherWindBackgroundView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherWindBackgroundView.swift; sourceTree = "<group>"; };
 		A20000000000000000000062 /* HomeParallaxCarouselView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeParallaxCarouselView.swift; sourceTree = "<group>"; };
 		A20000000000000000000063 /* HomeParallaxReelSectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeParallaxReelSectionView.swift; sourceTree = "<group>"; };
+		A20000000000000000000064 /* MallHomeHighlightCarouselView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MallHomeHighlightCarouselView.swift; sourceTree = "<group>"; };
+		A20000000000000000000065 /* MallProductDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MallProductDetailView.swift; sourceTree = "<group>"; };
+		A20000000000000000000066 /* MallProductSelectionSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MallProductSelectionSheet.swift; sourceTree = "<group>"; };
+		A20000000000000000000067 /* MallCartView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MallCartView.swift; sourceTree = "<group>"; };
+		A20000000000000000000068 /* MallImagePreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MallImagePreviewView.swift; sourceTree = "<group>"; };
+		A20000000000000000000069 /* WeatherSpinCore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherSpinCore.swift; sourceTree = "<group>"; };
 		B20000000000000000000001 /* BillingAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BillingAPI.swift; sourceTree = "<group>"; };
 		B20000000000000000000002 /* BillingService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BillingService.swift; sourceTree = "<group>"; };
 		B20000000000000000000003 /* BillingModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BillingModels.swift; sourceTree = "<group>"; };
@@ -728,6 +730,7 @@
 				A2000000000000000000004C /* SceneConstants.swift */,
 				A2000000000000000000004D /* WeatherSceneManager.swift */,
 				A2000000000000000000004E /* WeatherSceneView.swift */,
+				A20000000000000000000069 /* WeatherSpinCore.swift */,
 				A20000000000000000000060 /* WeatherAudioPlayer.swift */,
 			);
 			path = SceneKit;
@@ -1119,6 +1122,7 @@
 				A1000000000000000000004C /* SceneConstants.swift in Sources */,
 				A1000000000000000000004D /* WeatherSceneManager.swift in Sources */,
 				A1000000000000000000004E /* WeatherSceneView.swift in Sources */,
+				A10000000000000000000069 /* WeatherSpinCore.swift in Sources */,
 				A10000000000000000000060 /* WeatherAudioPlayer.swift in Sources */,
 				A10000000000000000000054 /* WeatherHourlyStrip.swift in Sources */,
 				A10000000000000000000055 /* WeatherMainView.swift in Sources */,
@@ -1179,7 +1183,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -1233,7 +1237,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
@@ -1252,22 +1256,27 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"ioscrmapp/Preview Content\"";
-				DEVELOPMENT_TEAM = YT5UTK7ZC9;
+				DEVELOPMENT_TEAM = XG57Y935CB;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = ioscrmapp/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.business";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.inspur.crmiosapp;
+				PRODUCT_BUNDLE_IDENTIFIER = com.inspur.ray.crmiosapp;
 				PRODUCT_NAME = "du App";
 				PROVISIONING_PROFILE_SPECIFIER = "";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};
@@ -1280,22 +1289,27 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"ioscrmapp/Preview Content\"";
-				DEVELOPMENT_TEAM = YT5UTK7ZC9;
+				DEVELOPMENT_TEAM = XG57Y935CB;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = ioscrmapp/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.business";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.inspur.crmiosapp;
+				PRODUCT_BUNDLE_IDENTIFIER = com.inspur.ray.crmiosapp;
 				PRODUCT_NAME = "du App";
 				PROVISIONING_PROFILE_SPECIFIER = "";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
 		};
@@ -1343,7 +1357,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
@@ -1398,7 +1412,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
@@ -1453,7 +1467,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
@@ -1473,23 +1487,28 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"ioscrmapp/Preview Content\"";
-				DEVELOPMENT_TEAM = YT5UTK7ZC9;
+				DEVELOPMENT_TEAM = XG57Y935CB;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = ioscrmapp/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.business";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.inspur.crmiosapp;
+				PRODUCT_BUNDLE_IDENTIFIER = com.inspur.ray.crmiosapp;
 				PRODUCT_NAME = "du App";
 				PROVISIONING_PROFILE_SPECIFIER = "";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = APP_PACKAGE_DEVELOP;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Develop;
 		};
@@ -1502,23 +1521,28 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"ioscrmapp/Preview Content\"";
-				DEVELOPMENT_TEAM = YT5UTK7ZC9;
+				DEVELOPMENT_TEAM = XG57Y935CB;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = ioscrmapp/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.business";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.inspur.crmiosapp;
+				PRODUCT_BUNDLE_IDENTIFIER = com.inspur.ray.crmiosapp;
 				PRODUCT_NAME = "du App";
 				PROVISIONING_PROFILE_SPECIFIER = "";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = APP_PACKAGE_TEST;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Test;
 		};
@@ -1531,23 +1555,28 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"ioscrmapp/Preview Content\"";
-				DEVELOPMENT_TEAM = YT5UTK7ZC9;
+				DEVELOPMENT_TEAM = XG57Y935CB;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = ioscrmapp/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.business";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.inspur.crmiosapp;
+				PRODUCT_BUNDLE_IDENTIFIER = com.inspur.ray.crmiosapp;
 				PRODUCT_NAME = "du App";
 				PROVISIONING_PROFILE_SPECIFIER = "";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = APP_PACKAGE_PRODUCTION;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Production;
 		};
