@@ -384,7 +384,7 @@ final class WeatherSceneManager: ObservableObject {
             sunAssembly.addChildNode(sun)
             rotatingGroup.addChildNode(sunAssembly)
 
-            let title = makeSunDetailTitleNode(text: "Sun")
+            let title = makeSunDetailTitleNode(text: "SUN")
             title.position = detailTitlePosition
             rotatingGroup.addChildNode(title)
             detailTitleNode = title
@@ -406,7 +406,7 @@ final class WeatherSceneManager: ObservableObject {
 
             rotatingGroup.addChildNode(sunAssembly)
 
-            let title = makeSunDetailTitleNode(text: "Sun")
+            let title = makeSunDetailTitleNode(text: "SUN")
             title.name = SceneNode.sunTitle
             title.position = detailTitlePosition
             title.opacity = 0
@@ -602,11 +602,84 @@ final class WeatherSceneManager: ObservableObject {
     }
 
     private func makeSingleSunDetailTitleNode(text: String) -> SCNNode {
-        let textGeometry = SCNText(string: text, extrusionDepth: 0.9)
-        textGeometry.flatness = 0.06
-        textGeometry.font = UIFont.systemFont(ofSize: 10.8, weight: .black)
-        textGeometry.chamferRadius = 0.10
+        let font = UIFont.systemFont(ofSize: 10.8, weight: .black)
+        let container = SCNNode()
+        var cursorX: Float = 0
+        let letterSpacing: Float = 0.18
 
+        for character in text {
+            let letterNode = makeSunDetailTitleLetterNode(character: String(character), font: font)
+            let (minBounds, maxBounds) = letterNode.boundingBox
+            let width = maxBounds.x - minBounds.x
+            letterNode.position = SCNVector3(cursorX - minBounds.x, -minBounds.y, 0)
+            container.addChildNode(letterNode)
+            cursorX += width + letterSpacing
+        }
+
+        let (minBounds, maxBounds) = container.boundingBox
+        let width = maxBounds.x - minBounds.x
+        let height = maxBounds.y - minBounds.y
+        container.pivot = SCNMatrix4MakeTranslation(
+            minBounds.x + width / 2,
+            minBounds.y + height / 2,
+            0
+        )
+        container.scale = SCNVector3(0.09, 0.09, 0.09)
+        return container
+    }
+
+    private func makeSunDetailTitleLetterNode(character: String, font: UIFont) -> SCNNode {
+        let textGeometry = makeSunDetailTitleLetterGeometry(character: character, font: font)
+        let measureNode = SCNNode(geometry: textGeometry)
+        let (minBounds, maxBounds) = measureNode.boundingBox
+        let centerX = minBounds.x + (maxBounds.x - minBounds.x) / 2
+        let centerY = minBounds.y + (maxBounds.y - minBounds.y) / 2
+
+        let container = SCNNode()
+
+        // Build a visible faux-bold outline with several enlarged underlays.
+        let outlineOffsets: [SCNVector3] = [
+            SCNVector3(0, 0, -0.06),
+            SCNVector3(-0.38, 0, -0.08),
+            SCNVector3(0.38, 0, -0.08),
+            SCNVector3(0, -0.32, -0.08),
+            SCNVector3(0, 0.32, -0.08),
+            SCNVector3(-0.28, -0.28, -0.08),
+            SCNVector3(0.28, -0.28, -0.08),
+            SCNVector3(-0.28, 0.28, -0.08),
+            SCNVector3(0.28, 0.28, -0.08)
+        ]
+        for offset in outlineOffsets {
+            let outlineGeometry = textGeometry.copy() as? SCNGeometry
+                ?? makeSunDetailTitleLetterGeometry(character: character, font: font)
+            let outlineNode = SCNNode(geometry: outlineGeometry)
+            outlineNode.pivot = SCNMatrix4MakeTranslation(centerX, centerY, 0)
+            outlineNode.position = SCNVector3(centerX + offset.x, centerY + offset.y, offset.z)
+            outlineNode.scale = SCNVector3(1.18, 1.18, 1)
+            container.addChildNode(outlineNode)
+        }
+
+        let foregroundNode = SCNNode(geometry: textGeometry)
+        foregroundNode.pivot = SCNMatrix4MakeTranslation(centerX, centerY, 0)
+        foregroundNode.position = SCNVector3(centerX, centerY, 0)
+        container.addChildNode(foregroundNode)
+
+        return container
+    }
+
+    private func makeSunDetailTitleLetterGeometry(character: String, font: UIFont) -> SCNText {
+        let textGeometry = SCNText(string: character, extrusionDepth: 0.9)
+        textGeometry.font = font
+        textGeometry.flatness = 0.06
+        textGeometry.chamferRadius = 0.10
+        textGeometry.truncationMode = CATextLayerTruncationMode.none.rawValue
+        textGeometry.alignmentMode = CATextLayerAlignmentMode.left.rawValue
+        textGeometry.isWrapped = false
+        textGeometry.materials = makeSunDetailTitleMaterials()
+        return textGeometry
+    }
+
+    private func makeSunDetailTitleMaterials() -> [SCNMaterial] {
         let front = SCNMaterial()
         front.lightingModel = .physicallyBased
         front.diffuse.contents = UIColor(red: 0.16, green: 0.16, blue: 0.17, alpha: 1)
@@ -622,15 +695,7 @@ final class WeatherSceneManager: ObservableObject {
         side.roughness.contents = Float(0.20)
         side.isDoubleSided = false
 
-        textGeometry.materials = [front, side, side, side, front]
-
-        let node = SCNNode(geometry: textGeometry)
-        let (minBounds, maxBounds) = node.boundingBox
-        let width = maxBounds.x - minBounds.x
-        let height = maxBounds.y - minBounds.y
-        node.pivot = SCNMatrix4MakeTranslation(minBounds.x + width / 2, minBounds.y + height / 2, 0)
-        node.scale = SCNVector3(0.11, 0.11, 0.11)
-        return node
+        return [front, side, side, side, front]
     }
 
     private func makeFallbackTemperatureNode(text: String) -> SCNNode {
@@ -1018,7 +1083,6 @@ final class WeatherSceneManager: ObservableObject {
             easing: { $0 }  // 线性匀速
         )
 
-        // 文字旋转2圈，最终停在0度正面
         let titleStart = titleNode.eulerAngles
         let titleEnd = SCNVector3(titleStart.x, titleStart.y + totalYawRotation, titleStart.z)
         let titleSpin = makeEulerAnglesAction(
