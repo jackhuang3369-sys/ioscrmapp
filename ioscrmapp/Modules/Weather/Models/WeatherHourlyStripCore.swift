@@ -268,19 +268,19 @@ enum WeatherHourlyStripCore {
 
         switch hour24 {
         case 5...7:
-            return 32
+            return 31
         case 8...10:
             return 33
         case 11...13:
             return 34
         case 14...15:
-            return 35
+            return 31
         case 16...17:
             return 34
         case 18...20:
             return 33
         default:
-            return 32
+            return 33
         }
     }
 }
