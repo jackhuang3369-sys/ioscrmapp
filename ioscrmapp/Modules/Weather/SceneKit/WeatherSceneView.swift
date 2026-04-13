@@ -161,6 +161,7 @@ struct WeatherSceneView: UIViewRepresentable {
         private let horizontalPanActivationDistance: CGFloat = 10
         private let horizontalPanLockAngle: CGFloat = .pi / 10
         private let fastHorizontalPanVelocity: CGFloat = 650
+        private let assistedFastHorizontalPanVelocity: CGFloat = 380
         private let fastHorizontalQuarterTurnRatio: CGFloat = 0.25
         private let fastHorizontalHalfTurnRatio: CGFloat = 0.5
         private let maximumFastHorizontalTurns: Int = 4
@@ -486,6 +487,12 @@ struct WeatherSceneView: UIViewRepresentable {
             return forwardFrontFacingYaw(from: yaw, direction: reverseDirection, extraTurns: 0)
         }
 
+        private func signedFrontFacingYaw(turnCount: Int, direction: Float) -> Float {
+            let clampedTurnCount = max(0, turnCount)
+            let signedDirection: Float = direction >= 0 ? 1 : -1
+            return signedDirection * Float(clampedTurnCount) * (.pi * 2)
+        }
+
         private func fastReleaseExtraTurns(for distanceRatio: CGFloat) -> Int {
             let distancePastHalf = max(0, distanceRatio - fastHorizontalHalfTurnRatio)
             let additionalTurns = Int(ceil(distancePastHalf / fastHorizontalHalfTurnRatio))
@@ -502,8 +509,16 @@ struct WeatherSceneView: UIViewRepresentable {
 
             let referenceWidth = horizontalPanReferenceWidth(for: view)
             let distanceRatio = horizontalDistance / referenceWidth
-            let isFastPan = abs(velocity.x) >= fastHorizontalPanVelocity
+            let qualifiesForSingleTurnDistance = distanceRatio >= fastHorizontalQuarterTurnRatio
+            let effectiveFastVelocity = qualifiesForSingleTurnDistance
+                ? assistedFastHorizontalPanVelocity
+                : fastHorizontalPanVelocity
+            let isFastPan = abs(velocity.x) >= effectiveFastVelocity
             let direction = resolvedHorizontalDirection(translationX: translation.x, velocityX: velocity.x)
+            let distanceBasedTurns = min(
+                maximumFastHorizontalTurns,
+                max(1, Int(ceil(distanceRatio)))
+            )
             let destinationYaw: Float
             let duration: CFTimeInterval
             let yawCurve: EasingCurve
@@ -518,14 +533,13 @@ struct WeatherSceneView: UIViewRepresentable {
                     yawCurve = .easeOutQuart
                     tiltCurve = .easeOutQuart
                 } else if distanceRatio <= fastHorizontalHalfTurnRatio {
-                    destinationYaw = forwardFrontFacingYaw(from: currentYaw, direction: direction, extraTurns: 1)
+                    destinationYaw = signedFrontFacingYaw(turnCount: 1, direction: direction)
                     let travelTurns = abs(destinationYaw - currentYaw) / (.pi * 2)
                     duration = CFTimeInterval(min(max(0.62, 0.3 + Double(travelTurns) * 0.36), 1.05))
                     yawCurve = .easeOutQuart
                     tiltCurve = .easeOutQuart
                 } else {
-                    let extraTurns = fastReleaseExtraTurns(for: distanceRatio)
-                    destinationYaw = forwardFrontFacingYaw(from: currentYaw, direction: direction, extraTurns: extraTurns)
+                    destinationYaw = signedFrontFacingYaw(turnCount: distanceBasedTurns, direction: direction)
                     let travelTurns = abs(destinationYaw - currentYaw) / (.pi * 2)
                     duration = CFTimeInterval(min(max(1.05, 0.42 + Double(travelTurns) * 0.42), 2.8))
                     yawCurve = .easeOutQuint
@@ -538,7 +552,7 @@ struct WeatherSceneView: UIViewRepresentable {
                 yawCurve = .easeOutCubic
                 tiltCurve = .easeOutQuart
             } else {
-                destinationYaw = forwardFrontFacingYaw(from: currentYaw, direction: direction, extraTurns: 0)
+                destinationYaw = signedFrontFacingYaw(turnCount: distanceBasedTurns, direction: direction)
                 let travelTurns = abs(destinationYaw - currentYaw) / (.pi * 2)
                 duration = CFTimeInterval(min(max(0.38, 0.28 + Double(travelTurns) * 0.52), 1.4))
                 yawCurve = .easeOutCubic

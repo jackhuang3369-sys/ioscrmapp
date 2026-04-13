@@ -30,6 +30,7 @@ final class WeatherSceneManager: ObservableObject {
     private var sunBurstNode: SCNNode?
     private var temperatureNode: SCNNode?
     private var pendingTemperatureNode: SCNNode?
+    private var sunModelNode: SCNNode?
     private var sunBurstRayDirections: [ObjectIdentifier: SCNVector3] = [:]
     private var sunBurstRayStartPositions: [ObjectIdentifier: SCNVector3] = [:]
     private var sunBurstRayBaseOpacities: [ObjectIdentifier: CGFloat] = [:]
@@ -232,6 +233,7 @@ final class WeatherSceneManager: ObservableObject {
             self?.restTiltX = -0.004
             self?.autoSpinSpeed = 0
             self?.applyDisplayGroupRotation(self?.transitionRestRotation ?? SCNVector3(0, 0, 0))
+            self?.stopSunAmbientAnimations(resetOrientation: true, resetScale: true)
             self?.startDetailIntroSpinIfNeeded()
             completion()
         }
@@ -246,6 +248,7 @@ final class WeatherSceneManager: ObservableObject {
         guard mode == .sunDetail || mode == .sunTransition else { return }
         autoSpinSpeedBeforeInteraction = autoSpinSpeed
         autoSpinSpeed = 0
+        stopSunAmbientAnimations(resetOrientation: true, resetScale: true)
         stopDetailIntroSpin(resetOrientation: true)
     }
 
@@ -275,6 +278,7 @@ final class WeatherSceneManager: ObservableObject {
         temperatureNode = nil
         pendingTemperatureNode = nil
         sunNode = nil
+        sunModelNode = nil
         sunBurstRayDirections.removeAll()
         sunBurstRayStartPositions.removeAll()
         sunBurstRayBaseOpacities.removeAll()
@@ -358,6 +362,7 @@ final class WeatherSceneManager: ObservableObject {
             detailTitleNode = title
 
             sunNode = sunAssembly
+            sunModelNode = sun
         } else if isTransitionMode {
             let sunAssembly = SCNNode()
             sunAssembly.name = "weather_sun_transition_assembly"
@@ -382,10 +387,12 @@ final class WeatherSceneManager: ObservableObject {
             detailTitleNode = title
 
             sunNode = sunAssembly
+            sunModelNode = sun
         } else {
             sun.position = SCNVector3(0, mainSunPositionY, -0.1)
             rotatingGroup.addChildNode(sun)
             sunNode = sun
+            sunModelNode = sun
         }
 
         if mode == .main || mode == .sunTransition {
@@ -1211,6 +1218,7 @@ final class WeatherSceneManager: ObservableObject {
         guard mode == .sunDetail || mode == .sunTransition else { return }
         guard let sunNode, let detailTitleNode else { return }
 
+        stopSunAmbientAnimations(resetOrientation: true, resetScale: true)
         stopDetailIntroSpin(resetOrientation: true)
         runDetailIntroSpin(on: sunNode, actionKey: sunSpinAnimationKey)
         runDetailIntroSpin(on: detailTitleNode, actionKey: sunTitleSpinAnimationKey)
@@ -1252,6 +1260,25 @@ final class WeatherSceneManager: ObservableObject {
         node.runAction(spinAction, forKey: actionKey) { [weak node] in
             guard let node else { return }
             node.eulerAngles = SCNVector3(node.eulerAngles.x, 0, node.eulerAngles.z)
+        }
+    }
+
+    private func stopSunAmbientAnimations(resetOrientation: Bool, resetScale: Bool) {
+        sunModelNode?.removeAnimation(forKey: sunSpinAnimationKey, blendOutDuration: 0)
+        sunModelNode?.removeAnimation(forKey: "sun_pulse", blendOutDuration: 0)
+
+        guard let sunModelNode else { return }
+
+        if resetOrientation {
+            sunModelNode.eulerAngles = SCNVector3(
+                sunModelNode.eulerAngles.x,
+                0,
+                sunModelNode.eulerAngles.z
+            )
+        }
+
+        if resetScale {
+            sunModelNode.scale = SCNVector3(1, 1, 1)
         }
     }
 
