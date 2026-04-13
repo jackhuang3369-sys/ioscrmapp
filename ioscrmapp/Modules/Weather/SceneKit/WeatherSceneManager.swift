@@ -10,6 +10,17 @@ enum WeatherSceneMode {
 
 final class WeatherSceneManager: ObservableObject {
 
+    private struct SunLandingSpringTuning {
+        let approachFraction: Double = 0.74
+        let controlYFraction: Float = 0.44
+        let controlDepthOffset: Float = -0.42
+        let overshootYOffset: Float = -0.34
+        let overshootZOffset: Float = -0.14
+        let overshootScale: Float = 0.63
+        let overshootEulerAngles = SCNVector3(0.14, -0.06, 0.13)
+        let settleOvershoot: CGFloat = 0.82
+    }
+
     static let sunDetailTransitionDuration: TimeInterval = 0.5 //入场动画，第一屏到第二屏的时间。
     static let sunDetailCrossfadeDuration: TimeInterval = 0.20
     static let sunReturnTransitionDuration: TimeInterval = 0.2 //回场动画，第二屏回到第一屏的时间。
@@ -64,6 +75,7 @@ final class WeatherSceneManager: ObservableObject {
     private let detailSunScale: Float = 0.68
     private let detailTitlePosition = SCNVector3(0, 4.0, 0.34)
     private let transitionRestRotation = SCNVector3(-0.004, 0, 0)
+    private let sunLandingSpringTuning = SunLandingSpringTuning()
 
     init(temperature: Int = MockWeatherData.today.temperature, mode: WeatherSceneMode = .main) {
         self.scene = SCNScene()
@@ -1086,17 +1098,88 @@ final class WeatherSceneManager: ObservableObject {
     }
 
     private func runSunExpansionAnimation(on node: SCNNode) {
-        let moveAction = SCNAction.move(to: detailSunPosition, duration: Self.sunDetailTransitionDuration)
-        moveAction.timingMode = .easeInEaseOut
-
-        let scaleAction = makeScaleAction(
-            from: node.scale,
-            to: SCNVector3(detailSunScale, detailSunScale, detailSunScale),
-            duration: Self.sunDetailTransitionDuration,
-            easing: easeInOutCubic
+        let tuning = sunLandingSpringTuning
+        let approachDuration = max(
+            Self.sunDetailTransitionDuration * tuning.approachFraction,
+            0.01
         )
+        let settleDuration = max(
+            Self.sunDetailTransitionDuration - approachDuration,
+            0.01
+        )
+        let startPosition = node.position
+        let controlPosition = SCNVector3(
+            startPosition.x,
+            startPosition.y + (detailSunPosition.y - startPosition.y) * tuning.controlYFraction,
+            startPosition.z + tuning.controlDepthOffset
+        )
+        let overshootPosition = SCNVector3(
+            detailSunPosition.x,
+            detailSunPosition.y + tuning.overshootYOffset,
+            detailSunPosition.z + tuning.overshootZOffset
+        )
+        let settleEasing: (CGFloat) -> CGFloat = { [self] value in
+            easeOutBack(value, overshoot: tuning.settleOvershoot)
+        }
+        let moveAction = SCNAction.sequence([
+            makeQuadraticMoveAction(
+                from: startPosition,
+                control: controlPosition,
+                to: overshootPosition,
+                duration: approachDuration,
+                easing: easeInOutCubic
+            ),
+            makeMoveAction(
+                from: overshootPosition,
+                to: detailSunPosition,
+                duration: settleDuration,
+                easing: settleEasing
+            )
+        ])
+        let startScale = node.scale
+        let overshootScale = SCNVector3(
+            tuning.overshootScale,
+            tuning.overshootScale,
+            tuning.overshootScale
+        )
+        let finalScale = SCNVector3(detailSunScale, detailSunScale, detailSunScale)
+        let scaleAction = SCNAction.sequence([
+            makeScaleAction(
+                from: startScale,
+                to: overshootScale,
+                duration: approachDuration,
+                easing: easeInOutCubic
+            ),
+            makeScaleAction(
+                from: overshootScale,
+                to: finalScale,
+                duration: settleDuration,
+                easing: settleEasing
+            )
+        ])
+        let startAngles = node.eulerAngles
+        let overshootAngles = SCNVector3(
+            startAngles.x + tuning.overshootEulerAngles.x,
+            startAngles.y + tuning.overshootEulerAngles.y,
+            startAngles.z + tuning.overshootEulerAngles.z
+        )
+        let finalAngles = SCNVector3(0, 0, 0)
+        let rotationAction = SCNAction.sequence([
+            makeEulerAnglesAction(
+                from: startAngles,
+                to: overshootAngles,
+                duration: approachDuration,
+                easing: easeInOutCubic
+            ),
+            makeEulerAnglesAction(
+                from: overshootAngles,
+                to: finalAngles,
+                duration: settleDuration,
+                easing: settleEasing
+            )
+        ])
 
-        node.runAction(.group([moveAction, scaleAction]))
+        node.runAction(.group([moveAction, scaleAction, rotationAction]))
     }
 
     private func runSunReturnAnimation(on node: SCNNode) {
@@ -1112,8 +1195,14 @@ final class WeatherSceneManager: ObservableObject {
             duration: Self.sunReturnTransitionDuration,
             easing: easeInOutCubic
         )
+        let rotationAction = makeEulerAnglesAction(
+            from: node.eulerAngles,
+            to: SCNVector3(0, 0, 0),
+            duration: Self.sunReturnTransitionDuration,
+            easing: easeInOutCubic
+        )
 
-        node.runAction(.group([moveAction, scaleAction]))
+        node.runAction(.group([moveAction, scaleAction, rotationAction]))
     }
 
     private func runSceneShiftAnimation(root: SCNNode, cameraNode: SCNNode, rotatingGroup: SCNNode) {
@@ -1447,6 +1536,25 @@ final class WeatherSceneManager: ObservableObject {
         }
     }
 
+    private func makeQuadraticMoveAction(
+        from startPosition: SCNVector3,
+        control controlPosition: SCNVector3,
+        to endPosition: SCNVector3,
+        duration: TimeInterval,
+        easing: @escaping (CGFloat) -> CGFloat
+    ) -> SCNAction {
+        SCNAction.customAction(duration: duration) { [self] node, elapsed in
+            let rawProgress = elapsed / CGFloat(max(duration, 0.0001))
+            let progress = easing(rawProgress)
+            node.position = self.quadraticBezierPoint(
+                from: startPosition,
+                control: controlPosition,
+                to: endPosition,
+                progress: progress
+            )
+        }
+    }
+
     private func makeFieldOfViewAction(
         from startFieldOfView: CGFloat,
         to endFieldOfView: CGFloat,
@@ -1506,6 +1614,31 @@ final class WeatherSceneManager: ObservableObject {
         }
     }
 
+    private func quadraticBezierPoint(
+        from startPosition: SCNVector3,
+        control controlPosition: SCNVector3,
+        to endPosition: SCNVector3,
+        progress: CGFloat
+    ) -> SCNVector3 {
+        let clamped = min(max(progress, 0), 1)
+        let inverse = 1 - clamped
+        let startWeight = inverse * inverse
+        let controlWeight = 2 * inverse * clamped
+        let endWeight = clamped * clamped
+
+        return SCNVector3(
+            Float(startWeight) * startPosition.x
+                + Float(controlWeight) * controlPosition.x
+                + Float(endWeight) * endPosition.x,
+            Float(startWeight) * startPosition.y
+                + Float(controlWeight) * controlPosition.y
+                + Float(endWeight) * endPosition.y,
+            Float(startWeight) * startPosition.z
+                + Float(controlWeight) * controlPosition.z
+                + Float(endWeight) * endPosition.z
+        )
+    }
+
     private func easeOutCubic(_ value: CGFloat) -> CGFloat {
         let clamped = min(max(value, 0), 1)
         return 1 - pow(1 - clamped, 3)
@@ -1519,6 +1652,13 @@ final class WeatherSceneManager: ObservableObject {
 
         let offset = -2 * clamped + 2
         return 1 - pow(offset, 3) / 2
+    }
+
+    private func easeOutBack(_ value: CGFloat, overshoot: CGFloat) -> CGFloat {
+        let clamped = min(max(value, 0), 1)
+        let shifted = clamped - 1
+        let coefficient = overshoot + 1
+        return 1 + coefficient * pow(shifted, 3) + overshoot * pow(shifted, 2)
     }
 
     private func updateTemperature(animated: Bool) {
