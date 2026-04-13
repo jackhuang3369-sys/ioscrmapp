@@ -2041,6 +2041,28 @@ final class WeatherSceneManager: ObservableObject {
     private func updateTemperature(animated: Bool) {
         guard mode == .main || mode == .sunTransition else { return }
         guard let root = conditionGroup else { return }
+
+        // Hide 3D temperature display when it's 35 (model not ready)
+        if currentTemperature == 35 {
+            if let existingNode = temperatureNode, existingNode.parent != nil {
+                if animated {
+                    SCNTransaction.begin()
+                    SCNTransaction.animationDuration = 0.12
+                    existingNode.opacity = 0
+                    SCNTransaction.completionBlock = { [weak self] in
+                        self?.temperatureNode?.removeFromParentNode()
+                        self?.temperatureNode = nil
+                    }
+                    SCNTransaction.commit()
+                } else {
+                    existingNode.removeFromParentNode()
+                    temperatureNode = nil
+                }
+            }
+            displayedTemperature = currentTemperature
+            return
+        }
+
         guard displayedTemperature != currentTemperature || temperatureNode?.parent == nil else { return }
 
         pendingTemperatureNode?.removeAllActions()

@@ -29,6 +29,21 @@ The system SHALL support horizontal finger scrubbing across hourly blocks, and S
 - **WHEN** the user drags across the strip and hour X is focused at center
 - **THEN** block X MUST be tallest and the two adjacent levels on both sides MUST step down in height
 
+#### Scenario: Upward-only protrusion with fixed baseline
+- **WHEN** the user drags across the strip
+- **THEN** bar emphasis MUST protrude upward from a fixed baseline rail and MUST NOT lower the entire strip
+
+#### Scenario: Half-tuned protrusion amplitude
+- **WHEN** protrusion profile is applied during drag
+- **THEN** the center protrusion MUST use a half-tuned peak profile (center peak 9)
+- **AND** side levels MAY be computed by continuous interpolation as long as they monotonically fall off from center
+
+#### Scenario: Direction-aware rise/fall sequence
+- **WHEN** drag direction is left-to-right
+- **THEN** right-side bars near the focus MUST rise in sequence while left-side bars near the focus MUST fall in sequence
+- **AND WHEN** drag direction is right-to-left
+- **THEN** the sequence MUST be mirrored
+
 ### Requirement: Focus feedback and time bubble
 The system SHALL emit haptic feedback and tap audio when the focused hour changes, and SHALL display a circular time bubble on the tallest focused block using fixed 24-hour HH:00 formatting.
 
@@ -40,6 +55,27 @@ The system SHALL emit haptic feedback and tap audio when the focused hour change
 - **WHEN** an hour is focused in the strip
 - **THEN** a circular bubble MUST be displayed above the tallest focused block with the focused time text in HH:00 format
 
+#### Scenario: Bubble timing synchronized with protrusion
+- **WHEN** the focused protrusion appears or moves during drag
+- **THEN** time text and circular bubble background MUST appear and move in sync without delayed phase
+
+#### Scenario: Bubble position and motion continuity
+- **WHEN** the user drags continuously across bars
+- **THEN** bubble horizontal motion MUST track continuous drag position (no discrete step-jump)
+- **AND** bubble vertical anchor MUST remain above protrusion top with +5 offset
+
+#### Scenario: Bubble visual styling
+- **WHEN** the focused-hour bubble is shown
+- **THEN** bubble diameter MUST be enlarged by +5 relative to initial baseline
+- **AND** bubble text MUST use a wider neumatic-compressed bold variant, enlarged by +5, with black text color
+
 #### Scenario: Keep time bubble format fixed
 - **WHEN** device locale uses a 12-hour convention
 - **THEN** the focused-hour bubble MUST still display time in 24-hour HH:00 format
+
+### Requirement: Scene temperature transition behavior during drag
+The system SHALL avoid fade replacement transitions for scene temperature digits during drag scrubbing.
+
+#### Scenario: Drag-path temperature updates
+- **WHEN** focused hour changes due to drag scrubbing
+- **THEN** scene temperature update MUST apply without fade animation to avoid flicker/overlap

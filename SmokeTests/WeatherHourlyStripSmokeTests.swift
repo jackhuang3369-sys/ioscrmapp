@@ -14,7 +14,12 @@ struct WeatherHourlyStripSmokeTests {
         try testGrayscaleGetsLighterWithHigherTemperature()
         try testFeedbackGateFiresOnlyOnIndexChange()
         try testSceneTemperatureAnimationStopsDuringDrag()
+        try testDirectionalRiseFallSequence()
+        try testBubbleAnchorContinuityAndOffset()
         try testBubbleTextUsesNonPaddedHour()
+        try testClearSkyLiftOffsetTracksBubbleTop()
+        try testClearSkyLiftDisabledWhenBubbleHidden()
+        try testClearSkyYOffsetSamplesStayWithinStepThreshold()
         print("Weather hourly strip smoke tests passed")
     }
 
@@ -52,7 +57,9 @@ struct WeatherHourlyStripSmokeTests {
 
         let byHour = Dictionary(uniqueKeysWithValues: points.map { ($0.hour24, $0.temperature) })
         try require(byHour[14] == 34, "14:00 must be the daily high 34")
-        try require(byHour[18] == 31, "18:00 must be night low 31")
+        try require(byHour[18] == 33, "18:00 sunset should not immediately drop to the nightly low")
+        try require(byHour[21] == 33, "21:00 should still be above nightly low")
+        try require(byHour[22] == 31, "22:00 should reach nightly low 31 (4 hours after sunset)")
         try require(byHour[0] == 31, "00:00 must be night low 31")
         try require(byHour[5] == 31, "05:00 must be night low 31")
         try require(byHour[6] == 33, "06:00 must return to daytime 33")
@@ -87,6 +94,7 @@ struct WeatherHourlyStripSmokeTests {
         let outside = WeatherHourlyStripCore.barTopExtension(index: 13, focusedIndex: 8, isDragging: true)
 
         try require(idle == 0, "idle strip should not protrude above the baseline rail")
+        try require(center == 9, "focused dragging bar protrusion should be half-tuned to 9")
         try require(center > 0, "focused dragging bar should protrude above the baseline rail")
         try require(center > near, "center protrusion must exceed the adjacent bar protrusion")
         try require(near > far, "adjacent protrusion must exceed the second-ring protrusion")
@@ -129,9 +137,110 @@ struct WeatherHourlyStripSmokeTests {
         )
     }
 
+    private static func testDirectionalRiseFallSequence() throws {
+        let focusedPosition: CGFloat = 10
+        let rightNearLtr = WeatherHourlyStripCore.directionalTopExtension(
+            index: 11,
+            focusedPosition: focusedPosition,
+            directionSign: 1,
+            isDragging: true
+        )
+        let leftNearLtr = WeatherHourlyStripCore.directionalTopExtension(
+            index: 9,
+            focusedPosition: focusedPosition,
+            directionSign: 1,
+            isDragging: true
+        )
+
+        let leftNearRtl = WeatherHourlyStripCore.directionalTopExtension(
+            index: 9,
+            focusedPosition: focusedPosition,
+            directionSign: -1,
+            isDragging: true
+        )
+        let rightNearRtl = WeatherHourlyStripCore.directionalTopExtension(
+            index: 11,
+            focusedPosition: focusedPosition,
+            directionSign: -1,
+            isDragging: true
+        )
+
+        try require(rightNearLtr > leftNearLtr, "left-to-right drag should lift the right side more than the left")
+        try require(leftNearRtl > rightNearRtl, "right-to-left drag should lift the left side more than the right")
+    }
+
+    private static func testBubbleAnchorContinuityAndOffset() throws {
+        let sidePadding: CGFloat = 10
+        let endCapWidth: CGFloat = 17
+        let itemWidth: CGFloat = 12
+        let firstX = WeatherHourlyStripCore.bubbleCenterX(
+            sidePadding: sidePadding,
+            endCapWidth: endCapWidth,
+            itemWidth: itemWidth,
+            focusedPosition: 3.2
+        )
+        let secondX = WeatherHourlyStripCore.bubbleCenterX(
+            sidePadding: sidePadding,
+            endCapWidth: endCapWidth,
+            itemWidth: itemWidth,
+            focusedPosition: 3.4
+        )
+
+        try require(secondX > firstX, "bubble X anchor should move continuously with drag position")
+
+        let y = WeatherHourlyStripCore.bubbleCenterY(
+            topOverlayHeight: 32,
+            focusedTopExtension: 9,
+            bubbleDiameter: 49,
+            offsetAboveTop: 5
+        )
+        try require(abs(y + 6.5) < 0.001, "bubble Y anchor should stay at protrusion-top +5 offset")
+    }
+
     private static func testBubbleTextUsesNonPaddedHour() throws {
         try require(WeatherHourlyStripCore.bubbleText(hour24: 3) == "3:00", "bubble text should not use leading zero")
         try require(WeatherHourlyStripCore.bubbleText(hour24: 18) == "18:00", "bubble text should preserve two-digit evening hour")
+    }
+
+    private static func testClearSkyLiftOffsetTracksBubbleTop() throws {
+        let stripMinY: CGFloat = 62
+        let bubbleTopY: CGFloat = -31
+        let idleTitleBaselineY: CGFloat = 39
+
+        let targetBaselineY = WeatherHourlyStripCore.clearSkyLiftTargetBaselineY(
+            stripMinY: stripMinY,
+            bubbleTopY: bubbleTopY,
+            liftAboveBubble: 3
+        )
+        let titleOffset = WeatherHourlyStripCore.clearSkyLiftOffset(
+            idleTitleBaselineY: idleTitleBaselineY,
+            targetTitleBaselineY: targetBaselineY,
+            bubbleVisible: true
+        )
+
+        try require(abs(targetBaselineY - 28) < 0.001, "target baseline should map to bubbleTopY - 3 in parent coordinates")
+        try require(abs(titleOffset + 11) < 0.001, "title offset should move from idle baseline to mapped target baseline")
+    }
+
+    private static func testClearSkyLiftDisabledWhenBubbleHidden() throws {
+        let hiddenOffset = WeatherHourlyStripCore.clearSkyLiftOffset(
+            idleTitleBaselineY: 42,
+            targetTitleBaselineY: 12,
+            bubbleVisible: false
+        )
+        let outlineHidden = WeatherHourlyStripCore.clearSkyOutlineWidth(isLifted: false)
+        let outlineShown = WeatherHourlyStripCore.clearSkyOutlineWidth(isLifted: true)
+
+        try require(hiddenOffset == 0, "title must stay at baseline when bubble is hidden")
+        try require(outlineHidden == 0, "outline must not apply when title is not lifted")
+        try require(outlineShown == 1, "outline width must be 1pt in lifted state")
+    }
+
+    private static func testClearSkyYOffsetSamplesStayWithinStepThreshold() throws {
+        let samples: [CGFloat] = [-10.0, -10.6, -11.2, -11.9, -12.3, -12.9]
+        let maxStep = WeatherHourlyStripCore.maxSingleFrameStep(in: samples)
+
+        try require(maxStep <= 2, "single-frame title-y step must stay within 2pt threshold")
     }
 }
 

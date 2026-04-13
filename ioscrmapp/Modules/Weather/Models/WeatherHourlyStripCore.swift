@@ -19,8 +19,16 @@ enum WeatherSolarMarker: Equatable {
     case sunset
 }
 
+struct WeatherHourlyBubbleState: Equatable {
+    let isVisible: Bool
+    let bubbleTopY: CGFloat
+}
+
 enum WeatherHourlyStripCore {
     static let pointCount = 24
+    static let clearSkyLiftAboveBubble: CGFloat = 3
+    static let clearSkyLiftOutlineWidth: CGFloat = 1
+    static let clearSkyRestoreAnimationDuration: Double = 0.10
 
     static func build24HourStrip(startingAtHour startHour: Int, currentTemperature: Int) -> [WeatherHourlyStripPoint] {
         let normalizedStart = normalizeHour(startHour)
@@ -107,11 +115,71 @@ enum WeatherHourlyStripCore {
         guard isDragging else { return 0 }
 
         switch abs(index - focusedIndex) {
-        case 0: return 18
-        case 1: return 11
-        case 2: return 6
+        case 0: return 9
+        case 1: return 6
+        case 2: return 3
         default: return 0
         }
+    }
+
+    static func directionalTopExtension(
+        index: Int,
+        focusedPosition: CGFloat,
+        directionSign: CGFloat,
+        isDragging: Bool,
+        maxExtension: CGFloat = 9
+    ) -> CGFloat {
+        guard isDragging else { return 0 }
+
+        let distance = abs(CGFloat(index) - focusedPosition)
+        let base: CGFloat
+
+        if distance < 1 {
+            base = (maxExtension - 4) + (1 - distance) * 4
+        } else if distance < 2 {
+            base = (maxExtension - 7) + (2 - distance) * 3
+        } else if distance < 3 {
+            base = (3 - distance) * 2
+        } else {
+            base = 0
+        }
+
+        let side = CGFloat(index) - focusedPosition
+        var directionalDelta: CGFloat = 0
+        if directionSign > 0.1 {
+            if side > 0, side <= 2.5 {
+                directionalDelta = side <= 1.5 ? 1.2 : 0.6
+            } else if side < 0, side >= -2.5 {
+                directionalDelta = side >= -1.5 ? -1.1 : -0.55
+            }
+        } else if directionSign < -0.1 {
+            if side < 0, side >= -2.5 {
+                directionalDelta = side >= -1.5 ? 1.2 : 0.6
+            } else if side > 0, side <= 2.5 {
+                directionalDelta = side <= 1.5 ? -1.1 : -0.55
+            }
+        }
+
+        return min(maxExtension, max(0, base + directionalDelta))
+    }
+
+    static func bubbleCenterX(
+        sidePadding: CGFloat,
+        endCapWidth: CGFloat,
+        itemWidth: CGFloat,
+        focusedPosition: CGFloat
+    ) -> CGFloat {
+        sidePadding + endCapWidth + itemWidth * focusedPosition + itemWidth / 2
+    }
+
+    static func bubbleCenterY(
+        topOverlayHeight: CGFloat,
+        focusedTopExtension: CGFloat,
+        bubbleDiameter: CGFloat,
+        offsetAboveTop: CGFloat
+    ) -> CGFloat {
+        let focusedBarTopY = topOverlayHeight - focusedTopExtension
+        return focusedBarTopY - offsetAboveTop - bubbleDiameter / 2
     }
 
     static func focusedIndex(forLocationX x: CGFloat, itemWidth: CGFloat, count: Int) -> Int {
@@ -127,6 +195,36 @@ enum WeatherHourlyStripCore {
 
     static func shouldAnimateSceneTemperatureChange(isDragging: Bool) -> Bool {
         !isDragging
+    }
+
+    static func clearSkyLiftTargetBaselineY(
+        stripMinY: CGFloat,
+        bubbleTopY: CGFloat,
+        liftAboveBubble: CGFloat = clearSkyLiftAboveBubble
+    ) -> CGFloat {
+        stripMinY + bubbleTopY - liftAboveBubble
+    }
+
+    static func clearSkyLiftOffset(
+        idleTitleBaselineY: CGFloat,
+        targetTitleBaselineY: CGFloat,
+        bubbleVisible: Bool
+    ) -> CGFloat {
+        guard bubbleVisible else { return 0 }
+        return targetTitleBaselineY - idleTitleBaselineY
+    }
+
+    static func clearSkyOutlineWidth(isLifted: Bool) -> CGFloat {
+        isLifted ? clearSkyLiftOutlineWidth : 0
+    }
+
+    static func maxSingleFrameStep(in samples: [CGFloat]) -> CGFloat {
+        guard samples.count > 1 else { return 0 }
+        var maxStep: CGFloat = 0
+        for index in 1..<samples.count {
+            maxStep = max(maxStep, abs(samples[index] - samples[index - 1]))
+        }
+        return maxStep
     }
 
     static func bubbleText(hour24: Int) -> String {
@@ -154,11 +252,21 @@ enum WeatherHourlyStripCore {
         _ = startHour
         _ = currentTemperature
 
+        // Demo profile requested by product:
+        // - 34C at 14:00 (daily high)
+        // - 31C from 22:00 to sunrise (lowest arrives 4 hours after sunset)
+        // - 33C for all other hours
         // The current 3D temperature assets only cover the digits used by 31...35,
-        // so the mock curve stays within that range to avoid unsupported numerals.
-        switch hour24 {
-        case 0...4:
+        // so this profile stays within that range.
+        if hour24 == 14 {
+            return 34
+        }
+
+        if hour24 >= 22 || hour24 < 6 {
             return 31
+        }
+
+        switch hour24 {
         case 5...7:
             return 32
         case 8...10:

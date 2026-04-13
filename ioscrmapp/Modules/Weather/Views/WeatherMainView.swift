@@ -11,11 +11,19 @@ struct WeatherMainView: View {
     @State private var isSunTransitionActive = false
     @State private var detailOverlayOpacity = 0.0
     @State private var sceneInteractionResetVersion = 0
-    @State private var isHourlyStripDragging = false
+@State private var isHourlyStripDragging = false
     // Toggle for the detail-page background burst so we can quickly compare with/without the effect.
     private let isSunRayBurstEnabled = true
     @State private var sunRayBurstTrigger = 0
     @State private var sunRayBurstCenter = CGPoint.zero
+
+    // Clear Sky lift state
+    @State private var hourlyBubbleState = WeatherHourlyBubbleState(isVisible: false, bubbleTopY: 0)
+    @State private var forecastStripMinY: CGFloat = 0
+    @State private var clearSkyIdleBaselineY: CGFloat?
+    @State private var clearSkySampledOffsets: [CGFloat] = []
+
+    private let clearSkyFallbackLiftOffset: CGFloat = -24
     
     private let session: CustSubInfo
     private let aiChatService: any AIChatServicing
@@ -161,26 +169,40 @@ struct WeatherMainView: View {
 
     private func mainForecastSection(width: CGFloat, bottomPadding: CGFloat, screenHeight: CGFloat) -> some View {
         let adaptationProgress = heightAdaptationProgress(for: screenHeight)
+        let isClearSkyLifted = hourlyBubbleState.isVisible
+        let clearSkyLiftOffset = clearSkyTitleLiftOffset()
+        // Combine both drag-based and Clear Sky lift title animations
         let restingTitleOffset: CGFloat = 14
-        // Lift the title further on smaller devices so the bubble/title clearance
-        // stays visually consistent across screen heights.
         let draggingTitleOffset = -20 + adaptationProgress * 4
+        let totalTitleOffset = isHourlyStripDragging ? draggingTitleOffset : restingTitleOffset + clearSkyLiftOffset
 
         return VStack(spacing: 0) {
-            Text(weather.title)
-                .font(.du(26, weight: .heavy))
-                .foregroundColor(Color.black.opacity(0.92))
+            clearSkyTitleText(isLifted: isClearSkyLifted)
                 .padding(.bottom, 8)
-                .offset(y: isHourlyStripDragging ? draggingTitleOffset : restingTitleOffset)
+                .offset(y: totalTitleOffset)
+                .zIndex(12)
                 .animation(.spring(response: 0.26, dampingFraction: 0.86), value: isHourlyStripDragging)
+                .background {
+                    GeometryReader { proxy in
+                        Color.clear
+                            .preference(
+                                key: ClearSkyTitleBaselinePreferenceKey.self,
+                                value: proxy.frame(in: .named("ForecastSection")).maxY
+                            )
+                    }
+                }
 
             WeatherHourlyStrip(
                 points: hourlyPoints,
                 selectedID: selectedTimelineID,
                 onSelect: { entry, isDragSelection in
                     guard entry.id != selectedTimelineID else { return }
-                    withAnimation(.spring(response: 0.28, dampingFraction: 0.82)) {
+                    if isDragSelection {
                         selectedTimelineID = entry.id
+                    } else {
+                        withAnimation(.spring(response: 0.28, dampingFraction: 0.82)) {
+                            selectedTimelineID = entry.id
+                        }
                     }
                     sceneManager.setTemperature(
                         entry.temperature,
@@ -189,16 +211,121 @@ struct WeatherMainView: View {
                 },
                 onDragStateChange: { isDragging in
                     isHourlyStripDragging = isDragging
+                },
+                onBubbleStateChange: { bubbleState in
+                    if bubbleState.isVisible {
+                        hourlyBubbleState = bubbleState
+                    } else {
+                        withAnimation(.easeOut(duration: WeatherHourlyStripCore.clearSkyRestoreAnimationDuration)) {
+                            hourlyBubbleState = bubbleState
+                        }
+                    }
+                    if bubbleState.isVisible {
+                        clearSkySampledOffsets.append(clearSkyTitleLiftOffset(for: bubbleState))
+                        if clearSkySampledOffsets.count > 240 {
+                            clearSkySampledOffsets.removeFirst(clearSkySampledOffsets.count - 240)
+                        }
+                    } else {
+                        clearSkySampledOffsets.removeAll(keepingCapacity: true)
+                    }
                 }
             )
             .frame(width: width)
             .offset(y: -6)
+            .background {
+                GeometryReader { proxy in
+                    Color.clear
+                        .preference(
+                            key: ForecastStripMinYPreferenceKey.self,
+                            value: proxy.frame(in: .named("ForecastSection")).minY
+                        )
+                }
+            }
+        }
+        .coordinateSpace(name: "ForecastSection")
+        .onPreferenceChange(ClearSkyTitleBaselinePreferenceKey.self) { value in
+            guard let value else { return }
+            if !hourlyBubbleState.isVisible {
+                clearSkyIdleBaselineY = value
+            }
+        }
+        .onPreferenceChange(ForecastStripMinYPreferenceKey.self) { value in
+            guard let value else { return }
+            forecastStripMinY = value
         }
         .opacity(isSunDetailPresented ? 0 : 1)
         .offset(y: isSunDetailPresented ? 138 : -23)
         .allowsHitTesting(!isSunDetailPresented)
         .animation(.easeInOut(duration: 0.24), value: isSunDetailPresented)
         .padding(.bottom, bottomPadding)
+        .zIndex(5)
+    }
+
+    private func clearSkyTitleLiftOffset(for bubbleState: WeatherHourlyBubbleState? = nil) -> CGFloat {
+        let state = bubbleState ?? hourlyBubbleState
+        guard state.isVisible else {
+            return 0
+        }
+        guard let idleBaselineY = clearSkyIdleBaselineY, forecastStripMinY > 0 else {
+            return clearSkyFallbackLiftOffset
+        }
+
+        let targetBaselineY = WeatherHourlyStripCore.clearSkyLiftTargetBaselineY(
+            stripMinY: forecastStripMinY,
+            bubbleTopY: state.bubbleTopY
+        )
+
+        return WeatherHourlyStripCore.clearSkyLiftOffset(
+            idleTitleBaselineY: idleBaselineY,
+            targetTitleBaselineY: targetBaselineY,
+            bubbleVisible: state.isVisible
+        )
+    }
+
+    @ViewBuilder
+    private func clearSkyTitleText(isLifted: Bool) -> some View {
+        let outlineWidth = WeatherHourlyStripCore.clearSkyOutlineWidth(isLifted: isLifted)
+        ZStack {
+            if outlineWidth > 0 {
+                Text(weather.title)
+                    .font(.du(26, weight: .heavy))
+                    .foregroundColor(.white)
+                    .offset(x: outlineWidth, y: 0)
+                Text(weather.title)
+                    .font(.du(26, weight: .heavy))
+                    .foregroundColor(.white)
+                    .offset(x: -outlineWidth, y: 0)
+                Text(weather.title)
+                    .font(.du(26, weight: .heavy))
+                    .foregroundColor(.white)
+                    .offset(x: 0, y: outlineWidth)
+                Text(weather.title)
+                    .font(.du(26, weight: .heavy))
+                    .foregroundColor(.white)
+                    .offset(x: 0, y: -outlineWidth)
+                Text(weather.title)
+                    .font(.du(26, weight: .heavy))
+                    .foregroundColor(.white)
+                    .offset(x: outlineWidth, y: outlineWidth)
+                Text(weather.title)
+                    .font(.du(26, weight: .heavy))
+                    .foregroundColor(.white)
+                    .offset(x: outlineWidth, y: -outlineWidth)
+                Text(weather.title)
+                    .font(.du(26, weight: .heavy))
+                    .foregroundColor(.white)
+                    .offset(x: -outlineWidth, y: outlineWidth)
+                Text(weather.title)
+                    .font(.du(26, weight: .heavy))
+                    .foregroundColor(.white)
+                    .offset(x: -outlineWidth, y: -outlineWidth)
+            }
+
+            Text(weather.title)
+                .font(.du(26, weight: .heavy))
+                .foregroundColor(Color.black.opacity(0.92))
+        }
+        .compositingGroup()
     }
     
     private var headerBar: some View {
@@ -945,5 +1072,21 @@ struct WeatherMainView: View {
                 }
             }
         }
+    }
+}
+
+private struct ClearSkyTitleBaselinePreferenceKey: PreferenceKey {
+    static var defaultValue: CGFloat?
+
+    static func reduce(value: inout CGFloat?, nextValue: () -> CGFloat?) {
+        value = nextValue() ?? value
+    }
+}
+
+private struct ForecastStripMinYPreferenceKey: PreferenceKey {
+    static var defaultValue: CGFloat?
+
+    static func reduce(value: inout CGFloat?, nextValue: () -> CGFloat?) {
+        value = nextValue() ?? value
     }
 }

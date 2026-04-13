@@ -16,12 +16,19 @@
 - [x] 3.2 Implement drag-centered height profile (center highest, two-step side falloff).
 - [x] 3.3 Add focused-hour circular time bubble using HH:00 formatting.
 - [x] 3.4 Wire focused-hour updates to existing scene temperature selection pipeline.
+- [x] 3.5 Switch to fixed-baseline upward-only protrusion and align end-cap baseline.
+- [x] 3.6 Tune protrusion to half profile and add direction-aware rise/fall sequence.
+- [x] 3.7 Synchronize bubble timing with protrusion and anchor bubble at protrusion-top +5.
+- [x] 3.8 Track bubble X by continuous drag position to remove step-jump.
+- [x] 3.9 Apply bubble typography/style updates (wider neumatic-compressed bold, +5 size, black text, +5 diameter).
 
 ## 4. Feedback and UX Validation
 
 - [x] 4.1 Add haptic feedback on focused-hour index changes.
 - [x] 4.2 Reuse weather tap audio on focused-hour index changes.
 - [x] 4.3 Tune spacing and label legibility on small and large iPhone simulators.
+- [x] 4.4 Remove drag-path scene-temperature fade transition to prevent flicker under fast scrubbing.
+- [x] 4.5 Optimize high-frequency drag stability (audio queue reuse and lighter drag-time animation path).
 
 ## 5. Verification, Review, and Lifecycle
 
