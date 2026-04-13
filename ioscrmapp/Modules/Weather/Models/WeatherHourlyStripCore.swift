@@ -61,6 +61,32 @@ enum WeatherHourlyStripCore {
         return 0.54 + clamped * 0.16
     }
 
+    static func normalizedTemperatureValue(
+        temperature: Int,
+        minTemperature: Int,
+        maxTemperature: Int
+    ) -> Double {
+        let lower = min(minTemperature, maxTemperature)
+        let upper = max(minTemperature, maxTemperature)
+        let span = max(upper - lower, 1)
+        let normalized = Double(temperature - lower) / Double(span)
+        return min(max(normalized, 0), 1)
+    }
+
+    static func groupedTemperatures(
+        _ points: [WeatherHourlyStripPoint],
+        blockSize: Int
+    ) -> [Int] {
+        guard blockSize > 0 else { return points.map(\.temperature) }
+
+        return stride(from: 0, to: points.count, by: blockSize).map { start in
+            let end = min(start + blockSize, points.count)
+            let slice = points[start..<end]
+            let total = slice.reduce(0) { $0 + $1.temperature }
+            return Int(round(Double(total) / Double(slice.count)))
+        }
+    }
+
     static func emphasisScale(index: Int, focusedIndex: Int) -> CGFloat {
         switch abs(index - focusedIndex) {
         case 0: return 1.0
@@ -126,18 +152,25 @@ enum WeatherHourlyStripCore {
         _ = startHour
         _ = currentTemperature
 
-        // Demo profile requested by product:
-        // - 31C from sunset to sunrise
-        // - 34C at 14:00 (daily high)
-        // - 33C for all other daytime hours
-        if hour24 == 14 {
-            return 34
-        }
-
-        if hour24 >= 18 || hour24 < 6 {
+        // The current 3D temperature assets only cover the digits used by 31...35,
+        // so the mock curve stays within that range to avoid unsupported numerals.
+        switch hour24 {
+        case 0...4:
             return 31
+        case 5...7:
+            return 32
+        case 8...10:
+            return 33
+        case 11...13:
+            return 34
+        case 14...15:
+            return 35
+        case 16...17:
+            return 34
+        case 18...20:
+            return 33
+        default:
+            return 32
         }
-
-        return 33
     }
 }
