@@ -31,31 +31,9 @@ final class WeatherSceneManager: ObservableObject {
             case .foreground:
                 0.94...1.0
             case .middle:
-                0.82...0.92
+                0.94...1.0
             case .background:
-                0.72...0.84
-            }
-        }
-
-        var lengthRange: ClosedRange<CGFloat> {
-            switch self {
-            case .foreground:
-                1.8...3.6
-            case .middle:
-                0.9...2.2
-            case .background:
-                0.45...1.2
-            }
-        }
-
-        var thicknessRange: ClosedRange<CGFloat> {
-            switch self {
-            case .foreground:
-                0.050...0.072
-            case .middle:
-                0.028...0.042
-            case .background:
-                0.014...0.022
+                0.94...1.0
             }
         }
 
@@ -66,18 +44,18 @@ final class WeatherSceneManager: ObservableObject {
             case .middle:
                 0.18...0.30
             case .background:
-                0.42...0.58
+                0.28...0.5
             }
         }
 
         var emissionRange: ClosedRange<CGFloat> {
             switch self {
             case .foreground:
-                0.0...0.02
+                0.9...1
             case .middle:
-                0.0...0.01
+                0.9...1
             case .background:
-                0.0...0.0
+                0.9...1
             }
         }
 
@@ -100,17 +78,6 @@ final class WeatherSceneManager: ObservableObject {
                 -0.10...0.24
             case .background:
                 -0.88 ... -0.18
-            }
-        }
-
-        var depthThicknessMultiplier: CGFloat {
-            switch self {
-            case .foreground:
-                1.38
-            case .middle:
-                1.24
-            case .background:
-                1.12
             }
         }
 
@@ -217,6 +184,9 @@ final class WeatherSceneManager: ObservableObject {
     private let sunBurstHorizontalReach: Float = 4.4
     private let sunBurstUpperReach: Float = 5.1
     private let sunBurstLowerReach: Float = 7.0
+    private let sunBurstLengthRange: ClosedRange<CGFloat> = 0.55...3.1
+    private let sunBurstThicknessRange: ClosedRange<CGFloat> = 0.030...0.060
+    private let sunBurstDepthThicknessMultiplierRange: ClosedRange<CGFloat> = 1.10...1.34
 
     init(temperature: Int = MockWeatherData.today.temperature, mode: WeatherSceneMode = .main) {
         self.scene = SCNScene()
@@ -1812,7 +1782,12 @@ final class WeatherSceneManager: ObservableObject {
                 + Float.random(in: -0.06...0.06, using: &generator)
         )
 
-        let length = CGFloat.random(in: layer.lengthRange, using: &generator)
+        let length = CGFloat.random(in: sunBurstLengthRange, using: &generator)
+        let thickness = CGFloat.random(in: sunBurstThicknessRange, using: &generator)
+        let depthThicknessMultiplier = CGFloat.random(
+            in: sunBurstDepthThicknessMultiplierRange,
+            using: &generator
+        )
         let minimumSpan = Float(length) + 0.24
         var rawDirection = endAnchor - startAnchor
         if simd_length(rawDirection) < minimumSpan {
@@ -1838,7 +1813,7 @@ final class WeatherSceneManager: ObservableObject {
             direction: direction,
             baseOpacity: CGFloat.random(in: layer.opacityRange, using: &generator),
             length: length,
-            thickness: CGFloat.random(in: layer.thicknessRange, using: &generator),
+            thickness: thickness,
             whiteValue: CGFloat.random(in: layer.whiteRange, using: &generator),
             emissionAlpha: CGFloat.random(in: layer.emissionRange, using: &generator),
             delay: TimeInterval.random(
@@ -1852,7 +1827,7 @@ final class WeatherSceneManager: ObservableObject {
             ),
             fadeOutDuration: TimeInterval.random(in: 0.05...0.09, using: &generator),
             shrinkScaleY: Float.random(in: 0.48...0.82, using: &generator),
-            depthThicknessMultiplier: layer.depthThicknessMultiplier,
+            depthThicknessMultiplier: depthThicknessMultiplier,
             layer: layer
         )
     }
