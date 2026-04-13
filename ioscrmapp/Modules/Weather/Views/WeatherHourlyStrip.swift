@@ -185,14 +185,26 @@ struct WeatherHourlyStrip: View {
     }
 
     private func barColor(for point: WeatherHourlyStripPoint, range: WeatherHourlyTemperatureRange, isFocused: Bool) -> Color {
-        let gray = WeatherHourlyStripCore.grayscaleValue(
+        let palette: [Color] = [
+            Color(hex: 0xF6F6F6),
+            Color(hex: 0xE9E9E9),
+            Color(hex: 0xDEDEDE),
+            Color(hex: 0xD2D2D2),
+            Color(hex: 0xC7C7C7)
+        ]
+        let normalized = WeatherHourlyStripCore.normalizedTemperatureValue(
             temperature: point.temperature,
             minTemperature: range.low,
             maxTemperature: range.high
         )
-        // Halve darkness so overall bars look lighter while preserving relative differences.
-        let lighterGray = 1 - (1 - gray) * 0.5
-        return Color(white: isFocused && isDragging ? min(lighterGray + 0.03, 0.96) : lighterGray)
+        let bucket = min(max(Int(round(normalized * Double(palette.count - 1))), 0), palette.count - 1)
+        let baseColor = palette[bucket]
+
+        if isFocused && isDragging {
+            return palette[min(bucket + 1, palette.count - 1)].opacity(0.96)
+        }
+
+        return baseColor
     }
 
     private func xPosition(for index: Int, itemWidth: CGFloat, sidePadding: CGFloat, endCapWidth: CGFloat) -> CGFloat {
@@ -301,5 +313,56 @@ private final class WeatherStripHapticPlayer {
     func tick() {
         generator.selectionChanged()
         generator.prepare()
+    }
+}
+
+private struct WeatherHourlyStripLayout {
+    let sidePadding: CGFloat = 10
+    let endCapDiameter: CGFloat = 34
+    let railHeight: CGFloat = 34
+    let topOverlayHeight: CGFloat = 24
+    let bubbleDiameter: CGFloat = 44
+    let maxBarTopExtension: CGFloat = 18
+
+    let totalWidth: CGFloat
+    let contentWidth: CGFloat
+    let endCapWidth: CGFloat
+    let coreWidth: CGFloat
+    let itemWidth: CGFloat
+    let focusedIndex: Int
+    let focusedX: CGFloat
+    let groupedTemperatures: [Int]
+    let range: WeatherHourlyTemperatureRange
+    let bubbleY: CGFloat
+    let idleBubbleY: CGFloat
+    let labelY: CGFloat
+    let highIndex: Int
+    let lowIndex: Int
+    let sunriseIndex: Int?
+    let sunsetIndex: Int?
+    let coreStartX: CGFloat
+
+    init(size: CGSize, points: [WeatherHourlyStripPoint], selectedID: String) {
+        totalWidth = size.width
+        contentWidth = size.width - sidePadding * 2
+        endCapWidth = endCapDiameter / 2
+        coreWidth = max(0, contentWidth - endCapWidth * 2)
+
+        let itemCount = max(points.count, 1)
+        itemWidth = coreWidth / CGFloat(itemCount)
+        focusedIndex = points.firstIndex(where: { $0.id == selectedID }) ?? 0
+        focusedX = sidePadding + endCapWidth + itemWidth * CGFloat(focusedIndex) + itemWidth / 2
+        groupedTemperatures = WeatherHourlyStripCore.groupedTemperatures(points, blockSize: 3)
+        range = WeatherHourlyStripCore.temperatureRange(points)
+        // Keep the drag bubble clear of the time/temperature rows by lifting it
+        // above the rail a bit more than the resting labels.
+        bubbleY = topOverlayHeight - 42
+        idleBubbleY = topOverlayHeight + railHeight / 2
+        labelY = topOverlayHeight + railHeight / 2
+        highIndex = points.indices.max(by: { points[$0].temperature < points[$1].temperature }) ?? 0
+        lowIndex = points.indices.min(by: { points[$0].temperature < points[$1].temperature }) ?? 0
+        sunriseIndex = points.firstIndex(where: { $0.hour24 == 6 })
+        sunsetIndex = points.firstIndex(where: { $0.hour24 == 18 })
+        coreStartX = sidePadding + endCapWidth
     }
 }

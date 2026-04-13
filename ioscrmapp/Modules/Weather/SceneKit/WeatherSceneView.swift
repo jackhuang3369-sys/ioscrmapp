@@ -13,7 +13,7 @@ struct WeatherSceneView: UIViewRepresentable {
     let scene:   SCNScene
     /// Access to the rotatable model node. Pass nil for non-interactive scene views (e.g. Page B panels).
     let manager: WeatherSceneManager?
-    let onSunTap: (() -> Void)?
+    let onSunTap: ((CGPoint) -> Void)?
     let onBackgroundTap: (() -> Void)?
     let allowsInteraction: Bool
     let interactionResetVersion: Int
@@ -28,7 +28,7 @@ struct WeatherSceneView: UIViewRepresentable {
     init(
         scene: SCNScene,
         manager: WeatherSceneManager?,
-        onSunTap: (() -> Void)? = nil,
+        onSunTap: ((CGPoint) -> Void)? = nil,
         onBackgroundTap: (() -> Void)? = nil,
         allowsInteraction: Bool = true,
         interactionResetVersion: Int = 0
@@ -133,7 +133,7 @@ struct WeatherSceneView: UIViewRepresentable {
 
         private let manager: WeatherSceneManager?
         private let allowsInteraction: Bool
-        private var onSunTap: (() -> Void)?
+        private var onSunTap: ((CGPoint) -> Void)?
         private var onBackgroundTap: (() -> Void)?
         private var currentYaw:     Float = 0
         private var currentPitch:   Float = 0
@@ -174,7 +174,7 @@ struct WeatherSceneView: UIViewRepresentable {
 
         init(
             manager: WeatherSceneManager?,
-            onSunTap: (() -> Void)?,
+            onSunTap: ((CGPoint) -> Void)?,
             onBackgroundTap: (() -> Void)?,
             allowsInteraction: Bool
         ) {
@@ -187,7 +187,7 @@ struct WeatherSceneView: UIViewRepresentable {
             targetPitch = restPitch
         }
 
-        func updateInteractionCallbacks(onSunTap: (() -> Void)?, onBackgroundTap: (() -> Void)?) {
+        func updateInteractionCallbacks(onSunTap: ((CGPoint) -> Void)?, onBackgroundTap: (() -> Void)?) {
             self.onSunTap = onSunTap
             self.onBackgroundTap = onBackgroundTap
         }
@@ -665,10 +665,26 @@ struct WeatherSceneView: UIViewRepresentable {
             let hits = scnView.hitTest(location, options: [SCNHitTestOption.searchMode: SCNHitTestSearchMode.all.rawValue])
             // Ignore temperature digits so tapping numbers does not trigger sun interaction.
             if hits.contains(where: { isInteractiveNode($0.node) && !isTemperatureNode($0.node) }) {
-                onSunTap?()
+                let screenLocation = projectedSunCenter(in: scnView)
+                    ?? gesture.location(in: scnView.window)
+                onSunTap?(screenLocation)
             } else {
                 onBackgroundTap?()
             }
+        }
+
+        private func projectedSunCenter(in scnView: SCNView) -> CGPoint? {
+            guard let sunNode = manager?.sunNode else { return nil }
+
+            let worldPosition = sunNode.presentation.worldPosition
+            let projected = scnView.projectPoint(worldPosition)
+            guard projected.z.isFinite else { return nil }
+
+            let localPoint = CGPoint(
+                x: CGFloat(projected.x),
+                y: CGFloat(projected.y)
+            )
+            return scnView.convert(localPoint, to: scnView.window)
         }
 
         private func isInteractiveNode(_ node: SCNNode?) -> Bool {

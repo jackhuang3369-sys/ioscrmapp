@@ -126,18 +126,25 @@ enum WeatherHourlyStripCore {
         _ = startHour
         _ = currentTemperature
 
-        // Demo profile requested by product:
-        // - 31C from sunset to sunrise
-        // - 34C at 14:00 (daily high)
-        // - 33C for all other daytime hours
-        if hour24 == 14 {
-            return 34
-        }
-
-        if hour24 >= 18 || hour24 < 6 {
+        // The current 3D temperature assets only cover the digits used by 31...35,
+        // so the mock curve stays within that range to avoid unsupported numerals.
+        switch hour24 {
+        case 0...4:
             return 31
+        case 5...7:
+            return 32
+        case 8...10:
+            return 33
+        case 11...13:
+            return 34
+        case 14...15:
+            return 35
+        case 16...17:
+            return 34
+        case 18...20:
+            return 33
+        default:
+            return 32
         }
-
-        return 33
     }
 }

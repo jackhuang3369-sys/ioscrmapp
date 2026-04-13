@@ -31,13 +31,18 @@ final class WeatherSceneManager: ObservableObject {
     private var sunBurstNode: SCNNode?
     private var temperatureNode: SCNNode?
     private var pendingTemperatureNode: SCNNode?
+    // Cache assembled temperature node trees by full text (for example "31").
+    // This avoids reparsing the OBJ digits on every timeline scrub update.
+    private var temperatureNodeCache: [String: SCNNode] = [:]
+    // Tracks what value is currently rendered so we can skip no-op updates.
+    private var displayedTemperature: Int?
+    private var sunModelNode: SCNNode?
     private var sunBurstRayDirections: [ObjectIdentifier: SCNVector3] = [:]
     private var sunBurstRayStartPositions: [ObjectIdentifier: SCNVector3] = [:]
     private var sunBurstRayBaseOpacities: [ObjectIdentifier: CGFloat] = [:]
     private var transitionSourceRotation = SCNVector3(0, 0, 0)
     private var isTemperatureHidden: Bool = false
     private var autoSpinSpeedBeforeInteraction: Float?
-    private var sunModelNode: SCNNode?
     private var transitionCompletionWorkItem: DispatchWorkItem?
     private var entrySpinWorkItem: DispatchWorkItem?
     private var _birdsScene: SCNScene?   // 防止 ARC 过早释放鸟群场景
@@ -68,6 +73,11 @@ final class WeatherSceneManager: ObservableObject {
 
     func setTemperature(_ temperature: Int, animated: Bool) {
         currentTemperature = temperature
+        // Timeline dragging can hit the same value repeatedly. If the rendered
+        // node already matches and is still attached, there is nothing to rebuild.
+        if displayedTemperature == temperature, temperatureNode?.parent != nil {
+            return
+        }
         updateTemperature(animated: animated)
     }
 
@@ -292,6 +302,7 @@ final class WeatherSceneManager: ObservableObject {
         sunBurstNode = nil
         temperatureNode = nil
         pendingTemperatureNode = nil
+        displayedTemperature = nil
         sunNode = nil
         sunModelNode = nil
         sunBurstRayDirections.removeAll()
@@ -418,6 +429,7 @@ final class WeatherSceneManager: ObservableObject {
             digits.position = SCNVector3(0, mainTemperaturePositionY, 0.12)
             rotatingGroup.addChildNode(digits)
             temperatureNode = digits
+            displayedTemperature = currentTemperature
         }
 
         if mode != .sunDetail {
@@ -473,11 +485,20 @@ final class WeatherSceneManager: ObservableObject {
     }
 
     private func makeTemperatureNode(text: String) -> SCNNode {
-        if let modelNode = makeTemperatureModelNode(text: text) {
-            return modelNode
+        // Cache the fully assembled temperature subtree so scrubbing the hourly
+        // timeline reuses cloned nodes instead of rebuilding OBJ content each time.
+        if let cachedNode = temperatureNodeCache[text] {
+            return cachedNode.clone()
         }
 
-        return makeFallbackTemperatureNode(text: text)
+        let templateNode: SCNNode
+        if let modelNode = makeTemperatureModelNode(text: text) {
+            templateNode = modelNode
+        } else {
+            templateNode = makeFallbackTemperatureNode(text: text)
+        }
+        temperatureNodeCache[text] = templateNode
+        return templateNode.clone()
     }
 
     private func makeSunDetailTitleNode(text: String) -> SCNNode {
@@ -1270,6 +1291,7 @@ final class WeatherSceneManager: ObservableObject {
         digits.opacity = 0
         root.addChildNode(digits)
         temperatureNode = digits
+        displayedTemperature = currentTemperature
         return digits
     }
 
@@ -1410,6 +1432,7 @@ final class WeatherSceneManager: ObservableObject {
     private func updateTemperature(animated: Bool) {
         guard mode == .main || mode == .sunTransition else { return }
         guard let root = conditionGroup else { return }
+        guard displayedTemperature != currentTemperature || temperatureNode?.parent == nil else { return }
 
         pendingTemperatureNode?.removeAllActions()
         pendingTemperatureNode?.removeFromParentNode()
@@ -1435,12 +1458,14 @@ final class WeatherSceneManager: ObservableObject {
                 if self.pendingTemperatureNode === replacement {
                     self.pendingTemperatureNode = nil
                 }
+                self.displayedTemperature = self.currentTemperature
             }
             SCNTransaction.commit()
         } else {
             temperatureNode?.removeFromParentNode()
             pendingTemperatureNode = nil
             temperatureNode = replacement
+            displayedTemperature = currentTemperature
         }
     }
 

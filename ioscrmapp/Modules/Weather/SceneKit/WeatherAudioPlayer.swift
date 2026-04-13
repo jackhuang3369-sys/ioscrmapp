@@ -16,6 +16,7 @@ final class WeatherAudioPlayer {
         ]
     }
 
+    private let shapeTapVariants = ["shape-tap-1", "shape-tap-7"]
     private let audioQueue = DispatchQueue(label: "WeatherAudioPlayer.audioQueue")
     private let spinSoundProfiles: [WeatherSpinSoundTier: WeatherSpinSoundProfile]
     private var oneshotPool: [String: [AVAudioPlayer]] = [:]
@@ -31,7 +32,8 @@ final class WeatherAudioPlayer {
 
     func playShapeTap() {
         audioQueue.async { [self] in
-            playOneshotNow("shape-tap-1", volume: 0.35)
+            let soundName = shapeTapVariants.randomElement() ?? "shape-tap-1"
+            playOneshotNow(soundName, volume: 0.35)
         }
     }
 
