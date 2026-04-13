@@ -5,12 +5,25 @@ final class WeatherAudioPlayer {
 
     static let shared = WeatherAudioPlayer()
 
+    private struct WeatherSpinSoundProfile {
+        let audioName: String
+        let volume: Float
+
+        static let `default`: [WeatherSpinSoundTier: WeatherSpinSoundProfile] = [
+            .slow: .init(audioName: "spin-slow-4", volume: 0.24),
+            .medium: .init(audioName: "spin-fast-5", volume: 0.26),
+            .fast: .init(audioName: "spin-fast-4", volume: 0.28)
+        ]
+    }
+
     private let audioQueue = DispatchQueue(label: "WeatherAudioPlayer.audioQueue")
+    private let spinSoundProfiles: [WeatherSpinSoundTier: WeatherSpinSoundProfile]
     private var oneshotPool: [String: [AVAudioPlayer]] = [:]
     private var timelineTickPlayers: [AVAudioPlayer] = []
     private var timelineTickPlayerIndex = 0
 
-    private init() {
+    private init(spinSoundProfiles: [WeatherSpinSoundTier: WeatherSpinSoundProfile] = WeatherSpinSoundProfile.default) {
+        self.spinSoundProfiles = spinSoundProfiles
         try? AVAudioSession.sharedInstance().setCategory(.ambient, options: [.mixWithOthers])
         try? AVAudioSession.sharedInstance().setActive(true)
         timelineTickPlayers = makePlayers(name: "ui-time-scroll-click-1", count: 6)
@@ -37,9 +50,10 @@ final class WeatherAudioPlayer {
         }
     }
 
-    func playSpinLoop(fast: Bool) {
+    func playSpinLoop(tier: WeatherSpinSoundTier) {
         audioQueue.async { [self] in
-            playOneshotNow(fast ? "spin-fast-4" : "spin-slow-4", volume: 0.26)
+            guard let profile = spinSoundProfiles[tier] else { return }
+            playOneshotNow(profile.audioName, volume: profile.volume)
         }
     }
 

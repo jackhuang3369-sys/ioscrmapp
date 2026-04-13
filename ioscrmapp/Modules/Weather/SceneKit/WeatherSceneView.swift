@@ -572,6 +572,8 @@ struct WeatherSceneView: UIViewRepresentable {
                 defer { panSession = nil }
                 let v = gesture.velocity(in: gesture.view)
                 let interactionMode = panInteractionMode(for: gesture)
+                var releasedSample: WeatherSpinGestureSample?
+                var releasedDecision: WeatherSpinSettleDecision?
 
                 // Keep the release frame continuous with the drag frame to avoid a visible hitch
                 // when settle animation takes over near threshold distances.
@@ -601,6 +603,8 @@ struct WeatherSceneView: UIViewRepresentable {
                         currentYawDegrees: currentYawDegrees,
                         sample: sample
                     )
+                    releasedSample = sample
+                    releasedDecision = decision
                     debugLogSettle(sample: sample, decision: decision, currentYawDegrees: currentYawDegrees)
                     let direction: Float = (translationRatio == 0)
                         ? (v.x >= 0 ? 1 : -1)
@@ -624,6 +628,8 @@ struct WeatherSceneView: UIViewRepresentable {
                         targetYawDegrees: 0,
                         usesFinalTurnSlowdown: false
                     )
+                    releasedSample = sample
+                    releasedDecision = decision
                     startSettlingAnimation(
                         decision: decision,
                         direction: v.x >= 0 ? 1 : -1,
@@ -632,8 +638,13 @@ struct WeatherSceneView: UIViewRepresentable {
                     )
                     debugLogSettle(sample: sample, decision: decision, currentYawDegrees: 0)
                 }
-                let fast = hypot(v.x, v.y) > 650
-                WeatherAudioPlayer.shared.playSpinLoop(fast: fast)
+                if let releasedSample, let releasedDecision {
+                    let soundTier = spinController.spinSoundTier(
+                        for: releasedSample,
+                        decision: releasedDecision
+                    )
+                    WeatherAudioPlayer.shared.playSpinLoop(tier: soundTier)
+                }
             default:
                 isPanning = false
                 lastPanPoint = nil
