@@ -533,7 +533,6 @@ struct WeatherSceneView: UIViewRepresentable {
                     startTimestamp: CACurrentMediaTime()
                 )
                 stopMomentumAnimations()
-                WeatherAudioPlayer.shared.playShapeTap()
                 SCNTransaction.begin()
                 SCNTransaction.animationDuration = 0.16
                 node.scale = SCNVector3(node.scale.x * 1.02, node.scale.y * 1.02, node.scale.z * 1.02)
