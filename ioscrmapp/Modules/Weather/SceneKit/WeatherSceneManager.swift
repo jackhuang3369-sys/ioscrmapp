@@ -272,7 +272,10 @@ final class WeatherSceneManager: ObservableObject {
             self?.autoSpinSpeed = 0
             self?.applyDisplayGroupRotation(self?.transitionRestRotation ?? SCNVector3(0, 0, 0))
             self?.stopSunAmbientAnimations(resetOrientation: true, resetScale: true)
-            self?.startDetailIntroSpinIfNeeded()
+            // 静止 2 秒后再开始旋转
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) { [weak self] in
+                self?.startDetailIntroSpinIfNeeded()
+            }
             completion()
         }
         transitionCompletionWorkItem = completionWorkItem
@@ -396,7 +399,7 @@ final class WeatherSceneManager: ObservableObject {
             sunAssembly.addChildNode(sun)
             rotatingGroup.addChildNode(sunAssembly)
 
-            let title = makeSunDetailTitleNode(text: "SUN")
+            let title = makeSunDetailTitleNode(text: "Sun")
             title.position = detailTitlePosition
             rotatingGroup.addChildNode(title)
             detailTitleNode = title
@@ -418,7 +421,7 @@ final class WeatherSceneManager: ObservableObject {
 
             rotatingGroup.addChildNode(sunAssembly)
 
-            let title = makeSunDetailTitleNode(text: "SUN")
+            let title = makeSunDetailTitleNode(text: "Sun")
             title.name = SceneNode.sunTitle
             title.position = detailTitlePosition
             title.opacity = 0
@@ -680,8 +683,15 @@ final class WeatherSceneManager: ObservableObject {
     }
 
     private func makeSunDetailTitleLetterGeometry(character: String, font: UIFont) -> SCNText {
-        let textGeometry = SCNText(string: character, extrusionDepth: 0.9)
-        textGeometry.font = font
+        let attributes: [NSAttributedString.Key: Any] = [
+            .font: font,
+            .strokeWidth: NSNumber(value: -3),
+            .strokeColor: UIColor(red: 0.16, green: 0.16, blue: 0.17, alpha: 1)
+        ]
+        let textGeometry = SCNText(
+            string: NSAttributedString(string: character, attributes: attributes),
+            extrusionDepth: 1.9
+        )
         textGeometry.flatness = 0.06
         textGeometry.chamferRadius = 0.10
         textGeometry.truncationMode = CATextLayerTruncationMode.none.rawValue
