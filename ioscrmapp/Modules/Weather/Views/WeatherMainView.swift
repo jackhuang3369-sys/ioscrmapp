@@ -348,8 +348,8 @@ struct WeatherMainView: View {
                     .allowsHitTesting(allowsInteraction)
                     
                     WeatherSunInsightPanel()
-                        .padding(.horizontal, 28)
-                        .padding(.bottom, max(safeAreaInsets.bottom, 14) + 2)
+                        .frame(width: size.width * 0.6)
+                        .padding(.bottom, (max(safeAreaInsets.bottom, 14) + 2) * 2)
                         .offset(y: (1 - interfaceOpacity) * 180)
                 }
                 .opacity(interfaceOpacity)

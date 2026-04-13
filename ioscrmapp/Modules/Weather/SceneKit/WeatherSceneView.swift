@@ -232,6 +232,12 @@ struct WeatherSceneView: UIViewRepresentable {
         /// Advances inertial motion and eases the model back toward its resting pose.
         @objc private func step(_ link: CADisplayLink) {
             guard let node = manager?.conditionGroup else { return }
+
+            // 场景动画进行中，由 SCNAction 驱动，Coordinator 不干预
+            if manager?.isPlayingSceneAnimation == true {
+                return
+            }
+
             let restPitch = manager?.restTiltX ?? 0
             let autoSpinSpeed = manager?.autoSpinSpeed ?? 0
             let frameDuration = max(link.targetTimestamp - link.timestamp, 1.0 / 60.0)
