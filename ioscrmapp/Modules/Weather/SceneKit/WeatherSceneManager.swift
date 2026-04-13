@@ -21,6 +21,140 @@ final class WeatherSceneManager: ObservableObject {
         let settleOvershoot: CGFloat = 0.82
     }
 
+    private enum SunBurstRayDepthLayer {
+        case foreground
+        case middle
+        case background
+
+        var opacityRange: ClosedRange<CGFloat> {
+            switch self {
+            case .foreground:
+                0.94...1.0
+            case .middle:
+                0.82...0.92
+            case .background:
+                0.72...0.84
+            }
+        }
+
+        var lengthRange: ClosedRange<CGFloat> {
+            switch self {
+            case .foreground:
+                1.8...3.6
+            case .middle:
+                0.9...2.2
+            case .background:
+                0.45...1.2
+            }
+        }
+
+        var thicknessRange: ClosedRange<CGFloat> {
+            switch self {
+            case .foreground:
+                0.050...0.072
+            case .middle:
+                0.028...0.042
+            case .background:
+                0.014...0.022
+            }
+        }
+
+        var whiteRange: ClosedRange<CGFloat> {
+            switch self {
+            case .foreground:
+                0.02...0.08
+            case .middle:
+                0.18...0.30
+            case .background:
+                0.42...0.58
+            }
+        }
+
+        var emissionRange: ClosedRange<CGFloat> {
+            switch self {
+            case .foreground:
+                0.0...0.02
+            case .middle:
+                0.0...0.01
+            case .background:
+                0.0...0.0
+            }
+        }
+
+        var travelDistanceRange: ClosedRange<Float> {
+            switch self {
+            case .foreground:
+                2.4...4.0
+            case .middle:
+                1.3...2.5
+            case .background:
+                0.65...1.35
+            }
+        }
+
+        var depthRange: ClosedRange<Float> {
+            switch self {
+            case .foreground:
+                0.26...0.82
+            case .middle:
+                -0.10...0.24
+            case .background:
+                -0.88 ... -0.18
+            }
+        }
+
+        var depthThicknessMultiplier: CGFloat {
+            switch self {
+            case .foreground:
+                1.38
+            case .middle:
+                1.24
+            case .background:
+                1.12
+            }
+        }
+
+        var metalness: Float {
+            switch self {
+            case .foreground:
+                0.08
+            case .middle:
+                0.05
+            case .background:
+                0.02
+            }
+        }
+
+        var roughness: Float {
+            switch self {
+            case .foreground:
+                0.90
+            case .middle:
+                0.94
+            case .background:
+                0.98
+            }
+        }
+    }
+
+    private struct SunBurstRayAnimationSpec {
+        let startPosition: SCNVector3
+        let endPosition: SCNVector3
+        let direction: SIMD3<Float>
+        let baseOpacity: CGFloat
+        let length: CGFloat
+        let thickness: CGFloat
+        let whiteValue: CGFloat
+        let emissionAlpha: CGFloat
+        let delay: TimeInterval
+        let fadeInDuration: TimeInterval
+        let flyDuration: TimeInterval
+        let fadeOutDuration: TimeInterval
+        let shrinkScaleY: Float
+        let depthThicknessMultiplier: CGFloat
+        let layer: SunBurstRayDepthLayer
+    }
+
     static let sunDetailTransitionDuration: TimeInterval = 0.5 //入场动画，第一屏到第二屏的时间。
     static let sunDetailCrossfadeDuration: TimeInterval = 0.20
     static let sunReturnTransitionDuration: TimeInterval = 0.2 //回场动画，第二屏回到第一屏的时间。
@@ -76,6 +210,13 @@ final class WeatherSceneManager: ObservableObject {
     private let detailTitlePosition = SCNVector3(0, 4.0, 0.34)
     private let transitionRestRotation = SCNVector3(-0.004, 0, 0)
     private let sunLandingSpringTuning = SunLandingSpringTuning()
+    private let sunBurstRayCount = 18
+    private let sunBurstSurfaceRadius: Float = 2.44
+    private let sunBurstSpawnRingMinOffset: Float = 0.0
+    private let sunBurstSpawnRingMaxOffset: Float = 0.34
+    private let sunBurstHorizontalReach: Float = 4.4
+    private let sunBurstUpperReach: Float = 5.1
+    private let sunBurstLowerReach: Float = 7.0
 
     init(temperature: Int = MockWeatherData.today.temperature, mode: WeatherSceneMode = .main) {
         self.scene = SCNScene()
@@ -536,80 +677,68 @@ final class WeatherSceneManager: ObservableObject {
         container.opacity = 0
         container.isHidden = true
 
-        let directions: [SIMD3<Float>] = [
-            SIMD3<Float>(0.00, 1.00, 0.32),
-            SIMD3<Float>(0.44, 0.92, 0.26),
-            SIMD3<Float>(0.82, 0.48, 0.18),
-            SIMD3<Float>(0.98, 0.06, -0.05),
-            SIMD3<Float>(0.72, -0.52, 0.16),
-            SIMD3<Float>(0.34, -0.92, 0.24),
-            SIMD3<Float>(-0.05, -1.00, -0.10),
-            SIMD3<Float>(-0.40, -0.86, -0.24),
-            SIMD3<Float>(-0.84, -0.44, 0.04),
-            SIMD3<Float>(-1.00, 0.04, -0.12),
-            SIMD3<Float>(-0.76, 0.58, -0.26),
-            SIMD3<Float>(-0.30, 0.94, 0.08)
-        ]
-
-        for (index, direction) in directions.enumerated() {
-            container.addChildNode(
-                makeSunBurstRayNode(
-                    direction: direction,
-                    index: index
-                )
-            )
+        for index in 0..<sunBurstRayCount {
+            container.addChildNode(makeSunBurstRayNode(index: index))
         }
 
         return container
     }
 
-    private func makeSunBurstRayNode(direction: SIMD3<Float>, index: Int) -> SCNNode {
-        let normalizedDirection = simd_normalize(direction)
-        let isFrontRay = normalizedDirection.z >= 0
-        let length = CGFloat(isFrontRay ? 2.73 : 2.31) + CGFloat(index % 3) * 0.14
-        let thickness = CGFloat(isFrontRay ? 0.052 : 0.038)
-
+    private func makeSunBurstRayNode(index: Int) -> SCNNode {
+        let length: CGFloat = 2.6
+        let thickness: CGFloat = 0.042
         let rayGeometry = SCNBox(
             width: thickness,
             height: length,
-            length: thickness * 1.35,
+            length: thickness * 1.3,
             chamferRadius: thickness * 0.4
         )
 
         let material = SCNMaterial()
         material.lightingModel = .physicallyBased
         material.diffuse.contents = UIColor(
-            white: 0.03,
-            alpha: isFrontRay ? 0.88 : 0.36
+            white: 0.10,
+            alpha: 0
         )
         material.emission.contents = UIColor(
             white: 0.0,
-            alpha: isFrontRay ? 0.08 : 0.02
+            alpha: 0.0
         )
-        material.metalness.contents = Float(0.05)
-        material.roughness.contents = Float(0.95)
+        material.metalness.contents = Float(0.04)
+        material.roughness.contents = Float(0.96)
         material.isDoubleSided = true
         rayGeometry.materials = Array(repeating: material, count: 6)
 
         let rayNode = SCNNode(geometry: rayGeometry)
-        let sunRadius: Float = 2.44
-        let halfLength = Float(length) / 2
-        let distanceFromCenter = sunRadius + halfLength
-        let placement = normalizedDirection * distanceFromCenter
+        let angle = Float(index) / Float(max(sunBurstRayCount, 1)) * (.pi * 2)
+        let placement = SIMD3<Float>(
+            cos(angle) * (sunBurstSurfaceRadius + Float(length) * 0.5),
+            sin(angle) * (sunBurstSurfaceRadius + Float(length) * 0.5),
+            0
+        )
+        let direction = simd_normalize(
+            SIMD3<Float>(
+                cos(angle),
+                sin(angle),
+                index.isMultiple(of: 2) ? 0.18 : -0.12
+            )
+        )
         rayNode.position = SCNVector3(placement.x, placement.y, placement.z)
         rayNode.simdOrientation = simd_quatf(
             from: SIMD3<Float>(0, 1, 0),
-            to: normalizedDirection
+            to: direction
         )
         rayNode.scale = SCNVector3(1, 1, 1)
-        rayNode.opacity = isFrontRay ? 1 : 0.82
+        rayNode.opacity = 0
+        rayNode.name = "sun_burst_ray_\(index)"
+        rayNode.castsShadow = false
         sunBurstRayDirections[ObjectIdentifier(rayNode)] = SCNVector3(
-            normalizedDirection.x,
-            normalizedDirection.y,
-            normalizedDirection.z
+            direction.x,
+            direction.y,
+            direction.z
         )
         sunBurstRayStartPositions[ObjectIdentifier(rayNode)] = rayNode.position
-        sunBurstRayBaseOpacities[ObjectIdentifier(rayNode)] = rayNode.opacity
+        sunBurstRayBaseOpacities[ObjectIdentifier(rayNode)] = 0
         return rayNode
     }
 
@@ -1370,70 +1499,66 @@ final class WeatherSceneManager: ObservableObject {
         guard let sunBurstNode else { return }
 
         resetSunBurstState()
-        sunBurstNode.isHidden = false
-        sunBurstNode.opacity = 0
+        var generator = SystemRandomNumberGenerator()
+        var longestRayDuration: TimeInterval = 0
+        let leadDelay = Self.sunDetailTransitionDuration * 0.02
 
-        let burstDelay = Self.sunDetailTransitionDuration * 0.30
-        let burstFlyDuration = Self.sunDetailTransitionDuration * 0.38
-        let burstFadeDuration = Self.sunDetailTransitionDuration * 0.18
-        let burstStagger = Self.sunDetailTransitionDuration * 0.022
-        let fadeInDuration = Self.sunDetailTransitionDuration * 0.10
-        let maxRayWaveOffset = burstStagger * 4
-        let burstHoldDuration = max(
-            burstFlyDuration + maxRayWaveOffset - fadeInDuration,
-            Self.sunDetailTransitionDuration * 0.08
-        )
+        for rayNode in sunBurstNode.childNodes {
+            let spec = makeSunBurstRayAnimationSpec(using: &generator)
+            configureSunBurstRayNode(rayNode, with: spec)
 
-        let fadeInAction = SCNAction.fadeOpacity(to: 1, duration: fadeInDuration)
-        fadeInAction.timingMode = .easeOut
-        let fadeOutAction = SCNAction.fadeOut(duration: burstFadeDuration)
-        fadeOutAction.timingMode = .easeIn
-
-        sunBurstNode.runAction(
-            .sequence([
-                .wait(duration: burstDelay),
-                fadeInAction,
-                .wait(duration: burstHoldDuration),
-                fadeOutAction,
-                .run { node in
-                    node.opacity = 0
-                    node.isHidden = true
-                }
-            ])
-        )
-
-        for (index, rayNode) in sunBurstNode.childNodes.enumerated() {
-            let rayDelay = burstDelay + Double(index % 5) * burstStagger
-            let outwardDistance = Float(0.66 + Double(index % 3) * 0.08)
-            let direction = rayDirection(for: rayNode)
-            let startPosition = initialRayPosition(for: rayNode)
-            let endPosition = SCNVector3(
-                startPosition.x + direction.x * outwardDistance,
-                startPosition.y + direction.y * outwardDistance,
-                startPosition.z + direction.z * outwardDistance
+            let moveAction = makeMoveAction(
+                from: spec.startPosition,
+                to: spec.endPosition,
+                duration: spec.flyDuration,
+                easing: easeOutCubic
             )
+            let scaleAction = makeScaleYAction(
+                from: 1,
+                to: spec.shrinkScaleY,
+                duration: spec.flyDuration,
+                easing: easeInOutCubic
+            )
+            let fadeInAction = SCNAction.fadeOpacity(to: spec.baseOpacity, duration: spec.fadeInDuration)
+            fadeInAction.timingMode = .easeOut
+
+            let fadeOutLeadDuration = max(
+                spec.flyDuration - spec.fadeInDuration - spec.fadeOutDuration * 0.78,
+                0
+            )
+            let fadeOutAction = SCNAction.fadeOut(duration: spec.fadeOutDuration)
+            fadeOutAction.timingMode = .easeIn
+
+            let opacityAction = SCNAction.sequence([
+                fadeInAction,
+                .wait(duration: fadeOutLeadDuration),
+                fadeOutAction
+            ])
+            let rayStartDelay = leadDelay + spec.delay
+            let completionDuration = rayStartDelay
+                + max(spec.flyDuration, spec.fadeInDuration + fadeOutLeadDuration + spec.fadeOutDuration)
+            longestRayDuration = max(longestRayDuration, completionDuration)
 
             rayNode.runAction(
                 .sequence([
-                    .wait(duration: rayDelay),
-                    .group([
-                        makeMoveAction(
-                            from: startPosition,
-                            to: endPosition,
-                            duration: burstFlyDuration,
-                            easing: easeOutCubic
-                        ),
-                        makeScaleYAction(
-                            from: 1,
-                            to: 0.5,
-                            duration: burstFlyDuration,
-                            easing: easeInOutCubic
-                        )
-                    ]),
-                    SCNAction.fadeOut(duration: burstFadeDuration)
+                    .wait(duration: rayStartDelay),
+                    .group([moveAction, scaleAction, opacityAction])
                 ])
             )
         }
+
+        sunBurstNode.isHidden = false
+        sunBurstNode.opacity = 1
+        sunBurstNode.runAction(
+            .sequence([
+                .wait(duration: longestRayDuration + 0.04),
+                .run { [weak self] node in
+                    node.opacity = 0
+                    node.isHidden = true
+                    self?.resetSunBurstState()
+                }
+            ])
+        )
     }
 
     private func prepareTemperatureNodeForReturn() -> SCNNode? {
@@ -1557,16 +1682,8 @@ final class WeatherSceneManager: ObservableObject {
         }
     }
 
-    private func rayDirection(for node: SCNNode) -> SCNVector3 {
-        sunBurstRayDirections[ObjectIdentifier(node)] ?? SCNVector3(0, 1, 0)
-    }
-
     private func initialRayPosition(for node: SCNNode) -> SCNVector3 {
         sunBurstRayStartPositions[ObjectIdentifier(node)] ?? node.position
-    }
-
-    private func baseRayOpacity(for node: SCNNode) -> CGFloat {
-        sunBurstRayBaseOpacities[ObjectIdentifier(node)] ?? 1
     }
 
     private func resetSunBurstState() {
@@ -1579,8 +1696,186 @@ final class WeatherSceneManager: ObservableObject {
             rayNode.removeAllActions()
             rayNode.position = initialRayPosition(for: rayNode)
             rayNode.scale = SCNVector3(1, 1, 1)
-            rayNode.opacity = baseRayOpacity(for: rayNode)
+            rayNode.opacity = 0
         }
+    }
+
+    private func configureSunBurstRayNode(_ rayNode: SCNNode, with spec: SunBurstRayAnimationSpec) {
+        let rayGeometry: SCNBox
+        if let existingGeometry = rayNode.geometry as? SCNBox {
+            rayGeometry = existingGeometry
+        } else {
+            rayGeometry = SCNBox(
+                width: spec.thickness,
+                height: spec.length,
+                length: spec.thickness * spec.depthThicknessMultiplier,
+                chamferRadius: spec.thickness * 0.38
+            )
+            rayNode.geometry = rayGeometry
+        }
+
+        rayGeometry.width = spec.thickness
+        rayGeometry.height = spec.length
+        rayGeometry.length = spec.thickness * spec.depthThicknessMultiplier
+        rayGeometry.chamferRadius = spec.thickness * 0.38
+
+        let material = rayGeometry.firstMaterial ?? SCNMaterial()
+        material.lightingModel = .constant
+        material.diffuse.contents = UIColor(
+            white: spec.whiteValue,
+            alpha: 1
+        )
+        material.emission.contents = UIColor(
+            white: spec.whiteValue,
+            alpha: spec.emissionAlpha
+        )
+        material.metalness.contents = spec.layer.metalness
+        material.roughness.contents = spec.layer.roughness
+        material.isDoubleSided = true
+        material.blendMode = .alpha
+        rayGeometry.materials = Array(repeating: material, count: 6)
+
+        rayNode.position = spec.startPosition
+        rayNode.simdOrientation = simd_quatf(
+            from: SIMD3<Float>(0, 1, 0),
+            to: spec.direction
+        )
+        rayNode.scale = SCNVector3(1, 1, 1)
+        rayNode.opacity = 0
+        sunBurstRayDirections[ObjectIdentifier(rayNode)] = SCNVector3(
+            spec.direction.x,
+            spec.direction.y,
+            spec.direction.z
+        )
+        sunBurstRayStartPositions[ObjectIdentifier(rayNode)] = spec.startPosition
+        sunBurstRayBaseOpacities[ObjectIdentifier(rayNode)] = spec.baseOpacity
+    }
+
+    private func makeSunBurstRayAnimationSpec<G: RandomNumberGenerator>(
+        using generator: inout G
+    ) -> SunBurstRayAnimationSpec {
+        let startAngle = Float.random(in: -Float.pi...Float.pi, using: &generator)
+        let endAngle = startAngle + Float.random(in: -0.16...0.16, using: &generator)
+        let screenFacingDepth = Float.random(in: -0.82...0.86, using: &generator)
+        let screenForwardness = normalizedScreenForwardness(for: screenFacingDepth)
+        let layer = makeSunBurstRayDepthLayer(screenForwardness: screenForwardness)
+        let startRadius = sunBurstSurfaceRadius
+            + Float.random(
+                in: sunBurstSpawnRingMinOffset...sunBurstSpawnRingMaxOffset,
+                using: &generator
+            )
+        let verticalReach = sin(endAngle) < -0.14 ? sunBurstLowerReach : sunBurstUpperReach
+        let maximumEndRadius = ellipseBoundaryDistance(
+            for: endAngle,
+            horizontalRadius: sunBurstHorizontalReach,
+            verticalRadius: verticalReach
+        )
+        let travelDistance = Float.random(in: layer.travelDistanceRange, using: &generator)
+        let minimumEndRadius = max(startRadius + travelDistance, maximumEndRadius * 0.42)
+        let preferredMaximumEndRadius = max(
+            minimumEndRadius + 0.16,
+            maximumEndRadius * (sin(endAngle) < -0.14 ? 0.92 : 0.84)
+        )
+        let endRadius = Float.random(
+            in: minimumEndRadius...preferredMaximumEndRadius,
+            using: &generator
+        )
+
+        let startAnchor = SIMD3<Float>(
+            cos(startAngle) * startRadius,
+            sin(startAngle) * startRadius,
+            Float.random(
+                in: max(layer.depthRange.lowerBound * 0.22, -0.18)...min(layer.depthRange.upperBound * 0.22, 0.22),
+                using: &generator
+            )
+        )
+        var endAnchor = SIMD3<Float>(
+            cos(endAngle) * endRadius,
+            sin(endAngle) * endRadius,
+            screenFacingDepth * Float.random(in: 0.52...0.92, using: &generator)
+                + Float.random(in: -0.06...0.06, using: &generator)
+        )
+
+        let length = CGFloat.random(in: layer.lengthRange, using: &generator)
+        let minimumSpan = Float(length) + 0.24
+        var rawDirection = endAnchor - startAnchor
+        if simd_length(rawDirection) < minimumSpan {
+            let fallbackDirection = simd_normalize(
+                SIMD3<Float>(
+                    cos(endAngle),
+                    sin(endAngle),
+                    max(screenFacingDepth, endAnchor.z - startAnchor.z)
+                )
+            )
+            endAnchor = startAnchor + fallbackDirection * minimumSpan
+            rawDirection = endAnchor - startAnchor
+        }
+
+        let direction = simd_normalize(rawDirection)
+        let halfLength = Float(length) * 0.5
+        let startPosition = startAnchor + direction * halfLength
+        let endPosition = endAnchor - direction * halfLength
+
+        return SunBurstRayAnimationSpec(
+            startPosition: scnVector(from: startPosition),
+            endPosition: scnVector(from: endPosition),
+            direction: direction,
+            baseOpacity: CGFloat.random(in: layer.opacityRange, using: &generator),
+            length: length,
+            thickness: CGFloat.random(in: layer.thicknessRange, using: &generator),
+            whiteValue: CGFloat.random(in: layer.whiteRange, using: &generator),
+            emissionAlpha: CGFloat.random(in: layer.emissionRange, using: &generator),
+            delay: TimeInterval.random(
+                in: 0...(Self.sunDetailTransitionDuration * 0.82),
+                using: &generator
+            ),
+            fadeInDuration: TimeInterval.random(in: 0.02...0.04, using: &generator),
+            flyDuration: TimeInterval.random(
+                in: Self.sunDetailTransitionDuration * 0.18...Self.sunDetailTransitionDuration * 0.32,
+                using: &generator
+            ),
+            fadeOutDuration: TimeInterval.random(in: 0.05...0.09, using: &generator),
+            shrinkScaleY: Float.random(in: 0.48...0.82, using: &generator),
+            depthThicknessMultiplier: layer.depthThicknessMultiplier,
+            layer: layer
+        )
+    }
+
+    private func makeSunBurstRayDepthLayer(screenForwardness: CGFloat) -> SunBurstRayDepthLayer {
+        switch screenForwardness {
+        case ..<0.34:
+            return .background
+        case ..<0.68:
+            return .middle
+        default:
+            return .foreground
+        }
+    }
+
+    private func normalizedScreenForwardness(for depth: Float) -> CGFloat {
+        let clampedDepth = min(max(depth, -0.82), 0.86)
+        return CGFloat((clampedDepth + 0.82) / 1.68)
+    }
+
+    private func ellipseBoundaryDistance(
+        for angle: Float,
+        horizontalRadius: Float,
+        verticalRadius: Float
+    ) -> Float {
+        let cosine = cos(angle)
+        let sine = sin(angle)
+        let denominator = sqrt(
+            (cosine * cosine) / (horizontalRadius * horizontalRadius)
+                + (sine * sine) / (verticalRadius * verticalRadius)
+        )
+        guard denominator > 0.0001 else {
+            return min(horizontalRadius, verticalRadius)
+        }
+        return 1 / denominator
+    }
+
+    private func scnVector(from value: SIMD3<Float>) -> SCNVector3 {
+        SCNVector3(value.x, value.y, value.z)
     }
 
     private func makeMoveAction(
