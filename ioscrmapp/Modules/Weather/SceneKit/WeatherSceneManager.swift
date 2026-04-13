@@ -1620,12 +1620,18 @@ final class WeatherSceneManager: ObservableObject {
         stopSunAmbientAnimations(resetOrientation: true, resetScale: true)
         stopDetailIntroSpin(resetOrientation: true)
         applyDisplayGroupRotation(transitionRestRotation)
-        runDetailIntroSpin(on: sunNode, actionKey: sunSpinAnimationKey) { [weak self] in
+
+        // 两个节点同步启动旋转动画，不传 completion
+        runDetailIntroSpin(on: sunNode, actionKey: sunSpinAnimationKey)
+        runDetailIntroSpin(on: detailTitleNode, actionKey: sunTitleSpinAnimationKey)
+
+        // 统一在动画时长结束后归零并触发回调，确保两者同步
+        DispatchQueue.main.asyncAfter(deadline: .now() + detailIntroSpinDuration) { [weak self] in
             guard let self else { return }
+            self.stopDetailIntroSpin(resetOrientation: true)
             self.isPlayingSceneAnimation = false
             self.applyDisplayGroupRotation(self.transitionRestRotation)
         }
-        runDetailIntroSpin(on: detailTitleNode, actionKey: sunTitleSpinAnimationKey)
     }
 
     private func stopDetailIntroSpin(resetOrientation: Bool) {
