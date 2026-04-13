@@ -11,6 +11,7 @@ struct WeatherMainView: View {
     @State private var isSunTransitionActive = false
     @State private var detailOverlayOpacity = 0.0
     @State private var sceneInteractionResetVersion = 0
+    @State private var isHourlyStripDragging = false
     // Toggle for the detail-page background burst so we can quickly compare with/without the effect.
     private let isSunRayBurstEnabled = true
     @State private var sunRayBurstTrigger = 0
@@ -125,7 +126,8 @@ struct WeatherMainView: View {
 
                 mainForecastSection(
                     width: proxy.size.width * 0.8,
-                    bottomPadding: hourlyStripBottomPadding
+                    bottomPadding: hourlyStripBottomPadding,
+                    screenHeight: proxy.size.height
                 )
             }
 
@@ -157,27 +159,38 @@ struct WeatherMainView: View {
         }
     }
 
-    private func mainForecastSection(width: CGFloat, bottomPadding: CGFloat) -> some View {
-        VStack(spacing: 0) {
+    private func mainForecastSection(width: CGFloat, bottomPadding: CGFloat, screenHeight: CGFloat) -> some View {
+        let adaptationProgress = heightAdaptationProgress(for: screenHeight)
+        let restingTitleOffset: CGFloat = 14
+        // Lift the title further on smaller devices so the bubble/title clearance
+        // stays visually consistent across screen heights.
+        let draggingTitleOffset = -20 + adaptationProgress * 4
+
+        return VStack(spacing: 0) {
             Text(weather.title)
                 .font(.du(26, weight: .heavy))
                 .foregroundColor(Color.black.opacity(0.92))
                 .padding(.bottom, 8)
-                .offset(y: 14)
+                .offset(y: isHourlyStripDragging ? draggingTitleOffset : restingTitleOffset)
+                .animation(.spring(response: 0.26, dampingFraction: 0.86), value: isHourlyStripDragging)
 
             WeatherHourlyStrip(
                 points: hourlyPoints,
-                selectedID: selectedTimelineID
-            ) { entry, isDragSelection in
-                guard entry.id != selectedTimelineID else { return }
-                withAnimation(.spring(response: 0.28, dampingFraction: 0.82)) {
-                    selectedTimelineID = entry.id
+                selectedID: selectedTimelineID,
+                onSelect: { entry, isDragSelection in
+                    guard entry.id != selectedTimelineID else { return }
+                    withAnimation(.spring(response: 0.28, dampingFraction: 0.82)) {
+                        selectedTimelineID = entry.id
+                    }
+                    sceneManager.setTemperature(
+                        entry.temperature,
+                        animated: WeatherHourlyStripCore.shouldAnimateSceneTemperatureChange(isDragging: isDragSelection)
+                    )
+                },
+                onDragStateChange: { isDragging in
+                    isHourlyStripDragging = isDragging
                 }
-                sceneManager.setTemperature(
-                    entry.temperature,
-                    animated: WeatherHourlyStripCore.shouldAnimateSceneTemperatureChange(isDragging: isDragSelection)
-                )
-            }
+            )
             .frame(width: width)
             .offset(y: -6)
         }
@@ -301,6 +314,9 @@ struct WeatherMainView: View {
 
     private func triggerSunRayBurst(at screenPoint: CGPoint) {
         guard isSunRayBurstEnabled, isSunDetailPresented, !isSunTransitionActive else { return }
+        // Detail-page sun taps should still produce an immediate tap cue even
+        // though they no longer transition screens.
+        WeatherAudioPlayer.shared.playShapeTap()
         sunRayBurstCenter = screenPoint
         sunRayBurstTrigger += 1
     }
