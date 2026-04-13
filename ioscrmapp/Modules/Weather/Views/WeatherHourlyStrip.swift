@@ -12,159 +12,7 @@ struct WeatherHourlyStrip: View {
 
     var body: some View {
         GeometryReader { proxy in
-            let sidePadding: CGFloat = 10
-            let contentWidth = proxy.size.width - sidePadding * 2
-            let endCapDiameter: CGFloat = 34
-            let endCapWidth: CGFloat = endCapDiameter / 2
-            let railHeight: CGFloat = 34
-            let topOverlayHeight: CGFloat = 32
-            let bubbleDiameter: CGFloat = 44
-            let maxBarTopExtension: CGFloat = 18
-            let dragFocusAnimation = Animation.linear(duration: 0.05)
-            let dragStateAnimation = Animation.easeOut(duration: 0.10)
-
-            let coreWidth = max(0, contentWidth - endCapWidth * 2)
-            let itemCount = max(points.count, 1)
-            let itemWidth = coreWidth / CGFloat(itemCount)
-            let focusedIndex = points.firstIndex(where: { $0.id == selectedID }) ?? 0
-            let focusedX = sidePadding + endCapWidth + itemWidth * CGFloat(focusedIndex) + itemWidth / 2
-            let range = WeatherHourlyStripCore.temperatureRange(points)
-            let bubbleY = max(bubbleDiameter / 2, topOverlayHeight - 10)
-            let leftEndCapColor = points.first.map {
-                barColor(for: $0, range: range, isFocused: focusedIndex == 0)
-            } ?? Color.black.opacity(0.12)
-            let rightEndCapColor = points.last.map {
-                barColor(for: $0, range: range, isFocused: focusedIndex == points.count - 1)
-            } ?? Color.black.opacity(0.12)
-
-            let highIndex = points.indices.max(by: { points[$0].temperature < points[$1].temperature }) ?? 0
-            let lowIndex = points.indices.min(by: { points[$0].temperature < points[$1].temperature }) ?? 0
-            let idleBubbleY = topOverlayHeight + railHeight / 2
-            let sunriseIndex = points.firstIndex(where: { $0.hour24 == 6 })
-            let sunsetIndex = points.firstIndex(where: { $0.hour24 == 18 })
-
-            VStack(spacing: 6) {
-                ZStack(alignment: .topLeading) {
-                    HStack(spacing: 0) {
-                        Circle()
-                            .fill(leftEndCapColor)
-                            .frame(width: endCapDiameter, height: railHeight)
-                            .frame(width: endCapWidth, alignment: .leading)
-                            .frame(height: railHeight + maxBarTopExtension, alignment: .bottom)
-                            .clipped()
-
-                        HStack(spacing: 0) {
-                            ForEach(Array(points.enumerated()), id: \.element.id) { index, point in
-                                let topExtension = WeatherHourlyStripCore.barTopExtension(
-                                    index: index,
-                                    focusedIndex: focusedIndex,
-                                    isDragging: isDragging
-                                )
-
-                                Rectangle()
-                                    .fill(barColor(for: point, range: range, isFocused: index == focusedIndex))
-                                    .frame(width: itemWidth, height: railHeight + topExtension)
-                                    .frame(width: itemWidth, height: railHeight + maxBarTopExtension, alignment: .bottom)
-                                    .contentShape(Rectangle())
-                                    .onTapGesture {
-                                        selectPoint(at: index, isDragSelection: false)
-                                    }
-                            }
-                        }
-                        .frame(width: coreWidth, height: railHeight + maxBarTopExtension, alignment: .bottom)
-                        .animation(dragStateAnimation, value: isDragging)
-                        .transaction { transaction in
-                            if isDragging {
-                                transaction.animation = nil
-                            }
-                        }
-
-                        Circle()
-                            .fill(rightEndCapColor)
-                            .frame(width: endCapDiameter, height: railHeight)
-                            .frame(width: endCapWidth, alignment: .trailing)
-                            .frame(height: railHeight + maxBarTopExtension, alignment: .bottom)
-                            .clipped()
-                    }
-                    .frame(width: contentWidth, height: railHeight + maxBarTopExtension, alignment: .bottom)
-                    .offset(x: sidePadding, y: topOverlayHeight - maxBarTopExtension)
-
-                    if let sunriseIndex {
-                        solarSplitLegend(
-                            marker: .sunrise,
-                            x: xBoundaryPosition(for: sunriseIndex, itemWidth: itemWidth, sidePadding: sidePadding, endCapWidth: endCapWidth),
-                            y: idleBubbleY
-                        )
-                    }
-
-                    if let sunsetIndex {
-                        solarSplitLegend(
-                            marker: .sunset,
-                            x: xBoundaryPosition(for: sunsetIndex, itemWidth: itemWidth, sidePadding: sidePadding, endCapWidth: endCapWidth),
-                            y: idleBubbleY
-                        )
-                    }
-
-                    if isDragging, points.indices.contains(focusedIndex) {
-                        timeBubble(
-                            text: WeatherHourlyStripCore.bubbleText(hour24: points[focusedIndex].hour24),
-                            x: focusedX,
-                            y: bubbleY,
-                            diameter: bubbleDiameter
-                        )
-                    } else {
-                        temperatureLabel(
-                            text: "\(range.high)",
-                            x: xPosition(for: highIndex, itemWidth: itemWidth, sidePadding: sidePadding, endCapWidth: endCapWidth),
-                            y: idleBubbleY
-                        )
-
-                        if lowIndex != highIndex {
-                            temperatureLabel(
-                                text: "\(range.low)",
-                                x: xPosition(for: lowIndex, itemWidth: itemWidth, sidePadding: sidePadding, endCapWidth: endCapWidth),
-                                y: idleBubbleY
-                            )
-                        }
-                    }
-                }
-                .frame(height: topOverlayHeight + railHeight)
-                .contentShape(Rectangle())
-                .gesture(
-                    DragGesture(minimumDistance: 0)
-                        .onChanged { value in
-                            if !isDragging {
-                                hapticPlayer.prepare()
-                            }
-                            isDragging = true
-                            let coreStartX = sidePadding + endCapWidth
-                            let localX = min(max(value.location.x - coreStartX, 0), coreWidth)
-                            let index = WeatherHourlyStripCore.focusedIndex(
-                                forLocationX: localX,
-                                itemWidth: itemWidth,
-                                count: points.count
-                            )
-                            selectPoint(at: index, isDragSelection: true)
-                        }
-                        .onEnded { _ in
-                            withAnimation(.easeOut(duration: 0.18)) {
-                                isDragging = false
-                            }
-                        }
-                )
-
-                HStack(spacing: 0) {
-                    ForEach(tickIndices(), id: \.self) { index in
-                        Text(tickLabel(for: index))
-                            .font(.du(9, weight: .medium))
-                            .foregroundColor(Color.black.opacity(0.52))
-                            .frame(width: contentWidth / 8)
-                    }
-                }
-                .frame(width: contentWidth, alignment: .leading)
-                .padding(.leading, sidePadding)
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            hourlyStripContent(in: proxy.size)
         }
         .frame(height: 102)
         .onAppear {
@@ -173,6 +21,215 @@ struct WeatherHourlyStrip: View {
             }
             hapticPlayer.prepare()
         }
+    }
+
+    private func hourlyStripContent(in size: CGSize) -> some View {
+        let layout = WeatherHourlyStripLayout(
+            size: size,
+            points: points,
+            selectedID: selectedID
+        )
+
+        return VStack(spacing: 6) {
+            stripChart(layout: layout)
+            tickRow(layout: layout)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    private func stripChart(layout: WeatherHourlyStripLayout) -> some View {
+        ZStack(alignment: .topLeading) {
+            railView(layout: layout)
+
+            if let sunriseIndex = layout.sunriseIndex {
+                solarSplitLegend(
+                    marker: .sunrise,
+                    x: xBoundaryPosition(
+                        for: sunriseIndex,
+                        itemWidth: layout.itemWidth,
+                        sidePadding: layout.sidePadding,
+                        endCapWidth: layout.endCapWidth
+                    ),
+                    y: layout.idleBubbleY
+                )
+            }
+
+            if let sunsetIndex = layout.sunsetIndex {
+                solarSplitLegend(
+                    marker: .sunset,
+                    x: xBoundaryPosition(
+                        for: sunsetIndex,
+                        itemWidth: layout.itemWidth,
+                        sidePadding: layout.sidePadding,
+                        endCapWidth: layout.endCapWidth
+                    ),
+                    y: layout.idleBubbleY
+                )
+            }
+
+            overlayContent(layout: layout)
+        }
+        .frame(height: layout.topOverlayHeight + layout.railHeight)
+        .contentShape(Rectangle())
+        .gesture(dragGesture(layout: layout))
+    }
+
+    private func railView(layout: WeatherHourlyStripLayout) -> some View {
+        HStack(spacing: 0) {
+            endCap(
+                color: points.first.map {
+                    barColor(for: $0, range: layout.range, isFocused: layout.focusedIndex == 0)
+                } ?? Color.black.opacity(0.12),
+                width: layout.endCapWidth,
+                diameter: layout.endCapDiameter,
+                height: layout.railHeight,
+                maxBarTopExtension: layout.maxBarTopExtension,
+                alignment: .leading
+            )
+
+            HStack(spacing: 0) {
+                ForEach(Array(points.indices), id: \.self) { index in
+                    barSegment(index: index, layout: layout)
+                }
+            }
+            .frame(
+                width: layout.coreWidth,
+                height: layout.railHeight + layout.maxBarTopExtension,
+                alignment: .bottom
+            )
+            .animation(.easeOut(duration: 0.10), value: isDragging)
+            .transaction { transaction in
+                if isDragging {
+                    transaction.animation = nil
+                }
+            }
+
+            endCap(
+                color: points.last.map {
+                    barColor(for: $0, range: layout.range, isFocused: layout.focusedIndex == points.count - 1)
+                } ?? Color.black.opacity(0.12),
+                width: layout.endCapWidth,
+                diameter: layout.endCapDiameter,
+                height: layout.railHeight,
+                maxBarTopExtension: layout.maxBarTopExtension,
+                alignment: .trailing
+            )
+        }
+        .frame(
+            width: layout.contentWidth,
+            height: layout.railHeight + layout.maxBarTopExtension,
+            alignment: .bottom
+        )
+        .offset(x: layout.sidePadding, y: layout.topOverlayHeight - layout.maxBarTopExtension)
+    }
+
+    private func barSegment(index: Int, layout: WeatherHourlyStripLayout) -> some View {
+        let point = points[index]
+        let topExtension = WeatherHourlyStripCore.barTopExtension(
+            index: index,
+            focusedIndex: layout.focusedIndex,
+            isDragging: isDragging
+        )
+
+        return Rectangle()
+            .fill(barColor(for: point, range: layout.range, isFocused: index == layout.focusedIndex))
+            .frame(width: layout.itemWidth, height: layout.railHeight + topExtension)
+            .frame(
+                width: layout.itemWidth,
+                height: layout.railHeight + layout.maxBarTopExtension,
+                alignment: .bottom
+            )
+            .contentShape(Rectangle())
+            .onTapGesture {
+                selectPoint(at: index, isDragSelection: false)
+            }
+    }
+
+    private func endCap(
+        color: Color,
+        width: CGFloat,
+        diameter: CGFloat,
+        height: CGFloat,
+        maxBarTopExtension: CGFloat,
+        alignment: Alignment
+    ) -> some View {
+        Circle()
+            .fill(color)
+            .frame(width: diameter, height: height)
+            .frame(width: width, alignment: alignment)
+            .frame(height: height + maxBarTopExtension, alignment: .bottom)
+            .clipped()
+    }
+
+    @ViewBuilder
+    private func overlayContent(layout: WeatherHourlyStripLayout) -> some View {
+        if isDragging, points.indices.contains(layout.focusedIndex) {
+            timeBubble(
+                text: WeatherHourlyStripCore.bubbleText(hour24: points[layout.focusedIndex].hour24),
+                x: layout.focusedX,
+                y: layout.bubbleY,
+                diameter: layout.bubbleDiameter
+            )
+        } else {
+            temperatureLabel(
+                text: "\(layout.range.high)",
+                x: xPosition(
+                    for: layout.highIndex,
+                    itemWidth: layout.itemWidth,
+                    sidePadding: layout.sidePadding,
+                    endCapWidth: layout.endCapWidth
+                ),
+                y: layout.idleBubbleY
+            )
+
+            if layout.lowIndex != layout.highIndex {
+                temperatureLabel(
+                    text: "\(layout.range.low)",
+                    x: xPosition(
+                        for: layout.lowIndex,
+                        itemWidth: layout.itemWidth,
+                        sidePadding: layout.sidePadding,
+                        endCapWidth: layout.endCapWidth
+                    ),
+                    y: layout.idleBubbleY
+                )
+            }
+        }
+    }
+
+    private func dragGesture(layout: WeatherHourlyStripLayout) -> some Gesture {
+        DragGesture(minimumDistance: 0)
+            .onChanged { value in
+                if !isDragging {
+                    hapticPlayer.prepare()
+                }
+                isDragging = true
+                let localX = min(max(value.location.x - layout.coreStartX, 0), layout.coreWidth)
+                let index = WeatherHourlyStripCore.focusedIndex(
+                    forLocationX: localX,
+                    itemWidth: layout.itemWidth,
+                    count: points.count
+                )
+                selectPoint(at: index, isDragSelection: true)
+            }
+            .onEnded { _ in
+                withAnimation(.easeOut(duration: 0.18)) {
+                    isDragging = false
+                }
+            }
+    }
+
+    private func tickRow(layout: WeatherHourlyStripLayout) -> some View {
+        HStack(spacing: 0) {
+            ForEach(tickIndices(), id: \.self) { index in
+                Text(tickLabel(for: index))
+                    .font(.du(9, weight: .medium))
+                    .foregroundColor(Color.black.opacity(0.52))
+                    .frame(width: layout.contentWidth / 8)
+            }
+        }
+        .frame(width: layout.contentWidth, alignment: .leading)
+        .padding(.leading, layout.sidePadding)
     }
 
     private func tickIndices() -> [Int] {

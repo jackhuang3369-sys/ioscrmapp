@@ -61,11 +61,7 @@ enum WeatherHourlyStripCore {
         return 0.54 + clamped * 0.16
     }
 
-    static func normalizedTemperatureValue(
-        temperature: Int,
-        minTemperature: Int,
-        maxTemperature: Int
-    ) -> Double {
+    static func normalizedTemperatureValue(temperature: Int, minTemperature: Int, maxTemperature: Int) -> Double {
         let lower = min(minTemperature, maxTemperature)
         let upper = max(minTemperature, maxTemperature)
         let span = max(upper - lower, 1)
@@ -73,18 +69,24 @@ enum WeatherHourlyStripCore {
         return min(max(normalized, 0), 1)
     }
 
-    static func groupedTemperatures(
-        _ points: [WeatherHourlyStripPoint],
-        blockSize: Int
-    ) -> [Int] {
-        guard blockSize > 0 else { return points.map(\.temperature) }
-
-        return stride(from: 0, to: points.count, by: blockSize).map { start in
-            let end = min(start + blockSize, points.count)
-            let slice = points[start..<end]
-            let total = slice.reduce(0) { $0 + $1.temperature }
-            return Int(round(Double(total) / Double(slice.count)))
+    static func groupedTemperatures(_ points: [WeatherHourlyStripPoint], blockSize: Int) -> [Int] {
+        guard blockSize > 1, !points.isEmpty else {
+            return points.map(\.temperature)
         }
+
+        var grouped = points.map(\.temperature)
+
+        for groupStart in stride(from: 0, to: points.count, by: blockSize) {
+            let groupEnd = min(groupStart + blockSize, points.count)
+            let groupPoints = points[groupStart..<groupEnd]
+            let average = Int(round(Double(groupPoints.map(\.temperature).reduce(0, +)) / Double(groupPoints.count)))
+
+            for index in groupStart..<groupEnd {
+                grouped[index] = average
+            }
+        }
+
+        return grouped
     }
 
     static func emphasisScale(index: Int, focusedIndex: Int) -> CGFloat {
