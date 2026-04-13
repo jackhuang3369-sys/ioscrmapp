@@ -5,26 +5,51 @@ final class WeatherAudioPlayer {
 
     static let shared = WeatherAudioPlayer()
 
+    private let audioQueue = DispatchQueue(label: "WeatherAudioPlayer.audioQueue")
     private var oneshotPool: [String: [AVAudioPlayer]] = [:]
+    private var timelineTickPlayers: [AVAudioPlayer] = []
+    private var timelineTickPlayerIndex = 0
 
     private init() {
         try? AVAudioSession.sharedInstance().setCategory(.ambient, options: [.mixWithOthers])
         try? AVAudioSession.sharedInstance().setActive(true)
+        timelineTickPlayers = makePlayers(name: "ui-time-scroll-click-1", count: 6)
     }
 
     func playShapeTap() {
-        playOneshot("shape-tap-1", volume: 0.35)
+        audioQueue.async { [self] in
+            playOneshotNow("shape-tap-1", volume: 0.35)
+        }
+    }
+
+    func playTimelineScrollTick() {
+        audioQueue.async { [self] in
+            guard !timelineTickPlayers.isEmpty else {
+                playOneshotNow("ui-time-scroll-click-1", volume: 0.24)
+                return
+            }
+
+            let player = timelineTickPlayers[timelineTickPlayerIndex]
+            timelineTickPlayerIndex = (timelineTickPlayerIndex + 1) % timelineTickPlayers.count
+            player.currentTime = 0
+            player.volume = 0.24
+            player.play()
+        }
     }
 
     func playSpinLoop(fast: Bool) {
-        playOneshot(fast ? "spin-fast-4" : "spin-slow-4", volume: 0.26)
+        audioQueue.async { [self] in
+            playOneshotNow(fast ? "spin-fast-4" : "spin-slow-4", volume: 0.26)
+        }
     }
 
     func playDetailedEnter() {
-        playOneshot("menu-open-1", volume: 0.40)
+        audioQueue.async { [self] in
+            playOneshotNow("menu-open-1", volume: 0.40)
+        }
     }
 
-    private func playOneshot(_ name: String, volume: Float) {
+    private func playOneshotNow(_ name: String, volume: Float) {
         var pool = oneshotPool[name] ?? []
         let reusable = pool.first { !$0.isPlaying }
         let player: AVAudioPlayer
@@ -46,6 +71,16 @@ final class WeatherAudioPlayer {
 
         player.volume = volume
         player.play()
+    }
+
+    private func makePlayers(name: String, count: Int) -> [AVAudioPlayer] {
+        guard let url = audioURL(name) else { return [] }
+
+        return (0..<count).compactMap { _ in
+            guard let player = try? AVAudioPlayer(contentsOf: url) else { return nil }
+            player.prepareToPlay()
+            return player
+        }
     }
 
     private func audioURL(_ name: String) -> URL? {

@@ -28,6 +28,7 @@ final class WeatherSceneManager: ObservableObject {
     private var detailTitleNode: SCNNode?
     private var sunBurstNode: SCNNode?
     private var temperatureNode: SCNNode?
+    private var pendingTemperatureNode: SCNNode?
     private var sunBurstRayDirections: [ObjectIdentifier: SCNVector3] = [:]
     private var sunBurstRayStartPositions: [ObjectIdentifier: SCNVector3] = [:]
     private var sunBurstRayBaseOpacities: [ObjectIdentifier: CGFloat] = [:]
@@ -42,7 +43,7 @@ final class WeatherSceneManager: ObservableObject {
     private let detailAutoSpinSpeed = -Float.pi * 2 / 30
     private let mainTemperatureScale: Float = 1.5
     private let mainSunScale: CGFloat = 1.12
-    private let mainSunPositionY: Float = 4.40
+    private let mainSunPositionY: Float = 4.45
     private let mainTemperaturePositionY: Float = -2.4
     private let mainCameraPosition = SCNVector3(0, 0.02, 24.9)
     private let detailCameraPosition = SCNVector3(0, 0.38, 18.8)
@@ -267,6 +268,7 @@ final class WeatherSceneManager: ObservableObject {
         detailTitleNode = nil
         sunBurstNode = nil
         temperatureNode = nil
+        pendingTemperatureNode = nil
         sunNode = nil
         sunBurstRayDirections.removeAll()
         sunBurstRayStartPositions.removeAll()
@@ -1311,6 +1313,10 @@ final class WeatherSceneManager: ObservableObject {
         guard mode == .main || mode == .sunTransition else { return }
         guard let root = conditionGroup else { return }
 
+        pendingTemperatureNode?.removeAllActions()
+        pendingTemperatureNode?.removeFromParentNode()
+        pendingTemperatureNode = nil
+
         let replacement = makeTemperatureNode(text: "\(currentTemperature)")
         replacement.name = SceneNode.temperature
         replacement.position = SCNVector3(0, mainTemperaturePositionY, 0.12) // 同步 buildScene 数字位置
@@ -1319,17 +1325,23 @@ final class WeatherSceneManager: ObservableObject {
         root.addChildNode(replacement)
 
         if animated {
+            pendingTemperatureNode = replacement
             SCNTransaction.begin()
-            SCNTransaction.animationDuration = 0.22
+            SCNTransaction.animationDuration = 0.12
             temperatureNode?.opacity = 0
             replacement.opacity = targetOpacity
             SCNTransaction.completionBlock = { [weak self] in
-                self?.temperatureNode?.removeFromParentNode()
-                self?.temperatureNode = replacement
+                guard let self else { return }
+                self.temperatureNode?.removeFromParentNode()
+                self.temperatureNode = replacement
+                if self.pendingTemperatureNode === replacement {
+                    self.pendingTemperatureNode = nil
+                }
             }
             SCNTransaction.commit()
         } else {
             temperatureNode?.removeFromParentNode()
+            pendingTemperatureNode = nil
             temperatureNode = replacement
         }
     }

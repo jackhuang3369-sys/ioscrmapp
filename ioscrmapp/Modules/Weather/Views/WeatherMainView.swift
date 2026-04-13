@@ -4,7 +4,8 @@ import SceneKit
 struct WeatherMainView: View {
     @Environment(\.dismiss) private var dismiss
     @StateObject private var sceneManager = WeatherSceneManager(temperature: MockWeatherData.today.temperature, mode: .sunTransition)
-    @State private var selectedTimelineID = MockWeatherData.timeline.first?.id ?? "now"
+    @State private var selectedTimelineID = ""
+    @State private var hourlyPoints: [WeatherHourlyStripPoint] = []
     @State private var isSunDetailPresented = false
     @State private var isSunTransitionActive = false
     @State private var detailOverlayOpacity = 0.0
@@ -25,8 +26,20 @@ struct WeatherMainView: View {
         self.onAIChatNavigation = onAIChatNavigation
     }
     
-    private var selectedEntry: WeatherTimelineEntry {
-        MockWeatherData.timeline.first(where: { $0.id == selectedTimelineID }) ?? MockWeatherData.timeline[0]
+    private var selectedEntry: WeatherHourlyStripPoint {
+        if let matched = hourlyPoints.first(where: { $0.id == selectedTimelineID }) {
+            return matched
+        }
+        if let first = hourlyPoints.first {
+            return first
+        }
+        return WeatherHourlyStripPoint(
+            id: "fallback",
+            hour24: 0,
+            label: "NOW",
+            temperature: weather.temperature,
+            isCurrent: true
+        )
     }
     
     var body: some View {
@@ -52,6 +65,16 @@ struct WeatherMainView: View {
         }
         .preferredColorScheme(.light)
         .onAppear {
+            if hourlyPoints.isEmpty {
+                hourlyPoints = WeatherHourlyStripCore.build24HourStrip(
+                    referenceDate: Date(),
+                    calendar: .current,
+                    currentTemperature: weather.temperature
+                )
+            }
+            if selectedTimelineID.isEmpty {
+                selectedTimelineID = hourlyPoints.first?.id ?? ""
+            }
             WeatherAudioPlayer.shared.playDetailedEnter()
             sceneManager.setTemperature(selectedEntry.temperature, animated: false)
         }
@@ -108,33 +131,29 @@ struct WeatherMainView: View {
     private func mainForecastSection(width: CGFloat, bottomPadding: CGFloat) -> some View {
         VStack(spacing: 0) {
             Text(weather.title)
-                .font(.du(26, weight: .bold))
+                .font(.du(26, weight: .heavy))
                 .foregroundColor(Color.black.opacity(0.92))
                 .padding(.bottom, 8)
+                .offset(y: 14)
 
             WeatherHourlyStrip(
-                timeline: MockWeatherData.timeline.map { entry in
-                    WeatherTimelineEntry(
-                        id: entry.id,
-                        label: entry.label,
-                        temperature: entry.temperature,
-                        condition: entry.condition,
-                        isCurrent: entry.isCurrent
-                    )
-                },
+                points: hourlyPoints,
                 selectedID: selectedTimelineID
-            ) { entry in
+            ) { entry, isDragSelection in
                 guard entry.id != selectedTimelineID else { return }
-                WeatherAudioPlayer.shared.playShapeTap()
                 withAnimation(.spring(response: 0.28, dampingFraction: 0.82)) {
                     selectedTimelineID = entry.id
                 }
-                sceneManager.setTemperature(entry.temperature, animated: true)
+                sceneManager.setTemperature(
+                    entry.temperature,
+                    animated: WeatherHourlyStripCore.shouldAnimateSceneTemperatureChange(isDragging: isDragSelection)
+                )
             }
             .frame(width: width)
+            .offset(y: -6)
         }
         .opacity(isSunDetailPresented ? 0 : 1)
-        .offset(y: isSunDetailPresented ? 138 : 0)
+        .offset(y: isSunDetailPresented ? 138 : -23)
         .allowsHitTesting(!isSunDetailPresented)
         .animation(.easeInOut(duration: 0.24), value: isSunDetailPresented)
         .padding(.bottom, bottomPadding)
@@ -173,11 +192,6 @@ struct WeatherMainView: View {
                 .font(.du(13, weight: .bold))
                 .kerning(2.8)
                 .foregroundColor(Color.black.opacity(0.44))
-            
-            Text(weather.dateText)
-                .font(.du(11, weight: .semibold))
-                .kerning(1.8)
-                .foregroundColor(Color.black.opacity(0.30))
         }
         .frame(maxWidth: .infinity)
     }
@@ -185,7 +199,7 @@ struct WeatherMainView: View {
     private func mainSceneHeight(for proxy: GeometryProxy) -> CGFloat {
         let adaptationProgress = heightAdaptationProgress(for: proxy.size.height)
         let sceneHeightRatio = 0.74 + adaptationProgress * 0.04
-        return proxy.size.height * sceneHeightRatio
+        return proxy.size.height * sceneHeightRatio - 10
     }
 
     private func hourlyStripBottomPadding(for proxy: GeometryProxy) -> CGFloat {

@@ -12,6 +12,7 @@
 		04E692CB2F5EA2CE0082C59F /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04E692CA2F5EA2CE0082C59F /* ContentView.swift */; };
 		04E692CD2F5EA2CF0082C59F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 04E692CC2F5EA2CF0082C59F /* Assets.xcassets */; };
 		04E692D02F5EA2CF0082C59F /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 04E692CF2F5EA2CF0082C59F /* Preview Assets.xcassets */; };
+		A10000000000000000000071 /* Fonts in Resources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000071 /* Fonts */; };
 		A10000000000000000000001 /* SessionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000001 /* SessionStore.swift */; };
 		A10000000000000000000002 /* AuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000002 /* AuthService.swift */; };
 		A10000000000000000000003 /* AuthModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000003 /* AuthModels.swift */; };
@@ -94,6 +95,7 @@
 		A10000000000000000000067 /* MallCartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000067 /* MallCartView.swift */; };
 		A10000000000000000000068 /* MallImagePreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000068 /* MallImagePreviewView.swift */; };
 		A10000000000000000000069 /* WeatherSpinCore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000069 /* WeatherSpinCore.swift */; };
+		A10000000000000000000070 /* WeatherHourlyStripCore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000070 /* WeatherHourlyStripCore.swift */; };
 		B10000000000000000000001 /* BillingAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000001 /* BillingAPI.swift */; };
 		B10000000000000000000002 /* BillingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000002 /* BillingService.swift */; };
 		B10000000000000000000003 /* BillingModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000003 /* BillingModels.swift */; };
@@ -158,6 +160,7 @@
 		A20000000000000000000011 /* LocalizedTextValue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalizedTextValue.swift; sourceTree = "<group>"; };
 		A20000000000000000000012 /* LanguageSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LanguageSettingsView.swift; sourceTree = "<group>"; };
 		A20000000000000000000013 /* Localizations */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Localizations; sourceTree = "<group>"; };
+		A20000000000000000000071 /* Fonts */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Fonts; sourceTree = "<group>"; };
 		A20000000000000000000014 /* DUButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DUButton.swift; sourceTree = "<group>"; };
 		A20000000000000000000015 /* DUTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DUTextField.swift; sourceTree = "<group>"; };
 		A20000000000000000000016 /* DUPhoneField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DUPhoneField.swift; sourceTree = "<group>"; };
@@ -221,6 +224,7 @@
 		A20000000000000000000067 /* MallCartView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MallCartView.swift; sourceTree = "<group>"; };
 		A20000000000000000000068 /* MallImagePreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MallImagePreviewView.swift; sourceTree = "<group>"; };
 		A20000000000000000000069 /* WeatherSpinCore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherSpinCore.swift; sourceTree = "<group>"; };
+		A20000000000000000000070 /* WeatherHourlyStripCore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherHourlyStripCore.swift; sourceTree = "<group>"; };
 		B20000000000000000000001 /* BillingAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BillingAPI.swift; sourceTree = "<group>"; };
 		B20000000000000000000002 /* BillingService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BillingService.swift; sourceTree = "<group>"; };
 		B20000000000000000000003 /* BillingModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BillingModels.swift; sourceTree = "<group>"; };
@@ -297,6 +301,7 @@
 				A30000000000000000000003 /* Modules */,
 				A30000000000000000000004 /* DesignSystem */,
 				A20000000000000000000013 /* Localizations */,
+				A20000000000000000000071 /* Fonts */,
 				04E692CC2F5EA2CF0082C59F /* Assets.xcassets */,
 				04E692CE2F5EA2CF0082C59F /* Preview Content */,
 			);
@@ -719,6 +724,7 @@
 			children = (
 				A20000000000000000000047 /* MockWeatherData.swift */,
 				A20000000000000000000048 /* WeatherCondition.swift */,
+				A20000000000000000000070 /* WeatherHourlyStripCore.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -994,6 +1000,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A10000000000000000000071 /* Fonts in Resources */,
 				A10000000000000000000013 /* Localizations in Resources */,
 				04E692D02F5EA2CF0082C59F /* Preview Assets.xcassets in Resources */,
 				04E692CD2F5EA2CF0082C59F /* Assets.xcassets in Resources */,
@@ -1118,6 +1125,7 @@
 				04E692C92F5EA2CE0082C59F /* ioscrmappApp.swift in Sources */,
 				A10000000000000000000047 /* MockWeatherData.swift in Sources */,
 				A10000000000000000000048 /* WeatherCondition.swift in Sources */,
+				A10000000000000000000070 /* WeatherHourlyStripCore.swift in Sources */,
 				A1000000000000000000004B /* ParticleController.swift in Sources */,
 				A1000000000000000000004C /* SceneConstants.swift in Sources */,
 				A1000000000000000000004D /* WeatherSceneManager.swift in Sources */,

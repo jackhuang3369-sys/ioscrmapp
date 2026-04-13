@@ -51,6 +51,16 @@
 	<array>
 		<string>audio</string>
 	</array>
+	<key>UIAppFonts</key>
+	<array>
+		<string>Fonts/neumatic-compressed/Neumatic Compressed Black.otf</string>
+		<string>Fonts/neumatic-compressed/Neumatic Compressed Bold.otf</string>
+		<string>Fonts/neumatic-compressed/Neumatic Compressed Extra-Bold.otf</string>
+		<string>Fonts/neumatic-compressed/Neumatic Compressed Light.otf</string>
+		<string>Fonts/neumatic-compressed/Neumatic Compressed Medium.otf</string>
+		<string>Fonts/neumatic-compressed/Neumatic Compressed Regular.otf</string>
+		<string>Fonts/neumatic-compressed/Neumatic Compressed Semi-Bold.otf</string>
+	</array>
 	<key>UILaunchScreen</key>
 	<dict>
 		<key>UILaunchScreen</key>

@@ -1,0 +1,33 @@
+## Context
+The weather main view currently renders a short, discrete timeline strip and updates selected temperature by tap/drag index. The new behavior requires a 24-hour strip with continuous scrubbing, dynamic bar emphasis around the center, and synchronized feedback. Constraints: SwiftUI-first, keep existing WeatherScene temperature sync, preserve current visual language, and support small/large iPhone layouts.
+
+## Goals / Non-Goals
+**Goals:**
+- Deliver a 24-hour hourly strip starting from current hour.
+- Expose min/max temperature and selected-hour bubble.
+- Use grayscale mapping where higher temperature is lighter.
+- Provide drag-centered height profile and hour-to-hour feedback (haptic + tap).
+- Keep fixed 24-hour HH:00 bubble formatting and acceptable frame-time on iPhone 17 class devices.
+
+**Non-Goals:**
+- SceneKit weather model changes.
+- New backend API contracts.
+- Redesign of upper weather hero/header.
+
+## Decisions
+- Build a dedicated hourly-strip view model to generate 24 hourly entries from current local hour; alternative (hard-coded list) rejected for poor realism.
+- Keep WeatherMainView as single source of selected hour; strip emits focused hour updates to existing temperature pipeline.
+- Use normalized temperature-to-gray mapping for block fill; alternative categorical buckets rejected because it loses relative temperature cues.
+- Trigger feedback only when focused hour index changes; alternative per-frame triggering rejected for noise and battery cost.
+- Keep focused-hour bubble text in fixed 24-hour HH:00 format to match target visual behavior across locales.
+
+## Risks / Trade-offs
+- [Dense layout on small screens] → Use adaptive bar width/spacing and horizontal clipping rules.
+- [Over-frequent feedback] → Gate by index transition and debounce ultra-fast oscillation.
+- [Animation cost] → Keep bar count fixed at 24 and avoid expensive effects.
+
+## Migration Plan
+Roll out behind the weather module path only. Validate snapshots + interaction smoke on small/large simulators, then enable by default. Rollback is file-level revert of strip + view-model wiring.
+
+## Open Questions
+None blocking; feedback intensity may need tuning after first QA pass.
