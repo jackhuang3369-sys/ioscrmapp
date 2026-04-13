@@ -12,6 +12,10 @@ struct WeatherSpinInteractionSmokeTests {
         try testFastDragMediumVelocityCommitsOneTurn()
         try testFastDragHighVelocityCommitsMultipleTurns()
         try testFastDragOverHalfCapsAtEightTurns()
+        try testSpinSoundTier_whenReverseReturn_usesSlowSound()
+        try testSpinSoundTier_whenTurnCountIsTwo_usesSlowSound()
+        try testSpinSoundTier_whenTurnCountIsFive_usesMediumSound()
+        try testSpinSoundTier_whenTurnCountIsEight_usesFastSound()
         try testLiveYawUsesOneScreenOneTurnMapping()
         try testFrontFacingHelperTreatsFullTurnsAsFrontFacing()
         try testFrontFacingToleranceBlocksDetailEntryUntilAligned()
@@ -144,6 +148,81 @@ struct WeatherSpinInteractionSmokeTests {
         try require(decision.mode == .forwardMomentumTurns, "fast long drag should use momentum turns")
         try require(decision.targetTurnCount == 8, "fast long drag should cap total turns at eight")
         try require(decision.usesFinalTurnSlowdown, "momentum settle should slow the final turn")
+    }
+
+    private static func testSpinSoundTier_whenReverseReturn_usesSlowSound() throws {
+        let controller = WeatherSpinController(tuning: tuning)
+        let sample = WeatherSpinGestureSample(
+            translationRatio: 0.24,
+            predictedTranslationRatio: 0.26,
+            velocityPointsPerSecond: 220,
+            duration: 0.44
+        )
+        let decision = controller.settleDecision(
+            currentYawDegrees: 86,
+            sample: sample
+        )
+        try require(
+            controller.spinSoundTier(for: sample, decision: decision) == .slow,
+            "reverse settle should keep the slow spin sound"
+        )
+    }
+
+    private static func testSpinSoundTier_whenTurnCountIsTwo_usesSlowSound() throws {
+        let controller = WeatherSpinController(tuning: tuning)
+        let sample = WeatherSpinGestureSample(
+            translationRatio: 0.30,
+            predictedTranslationRatio: 0.35,
+            velocityPointsPerSecond: 1800,
+            duration: 0.11
+        )
+        let decision = controller.settleDecision(
+            currentYawDegrees: 108,
+            sample: sample
+        )
+        try require(decision.targetTurnCount == 2, "reference sample should stay in the low sound band")
+        try require(
+            controller.spinSoundTier(for: sample, decision: decision) == .slow,
+            "two-turn momentum should still use the slow spin sound"
+        )
+    }
+
+    private static func testSpinSoundTier_whenTurnCountIsFive_usesMediumSound() throws {
+        let controller = WeatherSpinController(tuning: tuning)
+        let sample = WeatherSpinGestureSample(
+            translationRatio: 0.52,
+            predictedTranslationRatio: 0.58,
+            velocityPointsPerSecond: 4_200,
+            duration: 0.11
+        )
+        let decision = controller.settleDecision(
+            currentYawDegrees: 188,
+            sample: sample
+        )
+        try require(decision.targetTurnCount == 5, "reference sample should stay in the medium sound band")
+        try require(
+            controller.spinSoundTier(for: sample, decision: decision) == .medium,
+            "three-to-six planned turns should use the medium spin sound"
+        )
+    }
+
+    private static func testSpinSoundTier_whenTurnCountIsEight_usesFastSound() throws {
+        let controller = WeatherSpinController(tuning: tuning)
+        let sample = WeatherSpinGestureSample(
+            translationRatio: 0.84,
+            predictedTranslationRatio: 2.40,
+            velocityPointsPerSecond: 8_400,
+            duration: 0.10
+        )
+        let decision = controller.settleDecision(
+            currentYawDegrees: 210,
+            sample: sample
+        )
+        try require(decision.targetTurnCount == 8, "reference sample should enter the high sound band")
+        try require(
+            controller.spinSoundTier(for: sample, decision: decision) == .fast,
+            "more than six planned turns should use the fastest spin sound"
+        )
     }
 
     private static func testLiveYawUsesOneScreenOneTurnMapping() throws {

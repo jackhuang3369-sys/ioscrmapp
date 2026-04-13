@@ -8,6 +8,24 @@ enum WeatherSpinSettleMode: Equatable {
     case forwardMomentumTurns
 }
 
+enum WeatherSpinSoundTier: Hashable {
+    case slow
+    case medium
+    case fast
+}
+
+struct WeatherSpinSoundTuning {
+    /// Minimum planned turns required before the medium sound tier can play.
+    let mediumMinimumTurnCount: Int
+    /// Planned turns above this value use the fastest sound tier.
+    let mediumMaximumTurnCount: Int
+
+    static let `default` = WeatherSpinSoundTuning(
+        mediumMinimumTurnCount: 3,   //<mediumMinimumTurnCount,低速 ; mediumMinimumTurnCount<=x<=mediumMaximumTurnCount 中速；>mediumMaximumTurnCount,高速
+        mediumMaximumTurnCount: 6
+    )
+}
+
 struct WeatherSpinTuning {
     let fullScreenTurnDegrees: CGFloat
     let slowSwipeMaxDuration: TimeInterval
@@ -22,6 +40,7 @@ struct WeatherSpinTuning {
     let velocityPerTurn: CGFloat
     /// Under quarter-screen distance, swipes faster than this still commit forward turns.
     let shortSwipeSpinMinVelocity: CGFloat
+    let soundTuning: WeatherSpinSoundTuning
 
     static let `default` = WeatherSpinTuning(
         fullScreenTurnDegrees: 360,
@@ -34,7 +53,8 @@ struct WeatherSpinTuning {
         maxMomentumTurns: 8,
         finalTurnSlowdownStartRatio: 0.82,
         velocityPerTurn: 800,
-        shortSwipeSpinMinVelocity: 1650
+        shortSwipeSpinMinVelocity: 1650,
+        soundTuning: .default
     )
 }
 
@@ -78,6 +98,25 @@ struct WeatherSpinController {
 
     func liveYawDegrees(for translationRatio: CGFloat) -> CGFloat {
         translationRatio * tuning.fullScreenTurnDegrees
+    }
+
+    func spinSoundTier(
+        for sample: WeatherSpinGestureSample,
+        decision: WeatherSpinSettleDecision
+    ) -> WeatherSpinSoundTier {
+        _ = sample
+        let soundTuning = tuning.soundTuning
+        let plannedTurns = decision.targetTurnCount
+
+        if plannedTurns > soundTuning.mediumMaximumTurnCount {
+            return .fast
+        }
+
+        if plannedTurns >= soundTuning.mediumMinimumTurnCount {
+            return .medium
+        }
+
+        return .slow
     }
 
     func settleDecision(currentYawDegrees: CGFloat, sample: WeatherSpinGestureSample) -> WeatherSpinSettleDecision {

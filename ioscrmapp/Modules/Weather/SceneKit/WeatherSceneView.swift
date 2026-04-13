@@ -237,8 +237,8 @@ struct WeatherSceneView: UIViewRepresentable {
         @objc private func step(_ link: CADisplayLink) {
             guard let node = manager?.conditionGroup else { return }
 
-            // 入场旋转动画进行中，由 SCNAction 驱动，Coordinator 不干预
-            if manager?.isPlayingEntryAnimation == true {
+            // 场景动画进行中，由 SCNAction 驱动，Coordinator 不干预
+            if manager?.isPlayingSceneAnimation == true {
                 return
             }
 
@@ -440,7 +440,13 @@ struct WeatherSceneView: UIViewRepresentable {
             yawVelocity = 0
             pitchVelocity = 0
             rollVelocity = 0
-            WeatherAudioPlayer.shared.playSpinLoop(fast: resolution.prefersFastAudio)
+            WeatherAudioPlayer.shared.playSpinLoop(
+                tier: spinSoundTier(
+                    prefersFastAudio: resolution.prefersFastAudio,
+                    translation: translation,
+                    view: view
+                )
+            )
             return true
         }
 
@@ -580,6 +586,29 @@ struct WeatherSceneView: UIViewRepresentable {
             return currentYaw >= 0 ? 1 : -1
         }
 
+        private func spinSoundTier(
+            prefersFastAudio: Bool,
+            translation: CGPoint,
+            view: UIView?
+        ) -> WeatherSpinSoundTier {
+            guard prefersFastAudio else { return .slow }
+
+            let referenceWidth = horizontalPanReferenceWidth(for: view)
+            let distanceRatio = abs(translation.x) / max(referenceWidth, 1)
+            return distanceRatio > fastHorizontalHalfTurnRatio ? .fast : .medium
+        }
+
+        private func spinSoundTier(for velocity: CGPoint) -> WeatherSpinSoundTier {
+            let speed = hypot(velocity.x, velocity.y)
+            if speed >= fastHorizontalPanVelocity * 1.6 {
+                return .fast
+            }
+            if speed >= fastHorizontalPanVelocity {
+                return .medium
+            }
+            return .slow
+        }
+
         private func interpolate(_ start: Float, _ end: Float, progress: Float) -> Float {
             start + (end - start) * progress
         }
@@ -680,11 +709,15 @@ struct WeatherSceneView: UIViewRepresentable {
                         view: gesture.view
                     ) {
                         startReverseReturnAnimation(with: v, restPitch: restPitch)
-                        WeatherAudioPlayer.shared.playSpinLoop(fast: hypot(v.x, v.y) > fastHorizontalPanVelocity)
+                        WeatherAudioPlayer.shared.playSpinLoop(
+                            tier: spinSoundTier(for: v)
+                        )
                     }
                 } else {
                     startReverseReturnAnimation(with: v, restPitch: restPitch)
-                    WeatherAudioPlayer.shared.playSpinLoop(fast: hypot(v.x, v.y) > fastHorizontalPanVelocity)
+                    WeatherAudioPlayer.shared.playSpinLoop(
+                        tier: spinSoundTier(for: v)
+                    )
                 }
                 SCNTransaction.begin()
                 SCNTransaction.animationDuration = 0.22

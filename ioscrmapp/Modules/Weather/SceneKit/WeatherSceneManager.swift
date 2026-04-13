@@ -18,10 +18,11 @@ final class WeatherSceneManager: ObservableObject {
     private(set) var scene: SCNScene
     private(set) var conditionGroup: SCNNode?
     private(set) var sunNode: SCNNode?
-    private(set) var isPlayingEntryAnimation = false
     private(set) var restTiltX: Float = -0.012
     private(set) var autoSpinSpeed: Float = 0
     private(set) var currentTemperature: Int
+    /// 场景动画进行中时为 true，Coordinator 不应写入方向。
+    private(set) var isPlayingSceneAnimation = false
 
     private let mode: WeatherSceneMode
     private var cameraNode: SCNNode?
@@ -38,6 +39,7 @@ final class WeatherSceneManager: ObservableObject {
     private var isTemperatureHidden: Bool = false
     private var autoSpinSpeedBeforeInteraction: Float?
     private var transitionCompletionWorkItem: DispatchWorkItem?
+    private var entrySpinWorkItem: DispatchWorkItem?
     private var _birdsScene: SCNScene?   // 防止 ARC 过早释放鸟群场景
     private let weatherDataSubdirectory = "WeatherData"
     private let sunSpinAnimationKey = "sun_spin"
@@ -53,9 +55,9 @@ final class WeatherSceneManager: ObservableObject {
     private let mainRootPosition = SCNVector3(0, -1.94, 0)
     private let detailRootPosition = SCNVector3(0, -0.42, 0)
     private let mainPresentationRotation = SCNVector3(-0.012, 0, 0)
-    private let detailSunPosition = SCNVector3(0, -0.04, -0.1) //太阳离SUN的距离
-    private let detailSunScale: Float = 0.84
-    private let detailTitlePosition = SCNVector3(0, 2.9, 0.34)
+    private let detailSunPosition = SCNVector3(0, 1.4, -0.1) //太阳落点位置
+    private let detailSunScale: Float = 0.68
+    private let detailTitlePosition = SCNVector3(0, 4.0, 0.34)
     private let transitionRestRotation = SCNVector3(-0.004, 0, 0)
 
     init(temperature: Int = MockWeatherData.today.temperature, mode: WeatherSceneMode = .main) {
@@ -166,6 +168,9 @@ final class WeatherSceneManager: ObservableObject {
 
         currentTemperature = temperature
         cancelPendingTransitionWork()
+        cancelEntryAnimation()
+        isPlayingSceneAnimation = true
+        reattachSunSpinAnimations()
         autoSpinSpeed = 0
         stopDetailIntroSpin(resetOrientation: true)
         restTiltX = -0.012
@@ -191,7 +196,11 @@ final class WeatherSceneManager: ObservableObject {
         runDetailTitleHide(on: detailTitleNode)
 
         let completionWorkItem = DispatchWorkItem { [weak self] in
+            self?.isPlayingSceneAnimation = false
             self?.applyDisplayGroupRotation(self?.mainPresentationRotation ?? SCNVector3(0, 0, 0))
+            if let root = self?.sceneRootNode {
+                self?.attachFloatAnimation(to: root)
+            }
             completion()
         }
         transitionCompletionWorkItem = completionWorkItem
@@ -215,9 +224,16 @@ final class WeatherSceneManager: ObservableObject {
         }
 
         cancelPendingTransitionWork()
+        cancelEntryAnimation()
+        // 抑制 Coordinator，避免和 SCNAction 冲突
+        isPlayingSceneAnimation = true
         rotatingGroup.removeAllActions()
         sunNode.removeAllActions()
         root.removeAllActions()
+        // 捕获浮动动画当前位置后移除，避免跳变
+        let presentationPosition = root.presentation.position
+        root.removeAnimation(forKey: "weather_float")
+        root.position = presentationPosition
         cameraNode.removeAllActions()
         temperatureNode.removeAllActions()
         detailTitleNode.removeAllActions()
@@ -246,6 +262,7 @@ final class WeatherSceneManager: ObservableObject {
 
     func pauseAutomaticSpinForInteraction() {
         guard mode == .sunDetail || mode == .sunTransition else { return }
+        cancelEntryAnimation()
         autoSpinSpeedBeforeInteraction = autoSpinSpeed
         autoSpinSpeed = 0
         stopSunAmbientAnimations(resetOrientation: true, resetScale: true)
@@ -382,7 +399,7 @@ final class WeatherSceneManager: ObservableObject {
             title.name = SceneNode.sunTitle
             title.position = detailTitlePosition
             title.opacity = 0
-            title.scale = SCNVector3(0.88, 0.88, 0.88)
+            title.scale = SCNVector3(1, 1, 1)
             rotatingGroup.addChildNode(title)
             detailTitleNode = title
 
@@ -591,7 +608,7 @@ final class WeatherSceneManager: ObservableObject {
         let width = maxBounds.x - minBounds.x
         let height = maxBounds.y - minBounds.y
         node.pivot = SCNMatrix4MakeTranslation(minBounds.x + width / 2, minBounds.y + height / 2, 0)
-        node.scale = SCNVector3(0.16, 0.16, 0.16)
+        node.scale = SCNVector3(0.11, 0.11, 0.11)
         return node
     }
 
@@ -938,6 +955,84 @@ final class WeatherSceneManager: ObservableObject {
         transitionCompletionWorkItem = nil
     }
 
+    // MARK: - 入场动画（正面复位 → 静止2秒 → 旋转3圈 → 停止）
+
+    private func removeSunSpinAnimationsAndResetFront() {
+        sunModelNode?.removeAnimation(forKey: sunSpinAnimationKey)
+        sunModelNode?.eulerAngles.y = 0
+        detailTitleNode?.removeAnimation(forKey: sunTitleSpinAnimationKey)
+        detailTitleNode?.eulerAngles.y = 0
+    }
+
+    private func reattachSunSpinAnimations() {
+        if let sun = sunModelNode {
+            attachSunSpin(to: sun, animationKey: sunSpinAnimationKey)
+        }
+        if let title = detailTitleNode {
+            attachSunSpin(to: title, animationKey: sunTitleSpinAnimationKey)
+        }
+    }
+
+    private func scheduleEntrySpinAnimation() {
+        entrySpinWorkItem?.cancel()
+        let workItem = DispatchWorkItem { [weak self] in
+            self?.runEntrySpinAnimation()
+        }
+        entrySpinWorkItem = workItem
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0, execute: workItem)
+    }
+
+    private func runEntrySpinAnimation() {
+        guard let sunNode, let titleNode = detailTitleNode else { return }
+
+        let totalYawRotation = -Float.pi * 2 * 2  // 2圈
+        let spinDuration: TimeInterval = 60.0  // 30秒/圈 × 2圈
+
+        // 太阳旋转2圈
+        let sunStart = sunNode.eulerAngles
+        let sunEnd = SCNVector3(sunStart.x, sunStart.y + totalYawRotation, sunStart.z)
+        let sunSpin = makeEulerAnglesAction(
+            from: sunStart, to: sunEnd,
+            duration: spinDuration,
+            easing: { $0 }  // 线性匀速
+        )
+
+        // 文字旋转2圈，最终停在0度正面
+        let titleStart = titleNode.eulerAngles
+        let titleEnd = SCNVector3(titleStart.x, titleStart.y + totalYawRotation, titleStart.z)
+        let titleSpin = makeEulerAnglesAction(
+            from: titleStart, to: titleEnd,
+            duration: spinDuration,
+            easing: { $0 }
+        )
+
+        // 太阳旋转完成后解除 Coordinator 抑制
+        sunNode.runAction(sunSpin) { [weak self] in
+            DispatchQueue.main.async {
+                guard let self else { return }
+                self.sunNode?.eulerAngles.y = 0
+                self.isPlayingSceneAnimation = false
+                self.applyDisplayGroupRotation(self.transitionRestRotation)
+            }
+        }
+
+        titleNode.runAction(titleSpin) { [weak self] in
+            DispatchQueue.main.async {
+                self?.detailTitleNode?.eulerAngles.y = 0
+            }
+        }
+    }
+
+    func cancelEntryAnimation() {
+        entrySpinWorkItem?.cancel()
+        entrySpinWorkItem = nil
+        if isPlayingSceneAnimation {
+            sunNode?.removeAllActions()
+            detailTitleNode?.removeAllActions()
+            isPlayingSceneAnimation = false
+        }
+    }
+
     private func runTemperatureDepartureAnimation(on node: SCNNode) {
         let moveAction = SCNAction.move(to: SCNVector3(-10.4, mainTemperaturePositionY, -1.9), duration: 0.42)
         moveAction.timingMode = .easeOut
@@ -1064,13 +1159,6 @@ final class WeatherSceneManager: ObservableObject {
         )
         moveAction.timingMode = .easeOut
 
-        let scaleAction = makeScaleAction(
-            from: node.scale,
-            to: SCNVector3(1, 1, 1),
-            duration: revealDuration,
-            easing: easeOutCubic
-        )
-
         let fadeAction = SCNAction.fadeOpacity(to: 1, duration: revealDuration * 0.78)
         fadeAction.timingMode = .easeOut
 
@@ -1083,7 +1171,7 @@ final class WeatherSceneManager: ObservableObject {
         node.runAction(
             .sequence([
                 .wait(duration: revealDelay),
-                .group([moveAction, scaleAction, fadeAction])
+                .group([moveAction, fadeAction])
             ])
         )
     }
@@ -1218,15 +1306,22 @@ final class WeatherSceneManager: ObservableObject {
         guard mode == .sunDetail || mode == .sunTransition else { return }
         guard let sunNode, let detailTitleNode else { return }
 
+        isPlayingSceneAnimation = true
         stopSunAmbientAnimations(resetOrientation: true, resetScale: true)
         stopDetailIntroSpin(resetOrientation: true)
-        runDetailIntroSpin(on: sunNode, actionKey: sunSpinAnimationKey)
+        applyDisplayGroupRotation(transitionRestRotation)
+        runDetailIntroSpin(on: sunNode, actionKey: sunSpinAnimationKey) { [weak self] in
+            guard let self else { return }
+            self.isPlayingSceneAnimation = false
+            self.applyDisplayGroupRotation(self.transitionRestRotation)
+        }
         runDetailIntroSpin(on: detailTitleNode, actionKey: sunTitleSpinAnimationKey)
     }
 
     private func stopDetailIntroSpin(resetOrientation: Bool) {
         sunNode?.removeAction(forKey: sunSpinAnimationKey)
         detailTitleNode?.removeAction(forKey: sunTitleSpinAnimationKey)
+        isPlayingSceneAnimation = false
 
         guard resetOrientation else { return }
 
@@ -1243,7 +1338,11 @@ final class WeatherSceneManager: ObservableObject {
         }
     }
 
-    private func runDetailIntroSpin(on node: SCNNode, actionKey: String) {
+    private func runDetailIntroSpin(
+        on node: SCNNode,
+        actionKey: String,
+        completion: (() -> Void)? = nil
+    ) {
         let startAngles = node.eulerAngles
         let endAngles = SCNVector3(
             startAngles.x,
@@ -1260,6 +1359,7 @@ final class WeatherSceneManager: ObservableObject {
         node.runAction(spinAction, forKey: actionKey) { [weak node] in
             guard let node else { return }
             node.eulerAngles = SCNVector3(node.eulerAngles.x, 0, node.eulerAngles.z)
+            completion?()
         }
     }
 
