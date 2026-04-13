@@ -113,23 +113,32 @@ struct MockAIChatService: AIChatServicing {
             )
         }
 
-        return AIChatReply(
-            conversationID: conversationID ?? UUID().uuidString,
-            text: "I can help with balance, billing, recharge, and package questions. Tell me what you need and I will answer or recommend a suitable package.",
-            thinkingText: "",
-            actions: [
-                AIChatAction(
-                    title: AIChatLocalizedCopy.actionTitle(for: .recharge, language: language),
-                    target: .recharge,
-                    rawValue: "app://recharge"
-                ),
-                AIChatAction(
-                    title: AIChatLocalizedCopy.actionTitle(for: .offers, language: language),
-                    target: .offers,
-                    rawValue: "app://offers"
-                )
-            ]
-        )
+        do {
+            return try await DeepSeekFallbackService().complete(
+                userMessage: text,
+                context: context,
+                conversationID: conversationID
+            )
+        } catch {
+            aiChatLogger.error("DeepSeek fallback failed: \(error.localizedDescription)")
+            return AIChatReply(
+                conversationID: conversationID ?? UUID().uuidString,
+                text: "I can help with balance, billing, recharge, and package questions. Tell me what you need and I will answer or recommend a suitable package.",
+                thinkingText: "",
+                actions: [
+                    AIChatAction(
+                        title: AIChatLocalizedCopy.actionTitle(for: .recharge, language: language),
+                        target: .recharge,
+                        rawValue: "app://recharge"
+                    ),
+                    AIChatAction(
+                        title: AIChatLocalizedCopy.actionTitle(for: .offers, language: language),
+                        target: .offers,
+                        rawValue: "app://offers"
+                    )
+                ]
+            )
+        }
     }
 
     private func mockOffers() -> [AIChatOffer] {
@@ -195,6 +204,113 @@ struct MockAIChatService: AIChatServicing {
                 resourceSummary: "Unlimited"
             )
         ]
+    }
+}
+
+// MARK: - DeepSeek Fallback
+
+struct DeepSeekConfiguration {
+    let baseURL: URL
+    let apiKey: String
+    let model: String
+    let maxTokens: Int
+    let temperature: Double
+
+    static let `default` = DeepSeekConfiguration(
+        baseURL: URL(string: "https://api.deepseek.com")!,
+        // TODO: 填入你的 DeepSeek API Key（从 platform.deepseek.com 获取）
+        apiKey: ProcessInfo.processInfo.environment["DEEPSEEK_API_KEY"]
+            ?? "sk-68efd72aa6a34620b7aeba1850c5672e",
+        model: "deepseek-chat",
+        maxTokens: 1024,
+        temperature: 0.7
+    )
+}
+
+struct DeepSeekFallbackService {
+    private let configuration: DeepSeekConfiguration
+
+    init(configuration: DeepSeekConfiguration = .default) {
+        self.configuration = configuration
+    }
+
+    func complete(
+        userMessage: String,
+        context: AIChatContext,
+        conversationID: String?
+    ) async throws -> AIChatReply {
+        guard configuration.apiKey != "<YOUR_DEEPSEEK_API_KEY>" else {
+            throw AIChatServiceError.missingConfiguration
+        }
+
+        let url = configuration.baseURL.appendingPathComponent("chat/completions")
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("Bearer \(configuration.apiKey)", forHTTPHeaderField: "Authorization")
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.timeoutInterval = 30
+
+        let body: [String: Any] = [
+            "model": configuration.model,
+            "messages": [
+                ["role": "system", "content": systemPrompt(context: context)],
+                ["role": "user", "content": userMessage]
+            ],
+            "max_tokens": configuration.maxTokens,
+            "temperature": configuration.temperature
+        ]
+        request.httpBody = try JSONSerialization.data(withJSONObject: body)
+
+        let (data, response) = try await URLSession.shared.data(for: request)
+
+        guard let httpResponse = response as? HTTPURLResponse,
+              (200...299).contains(httpResponse.statusCode) else {
+            let statusCode = (response as? HTTPURLResponse)?.statusCode ?? -1
+            aiChatLogger.error("DeepSeek API returned status \(statusCode)")
+            throw AIChatServiceError.backend("DeepSeek API error (HTTP \(statusCode))")
+        }
+
+        return try parseResponse(data, conversationID: conversationID)
+    }
+
+    private func systemPrompt(context: AIChatContext) -> String {
+        """
+        You are an intelligent assistant for a telecom CRM mobile app. \
+        The user's language is \(context.languageCode). \
+        Always reply in the user's language.
+
+        Your capabilities:
+        1. Answer questions about telecom services (billing, recharge, data plans, roaming)
+        2. Provide information about nearby events and promotions (e.g., Red Bull events, brand activities)
+        3. Help with general account inquiries
+        4. Provide helpful suggestions and guidance
+
+        Rules:
+        - Be concise and helpful
+        - If the question is about a specific telecom operation (check balance, pay bill, recharge), \
+        suggest the user use the corresponding app feature
+        - For event/activity queries, provide event information with name, location, date, and description
+        - Do not make up account-specific data (balance amounts, bill details)
+        - Reply in the same language as the user's message
+        """
+    }
+
+    private func parseResponse(_ data: Data, conversationID: String?) throws -> AIChatReply {
+        guard let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let choices = json["choices"] as? [[String: Any]],
+              let firstChoice = choices.first,
+              let message = firstChoice["message"] as? [String: Any],
+              let content = message["content"] as? String,
+              !content.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            throw AIChatServiceError.invalidResponse
+        }
+
+        return AIChatReply(
+            conversationID: conversationID ?? UUID().uuidString,
+            text: content,
+            thinkingText: "",
+            actions: []
+        )
     }
 }
 
