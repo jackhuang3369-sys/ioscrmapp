@@ -50,7 +50,7 @@ struct WeatherSpinTuning {
         quarterScreenFlickThreshold: 0.20,
         halfScreenCommitThreshold: 0.5,
         projectedDistanceMultiplier: 1.22,
-        maxMomentumTurns: 8,
+        maxMomentumTurns: 12,
         finalTurnSlowdownStartRatio: 0.82,
         velocityPerTurn: 800,
         shortSwipeSpinMinVelocity: 1650,

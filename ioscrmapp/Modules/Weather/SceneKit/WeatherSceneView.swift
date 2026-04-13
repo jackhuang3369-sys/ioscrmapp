@@ -3,7 +3,7 @@ import SceneKit
 
 // MARK: - WeatherSceneView
 //
-// Full-screen SceneKit view with pan-gesture rotation and rule-based snapback/spin.
+// Full-screen SceneKit view with pan-gesture rotation and velocity-driven momentum settle.
 // The transparent background lets the SwiftUI sky gradient show through.
 // Rotation is applied to WeatherSceneManager.conditionGroup so lighting
 // remains stationary while the weather model spins.
@@ -109,7 +109,7 @@ struct WeatherSceneView: UIViewRepresentable {
             case easeOutCubic
             case easeOutQuart
             case easeOutQuint
-            case momentumFinalTurnSlowdown
+            case easeOutDecay
         }
 
         private struct OrientationAnimation {
@@ -122,19 +122,13 @@ struct WeatherSceneView: UIViewRepresentable {
             let startRoll: Float
             let endRoll: Float
             let duration: CFTimeInterval
-            let yawSlowdownStartProgress: Float?
-            let yawFinalTurnDistanceRatio: Float?
             var elapsed: CFTimeInterval = 0
         }
 
-        private struct HorizontalSpinResolution {
-            let destinationYaw: Float
-            let duration: CFTimeInterval
-            let yawCurve: EasingCurve
-            let tiltCurve: EasingCurve
-            let prefersFastAudio: Bool
-            let yawSlowdownStartProgress: Float?
-            let yawFinalTurnDistanceRatio: Float?
+        private struct PanSession {
+            let startPoint: CGPoint
+            let startYaw: Float
+            let startTimestamp: CFTimeInterval
         }
 
         private let manager: WeatherSceneManager?
@@ -153,24 +147,19 @@ struct WeatherSceneView: UIViewRepresentable {
         private var isPanning:     Bool  = false
         private var displayLink: CADisplayLink?
         private var lastPanPoint: CGPoint?
+        private var panSession: PanSession?
         private var orientationAnimation: OrientationAnimation?
         private var hasUserInteracted: Bool = false
         private var lastInteractionResetVersion: Int = 0
+        private let spinController = WeatherSpinController(tuning: .default)
+        private var panReferenceWidth: Float = 390
 
         // Tuning constants
-        private let freeformYawTurnsPerFullWidthPan: Float = 4.8
-        private let horizontalYawTurnsPerFullWidthPan: Float = 1
         private let minimumPanReferenceWidth: Float = 280
         private let pitchSensitivity: Float = 0.0125
         private let rollSensitivity:  Float = 0.0038
         private let horizontalPanActivationDistance: CGFloat = 10
         private let horizontalPanLockAngle: CGFloat = .pi / 10
-        private let fastHorizontalPanVelocity: CGFloat = 650
-        private let assistedFastHorizontalPanVelocity: CGFloat = 380
-        private let momentumFastHorizontalPanVelocity: CGFloat = 220
-        private let fastHorizontalQuarterTurnRatio: CGFloat = 0.25
-        private let fastHorizontalHalfTurnRatio: CGFloat = 0.5
-        private let maximumFastHorizontalTurns: Int = 4
         private let horizontalPitchSnapStrength: Float = 0.42
         private let horizontalRollSnapStrength: Float = 0.48
         private let yawVelocityDamping: Float = 0.94
@@ -179,11 +168,8 @@ struct WeatherSceneView: UIViewRepresentable {
         private let idleFollow:       Float = 0.36
         private let pitchReturnStrength: Float = 0.24
         private let rollReturnStrength: Float = 0.22
-        private let reverseReturnDurationPerTurn: Float = 0.28
-        private let reverseReturnTiltWeight: Float = 0.72
-        private let reverseReturnDurationRange: ClosedRange<Float> = 0.34...2.2
-        private let reverseReturnVelocityRange: ClosedRange<CGFloat> = 180...2200
-        private let minimumReleaseAngularSpeed: Float = 0.8
+        private let minimumSettleDuration: Float = 0.36
+        private let maximumSettleDuration: Float = 1.6
 
         init(
             manager: WeatherSceneManager?,
@@ -212,6 +198,7 @@ struct WeatherSceneView: UIViewRepresentable {
             orientationAnimation = nil
             isPanning = false
             lastPanPoint = nil
+            panSession = nil
             hasUserInteracted = false
             yawVelocity = 0
             pitchVelocity = 0
@@ -297,18 +284,9 @@ struct WeatherSceneView: UIViewRepresentable {
             node.simdOrientation = simd_normalize(yaw * pitch * roll)
         }
 
-        private func freeformYawSensitivity(for view: UIView?) -> Float {
+        private func yawSensitivity(for view: UIView?) -> Float {
             let referenceWidth = max(Float(view?.bounds.width ?? 0), minimumPanReferenceWidth)
-            return (.pi * 2 * freeformYawTurnsPerFullWidthPan) / referenceWidth
-        }
-
-        private func horizontalYawSensitivity(for view: UIView?) -> Float {
-            let referenceWidth = max(Float(view?.bounds.width ?? 0), minimumPanReferenceWidth)
-            return (.pi * 2 * horizontalYawTurnsPerFullWidthPan) / referenceWidth
-        }
-
-        private func horizontalPanReferenceWidth(for view: UIView?) -> CGFloat {
-            max(view?.bounds.width ?? 0, CGFloat(minimumPanReferenceWidth))
+            return (.pi * 2) / referenceWidth
         }
 
         /// Treats nearly horizontal drags as yaw-only interactions so the model does not tilt diagonally.
@@ -347,20 +325,12 @@ struct WeatherSceneView: UIViewRepresentable {
             animation.elapsed = min(animation.elapsed + deltaTime, animation.duration)
             let progress = max(0, min(Float(animation.elapsed / animation.duration), 1))
             let easedYaw = easedProgress(for: animation.yawCurve, progress: progress)
-            let resolvedYawProgress = animation.yawCurve == .momentumFinalTurnSlowdown
-                ? easedProgress(
-                    for: animation.yawCurve,
-                    progress: progress,
-                    slowdownStartProgress: animation.yawSlowdownStartProgress,
-                    finalTurnDistanceRatio: animation.yawFinalTurnDistanceRatio
-                )
-                : easedYaw
             let easedTilt = easedProgress(
                 for: animation.tiltCurve,
                 progress: min(progress * 1.12, 1)
             )
 
-            currentYaw = interpolate(animation.startYaw, animation.endYaw, progress: resolvedYawProgress)
+            currentYaw = interpolate(animation.startYaw, animation.endYaw, progress: easedYaw)
             targetYaw = currentYaw
             currentPitch = interpolate(animation.startPitch, animation.endPitch, progress: easedTilt)
             targetPitch = currentPitch
@@ -371,8 +341,8 @@ struct WeatherSceneView: UIViewRepresentable {
             rollVelocity = 0
 
             if progress >= 0.999 {
-                currentYaw = 0
-                targetYaw = 0
+                currentYaw = animation.endYaw
+                targetYaw = animation.endYaw
                 currentPitch = animation.endPitch
                 targetPitch = animation.endPitch
                 currentRoll = animation.endRoll
@@ -386,37 +356,45 @@ struct WeatherSceneView: UIViewRepresentable {
             return true
         }
 
-        private func startReverseReturnAnimation(with velocity: CGPoint, restPitch: Float) {
-            let fullRotation = Float.pi * 2
-            let yawTurns = abs(currentYaw) / fullRotation
-            let tiltDistance = abs(currentPitch - restPitch) + abs(currentRoll)
-            let weightedTravel = yawTurns + tiltDistance * reverseReturnTiltWeight
-            let baseDuration = max(
-                reverseReturnDurationRange.lowerBound,
-                min(
-                    reverseReturnDurationRange.upperBound,
-                    Float(0.18) + weightedTravel * reverseReturnDurationPerTurn
-                )
+        private func startSettlingAnimation(
+            decision: WeatherSpinSettleDecision,
+            direction: Float,
+            velocityX: CGFloat,
+            restPitch: Float
+        ) {
+            let settleDirection: Float = decision.mode == .reverseReturnToFront
+                ? (direction >= 0 ? -1 : 1)
+                : (direction >= 0 ? 1 : -1)
+            let extraTurns = max(decision.targetTurnCount - 1, 0)
+            let destinationYaw = frontFacingYaw(
+                from: currentYaw,
+                direction: settleDirection,
+                extraTurns: extraTurns
             )
-            let speedProgress = normalizedProgress(
-                value: hypot(velocity.x, velocity.y),
-                lowerBound: reverseReturnVelocityRange.lowerBound,
-                upperBound: reverseReturnVelocityRange.upperBound
-            )
-            let duration = interpolate(baseDuration * 0.9, baseDuration * 0.64, progress: speedProgress)
-
+            let settleDistance = abs(destinationYaw - currentYaw)
+            let velocityRadiansPerSecond = Float(abs(velocityX))
+                / max(panReferenceWidth, minimumPanReferenceWidth)
+                * Float.pi * 2
+            let baseDuration: Float
+            if decision.mode == .reverseReturnToFront {
+                let settleTurns = settleDistance / (.pi * 2)
+                baseDuration = max(minimumSettleDuration, 0.40 + settleTurns * 0.22)
+            } else {
+                let matched = velocityRadiansPerSecond > 0.5
+                    ? 3.16 * settleDistance / velocityRadiansPerSecond
+                    : maximumSettleDuration
+                baseDuration = min(maximumSettleDuration, max(minimumSettleDuration, matched))
+            }
             orientationAnimation = OrientationAnimation(
-                yawCurve: .easeOutQuint,
-                tiltCurve: .easeOutQuart,
+                yawCurve: decision.mode == .reverseReturnToFront ? .easeOutQuint : .easeOutDecay,
+                tiltCurve: .easeOutCubic,
                 startYaw: currentYaw,
-                endYaw: 0,
+                endYaw: destinationYaw,
                 startPitch: currentPitch,
                 endPitch: restPitch,
                 startRoll: currentRoll,
                 endRoll: 0,
-                duration: CFTimeInterval(duration),
-                yawSlowdownStartProgress: nil,
-                yawFinalTurnDistanceRatio: nil
+                duration: CFTimeInterval(baseDuration)
             )
             targetYaw = currentYaw
             targetPitch = currentPitch
@@ -424,71 +402,6 @@ struct WeatherSceneView: UIViewRepresentable {
             yawVelocity = 0
             pitchVelocity = 0
             rollVelocity = 0
-        }
-
-        private func startHorizontalSpinAnimation(
-            translation: CGPoint,
-            velocity: CGPoint,
-            restPitch: Float,
-            view: UIView?
-        ) -> Bool {
-            guard let resolution = resolveHorizontalSpin(
-                translation: translation,
-                velocity: velocity,
-                view: view
-            ) else {
-                return false
-            }
-
-            orientationAnimation = OrientationAnimation(
-                yawCurve: resolution.yawCurve,
-                tiltCurve: resolution.tiltCurve,
-                startYaw: currentYaw,
-                endYaw: resolution.destinationYaw,
-                startPitch: currentPitch,
-                endPitch: restPitch,
-                startRoll: currentRoll,
-                endRoll: 0,
-                duration: resolution.duration,
-                yawSlowdownStartProgress: resolution.yawSlowdownStartProgress,
-                yawFinalTurnDistanceRatio: resolution.yawFinalTurnDistanceRatio
-            )
-            targetYaw = currentYaw
-            targetPitch = currentPitch
-            targetRoll = currentRoll
-            yawVelocity = 0
-            pitchVelocity = 0
-            rollVelocity = 0
-            WeatherAudioPlayer.shared.playSpinLoop(
-                tier: spinSoundTier(
-                    prefersFastAudio: resolution.prefersFastAudio,
-                    translation: translation,
-                    view: view
-                )
-            )
-            return true
-        }
-
-        private func horizontalReleaseAngularSpeed(for velocityX: CGFloat, view: UIView?) -> Float {
-            let radiansPerPoint = horizontalYawSensitivity(for: view)
-            return max(Float(abs(velocityX)) * radiansPerPoint, minimumReleaseAngularSpeed)
-        }
-
-        private func matchedAnimationDuration(
-            travelRadians: Float,
-            releaseAngularSpeed: Float,
-            startSlope: Float,
-            minimumDuration: Double,
-            maximumDuration: Double,
-            fallbackDuration: Double
-        ) -> CFTimeInterval {
-            guard travelRadians > 0.0001, releaseAngularSpeed > 0.0001, startSlope > 0.0001 else {
-                return CFTimeInterval(fallbackDuration)
-            }
-
-            let matched = Double((travelRadians * startSlope) / releaseAngularSpeed)
-            let clampedMatched = min(maximumDuration, max(minimumDuration, matched))
-            return CFTimeInterval(max(fallbackDuration, clampedMatched))
         }
 
         private func stopMomentumAnimations() {
@@ -501,22 +414,7 @@ struct WeatherSceneView: UIViewRepresentable {
             rollVelocity = 0
         }
 
-        private func normalizedProgress(value: CGFloat, lowerBound: CGFloat, upperBound: CGFloat) -> Float {
-            guard upperBound > lowerBound else { return 0 }
-            let clampedValue = min(max(value, lowerBound), upperBound)
-            return Float((clampedValue - lowerBound) / (upperBound - lowerBound))
-        }
-
-        private func positiveRemainder(_ value: Float, divisor: Float) -> Float {
-            let remainder = value.truncatingRemainder(dividingBy: divisor)
-            return remainder >= 0 ? remainder : remainder + divisor
-        }
-
-        private func forwardFrontFacingYaw(
-            from yaw: Float,
-            direction: Float,
-            extraTurns: Int
-        ) -> Float {
+        private func frontFacingYaw(from yaw: Float, direction: Float, extraTurns: Int) -> Float {
             let fullRotation = Float.pi * 2
             let normalizedYaw = positiveRemainder(yaw, divisor: fullRotation)
 
@@ -529,167 +427,17 @@ struct WeatherSceneView: UIViewRepresentable {
             return yaw - offsetToFront - Float(extraTurns) * fullRotation
         }
 
-        private func reverseFrontFacingYaw(from yaw: Float, dragDirection: Float) -> Float {
-            let reverseDirection: Float = dragDirection >= 0 ? -1 : 1
-            return forwardFrontFacingYaw(from: yaw, direction: reverseDirection, extraTurns: 0)
-        }
-
-        private func signedFrontFacingYaw(turnCount: Int, direction: Float) -> Float {
-            let clampedTurnCount = max(0, turnCount)
-            let signedDirection: Float = direction >= 0 ? 1 : -1
-            return signedDirection * Float(clampedTurnCount) * (.pi * 2)
-        }
-
-        private func fastReleaseExtraTurns(for distanceRatio: CGFloat) -> Int {
-            let distancePastHalf = max(0, distanceRatio - fastHorizontalHalfTurnRatio)
-            let additionalTurns = Int(ceil(distancePastHalf / fastHorizontalHalfTurnRatio))
-            return min(maximumFastHorizontalTurns, max(2, additionalTurns + 1))
-        }
-
-        private func resolveHorizontalSpin(
-            translation: CGPoint,
-            velocity: CGPoint,
-            view: UIView?
-        ) -> HorizontalSpinResolution? {
-            let horizontalDistance = abs(translation.x)
-            guard horizontalDistance > 0.5 else { return nil }
-
-            let referenceWidth = horizontalPanReferenceWidth(for: view)
-            let distanceRatio = horizontalDistance / referenceWidth
-            let qualifiesForSingleTurnDistance = distanceRatio >= fastHorizontalQuarterTurnRatio
-            let effectiveFastVelocity: CGFloat
-            if distanceRatio > fastHorizontalHalfTurnRatio {
-                effectiveFastVelocity = momentumFastHorizontalPanVelocity
-            } else if qualifiesForSingleTurnDistance {
-                effectiveFastVelocity = assistedFastHorizontalPanVelocity
-            } else {
-                effectiveFastVelocity = fastHorizontalPanVelocity
-            }
-            let isFastPan = abs(velocity.x) >= effectiveFastVelocity
-            let direction = resolvedHorizontalDirection(translationX: translation.x, velocityX: velocity.x)
-            let destinationYaw: Float
-            let duration: CFTimeInterval
-            let yawCurve: EasingCurve
-            let tiltCurve: EasingCurve
-            let prefersFastAudio = isFastPan
-            let yawSlowdownStartProgress: Float?
-            let yawFinalTurnDistanceRatio: Float?
-            let releaseAngularSpeed = horizontalReleaseAngularSpeed(for: velocity.x, view: view)
-
-            if isFastPan {
-                if distanceRatio < fastHorizontalQuarterTurnRatio {
-                    destinationYaw = reverseFrontFacingYaw(from: currentYaw, dragDirection: direction)
-                    let travelTurns = abs(destinationYaw - currentYaw) / (.pi * 2)
-                    let fallbackDuration = min(max(0.22, 0.18 + Double(travelTurns) * 0.42), 0.6)
-                    duration = matchedAnimationDuration(
-                        travelRadians: abs(destinationYaw - currentYaw),
-                        releaseAngularSpeed: releaseAngularSpeed,
-                        startSlope: 4,
-                        minimumDuration: 0.22,
-                        maximumDuration: 0.72,
-                        fallbackDuration: fallbackDuration
-                    )
-                    yawCurve = .easeOutQuart
-                    tiltCurve = .easeOutQuart
-                    yawSlowdownStartProgress = nil
-                    yawFinalTurnDistanceRatio = nil
-                } else if distanceRatio <= fastHorizontalHalfTurnRatio {
-                    destinationYaw = signedFrontFacingYaw(turnCount: 1, direction: direction)
-                    let travelTurns = abs(destinationYaw - currentYaw) / (.pi * 2)
-                    let fallbackDuration = min(max(0.62, 0.3 + Double(travelTurns) * 0.36), 1.05)
-                    duration = matchedAnimationDuration(
-                        travelRadians: abs(destinationYaw - currentYaw),
-                        releaseAngularSpeed: releaseAngularSpeed,
-                        startSlope: 4,
-                        minimumDuration: 0.62,
-                        maximumDuration: 1.35,
-                        fallbackDuration: fallbackDuration
-                    )
-                    yawCurve = .easeOutQuart
-                    tiltCurve = .easeOutQuart
-                    yawSlowdownStartProgress = nil
-                    yawFinalTurnDistanceRatio = nil
-                } else {
-                    let distanceBasedTurns = fastReleaseExtraTurns(for: distanceRatio)
-                    destinationYaw = signedFrontFacingYaw(turnCount: distanceBasedTurns, direction: direction)
-                    let travelTurns = abs(destinationYaw - currentYaw) / (.pi * 2)
-                    let fallbackDuration = min(max(0.95, 0.42 + Double(travelTurns) * 0.34), 2.4)
-                    duration = matchedAnimationDuration(
-                        travelRadians: abs(destinationYaw - currentYaw),
-                        releaseAngularSpeed: releaseAngularSpeed,
-                        startSlope: 3,
-                        minimumDuration: 0.95,
-                        maximumDuration: 2.6,
-                        fallbackDuration: fallbackDuration
-                    )
-                    yawCurve = .easeOutCubic
-                    tiltCurve = .easeOutQuart
-                    yawFinalTurnDistanceRatio = nil
-                    yawSlowdownStartProgress = nil
-                }
-            } else if distanceRatio <= fastHorizontalHalfTurnRatio {
-                destinationYaw = reverseFrontFacingYaw(from: currentYaw, dragDirection: direction)
-                let travelTurns = abs(destinationYaw - currentYaw) / (.pi * 2)
-                duration = CFTimeInterval(min(max(0.28, 0.22 + Double(travelTurns) * 0.5), 0.82))
-                yawCurve = .easeOutCubic
-                tiltCurve = .easeOutQuart
-                yawSlowdownStartProgress = nil
-                yawFinalTurnDistanceRatio = nil
-            } else {
-                let distanceBasedTurns = min(
-                    maximumFastHorizontalTurns,
-                    max(1, Int(ceil(distanceRatio)))
-                )
-                destinationYaw = signedFrontFacingYaw(turnCount: distanceBasedTurns, direction: direction)
-                let travelTurns = abs(destinationYaw - currentYaw) / (.pi * 2)
-                duration = CFTimeInterval(min(max(0.38, 0.28 + Double(travelTurns) * 0.52), 1.4))
-                yawCurve = .easeOutCubic
-                tiltCurve = .easeOutQuart
-                yawSlowdownStartProgress = nil
-                yawFinalTurnDistanceRatio = nil
-            }
-
-            return HorizontalSpinResolution(
-                destinationYaw: destinationYaw,
-                duration: duration,
-                yawCurve: yawCurve,
-                tiltCurve: tiltCurve,
-                prefersFastAudio: prefersFastAudio,
-                yawSlowdownStartProgress: yawSlowdownStartProgress,
-                yawFinalTurnDistanceRatio: yawFinalTurnDistanceRatio
-            )
-        }
-
-        private func resolvedHorizontalDirection(translationX: CGFloat, velocityX: CGFloat) -> Float {
-            if abs(translationX) > 0.5 {
-                return translationX >= 0 ? 1 : -1
-            }
-
-            if abs(velocityX) > 0.5 {
-                return velocityX >= 0 ? 1 : -1
-            }
-
-            return currentYaw >= 0 ? 1 : -1
-        }
-
-        private func spinSoundTier(
-            prefersFastAudio: Bool,
-            translation: CGPoint,
-            view: UIView?
-        ) -> WeatherSpinSoundTier {
-            guard prefersFastAudio else { return .slow }
-
-            let referenceWidth = horizontalPanReferenceWidth(for: view)
-            let distanceRatio = abs(translation.x) / max(referenceWidth, 1)
-            return distanceRatio > fastHorizontalHalfTurnRatio ? .fast : .medium
+        private func positiveRemainder(_ value: Float, divisor: Float) -> Float {
+            let remainder = value.truncatingRemainder(dividingBy: divisor)
+            return remainder >= 0 ? remainder : remainder + divisor
         }
 
         private func spinSoundTier(for velocity: CGPoint) -> WeatherSpinSoundTier {
             let speed = hypot(velocity.x, velocity.y)
-            if speed >= fastHorizontalPanVelocity * 1.6 {
+            if speed >= spinController.tuning.fastSwipeMinVelocity * 2 {
                 return .fast
             }
-            if speed >= fastHorizontalPanVelocity {
+            if speed >= spinController.tuning.fastSwipeMinVelocity {
                 return .medium
             }
             return .slow
@@ -699,86 +447,19 @@ struct WeatherSceneView: UIViewRepresentable {
             start + (end - start) * progress
         }
 
-        private func easedProgress(
-            for curve: EasingCurve,
-            progress: Float,
-            slowdownStartProgress: Float? = nil,
-            finalTurnDistanceRatio: Float? = nil
-        ) -> Float {
+        private func easedProgress(for curve: EasingCurve, progress: Float) -> Float {
             switch curve {
             case .easeOutQuad:
-                return easeOutQuad(progress)
+                easeOutQuad(progress)
             case .easeOutCubic:
-                return easeOutCubic(progress)
+                easeOutCubic(progress)
             case .easeOutQuart:
-                return easeOutQuart(progress)
+                easeOutQuart(progress)
             case .easeOutQuint:
-                return easeOutQuint(progress)
-            case .momentumFinalTurnSlowdown:
-                return momentumFinalTurnSlowdown(
-                    progress: progress,
-                    slowdownStartProgress: slowdownStartProgress,
-                    finalTurnDistanceRatio: finalTurnDistanceRatio
-                )
+                easeOutQuint(progress)
+            case .easeOutDecay:
+                easeOutDecay(progress)
             }
-        }
-
-        private func momentumFinalTurnSlowdown(
-            progress: Float,
-            slowdownStartProgress: Float?,
-            finalTurnDistanceRatio: Float?
-        ) -> Float {
-            guard let slowdownStartProgress,
-                  let finalTurnDistanceRatio else {
-                return easeOutQuint(progress)
-            }
-
-            let clampedSlowdownStart = min(max(slowdownStartProgress, 0.05), 0.95)
-            let clampedFinalTurnDistance = min(max(finalTurnDistanceRatio, 0.05), 0.9)
-            let preSlowdownDistance = max(0, 1 - clampedFinalTurnDistance)
-
-            if progress <= clampedSlowdownStart {
-                let localProgress = progress / max(clampedSlowdownStart, 0.0001)
-                return localProgress * preSlowdownDistance
-            }
-
-            let localProgress = (progress - clampedSlowdownStart) / max(1 - clampedSlowdownStart, 0.0001)
-            let leadingSlope = preSlowdownDistance / max(clampedSlowdownStart, 0.0001)
-            let normalizedFinalSegmentSlope = min(
-                1.2,
-                max(
-                    0,
-                    leadingSlope * (1 - clampedSlowdownStart) / max(clampedFinalTurnDistance, 0.0001)
-                )
-            )
-            let slowedFinalTurn = cubicHermite(
-                progress: localProgress,
-                startValue: 0,
-                endValue: 1,
-                startTangent: normalizedFinalSegmentSlope,
-                endTangent: 0
-            )
-            return preSlowdownDistance + slowedFinalTurn * clampedFinalTurnDistance
-        }
-
-        private func cubicHermite(
-            progress: Float,
-            startValue: Float,
-            endValue: Float,
-            startTangent: Float,
-            endTangent: Float
-        ) -> Float {
-            let t = min(max(progress, 0), 1)
-            let t2 = t * t
-            let t3 = t2 * t
-            let h00 = 2 * t3 - 3 * t2 + 1
-            let h10 = t3 - 2 * t2 + t
-            let h01 = -2 * t3 + 3 * t2
-            let h11 = t3 - t2
-            return h00 * startValue
-                + h10 * startTangent
-                + h01 * endValue
-                + h11 * endTangent
         }
 
         private func easeOutCubic(_ progress: Float) -> Float {
@@ -801,6 +482,37 @@ struct WeatherSceneView: UIViewRepresentable {
             return 1 - reversed * reversed
         }
 
+        private func easeOutDecay(_ progress: Float) -> Float {
+            let k: Float = 3.0
+            return (1 - exp(-k * progress)) / (1 - exp(-k))
+        }
+
+        private func debugLogSettle(
+            sample: WeatherSpinGestureSample,
+            decision: WeatherSpinSettleDecision,
+            currentYawDegrees: CGFloat
+        ) {
+#if DEBUG
+            let snapshot = WeatherSpinDebugSnapshot(
+                translationRatio: sample.translationRatio,
+                predictedTranslationRatio: sample.predictedTranslationRatio,
+                velocityPointsPerSecond: sample.velocityPointsPerSecond,
+                duration: sample.duration,
+                targetTurnCount: decision.targetTurnCount,
+                mode: decision.mode
+            )
+            let distance = String(format: "%.3f", snapshot.translationRatio)
+            let predicted = String(format: "%.3f", snapshot.predictedTranslationRatio)
+            let duration = String(format: "%.3f", snapshot.duration)
+            let yaw = String(format: "%.1f", currentYawDegrees)
+            print(
+                "[WeatherSpin] distance=\(distance) predicted=\(predicted) " +
+                "velocity=\(Int(snapshot.velocityPointsPerSecond)) duration=\(duration) " +
+                "mode=\(snapshot.mode) turns=\(snapshot.targetTurnCount) yaw=\(yaw)"
+            )
+#endif
+        }
+
         // MARK: Pan gesture
 
         /// Maps pan gestures to model rotation, locking pure horizontal drags to yaw-only motion.
@@ -815,6 +527,11 @@ struct WeatherSceneView: UIViewRepresentable {
                 hasUserInteracted = true
                 manager?.pauseAutomaticSpinForInteraction()
                 lastPanPoint = gesture.location(in: gesture.view)
+                panSession = PanSession(
+                    startPoint: gesture.location(in: gesture.view),
+                    startYaw: currentYaw,
+                    startTimestamp: CACurrentMediaTime()
+                )
                 stopMomentumAnimations()
                 WeatherAudioPlayer.shared.playShapeTap()
                 SCNTransaction.begin()
@@ -828,24 +545,27 @@ struct WeatherSceneView: UIViewRepresentable {
                 let deltaY = point.y - previousPoint.y
                 lastPanPoint = point
 
+                let liveTranslationX = point.x - (panSession?.startPoint.x ?? point.x)
+                let referenceWidth = max(Float(gesture.view?.bounds.width ?? 0), minimumPanReferenceWidth)
+                panReferenceWidth = referenceWidth
+                let translationRatio = CGFloat(liveTranslationX) / CGFloat(referenceWidth)
+                let liveYawDegrees = spinController.liveYawDegrees(for: translationRatio)
+                let liveYawRadians = Float(liveYawDegrees) * .pi / 180
+                let yawTarget = (panSession?.startYaw ?? currentYaw) + liveYawRadians
                 let interactionMode = panInteractionMode(for: gesture)
-                let yawSensitivity = interactionMode == .horizontalYawOnly
-                    ? horizontalYawSensitivity(for: gesture.view)
-                    : freeformYawSensitivity(for: gesture.view)
-                let yawDelta = Float(deltaX) * yawSensitivity
                 let pitchDelta = interactionMode == .horizontalYawOnly ? 0 : Float(deltaY) * pitchSensitivity
                 let rollDelta = interactionMode == .horizontalYawOnly ? 0 : Float(deltaX) * -rollSensitivity
 
-                targetYaw += yawDelta
+                targetYaw = yawTarget
                 targetPitch += pitchDelta
                 targetRoll += rollDelta
 
-                currentYaw += yawDelta * 0.34
+                currentYaw = yawTarget
                 if interactionMode == .horizontalYawOnly {
                     settleHorizontalTilt(restPitch: restPitch)
                 } else {
-                    currentPitch += pitchDelta * 0.28
-                    currentRoll += rollDelta * 0.30
+                    currentPitch += pitchDelta * 0.45
+                    currentRoll += rollDelta * 0.45
                 }
                 applyOrientation(to: node)
 
@@ -853,23 +573,79 @@ struct WeatherSceneView: UIViewRepresentable {
             case .ended, .cancelled:
                 isPanning = false
                 lastPanPoint = nil
+                defer { panSession = nil }
                 let v = gesture.velocity(in: gesture.view)
-                let translation = gesture.translation(in: gesture.view)
                 let interactionMode = panInteractionMode(for: gesture)
+
+                currentYaw = targetYaw
+                currentPitch = targetPitch
+                currentRoll = targetRoll
+                applyOrientation(to: node)
+                manager?.syncDisplayGroupRotation(to: node.eulerAngles)
+
                 if interactionMode == .horizontalYawOnly {
-                    if !startHorizontalSpinAnimation(
-                        translation: translation,
-                        velocity: v,
+                    let referenceWidth = max(Float(gesture.view?.bounds.width ?? 0), minimumPanReferenceWidth)
+                    let translation = gesture.translation(in: gesture.view).x
+                    let projectionHorizonSeconds: CGFloat = 0.12
+                    let predicted = translation + v.x * projectionHorizonSeconds
+                    let translationRatio = CGFloat(translation) / CGFloat(referenceWidth)
+                    let predictedRatio = CGFloat(predicted) / CGFloat(referenceWidth)
+                    let duration = max(
+                        CACurrentMediaTime() - (panSession?.startTimestamp ?? CACurrentMediaTime()),
+                        0.01
+                    )
+                    let sample = WeatherSpinGestureSample(
+                        translationRatio: translationRatio,
+                        predictedTranslationRatio: predictedRatio,
+                        velocityPointsPerSecond: v.x,
+                        duration: duration
+                    )
+                    let yawSincePanStart = targetYaw - (panSession?.startYaw ?? 0)
+                    let currentYawDegrees = CGFloat(yawSincePanStart) * 180 / .pi
+                    let decision = spinController.settleDecision(
+                        currentYawDegrees: currentYawDegrees,
+                        sample: sample
+                    )
+                    let direction: Float = translationRatio == 0
+                        ? (v.x >= 0 ? 1 : -1)
+                        : (translationRatio > 0 ? 1 : -1)
+                    debugLogSettle(
+                        sample: sample,
+                        decision: decision,
+                        currentYawDegrees: currentYawDegrees
+                    )
+                    startSettlingAnimation(
+                        decision: decision,
+                        direction: direction,
+                        velocityX: v.x,
                         restPitch: restPitch,
-                        view: gesture.view
-                    ) {
-                        startReverseReturnAnimation(with: v, restPitch: restPitch)
-                        WeatherAudioPlayer.shared.playSpinLoop(
-                            tier: spinSoundTier(for: v)
-                        )
-                    }
+                    )
+                    WeatherAudioPlayer.shared.playSpinLoop(
+                        tier: spinController.spinSoundTier(for: sample, decision: decision)
+                    )
                 } else {
-                    startReverseReturnAnimation(with: v, restPitch: restPitch)
+                    let sample = WeatherSpinGestureSample(
+                        translationRatio: 0,
+                        predictedTranslationRatio: 0,
+                        velocityPointsPerSecond: v.x,
+                        duration: max(
+                            CACurrentMediaTime() - (panSession?.startTimestamp ?? CACurrentMediaTime()),
+                            0.01
+                        )
+                    )
+                    let decision = WeatherSpinSettleDecision(
+                        mode: .reverseReturnToFront,
+                        targetTurnCount: 0,
+                        targetYawDegrees: 0,
+                        usesFinalTurnSlowdown: false
+                    )
+                    startSettlingAnimation(
+                        decision: decision,
+                        direction: v.x >= 0 ? 1 : -1,
+                        velocityX: v.x,
+                        restPitch: restPitch
+                    )
+                    debugLogSettle(sample: sample, decision: decision, currentYawDegrees: 0)
                     WeatherAudioPlayer.shared.playSpinLoop(
                         tier: spinSoundTier(for: v)
                     )
