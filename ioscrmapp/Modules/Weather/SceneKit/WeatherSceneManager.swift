@@ -157,6 +157,8 @@ final class WeatherSceneManager: ObservableObject {
     private var autoSpinSpeedBeforeInteraction: Float?
     private var transitionCompletionWorkItem: DispatchWorkItem?
     private var entrySpinWorkItem: DispatchWorkItem?
+    private var detailSpinWorkItem: DispatchWorkItem?
+    private var detailSpinCompletionWorkItem: DispatchWorkItem?
     private var _birdsScene: SCNScene?   // 防止 ARC 过早释放鸟群场景
     private let weatherDataSubdirectory = "WeatherData"
     private let sunSpinAnimationKey = "sun_spin"
@@ -371,6 +373,11 @@ final class WeatherSceneManager: ObservableObject {
         temperatureNode.removeAllActions()
         detailTitleNode.removeAllActions()
         resetSunBurstState()
+        removeSunSpinAnimationsAndResetFront()
+
+        // 立即归零角度，确保静止展示时从 0° 开始
+        sunNode.eulerAngles.y = 0
+        detailTitleNode.eulerAngles.y = 0
 
         runTemperatureDepartureAnimation(on: temperatureNode)
         runSunExpansionAnimation(on: sunNode)
@@ -383,10 +390,13 @@ final class WeatherSceneManager: ObservableObject {
             self?.autoSpinSpeed = 0
             self?.applyDisplayGroupRotation(self?.transitionRestRotation ?? SCNVector3(0, 0, 0))
             self?.stopSunAmbientAnimations(resetOrientation: true, resetScale: true)
-            // 静止 2 秒后再开始旋转
-            DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) { [weak self] in
+            // 静止 2 秒后再开始旋转，使用可取消的 DispatchWorkItem
+            self?.detailSpinWorkItem?.cancel()
+            let spinWorkItem = DispatchWorkItem { [weak self] in
                 self?.startDetailIntroSpinIfNeeded()
             }
+            self?.detailSpinWorkItem = spinWorkItem
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2.0, execute: spinWorkItem)
             completion()
         }
         transitionCompletionWorkItem = completionWorkItem
@@ -566,9 +576,16 @@ final class WeatherSceneManager: ObservableObject {
             attachSunSpin(to: sun, animationKey: sunSpinAnimationKey)
         }
         if mode == .sunDetail {
-            DispatchQueue.main.async { [weak self] in
+            // 立即归零角度，确保静止展示时从 0° 开始
+            sunNode?.eulerAngles.y = 0
+            detailTitleNode?.eulerAngles.y = 0
+            // 静止 2 秒后再开始旋转，使用可取消的 DispatchWorkItem
+            detailSpinWorkItem?.cancel()
+            let spinWorkItem = DispatchWorkItem { [weak self] in
                 self?.startDetailIntroSpinIfNeeded()
             }
+            detailSpinWorkItem = spinWorkItem
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2.0, execute: spinWorkItem)
         }
     }
 
@@ -1232,9 +1249,16 @@ final class WeatherSceneManager: ObservableObject {
     func cancelEntryAnimation() {
         entrySpinWorkItem?.cancel()
         entrySpinWorkItem = nil
+        detailSpinWorkItem?.cancel()
+        detailSpinWorkItem = nil
+        detailSpinCompletionWorkItem?.cancel()
+        detailSpinCompletionWorkItem = nil
         if isPlayingSceneAnimation {
             sunNode?.removeAllActions()
             detailTitleNode?.removeAllActions()
+            // 归零角度，确保下次进入时从 0° 开始
+            sunNode?.eulerAngles.y = 0
+            detailTitleNode?.eulerAngles.y = 0
             isPlayingSceneAnimation = false
         }
     }
@@ -1596,12 +1620,15 @@ final class WeatherSceneManager: ObservableObject {
         runDetailIntroSpin(on: detailTitleNode, actionKey: sunTitleSpinAnimationKey)
 
         // 统一在动画时长结束后归零并触发回调，确保两者同步
-        DispatchQueue.main.asyncAfter(deadline: .now() + detailIntroSpinDuration) { [weak self] in
+        detailSpinCompletionWorkItem?.cancel()
+        let completionWorkItem = DispatchWorkItem { [weak self] in
             guard let self else { return }
             self.stopDetailIntroSpin(resetOrientation: true)
             self.isPlayingSceneAnimation = false
             self.applyDisplayGroupRotation(self.transitionRestRotation)
         }
+        detailSpinCompletionWorkItem = completionWorkItem
+        DispatchQueue.main.asyncAfter(deadline: .now() + detailIntroSpinDuration, execute: completionWorkItem)
     }
 
     private func stopDetailIntroSpin(resetOrientation: Bool) {
