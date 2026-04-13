@@ -5,6 +5,7 @@ struct WeatherHourlyStrip: View {
     let points: [WeatherHourlyStripPoint]
     let selectedID: String
     let onSelect: (WeatherHourlyStripPoint, Bool) -> Void
+    let onDragStateChange: (Bool) -> Void
 
     private let hapticPlayer = WeatherStripHapticPlayer.shared
     @State private var lastFeedbackIndex: Int?
@@ -20,6 +21,7 @@ struct WeatherHourlyStrip: View {
                 lastFeedbackIndex = points.firstIndex(where: { $0.id == selectedID })
             }
             hapticPlayer.prepare()
+            onDragStateChange(false)
         }
     }
 
@@ -202,6 +204,7 @@ struct WeatherHourlyStrip: View {
             .onChanged { value in
                 if !isDragging {
                     hapticPlayer.prepare()
+                    onDragStateChange(true)
                 }
                 isDragging = true
                 let localX = min(max(value.location.x - layout.coreStartX, 0), layout.coreWidth)
@@ -216,6 +219,7 @@ struct WeatherHourlyStrip: View {
                 withAnimation(.easeOut(duration: 0.18)) {
                     isDragging = false
                 }
+                onDragStateChange(false)
             }
     }
 
