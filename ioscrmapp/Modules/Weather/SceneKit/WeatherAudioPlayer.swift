@@ -17,6 +17,15 @@ final class WeatherAudioPlayer {
     }
 
     private let shapeTapVariants = ["shape-tap-1", "shape-tap-7"]
+    private let detailSunTapVariants = [
+        "sfx_001",
+        "sfx_002",
+        "sfx_003",
+        "sfx_004",
+        "sfx_005",
+        "sfx_006",
+        "sfx_007"
+    ]
     private let audioQueue = DispatchQueue(label: "WeatherAudioPlayer.audioQueue")
     private let spinSoundProfiles: [WeatherSpinSoundTier: WeatherSpinSoundProfile]
     private var oneshotPool: [String: [AVAudioPlayer]] = [:]
@@ -33,6 +42,13 @@ final class WeatherAudioPlayer {
     func playShapeTap() {
         audioQueue.async { [self] in
             let soundName = shapeTapVariants.randomElement() ?? "shape-tap-1"
+            playOneshotNow(soundName, volume: 0.35)
+        }
+    }
+
+    func playDetailSunTap() {
+        audioQueue.async { [self] in
+            let soundName = detailSunTapVariants.randomElement() ?? "sfx_001"
             playOneshotNow(soundName, volume: 0.35)
         }
     }
@@ -100,10 +116,19 @@ final class WeatherAudioPlayer {
     }
 
     private func audioURL(_ name: String) -> URL? {
-        let direct = Bundle.main.bundleURL.appendingPathComponent("WeatherData/Audio/\(name).m4a")
-        if FileManager.default.fileExists(atPath: direct.path) {
-            return direct
+        for fileExtension in ["m4a", "mp3"] {
+            let direct = Bundle.main.bundleURL.appendingPathComponent("WeatherData/Audio/\(name).\(fileExtension)")
+            if FileManager.default.fileExists(atPath: direct.path) {
+                return direct
+            }
+            if let bundled = Bundle.main.url(
+                forResource: name,
+                withExtension: fileExtension,
+                subdirectory: "WeatherData/Audio"
+            ) {
+                return bundled
+            }
         }
-        return Bundle.main.url(forResource: name, withExtension: "m4a", subdirectory: "WeatherData/Audio")
+        return nil
     }
 }

@@ -316,7 +316,7 @@ struct WeatherMainView: View {
         guard isSunRayBurstEnabled, isSunDetailPresented, !isSunTransitionActive else { return }
         // Detail-page sun taps should still produce an immediate tap cue even
         // though they no longer transition screens.
-        WeatherAudioPlayer.shared.playShapeTap()
+        WeatherAudioPlayer.shared.playDetailSunTap()
         sunRayBurstCenter = screenPoint
         sunRayBurstTrigger += 1
     }
