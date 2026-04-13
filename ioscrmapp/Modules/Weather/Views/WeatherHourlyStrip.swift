@@ -10,6 +10,7 @@ struct WeatherHourlyStrip: View {
     private let hapticPlayer = WeatherStripHapticPlayer.shared
     @State private var lastFeedbackIndex: Int?
     @State private var isDragging = false
+    @GestureState private var activeTouchLocation: CGPoint?
 
     var body: some View {
         GeometryReader { proxy in
@@ -74,6 +75,11 @@ struct WeatherHourlyStrip: View {
         .frame(height: layout.topOverlayHeight + layout.railHeight)
         .contentShape(Rectangle())
         .gesture(dragGesture(layout: layout))
+        // Track the finger location separately so a stationary long press can
+        // place the bubble directly under the press instead of flashing at the
+        // previously selected hour first.
+        .simultaneousGesture(touchTrackingGesture())
+        .simultaneousGesture(longPressPreviewGesture(layout: layout))
     }
 
     private func railView(layout: WeatherHourlyStripLayout) -> some View {
@@ -202,24 +208,34 @@ struct WeatherHourlyStrip: View {
     private func dragGesture(layout: WeatherHourlyStripLayout) -> some Gesture {
         DragGesture(minimumDistance: 0)
             .onChanged { value in
-                if !isDragging {
-                    hapticPlayer.prepare()
-                    onDragStateChange(true)
-                }
-                isDragging = true
-                let localX = min(max(value.location.x - layout.coreStartX, 0), layout.coreWidth)
-                let index = WeatherHourlyStripCore.focusedIndex(
-                    forLocationX: localX,
-                    itemWidth: layout.itemWidth,
-                    count: points.count
+                beginBubblePreview()
+                selectPoint(
+                    forViewX: value.location.x,
+                    layout: layout,
+                    isDragSelection: true
                 )
-                selectPoint(at: index, isDragSelection: true)
             }
             .onEnded { _ in
-                withAnimation(.easeOut(duration: 0.18)) {
-                    isDragging = false
-                }
-                onDragStateChange(false)
+                endBubblePreview()
+            }
+    }
+
+    private func touchTrackingGesture() -> some Gesture {
+        DragGesture(minimumDistance: 0)
+            .updating($activeTouchLocation) { value, state, _ in
+                state = value.location
+            }
+    }
+
+    private func longPressPreviewGesture(layout: WeatherHourlyStripLayout) -> some Gesture {
+        LongPressGesture(minimumDuration: 0.12, maximumDistance: 24)
+            .onEnded { _ in
+                beginBubblePreview()
+                selectPoint(
+                    forViewX: activeTouchLocation?.x,
+                    layout: layout,
+                    isDragSelection: true
+                )
             }
     }
 
@@ -282,11 +298,37 @@ struct WeatherHourlyStrip: View {
             .frame(width: diameter, height: diameter)
             .overlay {
                 Text(text)
-                    .font(neumaticCompressedFont(size: 19.5, fallbackWeight: .bold))
-                    .foregroundColor(Color.black.opacity(0.74))
+                    .font(neumaticCompressedFont(size: 27.5, fallbackWeight: .bold))
+                    .tracking(0.8)
+                    .foregroundColor(Color.black.opacity(0.86))
             }
             .position(x: x, y: y)
             .animation(.spring(response: 0.22, dampingFraction: 0.84), value: selectedID)
+    }
+
+    private func beginBubblePreview() {
+        guard !isDragging else { return }
+        hapticPlayer.prepare()
+        isDragging = true
+        onDragStateChange(true)
+    }
+
+    private func endBubblePreview() {
+        withAnimation(.easeOut(duration: 0.18)) {
+            isDragging = false
+        }
+        onDragStateChange(false)
+    }
+
+    private func selectPoint(forViewX viewX: CGFloat?, layout: WeatherHourlyStripLayout, isDragSelection: Bool) {
+        guard let viewX else { return }
+        let localX = min(max(viewX - layout.coreStartX, 0), layout.coreWidth)
+        let index = WeatherHourlyStripCore.focusedIndex(
+            forLocationX: localX,
+            itemWidth: layout.itemWidth,
+            count: points.count
+        )
+        selectPoint(at: index, isDragSelection: isDragSelection)
     }
 
     private func temperatureLabel(text: String, x: CGFloat, y: CGFloat) -> some View {
