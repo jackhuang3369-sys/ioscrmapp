@@ -740,27 +740,27 @@ private struct MallProductHeroStage: View {
             .contentShape(Rectangle())
             .onTapGesture(perform: onPreviewImage)
 
-            MallProductPrimaryThumbnailStrip(
-                group: featuredGroup,
-                selectedValueID: selectedValueID,
-                availableValueIDs: featuredAvailableValueIDs,
-                typesSummary: snapshot.typesSummary(language: language),
-                onSelectValue: { valueID in
-                    guard let featuredGroup else {
-                        return
+            if let featuredGroup {
+                MallProductPrimaryThumbnailStrip(
+                    group: featuredGroup,
+                    selectedValueID: selectedValueID,
+                    availableValueIDs: featuredAvailableValueIDs,
+                    typesSummary: snapshot.typesSummary(language: language),
+                    onSelectValue: { valueID in
+                        onSelectPrimaryValue(featuredGroup, valueID)
                     }
-                    onSelectPrimaryValue(featuredGroup, valueID)
-                }
-            )
-            .padding(.horizontal, DUSpacing.sm)
-            .padding(.vertical, DUSpacing.sm)
-            .background(Color.white)
+                )
+                .padding(.horizontal, DUSpacing.sm)
+                .padding(.vertical, DUSpacing.sm)
+                .background(Color.white)
+            }
         }
     }
 
     private var featuredGroup: MallProductDetailSpecificationGroup? {
-        snapshot.specificationGroups.first(where: { $0.displayMode == .imageTile })
-            ?? snapshot.firstSpecificationGroup
+        snapshot.specificationGroups.first { group in
+            group.displayMode == .imageTile && group.values.contains { $0.image != nil }
+        }
     }
 
     private var selectedValueID: String? {
@@ -824,7 +824,7 @@ private struct MallProductHeroPage: View {
 }
 
 private struct MallProductPrimaryThumbnailStrip: View {
-    let group: MallProductDetailSpecificationGroup?
+    let group: MallProductDetailSpecificationGroup
     let selectedValueID: String?
     let availableValueIDs: Set<String>
     let typesSummary: String
@@ -832,19 +832,17 @@ private struct MallProductPrimaryThumbnailStrip: View {
 
     var body: some View {
         HStack(spacing: DUSpacing.md) {
-            if let group {
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: DUSpacing.sm) {
-                        ForEach(group.values) { value in
-                            MallProductPrimaryThumbnailButton(
-                                image: value.image,
-                                isSelected: value.id == selectedValueID,
-                                isEnabled: availableValueIDs.contains(value.id),
-                                action: {
-                                    onSelectValue(value.id)
-                                }
-                            )
-                        }
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: DUSpacing.sm) {
+                    ForEach(thumbnailValues) { value in
+                        MallProductPrimaryThumbnailButton(
+                            image: value.image,
+                            isSelected: value.id == selectedValueID,
+                            isEnabled: availableValueIDs.contains(value.id),
+                            action: {
+                                onSelectValue(value.id)
+                            }
+                        )
                     }
                 }
             }
@@ -854,6 +852,10 @@ private struct MallProductPrimaryThumbnailStrip: View {
                 .foregroundColor(Color(hex: 0x8B95A9))
                 .fixedSize(horizontal: true, vertical: false)
         }
+    }
+
+    private var thumbnailValues: [MallProductDetailSpecificationValue] {
+        group.values.filter { $0.image != nil }
     }
 }
 

@@ -1210,7 +1210,7 @@ private enum MallResponseMapper {
         _ dictionary: [String: HTTPClient.ResponseData]
     ) throws -> MallProductDetailSpecificationGroup {
         let displayMode = string(in: dictionary, keys: ["displayMode"])
-            .flatMap { MallProductDetailSpecificationDisplayMode(rawValue: $0.lowercased()) }
+            .flatMap(MallProductDetailSpecificationDisplayMode.init(rawValue:))
             ?? .chip
 
         return MallProductDetailSpecificationGroup(
