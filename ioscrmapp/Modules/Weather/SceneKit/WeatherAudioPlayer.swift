@@ -5,83 +5,70 @@ final class WeatherAudioPlayer {
 
     static let shared = WeatherAudioPlayer()
 
-    private struct WeatherSpinSoundProfile {
-        let audioName: String
-        let volume: Float
-
-        static let `default`: [WeatherSpinSoundTier: WeatherSpinSoundProfile] = [
-            .slow: .init(audioName: "spin-slow-4", volume: 0.24),
-            .medium: .init(audioName: "spin-fast-5", volume: 0.26),
-            .fast: .init(audioName: "spin-fast-4", volume: 0.28)
-        ]
-    }
-
-    private let shapeTapVariants = ["shape-tap-1", "shape-tap-7"]
-    private let detailSunTapVariants = [
-        "sfx_001",
-        "sfx_002",
-        "sfx_003",
-        "sfx_004",
-        "sfx_005",
-        "sfx_006",
-        "sfx_007"
-    ]
-    private let audioQueue = DispatchQueue(label: "WeatherAudioPlayer.audioQueue")
-    private let spinSoundProfiles: [WeatherSpinSoundTier: WeatherSpinSoundProfile]
+    private let audioQueue = DispatchQueue(label: "com.weather.audio.burst", qos: .default)
     private var oneshotPool: [String: [AVAudioPlayer]] = [:]
-    private var timelineTickPlayers: [AVAudioPlayer] = []
-    private var timelineTickPlayerIndex = 0
+    private var sunTapPlayer: AVAudioPlayer?
+    private var sunTapClickCount: Int = 0
+    private var sunTapLastCallTime: TimeInterval = 0
 
-    private init(spinSoundProfiles: [WeatherSpinSoundTier: WeatherSpinSoundProfile] = WeatherSpinSoundProfile.default) {
-        self.spinSoundProfiles = spinSoundProfiles
+    private init() {
         try? AVAudioSession.sharedInstance().setCategory(.ambient, options: [.mixWithOthers])
         try? AVAudioSession.sharedInstance().setActive(true)
-        timelineTickPlayers = makePlayers(name: "ui-time-scroll-click-1", count: 6)
     }
 
     func playShapeTap() {
-        audioQueue.async { [self] in
-            let soundName = shapeTapVariants.randomElement() ?? "shape-tap-1"
-            playOneshotNow(soundName, volume: 0.35)
-        }
+        playOneshot("shape-tap-1", volume: 0.35)
     }
 
-    func playDetailSunTap() {
-        audioQueue.async { [self] in
-            let soundName = detailSunTapVariants.randomElement() ?? "sfx_001"
-            playOneshotNow(soundName, volume: 0.35)
-        }
-    }
-
-    func playTimelineScrollTick() {
-        audioQueue.async { [self] in
-            guard !timelineTickPlayers.isEmpty else {
-                playOneshotNow("ui-time-scroll-click-1", volume: 0.24)
-                return
-            }
-
-            let player = timelineTickPlayers[timelineTickPlayerIndex]
-            timelineTickPlayerIndex = (timelineTickPlayerIndex + 1) % timelineTickPlayers.count
-            player.currentTime = 0
-            player.volume = 0.24
-            player.play()
-        }
-    }
-
-    func playSpinLoop(tier: WeatherSpinSoundTier) {
-        audioQueue.async { [self] in
-            guard let profile = spinSoundProfiles[tier] else { return }
-            playOneshotNow(profile.audioName, volume: profile.volume)
-        }
+    func playSpinLoop(fast: Bool) {
+        playOneshot(fast ? "spin-fast-4" : "spin-slow-4", volume: 0.26)
     }
 
     func playDetailedEnter() {
-        audioQueue.async { [self] in
-            playOneshotNow("menu-open-1", volume: 0.40)
+        playOneshot("menu-open-1", volume: 0.40)
+    }
+
+    func playSunDetailEnter() {
+        playOneshot("sun-detail-enter", volume: 1.0)
+    }
+
+    func playSunDetailExit() {
+        playOneshot("sun-detail-exit", volume: 1.0)
+    }
+
+    func playTimelineScrollTick() {
+        playOneshot("ui-time-scroll-click-1", volume: 0.22, maxConcurrentPlayers: 4)
+    }
+
+    func playDaySelect() {
+        playOneshot("ui-day-select-1", volume: 0.24)
+    }
+
+    func playSunTapBurst() {
+        audioQueue.async { [weak self] in
+            guard let self else { return }
+            let now = CACurrentMediaTime()
+            self.sunTapClickCount = WeatherSunTapAudioRuntimeCore.nextClickCount(
+                previousCount: self.sunTapClickCount,
+                lastTapTime: self.sunTapLastCallTime,
+                now: now
+            )
+            self.sunTapLastCallTime = now
+
+            let index = Int.random(in: WeatherSunTapAudioRuntimeCore.sfxIndexRange)
+            let name = WeatherSunTapAudioRuntimeCore.sfxName(for: index)
+            let volume = WeatherSunTapAudioRuntimeCore.volume(forClickCount: self.sunTapClickCount)
+            self.playSunTapOneshot(name, volume: volume)
         }
     }
 
-    private func playOneshotNow(_ name: String, volume: Float) {
+    private func playOneshot(_ name: String, volume: Float, maxConcurrentPlayers: Int = 2) {
+        audioQueue.async { [weak self] in
+            self?.playOneshotLocked(name, volume: volume, maxConcurrentPlayers: maxConcurrentPlayers)
+        }
+    }
+
+    private func playOneshotLocked(_ name: String, volume: Float, maxConcurrentPlayers: Int = 2) {
         var pool = oneshotPool[name] ?? []
         let reusable = pool.first { !$0.isPlaying }
         let player: AVAudioPlayer
@@ -90,13 +77,13 @@ final class WeatherAudioPlayer {
             player = reusable
             player.currentTime = 0
         } else {
+            guard pool.count < maxConcurrentPlayers else {
+                return
+            }
             guard let url = audioURL(name),
                   let created = try? AVAudioPlayer(contentsOf: url) else { return }
             created.prepareToPlay()
             pool.append(created)
-            if pool.count > 2 {
-                pool.removeFirst()
-            }
             oneshotPool[name] = pool
             player = created
         }
@@ -105,27 +92,73 @@ final class WeatherAudioPlayer {
         player.play()
     }
 
-    private func makePlayers(name: String, count: Int) -> [AVAudioPlayer] {
-        guard let url = audioURL(name) else { return [] }
+    private func playSunTapOneshot(_ name: String, volume: Float) {
+        guard let url = audioURL(name) else { return }
 
-        return (0..<count).compactMap { _ in
-            guard let player = try? AVAudioPlayer(contentsOf: url) else { return nil }
-            player.prepareToPlay()
-            return player
+        if let current = sunTapPlayer, current.isPlaying {
+            current.stop()
+            current.currentTime = 0
         }
+
+        let player: AVAudioPlayer
+        if let current = sunTapPlayer, current.url == url {
+            player = current
+            player.currentTime = 0
+        } else {
+            guard let created = try? AVAudioPlayer(contentsOf: url) else { return }
+            created.prepareToPlay()
+            sunTapPlayer = created
+            player = created
+        }
+
+        player.volume = volume
+        player.play()
     }
 
     private func audioURL(_ name: String) -> URL? {
-        for fileExtension in ["m4a", "mp3"] {
-            let direct = Bundle.main.bundleURL.appendingPathComponent("WeatherData/Audio/\(name).\(fileExtension)")
-            if FileManager.default.fileExists(atPath: direct.path) {
+        WeatherSunTapAudioRuntimeCore.audioURL(name: name, bundle: .main, fileManager: .default)
+    }
+}
+
+private enum WeatherSunTapAudioRuntimeCore {
+    static let resetInterval: TimeInterval = 0.5
+    static let brightVolume: Float = 0.36
+    static let mediumVolume: Float = 0.28
+    static let softVolume: Float = 0.20
+    static let sfxIndexRange: ClosedRange<Int> = 1...7
+
+    static func sfxName(for index: Int) -> String {
+        let clamped = min(max(index, sfxIndexRange.lowerBound), sfxIndexRange.upperBound)
+        return String(format: "sfx_%03d", clamped)
+    }
+
+    static func volume(forClickCount count: Int) -> Float {
+        switch count {
+        case 1...2:
+            return brightVolume
+        case 3...4:
+            return mediumVolume
+        default:
+            return softVolume
+        }
+    }
+
+    static func nextClickCount(previousCount: Int, lastTapTime: TimeInterval, now: TimeInterval) -> Int {
+        guard lastTapTime > 0 else { return 1 }
+        if now - lastTapTime > resetInterval {
+            return 1
+        }
+        return previousCount + 1
+    }
+
+    static func audioURL(name: String, bundle: Bundle, fileManager: FileManager) -> URL? {
+        let folder = "WeatherData/Audio"
+        for ext in ["m4a", "mp3", "wav"] {
+            let direct = bundle.bundleURL.appendingPathComponent("\(folder)/\(name).\(ext)")
+            if fileManager.fileExists(atPath: direct.path) {
                 return direct
             }
-            if let bundled = Bundle.main.url(
-                forResource: name,
-                withExtension: fileExtension,
-                subdirectory: "WeatherData/Audio"
-            ) {
+            if let bundled = bundle.url(forResource: name, withExtension: ext, subdirectory: folder) {
                 return bundled
             }
         }

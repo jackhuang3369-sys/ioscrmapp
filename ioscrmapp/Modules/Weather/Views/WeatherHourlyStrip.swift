@@ -5,13 +5,11 @@ struct WeatherHourlyStrip: View {
     let points: [WeatherHourlyStripPoint]
     let selectedID: String
     let onSelect: (WeatherHourlyStripPoint, Bool) -> Void
-    let onDragStateChange: (Bool) -> Void
     let onBubbleStateChange: (WeatherHourlyBubbleState) -> Void
 
     private let hapticPlayer = WeatherStripHapticPlayer.shared
     @State private var lastFeedbackIndex: Int?
     @State private var isDragging = false
-    @GestureState private var activeTouchLocation: CGPoint?
     @State private var dragLocationX: CGFloat = 0
     @State private var previousDragLocationX: CGFloat = 0
     @State private var dragDirectionSign: CGFloat = 0
@@ -20,19 +18,210 @@ struct WeatherHourlyStrip: View {
         points: [WeatherHourlyStripPoint],
         selectedID: String,
         onSelect: @escaping (WeatherHourlyStripPoint, Bool) -> Void,
-        onDragStateChange: @escaping (Bool) -> Void = { _ in },
         onBubbleStateChange: @escaping (WeatherHourlyBubbleState) -> Void = { _ in }
     ) {
         self.points = points
         self.selectedID = selectedID
         self.onSelect = onSelect
-        self.onDragStateChange = onDragStateChange
         self.onBubbleStateChange = onBubbleStateChange
     }
 
     var body: some View {
         GeometryReader { proxy in
-            hourlyStripContent(in: proxy.size)
+            let sidePadding: CGFloat = 10
+            let rawContentWidth = proxy.size.width - sidePadding * 2
+            let contentWidth = rawContentWidth.isFinite ? max(0, rawContentWidth) : 0
+            let endCapDiameter: CGFloat = 34
+            let endCapWidth: CGFloat = endCapDiameter / 2
+            let railHeight: CGFloat = 34
+            let topOverlayHeight: CGFloat = 32
+            let bubbleDiameter: CGFloat = 49
+            let maxBarTopExtension: CGFloat = 9
+            let dragStateAnimation = Animation.easeOut(duration: 0.10)
+
+            let coreWidth = max(0, contentWidth - endCapWidth * 2)
+            let itemCount = max(points.count, 1)
+            let itemWidth = coreWidth / CGFloat(itemCount)
+            let selectedFocusedIndex = points.firstIndex(where: { $0.id == selectedID }) ?? 0
+            let dragFocusedIndex = WeatherHourlyStripCore.focusedIndex(
+                forLocationX: dragLocationX,
+                itemWidth: itemWidth,
+                count: points.count
+            )
+            let focusedIndex = isDragging ? dragFocusedIndex : selectedFocusedIndex
+            let focusedPosition = itemWidth > 0
+                ? min(max(dragLocationX / itemWidth, 0), CGFloat(points.count - 1))
+                : CGFloat(focusedIndex)
+            let focusedX = WeatherHourlyStripCore.bubbleCenterX(
+                sidePadding: sidePadding,
+                endCapWidth: endCapWidth,
+                itemWidth: itemWidth,
+                focusedPosition: focusedPosition
+            )
+            let range = WeatherHourlyStripCore.temperatureRange(points)
+            let focusedTopExtension = isDragging ? maxBarTopExtension : 0
+            let bubbleY = WeatherHourlyStripCore.bubbleCenterY(
+                topOverlayHeight: topOverlayHeight,
+                focusedTopExtension: focusedTopExtension,
+                bubbleDiameter: bubbleDiameter,
+                offsetAboveTop: 5
+            )
+            let leftEndCapColor = points.first.map {
+                barColor(for: $0, range: range, isFocused: focusedIndex == 0)
+            } ?? Color.black.opacity(0.12)
+            let rightEndCapColor = points.last.map {
+                barColor(for: $0, range: range, isFocused: focusedIndex == points.count - 1)
+            } ?? Color.black.opacity(0.12)
+
+            let highIndex = points.indices.max(by: { points[$0].temperature < points[$1].temperature }) ?? 0
+            let lowIndex = points.indices.min(by: { points[$0].temperature < points[$1].temperature }) ?? 0
+            let idleBubbleY = topOverlayHeight + railHeight / 2
+            let sunriseIndex = points.firstIndex(where: { $0.hour24 == 6 })
+            let sunsetIndex = points.firstIndex(where: { $0.hour24 == 18 })
+
+            VStack(spacing: 6) {
+                ZStack(alignment: .topLeading) {
+                    HStack(spacing: 0) {
+                        Circle()
+                            .fill(leftEndCapColor)
+                            .frame(width: endCapDiameter, height: railHeight)
+                            .frame(width: endCapWidth, alignment: .leading)
+                            .frame(height: railHeight + maxBarTopExtension, alignment: .bottom)
+                            .clipped()
+
+                        HStack(spacing: 0) {
+                            ForEach(Array(points.enumerated()), id: \.element.id) { index, point in
+                                let topExtension = topExtension(
+                                    for: index,
+                                    focusedPosition: focusedPosition,
+                                    directionSign: dragDirectionSign,
+                                    isDragging: isDragging
+                                )
+
+                                Rectangle()
+                                    .fill(barColor(for: point, range: range, isFocused: index == focusedIndex))
+                                    .frame(width: itemWidth, height: railHeight + topExtension)
+                                    .frame(width: itemWidth, height: railHeight + maxBarTopExtension, alignment: .bottom)
+                                    .contentShape(Rectangle())
+                                    .onTapGesture {
+                                        selectPoint(at: index, isDragSelection: false)
+                                    }
+                            }
+                        }
+                        .frame(width: coreWidth, height: railHeight + maxBarTopExtension, alignment: .bottom)
+                        .animation(dragStateAnimation, value: isDragging)
+                        .transaction { transaction in
+                            if isDragging {
+                                transaction.animation = nil
+                            }
+                        }
+
+                        Circle()
+                            .fill(rightEndCapColor)
+                            .frame(width: endCapDiameter, height: railHeight)
+                            .frame(width: endCapWidth, alignment: .trailing)
+                            .frame(height: railHeight + maxBarTopExtension, alignment: .bottom)
+                            .clipped()
+                    }
+                    .frame(width: contentWidth, height: railHeight + maxBarTopExtension, alignment: .bottom)
+                    .offset(x: sidePadding, y: topOverlayHeight - maxBarTopExtension)
+
+                    if let sunriseIndex {
+                        solarSplitLegend(
+                            marker: .sunrise,
+                            x: xBoundaryPosition(for: sunriseIndex, itemWidth: itemWidth, sidePadding: sidePadding, endCapWidth: endCapWidth),
+                            y: idleBubbleY
+                        )
+                    }
+
+                    if let sunsetIndex {
+                        solarSplitLegend(
+                            marker: .sunset,
+                            x: xBoundaryPosition(for: sunsetIndex, itemWidth: itemWidth, sidePadding: sidePadding, endCapWidth: endCapWidth),
+                            y: idleBubbleY
+                        )
+                    }
+
+                    if isDragging, points.indices.contains(focusedIndex) {
+                        timeBubble(
+                            text: WeatherHourlyStripCore.bubbleText(hour24: points[focusedIndex].hour24),
+                            x: focusedX,
+                            y: bubbleY,
+                            diameter: bubbleDiameter
+                        )
+                    } else {
+                        temperatureLabel(
+                            text: "\(range.high)",
+                            x: xPosition(for: highIndex, itemWidth: itemWidth, sidePadding: sidePadding, endCapWidth: endCapWidth),
+                            y: idleBubbleY
+                        )
+
+                        if lowIndex != highIndex {
+                            temperatureLabel(
+                                text: "\(range.low)",
+                                x: xPosition(for: lowIndex, itemWidth: itemWidth, sidePadding: sidePadding, endCapWidth: endCapWidth),
+                                y: idleBubbleY
+                            )
+                        }
+                    }
+                }
+                .frame(height: topOverlayHeight + railHeight)
+                .contentShape(Rectangle())
+                .gesture(
+                    DragGesture(minimumDistance: 0)
+                        .onChanged { value in
+                            let coreStartX = sidePadding + endCapWidth
+                            let localX = min(max(value.location.x - coreStartX, 0), coreWidth)
+                            dragLocationX = localX
+
+                            if !isDragging {
+                                hapticPlayer.prepare()
+                                previousDragLocationX = value.location.x
+                            }
+
+                            isDragging = true
+
+                            let deltaX = value.location.x - previousDragLocationX
+                            if abs(deltaX) > 0.4 {
+                                dragDirectionSign = deltaX > 0 ? 1 : -1
+                            }
+                            previousDragLocationX = value.location.x
+                            let index = WeatherHourlyStripCore.focusedIndex(
+                                forLocationX: localX,
+                                itemWidth: itemWidth,
+                                count: points.count
+                            )
+                            let dragBubbleCenterY = WeatherHourlyStripCore.bubbleCenterY(
+                                topOverlayHeight: topOverlayHeight,
+                                focusedTopExtension: maxBarTopExtension,
+                                bubbleDiameter: bubbleDiameter,
+                                offsetAboveTop: 5
+                            )
+                            let dragBubbleTopY = dragBubbleCenterY - bubbleDiameter / 2
+                            onBubbleStateChange(WeatherHourlyBubbleState(isVisible: true, bubbleTopY: dragBubbleTopY))
+                            selectPoint(at: index, isDragSelection: true)
+                        }
+                        .onEnded { _ in
+                            withAnimation(.easeOut(duration: 0.18)) {
+                                isDragging = false
+                                dragDirectionSign = 0
+                            }
+                            onBubbleStateChange(WeatherHourlyBubbleState(isVisible: false, bubbleTopY: 0))
+                        }
+                )
+
+                HStack(spacing: 0) {
+                    ForEach(tickIndices(), id: \.self) { index in
+                        Text(tickLabel(for: index))
+                            .font(.du(9, weight: .medium))
+                            .foregroundColor(Color.black.opacity(0.52))
+                            .frame(width: contentWidth / 8)
+                    }
+                }
+                .frame(width: contentWidth, alignment: .leading)
+                .padding(.leading, sidePadding)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .frame(height: 102)
         .onAppear {
@@ -42,283 +231,18 @@ struct WeatherHourlyStrip: View {
             let initialIndex = points.firstIndex(where: { $0.id == selectedID }) ?? 0
             dragLocationX = CGFloat(initialIndex)
             hapticPlayer.prepare()
-            onDragStateChange(false)
             onBubbleStateChange(WeatherHourlyBubbleState(isVisible: false, bubbleTopY: 0))
         }
     }
 
-    private func hourlyStripContent(in size: CGSize) -> some View {
-        let layout = WeatherHourlyStripLayout(
-            size: size,
-            points: points,
-            selectedID: selectedID,
-            dragLocationX: dragLocationX,
-            isDragging: isDragging
-        )
-
-        return VStack(spacing: 6) {
-            stripChart(layout: layout)
-            tickRow(layout: layout)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-    }
-
-    private func stripChart(layout: WeatherHourlyStripLayout) -> some View {
-        ZStack(alignment: .topLeading) {
-            railView(layout: layout)
-
-            if let sunriseIndex = layout.sunriseIndex {
-                solarSplitLegend(
-                    marker: .sunrise,
-                    x: xBoundaryPosition(
-                        for: sunriseIndex,
-                        itemWidth: layout.itemWidth,
-                        sidePadding: layout.sidePadding,
-                        endCapWidth: layout.endCapWidth
-                    ),
-                    y: layout.idleBubbleY
-                )
-            }
-
-            if let sunsetIndex = layout.sunsetIndex {
-                solarSplitLegend(
-                    marker: .sunset,
-                    x: xBoundaryPosition(
-                        for: sunsetIndex,
-                        itemWidth: layout.itemWidth,
-                        sidePadding: layout.sidePadding,
-                        endCapWidth: layout.endCapWidth
-                    ),
-                    y: layout.idleBubbleY
-                )
-            }
-
-            overlayContent(layout: layout)
-        }
-        .frame(height: layout.topOverlayHeight + layout.railHeight)
-        .contentShape(Rectangle())
-        .gesture(dragGesture(layout: layout))
-        // Track the finger location separately so a stationary long press can
-        // place the bubble directly under the press instead of flashing at the
-        // previously selected hour first.
-        .simultaneousGesture(touchTrackingGesture())
-        .simultaneousGesture(longPressPreviewGesture(layout: layout))
-    }
-
-    private func railView(layout: WeatherHourlyStripLayout) -> some View {
-        HStack(spacing: 0) {
-            endCap(
-                color: points.first.map {
-                    barColor(for: $0, range: layout.range, isFocused: layout.focusedIndex == 0)
-                } ?? Color.black.opacity(0.12),
-                width: layout.endCapWidth,
-                diameter: layout.endCapDiameter,
-                height: layout.railHeight,
-                maxBarTopExtension: layout.maxBarTopExtension,
-                alignment: .leading
-            )
-
-            HStack(spacing: 0) {
-                ForEach(Array(points.indices), id: \.self) { index in
-                    barSegment(index: index, layout: layout)
-                }
-            }
-            .frame(
-                width: layout.coreWidth,
-                height: layout.railHeight + layout.maxBarTopExtension,
-                alignment: .bottom
-            )
-            .animation(.easeOut(duration: 0.10), value: isDragging)
-            .transaction { transaction in
-                if isDragging {
-                    transaction.animation = nil
-                }
-            }
-
-            endCap(
-                color: points.last.map {
-                    barColor(for: $0, range: layout.range, isFocused: layout.focusedIndex == points.count - 1)
-                } ?? Color.black.opacity(0.12),
-                width: layout.endCapWidth,
-                diameter: layout.endCapDiameter,
-                height: layout.railHeight,
-                maxBarTopExtension: layout.maxBarTopExtension,
-                alignment: .trailing
-            )
-        }
-        .frame(
-            width: layout.contentWidth,
-            height: layout.railHeight + layout.maxBarTopExtension,
-            alignment: .bottom
-        )
-        .offset(x: layout.sidePadding, y: layout.topOverlayHeight - layout.maxBarTopExtension)
-    }
-
-    private func barSegment(index: Int, layout: WeatherHourlyStripLayout) -> some View {
-        let point = points[index]
-        let topExtension = directionalTopExtension(
-            index: index,
-            focusedPosition: layout.focusedPosition,
-            directionSign: dragDirectionSign,
-            isDragging: isDragging,
-            maxExtension: layout.maxBarTopExtension
-        )
-
-        return Rectangle()
-            .fill(barColor(for: point, range: layout.range, isFocused: index == layout.focusedIndex))
-            .frame(width: layout.itemWidth, height: layout.railHeight + topExtension)
-            .frame(
-                width: layout.itemWidth,
-                height: layout.railHeight + layout.maxBarTopExtension,
-                alignment: .bottom
-            )
-            .contentShape(Rectangle())
-            .onTapGesture {
-                selectPoint(at: index, isDragSelection: false)
-            }
-    }
-
-    private func directionalTopExtension(
-        index: Int,
-        focusedPosition: CGFloat,
-        directionSign: CGFloat,
-        isDragging: Bool,
-        maxExtension: CGFloat
-    ) -> CGFloat {
+    private func topExtension(for index: Int, focusedPosition: CGFloat, directionSign: CGFloat, isDragging: Bool) -> CGFloat {
         WeatherHourlyStripCore.directionalTopExtension(
             index: index,
             focusedPosition: focusedPosition,
             directionSign: directionSign,
             isDragging: isDragging,
-            maxExtension: maxExtension
+            maxExtension: 9
         )
-    }
-
-    private func endCap(
-        color: Color,
-        width: CGFloat,
-        diameter: CGFloat,
-        height: CGFloat,
-        maxBarTopExtension: CGFloat,
-        alignment: Alignment
-    ) -> some View {
-        Circle()
-            .fill(color)
-            .frame(width: diameter, height: height)
-            .frame(width: width, alignment: alignment)
-            .frame(height: height + maxBarTopExtension, alignment: .bottom)
-            .clipped()
-    }
-
-    @ViewBuilder
-    private func overlayContent(layout: WeatherHourlyStripLayout) -> some View {
-        if isDragging, points.indices.contains(layout.focusedIndex) {
-            timeBubble(
-                text: WeatherHourlyStripCore.bubbleText(hour24: points[layout.focusedIndex].hour24),
-                x: layout.focusedX,
-                y: layout.bubbleY,
-                diameter: layout.bubbleDiameter
-            )
-        } else {
-            // Hide temperature labels when they show 35 (3D model not ready)
-            if layout.range.high != 35 {
-                temperatureLabel(
-                    text: "\(layout.range.high)",
-                    x: xPosition(
-                        for: layout.highIndex,
-                        itemWidth: layout.itemWidth,
-                        sidePadding: layout.sidePadding,
-                        endCapWidth: layout.endCapWidth
-                    ),
-                    y: layout.idleBubbleY
-                )
-            }
-
-            if layout.lowIndex != layout.highIndex && layout.range.low != 35 {
-                temperatureLabel(
-                    text: "\(layout.range.low)",
-                    x: xPosition(
-                        for: layout.lowIndex,
-                        itemWidth: layout.itemWidth,
-                        sidePadding: layout.sidePadding,
-                        endCapWidth: layout.endCapWidth
-                    ),
-                    y: layout.idleBubbleY
-                )
-            }
-        }
-    }
-
-    private func dragGesture(layout: WeatherHourlyStripLayout) -> some Gesture {
-        DragGesture(minimumDistance: 0)
-            .onChanged { value in
-                let localX = min(max(value.location.x - layout.coreStartX, 0), layout.coreWidth)
-                dragLocationX = localX
-
-                if !isDragging {
-                    hapticPlayer.prepare()
-                    previousDragLocationX = value.location.x
-                }
-
-                beginBubblePreview()
-
-                let deltaX = value.location.x - previousDragLocationX
-                if abs(deltaX) > 0.4 {
-                    dragDirectionSign = deltaX > 0 ? 1 : -1
-                }
-                previousDragLocationX = value.location.x
-
-                let index = WeatherHourlyStripCore.focusedIndex(
-                    forLocationX: localX,
-                    itemWidth: layout.itemWidth,
-                    count: points.count
-                )
-
-                // Report bubble position for Clear Sky lift
-                let dragBubbleTopY = layout.bubbleY - layout.bubbleDiameter / 2
-                onBubbleStateChange(WeatherHourlyBubbleState(isVisible: true, bubbleTopY: dragBubbleTopY))
-
-                selectPoint(at: index, isDragSelection: true)
-            }
-            .onEnded { _ in
-                endBubblePreview()
-                withAnimation(.easeOut(duration: 0.18)) {
-                    dragDirectionSign = 0
-                }
-                onBubbleStateChange(WeatherHourlyBubbleState(isVisible: false, bubbleTopY: 0))
-            }
-    }
-
-    private func touchTrackingGesture() -> some Gesture {
-        DragGesture(minimumDistance: 0)
-            .updating($activeTouchLocation) { value, state, _ in
-                state = value.location
-            }
-    }
-
-    private func longPressPreviewGesture(layout: WeatherHourlyStripLayout) -> some Gesture {
-        LongPressGesture(minimumDuration: 0.12, maximumDistance: 24)
-            .onEnded { _ in
-                beginBubblePreview()
-                selectPoint(
-                    forViewX: activeTouchLocation?.x,
-                    layout: layout,
-                    isDragSelection: true
-                )
-            }
-    }
-
-    private func tickRow(layout: WeatherHourlyStripLayout) -> some View {
-        HStack(spacing: 0) {
-            ForEach(tickIndices(), id: \.self) { index in
-                Text(tickLabel(for: index))
-                    .font(.du(9, weight: .medium))
-                    .foregroundColor(Color.black.opacity(0.52))
-                    .frame(width: layout.contentWidth / 8)
-            }
-        }
-        .frame(width: layout.contentWidth, alignment: .leading)
-        .padding(.leading, layout.sidePadding)
     }
 
     private func tickIndices() -> [Int] {
@@ -331,26 +255,14 @@ struct WeatherHourlyStrip: View {
     }
 
     private func barColor(for point: WeatherHourlyStripPoint, range: WeatherHourlyTemperatureRange, isFocused: Bool) -> Color {
-        let palette: [Color] = [
-            Color(hex: 0xF6F6F6),
-            Color(hex: 0xE9E9E9),
-            Color(hex: 0xDEDEDE),
-            Color(hex: 0xD2D2D2),
-            Color(hex: 0xC7C7C7)
-        ]
-        let normalized = WeatherHourlyStripCore.normalizedTemperatureValue(
+        let gray = WeatherHourlyStripCore.grayscaleValue(
             temperature: point.temperature,
             minTemperature: range.low,
             maxTemperature: range.high
         )
-        let bucket = min(max(Int(round(normalized * Double(palette.count - 1))), 0), palette.count - 1)
-        let baseColor = palette[bucket]
-
-        if isFocused && isDragging {
-            return palette[min(bucket + 1, palette.count - 1)].opacity(0.96)
-        }
-
-        return baseColor
+        // Halve darkness so overall bars look lighter while preserving relative differences.
+        let lighterGray = 1 - (1 - gray) * 0.5
+        return Color(white: isFocused && isDragging ? min(lighterGray + 0.03, 0.96) : lighterGray)
     }
 
     private func xPosition(for index: Int, itemWidth: CGFloat, sidePadding: CGFloat, endCapWidth: CGFloat) -> CGFloat {
@@ -367,36 +279,13 @@ struct WeatherHourlyStrip: View {
             .frame(width: diameter, height: diameter)
             .overlay {
                 Text(text)
-                    .font(neumaticCompressedFont(size: 27.5, fallbackWeight: .bold))
-                    .tracking(0.8)
-                    .foregroundColor(Color.black.opacity(0.86))
+                    .font(neumaticCompressedWideBoldFont(size: 27))
+                    .minimumScaleFactor(0.8)
+                    .lineLimit(1)
+                    .foregroundColor(.black)
+                    .padding(.horizontal, 5)
             }
             .position(x: x, y: y)
-    }
-
-    private func beginBubblePreview() {
-        guard !isDragging else { return }
-        hapticPlayer.prepare()
-        isDragging = true
-        onDragStateChange(true)
-    }
-
-    private func endBubblePreview() {
-        withAnimation(.easeOut(duration: 0.18)) {
-            isDragging = false
-        }
-        onDragStateChange(false)
-    }
-
-    private func selectPoint(forViewX viewX: CGFloat?, layout: WeatherHourlyStripLayout, isDragSelection: Bool) {
-        guard let viewX else { return }
-        let localX = min(max(viewX - layout.coreStartX, 0), layout.coreWidth)
-        let index = WeatherHourlyStripCore.focusedIndex(
-            forLocationX: localX,
-            itemWidth: layout.itemWidth,
-            count: points.count
-        )
-        selectPoint(at: index, isDragSelection: isDragSelection)
     }
 
     private func temperatureLabel(text: String, x: CGFloat, y: CGFloat) -> some View {
@@ -481,7 +370,11 @@ struct WeatherHourlyStrip: View {
             nextFocusedIndex: index
         ) {
             hapticPlayer.tick()
-            WeatherAudioPlayer.shared.playTimelineScrollTick()
+            if isDragSelection {
+                WeatherAudioPlayer.shared.playTimelineScrollTick()
+            } else {
+                WeatherAudioPlayer.shared.playDaySelect()
+            }
         }
 
         lastFeedbackIndex = index
@@ -503,73 +396,5 @@ private final class WeatherStripHapticPlayer {
     func tick() {
         generator.selectionChanged()
         generator.prepare()
-    }
-}
-
-private struct WeatherHourlyStripLayout {
-    let sidePadding: CGFloat = 10
-    let endCapDiameter: CGFloat = 34
-    let railHeight: CGFloat = 34
-    let topOverlayHeight: CGFloat = 24
-    let bubbleDiameter: CGFloat = 44
-    let maxBarTopExtension: CGFloat = 18
-
-    let totalWidth: CGFloat
-    let contentWidth: CGFloat
-    let endCapWidth: CGFloat
-    let coreWidth: CGFloat
-    let itemWidth: CGFloat
-    let focusedIndex: Int
-    let focusedPosition: CGFloat
-    let focusedX: CGFloat
-    let groupedTemperatures: [Int]
-    let range: WeatherHourlyTemperatureRange
-    let bubbleY: CGFloat
-    let idleBubbleY: CGFloat
-    let labelY: CGFloat
-    let highIndex: Int
-    let lowIndex: Int
-    let sunriseIndex: Int?
-    let sunsetIndex: Int?
-    let coreStartX: CGFloat
-
-    init(size: CGSize, points: [WeatherHourlyStripPoint], selectedID: String, dragLocationX: CGFloat = 0, isDragging: Bool = false) {
-        totalWidth = size.width
-        contentWidth = size.width - sidePadding * 2
-        endCapWidth = endCapDiameter / 2
-        coreWidth = max(0, contentWidth - endCapWidth * 2)
-
-        let itemCount = max(points.count, 1)
-        itemWidth = coreWidth / CGFloat(itemCount)
-
-        let selectedFocusedIndex = points.firstIndex(where: { $0.id == selectedID }) ?? 0
-        let dragFocusedIndex = WeatherHourlyStripCore.focusedIndex(
-            forLocationX: dragLocationX,
-            itemWidth: itemWidth,
-            count: points.count
-        )
-        focusedIndex = isDragging ? dragFocusedIndex : selectedFocusedIndex
-        focusedPosition = itemWidth > 0
-            ? min(max(dragLocationX / itemWidth, 0), CGFloat(itemCount - 1))
-            : CGFloat(focusedIndex)
-        focusedX = WeatherHourlyStripCore.bubbleCenterX(
-            sidePadding: sidePadding,
-            endCapWidth: endCapWidth,
-            itemWidth: itemWidth,
-            focusedPosition: focusedPosition
-        )
-
-        groupedTemperatures = WeatherHourlyStripCore.groupedTemperatures(points, blockSize: 3)
-        range = WeatherHourlyStripCore.temperatureRange(points)
-        // Keep the drag bubble clear of the time/temperature rows by lifting it
-        // above the rail a bit more than the resting labels.
-        bubbleY = topOverlayHeight - 42
-        idleBubbleY = topOverlayHeight + railHeight / 2
-        labelY = topOverlayHeight + railHeight / 2
-        highIndex = points.indices.max(by: { points[$0].temperature < points[$1].temperature }) ?? 0
-        lowIndex = points.indices.min(by: { points[$0].temperature < points[$1].temperature }) ?? 0
-        sunriseIndex = points.firstIndex(where: { $0.hour24 == 6 })
-        sunsetIndex = points.firstIndex(where: { $0.hour24 == 18 })
-        coreStartX = sidePadding + endCapWidth
     }
 }

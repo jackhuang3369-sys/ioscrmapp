@@ -8,24 +8,6 @@ enum WeatherSpinSettleMode: Equatable {
     case forwardMomentumTurns
 }
 
-enum WeatherSpinSoundTier: Hashable {
-    case slow
-    case medium
-    case fast
-}
-
-struct WeatherSpinSoundTuning {
-    /// Minimum planned turns required before the medium sound tier can play.
-    let mediumMinimumTurnCount: Int
-    /// Planned turns above this value use the fastest sound tier.
-    let mediumMaximumTurnCount: Int
-
-    static let `default` = WeatherSpinSoundTuning(
-        mediumMinimumTurnCount: 3,   //<mediumMinimumTurnCount,低速 ; mediumMinimumTurnCount<=x<=mediumMaximumTurnCount 中速；>mediumMaximumTurnCount,高速
-        mediumMaximumTurnCount: 6
-    )
-}
-
 struct WeatherSpinTuning {
     let fullScreenTurnDegrees: CGFloat
     let slowSwipeMaxDuration: TimeInterval
@@ -40,7 +22,6 @@ struct WeatherSpinTuning {
     let velocityPerTurn: CGFloat
     /// Under quarter-screen distance, swipes faster than this still commit forward turns.
     let shortSwipeSpinMinVelocity: CGFloat
-    let soundTuning: WeatherSpinSoundTuning
 
     static let `default` = WeatherSpinTuning(
         fullScreenTurnDegrees: 360,
@@ -50,11 +31,10 @@ struct WeatherSpinTuning {
         quarterScreenFlickThreshold: 0.20,
         halfScreenCommitThreshold: 0.5,
         projectedDistanceMultiplier: 1.22,
-        maxMomentumTurns: 12,
+        maxMomentumTurns: 8,
         finalTurnSlowdownStartRatio: 0.82,
         velocityPerTurn: 800,
-        shortSwipeSpinMinVelocity: 1650,
-        soundTuning: .default
+        shortSwipeSpinMinVelocity: 1650
     )
 }
 
@@ -87,6 +67,12 @@ struct WeatherSpinDebugSnapshot {
     let mode: WeatherSpinSettleMode
 }
 
+enum WeatherSpinReleaseAudioVariant: Equatable {
+    case none
+    case slow
+    case fast
+}
+
 struct WeatherAutoSpinRecovery {
     static func resumedSpeed(speedBeforeInteraction: Float?, fallbackCurrentSpeed: Float) -> Float {
         speedBeforeInteraction ?? fallbackCurrentSpeed
@@ -96,27 +82,35 @@ struct WeatherAutoSpinRecovery {
 struct WeatherSpinController {
     let tuning: WeatherSpinTuning
 
-    func liveYawDegrees(for translationRatio: CGFloat) -> CGFloat {
-        translationRatio * tuning.fullScreenTurnDegrees
-    }
-
-    func spinSoundTier(
-        for sample: WeatherSpinGestureSample,
-        decision: WeatherSpinSettleDecision
-    ) -> WeatherSpinSoundTier {
-        _ = sample
-        let soundTuning = tuning.soundTuning
-        let plannedTurns = decision.targetTurnCount
-
-        if plannedTurns > soundTuning.mediumMaximumTurnCount {
+    func releaseAudioVariant(for decision: WeatherSpinSettleDecision) -> WeatherSpinReleaseAudioVariant {
+        if decision.targetTurnCount >= 2 {
             return .fast
         }
-
-        if plannedTurns >= soundTuning.mediumMinimumTurnCount {
-            return .medium
+        if decision.targetTurnCount == 1 {
+            return .slow
         }
+        return .none
+    }
 
-        return .slow
+    /// Returns a front-facing destination yaw that preserves release direction.
+    /// This avoids reversing through all accumulated turns when settling to 0/360.
+    func sunDetailSnapYaw(currentYaw: Float, direction: Float) -> Float {
+        frontFacingYaw(from: currentYaw, direction: direction >= 0 ? 1 : -1, extraTurns: 0)
+    }
+
+    /// Collapses accumulated yaw to an equivalent front-facing angle near zero.
+    /// This prevents post-settle stabilization from unwinding historical turns.
+    func collapsedFrontFacingYaw(_ yaw: Float) -> Float {
+        let fullRotation = Float.pi * 2
+        let normalized = positiveRemainder(yaw, divisor: fullRotation)
+        if abs(normalized - fullRotation) < 0.0001 || abs(normalized) < 0.0001 {
+            return 0
+        }
+        return normalized > Float.pi ? normalized - fullRotation : normalized
+    }
+
+    func liveYawDegrees(for translationRatio: CGFloat) -> CGFloat {
+        translationRatio * tuning.fullScreenTurnDegrees
     }
 
     func settleDecision(currentYawDegrees: CGFloat, sample: WeatherSpinGestureSample) -> WeatherSpinSettleDecision {
@@ -177,5 +171,23 @@ struct WeatherSpinController {
         let normalized = abs(yawDegrees.truncatingRemainder(dividingBy: tuning.fullScreenTurnDegrees))
         return normalized <= toleranceDegrees
             || abs(normalized - tuning.fullScreenTurnDegrees) <= toleranceDegrees
+    }
+
+    private func frontFacingYaw(from yaw: Float, direction: Float, extraTurns: Int) -> Float {
+        let fullRotation = Float.pi * 2
+        let normalizedYaw = positiveRemainder(yaw, divisor: fullRotation)
+
+        if direction >= 0 {
+            let offsetToFront = normalizedYaw == 0 ? 0 : fullRotation - normalizedYaw
+            return yaw + offsetToFront + Float(extraTurns) * fullRotation
+        }
+
+        let offsetToFront = normalizedYaw == 0 ? 0 : normalizedYaw
+        return yaw - offsetToFront - Float(extraTurns) * fullRotation
+    }
+
+    private func positiveRemainder(_ value: Float, divisor: Float) -> Float {
+        let remainder = value.truncatingRemainder(dividingBy: divisor)
+        return remainder >= 0 ? remainder : remainder + divisor
     }
 }

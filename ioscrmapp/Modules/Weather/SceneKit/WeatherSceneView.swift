@@ -1,9 +1,193 @@
 import SwiftUI
 import SceneKit
+import CoreGraphics
+import Foundation
+
+// MARK: - WeatherSpinCore types
+enum WeatherSpinSettleMode: Equatable {
+    case reverseReturnToFront
+    case forwardCompleteToFront
+    case forwardSingleTurn
+    case forwardMomentumTurns
+}
+
+struct WeatherSpinTuning {
+    let fullScreenTurnDegrees: CGFloat
+    let slowSwipeMaxDuration: TimeInterval
+    let fastSwipeMinVelocity: CGFloat
+    let fastSwipeMinDistanceRatio: CGFloat
+    let quarterScreenFlickThreshold: CGFloat
+    let halfScreenCommitThreshold: CGFloat
+    let projectedDistanceMultiplier: CGFloat
+    let maxMomentumTurns: Int
+    let finalTurnSlowdownStartRatio: CGFloat
+    let velocityPerTurn: CGFloat
+    let shortSwipeSpinMinVelocity: CGFloat
+
+    static let `default` = WeatherSpinTuning(
+        fullScreenTurnDegrees: 360,
+        slowSwipeMaxDuration: 0.48,
+        fastSwipeMinVelocity: 900,
+        fastSwipeMinDistanceRatio: 0.04,
+        quarterScreenFlickThreshold: 0.20,
+        halfScreenCommitThreshold: 0.5,
+        projectedDistanceMultiplier: 1.22,
+        maxMomentumTurns: 8,
+        finalTurnSlowdownStartRatio: 0.82,
+        velocityPerTurn: 800,
+        shortSwipeSpinMinVelocity: 1650
+    )
+}
+
+struct WeatherSpinGestureSample {
+    let translationRatio: CGFloat
+    let predictedTranslationRatio: CGFloat
+    let velocityPointsPerSecond: CGFloat
+    let duration: TimeInterval
+
+    func isFast(using tuning: WeatherSpinTuning) -> Bool {
+        duration <= tuning.slowSwipeMaxDuration
+            && abs(velocityPointsPerSecond) >= tuning.fastSwipeMinVelocity
+            && abs(translationRatio) >= tuning.fastSwipeMinDistanceRatio
+    }
+}
+
+struct WeatherSpinSettleDecision: Equatable {
+    let mode: WeatherSpinSettleMode
+    let targetTurnCount: Int
+    let targetYawDegrees: CGFloat
+    let usesFinalTurnSlowdown: Bool
+}
+
+struct WeatherSpinDebugSnapshot {
+    let translationRatio: CGFloat
+    let predictedTranslationRatio: CGFloat
+    let velocityPointsPerSecond: CGFloat
+    let duration: TimeInterval
+    let targetTurnCount: Int
+    let mode: WeatherSpinSettleMode
+}
+
+enum WeatherSpinReleaseAudioVariant: Equatable {
+    case none
+    case slow
+    case fast
+}
+
+struct WeatherSpinController {
+    let tuning: WeatherSpinTuning
+
+    func releaseAudioVariant(for decision: WeatherSpinSettleDecision) -> WeatherSpinReleaseAudioVariant {
+        if decision.targetTurnCount >= 2 {
+            return .fast
+        }
+        if decision.targetTurnCount == 1 {
+            return .slow
+        }
+        return .none
+    }
+
+    /// Returns a front-facing destination yaw that preserves release direction.
+    /// This avoids reversing through all accumulated turns when settling to 0/360.
+    func sunDetailSnapYaw(currentYaw: Float, direction: Float) -> Float {
+        frontFacingYaw(from: currentYaw, direction: direction >= 0 ? 1 : -1, extraTurns: 0)
+    }
+
+    /// Collapses accumulated yaw to an equivalent front-facing angle near zero.
+    /// This prevents post-settle stabilization from unwinding historical turns.
+    func collapsedFrontFacingYaw(_ yaw: Float) -> Float {
+        let fullRotation = Float.pi * 2
+        let normalized = positiveRemainder(yaw, divisor: fullRotation)
+        if abs(normalized - fullRotation) < 0.0001 || abs(normalized) < 0.0001 {
+            return 0
+        }
+        return normalized > Float.pi ? normalized - fullRotation : normalized
+    }
+
+    func liveYawDegrees(for translationRatio: CGFloat) -> CGFloat {
+        translationRatio * tuning.fullScreenTurnDegrees
+    }
+
+    func settleDecision(currentYawDegrees: CGFloat, sample: WeatherSpinGestureSample) -> WeatherSpinSettleDecision {
+        let absoluteTranslation = abs(sample.translationRatio)
+        let completedTurns = max(Int(floor(abs(currentYawDegrees) / tuning.fullScreenTurnDegrees)), 0)
+
+        if sample.isFast(using: tuning) {
+            if absoluteTranslation < tuning.quarterScreenFlickThreshold,
+               abs(sample.velocityPointsPerSecond) < tuning.shortSwipeSpinMinVelocity {
+                return WeatherSpinSettleDecision(
+                    mode: .reverseReturnToFront,
+                    targetTurnCount: 0,
+                    targetYawDegrees: 0,
+                    usesFinalTurnSlowdown: false
+                )
+            }
+
+            let velocityTurns = Int(abs(sample.velocityPointsPerSecond) / tuning.velocityPerTurn)
+            let cappedTurns = max(1, min(velocityTurns, tuning.maxMomentumTurns))
+            return WeatherSpinSettleDecision(
+                mode: cappedTurns == 1 ? .forwardSingleTurn : .forwardMomentumTurns,
+                targetTurnCount: cappedTurns,
+                targetYawDegrees: CGFloat(cappedTurns) * tuning.fullScreenTurnDegrees,
+                usesFinalTurnSlowdown: true
+            )
+        }
+
+        if absoluteTranslation < tuning.halfScreenCommitThreshold {
+            return WeatherSpinSettleDecision(
+                mode: .reverseReturnToFront,
+                targetTurnCount: 0,
+                targetYawDegrees: 0,
+                usesFinalTurnSlowdown: false
+            )
+        }
+
+        if absoluteTranslation < 1 {
+            return WeatherSpinSettleDecision(
+                mode: .forwardCompleteToFront,
+                targetTurnCount: 1,
+                targetYawDegrees: tuning.fullScreenTurnDegrees,
+                usesFinalTurnSlowdown: true
+            )
+        }
+
+        let forwardTurns = max(completedTurns, 1)
+        return WeatherSpinSettleDecision(
+            mode: .forwardCompleteToFront,
+            targetTurnCount: forwardTurns,
+            targetYawDegrees: CGFloat(forwardTurns) * tuning.fullScreenTurnDegrees,
+            usesFinalTurnSlowdown: true
+        )
+    }
+
+    func isFrontFacing(yawDegrees: CGFloat, toleranceDegrees: CGFloat) -> Bool {
+        let normalized = abs(yawDegrees.truncatingRemainder(dividingBy: tuning.fullScreenTurnDegrees))
+        return normalized <= toleranceDegrees
+            || abs(normalized - tuning.fullScreenTurnDegrees) <= toleranceDegrees
+    }
+
+    private func frontFacingYaw(from yaw: Float, direction: Float, extraTurns: Int) -> Float {
+        let fullRotation = Float.pi * 2
+        let normalizedYaw = positiveRemainder(yaw, divisor: fullRotation)
+
+        if direction >= 0 {
+            let offsetToFront = normalizedYaw == 0 ? 0 : fullRotation - normalizedYaw
+            return yaw + offsetToFront + Float(extraTurns) * fullRotation
+        }
+
+        let offsetToFront = normalizedYaw == 0 ? 0 : normalizedYaw
+        return yaw - offsetToFront - Float(extraTurns) * fullRotation
+    }
+
+    private func positiveRemainder(_ value: Float, divisor: Float) -> Float {
+        let remainder = value.truncatingRemainder(dividingBy: divisor)
+        return remainder >= 0 ? remainder : remainder + divisor
+    }
+}
 
 // MARK: - WeatherSceneView
 //
-// Full-screen SceneKit view with pan-gesture rotation and velocity-driven momentum settle.
+// Full-screen SceneKit view with pan-gesture rotation + inertial auto-spin.
 // The transparent background lets the SwiftUI sky gradient show through.
 // Rotation is applied to WeatherSceneManager.conditionGroup so lighting
 // remains stationary while the weather model spins.
@@ -13,7 +197,7 @@ struct WeatherSceneView: UIViewRepresentable {
     let scene:   SCNScene
     /// Access to the rotatable model node. Pass nil for non-interactive scene views (e.g. Page B panels).
     let manager: WeatherSceneManager?
-    let onSunTap: ((CGPoint) -> Void)?
+    let onSunTap: (() -> Void)?
     let onBackgroundTap: (() -> Void)?
     let allowsInteraction: Bool
     let interactionResetVersion: Int
@@ -28,7 +212,7 @@ struct WeatherSceneView: UIViewRepresentable {
     init(
         scene: SCNScene,
         manager: WeatherSceneManager?,
-        onSunTap: ((CGPoint) -> Void)? = nil,
+        onSunTap: (() -> Void)? = nil,
         onBackgroundTap: (() -> Void)? = nil,
         allowsInteraction: Bool = true,
         interactionResetVersion: Int = 0
@@ -109,7 +293,7 @@ struct WeatherSceneView: UIViewRepresentable {
             case easeOutCubic
             case easeOutQuart
             case easeOutQuint
-            case easeOutDecay
+            case easeOutDecay   // physical exponential deceleration (k=3)
         }
 
         private struct OrientationAnimation {
@@ -133,7 +317,7 @@ struct WeatherSceneView: UIViewRepresentable {
 
         private let manager: WeatherSceneManager?
         private let allowsInteraction: Bool
-        private var onSunTap: ((CGPoint) -> Void)?
+        private var onSunTap: (() -> Void)?
         private var onBackgroundTap: (() -> Void)?
         private var currentYaw:     Float = 0
         private var currentPitch:   Float = 0
@@ -149,6 +333,7 @@ struct WeatherSceneView: UIViewRepresentable {
         private var lastPanPoint: CGPoint?
         private var panSession: PanSession?
         private var orientationAnimation: OrientationAnimation?
+        private var pendingOrientationAnimation: OrientationAnimation?
         private var hasUserInteracted: Bool = false
         private var lastInteractionResetVersion: Int = 0
         private let spinController = WeatherSpinController(tuning: .default)
@@ -173,7 +358,7 @@ struct WeatherSceneView: UIViewRepresentable {
 
         init(
             manager: WeatherSceneManager?,
-            onSunTap: ((CGPoint) -> Void)?,
+            onSunTap: (() -> Void)?,
             onBackgroundTap: (() -> Void)?,
             allowsInteraction: Bool
         ) {
@@ -186,7 +371,7 @@ struct WeatherSceneView: UIViewRepresentable {
             targetPitch = restPitch
         }
 
-        func updateInteractionCallbacks(onSunTap: ((CGPoint) -> Void)?, onBackgroundTap: (() -> Void)?) {
+        func updateInteractionCallbacks(onSunTap: (() -> Void)?, onBackgroundTap: (() -> Void)?) {
             self.onSunTap = onSunTap
             self.onBackgroundTap = onBackgroundTap
         }
@@ -196,6 +381,7 @@ struct WeatherSceneView: UIViewRepresentable {
 
             lastInteractionResetVersion = version
             orientationAnimation = nil
+            pendingOrientationAnimation = nil
             isPanning = false
             lastPanPoint = nil
             panSession = nil
@@ -230,12 +416,6 @@ struct WeatherSceneView: UIViewRepresentable {
         /// Advances inertial motion and eases the model back toward its resting pose.
         @objc private func step(_ link: CADisplayLink) {
             guard let node = manager?.conditionGroup else { return }
-
-            // 场景动画进行中，由 SCNAction 驱动，Coordinator 不干预
-            if manager?.isPlayingSceneAnimation == true {
-                return
-            }
-
             let restPitch = manager?.restTiltX ?? 0
             let autoSpinSpeed = manager?.autoSpinSpeed ?? 0
             let frameDuration = max(link.targetTimestamp - link.timestamp, 1.0 / 60.0)
@@ -347,8 +527,17 @@ struct WeatherSceneView: UIViewRepresentable {
                 targetPitch = animation.endPitch
                 currentRoll = animation.endRoll
                 targetRoll = animation.endRoll
-                orientationAnimation = nil
-                manager?.resumeAutomaticSpinAfterInteraction()
+                if let pending = pendingOrientationAnimation {
+                    pendingOrientationAnimation = nil
+                    orientationAnimation = pending
+                } else {
+                    orientationAnimation = nil
+                    let collapsedYaw = spinController.collapsedFrontFacingYaw(currentYaw)
+                    currentYaw = collapsedYaw
+                    targetYaw = collapsedYaw
+                    hasUserInteracted = false
+                    manager?.resumeAutomaticSpinAfterInteraction()
+                }
             } else {
                 orientationAnimation = animation
             }
@@ -372,19 +561,24 @@ struct WeatherSceneView: UIViewRepresentable {
                 extraTurns: extraTurns
             )
             let settleDistance = abs(destinationYaw - currentYaw)
-            let velocityRadiansPerSecond = Float(abs(velocityX))
-                / max(panReferenceWidth, minimumPanReferenceWidth)
-                * Float.pi * 2
+            let oneTurnRadians = Float.pi * 2
+            let settleTurns = settleDistance / oneTurnRadians
+            // Velocity-matched duration:
+            // easeOutDecay (k=3) has f'(0) = k/(1-e^{-k}) ≈ 3.16 × average velocity
+            // => duration = 3.16 × settle_radians / finger_rad_per_sec
             let baseDuration: Float
             if decision.mode == .reverseReturnToFront {
-                let settleTurns = settleDistance / (.pi * 2)
-                baseDuration = max(minimumSettleDuration, 0.40 + settleTurns * 0.22)
+                // Reverse snap: fixed short duration proportional to distance
+                baseDuration = max(minimumSettleDuration, 0.40 + Float(settleTurns) * 0.22)
             } else {
-                let matched = velocityRadiansPerSecond > 0.5
-                    ? 3.16 * settleDistance / velocityRadiansPerSecond
+                let velRadPerSec = Float(abs(velocityX)) / max(panReferenceWidth, minimumPanReferenceWidth) * Float.pi * 2
+                let matched = velRadPerSec > 0.5
+                    ? 3.16 * settleDistance / velRadPerSec
                     : maximumSettleDuration
                 baseDuration = min(maximumSettleDuration, max(minimumSettleDuration, matched))
             }
+
+            pendingOrientationAnimation = nil
             orientationAnimation = OrientationAnimation(
                 yawCurve: decision.mode == .reverseReturnToFront ? .easeOutQuint : .easeOutDecay,
                 tiltCurve: .easeOutCubic,
@@ -396,6 +590,7 @@ struct WeatherSceneView: UIViewRepresentable {
                 endRoll: 0,
                 duration: CFTimeInterval(baseDuration)
             )
+
             targetYaw = currentYaw
             targetPitch = currentPitch
             targetRoll = currentRoll
@@ -406,6 +601,32 @@ struct WeatherSceneView: UIViewRepresentable {
 
         private func stopMomentumAnimations() {
             orientationAnimation = nil
+            pendingOrientationAnimation = nil
+            targetYaw = currentYaw
+            targetPitch = currentPitch
+            targetRoll = currentRoll
+            yawVelocity = 0
+            pitchVelocity = 0
+            rollVelocity = 0
+        }
+
+        /// 第二屏专用：松手后沿当前方向平滑滑行到最近的 0/360 朝向。
+        private func snapBackToZero(restPitch: Float, direction: Float) {
+            let destinationYaw = spinController.sunDetailSnapYaw(currentYaw: currentYaw, direction: direction)
+            let distance = abs(destinationYaw - currentYaw)
+            let duration = min(0.55, max(0.28, Double(distance / .pi) * 0.50))
+            orientationAnimation = OrientationAnimation(
+                yawCurve: .easeOutCubic,
+                tiltCurve: .easeOutCubic,
+                startYaw: currentYaw,
+                endYaw: destinationYaw,
+                startPitch: currentPitch,
+                endPitch: restPitch,
+                startRoll: currentRoll,
+                endRoll: 0,
+                duration: duration
+            )
+            pendingOrientationAnimation = nil
             targetYaw = currentYaw
             targetPitch = currentPitch
             targetRoll = currentRoll
@@ -430,17 +651,6 @@ struct WeatherSceneView: UIViewRepresentable {
         private func positiveRemainder(_ value: Float, divisor: Float) -> Float {
             let remainder = value.truncatingRemainder(dividingBy: divisor)
             return remainder >= 0 ? remainder : remainder + divisor
-        }
-
-        private func spinSoundTier(for velocity: CGPoint) -> WeatherSpinSoundTier {
-            let speed = hypot(velocity.x, velocity.y)
-            if speed >= spinController.tuning.fastSwipeMinVelocity * 2 {
-                return .fast
-            }
-            if speed >= spinController.tuning.fastSwipeMinVelocity {
-                return .medium
-            }
-            return .slow
         }
 
         private func interpolate(_ start: Float, _ end: Float, progress: Float) -> Float {
@@ -482,9 +692,12 @@ struct WeatherSceneView: UIViewRepresentable {
             return 1 - reversed * reversed
         }
 
+        /// Exponential deceleration matching physical friction: v(t) = v₀·e^(−kt).
+        /// k=3 evenly distributes motion over time — 59% at t=0.3, 82% at t=0.5, 94% at t=0.7
+        /// vs easeOutQuint's 83% / 97% / 99.7% (far less front-loaded).
         private func easeOutDecay(_ progress: Float) -> Float {
             let k: Float = 3.0
-            return (1 - exp(-k * progress)) / (1 - exp(-k))
+            return (1.0 - exp(-k * progress)) / (1.0 - exp(-k))
         }
 
         private func debugLogSettle(
@@ -533,10 +746,6 @@ struct WeatherSceneView: UIViewRepresentable {
                     startTimestamp: CACurrentMediaTime()
                 )
                 stopMomentumAnimations()
-                SCNTransaction.begin()
-                SCNTransaction.animationDuration = 0.16
-                node.scale = SCNVector3(node.scale.x * 1.02, node.scale.y * 1.02, node.scale.z * 1.02)
-                SCNTransaction.commit()
             case .changed:
                 let point = gesture.location(in: gesture.view)
                 let previousPoint = lastPanPoint ?? point
@@ -559,6 +768,7 @@ struct WeatherSceneView: UIViewRepresentable {
                 targetPitch += pitchDelta
                 targetRoll += rollDelta
 
+                // Direct yaw tracking: finger ↔ model 1:1, zero perceptible lag
                 currentYaw = yawTarget
                 if interactionMode == .horizontalYawOnly {
                     settleHorizontalTilt(restPitch: restPitch)
@@ -576,12 +786,23 @@ struct WeatherSceneView: UIViewRepresentable {
                 let v = gesture.velocity(in: gesture.view)
                 let interactionMode = panInteractionMode(for: gesture)
 
+                // Keep the release frame continuous with the drag frame to avoid a visible hitch
+                // when settle animation takes over near threshold distances.
                 currentYaw = targetYaw
                 currentPitch = targetPitch
                 currentRoll = targetRoll
                 applyOrientation(to: node)
                 manager?.syncDisplayGroupRotation(to: node.eulerAngles)
 
+                // 第二屏：保持当前旋转方向，滑行到最近的 0/360 朝向（不反向吐圈）
+                if manager?.isSunDetailMode == true {
+                    let yawDelta = targetYaw - (panSession?.startYaw ?? targetYaw)
+                    let settleDirection: Float = yawDelta == 0
+                        ? (v.x >= 0 ? 1 : -1)
+                        : (yawDelta > 0 ? 1 : -1)
+                    snapBackToZero(restPitch: restPitch, direction: settleDirection)
+                    break
+                }
                 if interactionMode == .horizontalYawOnly {
                     let referenceWidth = max(Float(gesture.view?.bounds.width ?? 0), minimumPanReferenceWidth)
                     let translation = gesture.translation(in: gesture.view).x
@@ -589,10 +810,7 @@ struct WeatherSceneView: UIViewRepresentable {
                     let predicted = translation + v.x * projectionHorizonSeconds
                     let translationRatio = CGFloat(translation) / CGFloat(referenceWidth)
                     let predictedRatio = CGFloat(predicted) / CGFloat(referenceWidth)
-                    let duration = max(
-                        CACurrentMediaTime() - (panSession?.startTimestamp ?? CACurrentMediaTime()),
-                        0.01
-                    )
+                    let duration = max(CACurrentMediaTime() - (panSession?.startTimestamp ?? CACurrentMediaTime()), 0.01)
                     let sample = WeatherSpinGestureSample(
                         translationRatio: translationRatio,
                         predictedTranslationRatio: predictedRatio,
@@ -605,32 +823,30 @@ struct WeatherSceneView: UIViewRepresentable {
                         currentYawDegrees: currentYawDegrees,
                         sample: sample
                     )
-                    let direction: Float = translationRatio == 0
+                    debugLogSettle(sample: sample, decision: decision, currentYawDegrees: currentYawDegrees)
+                    let direction: Float = (translationRatio == 0)
                         ? (v.x >= 0 ? 1 : -1)
                         : (translationRatio > 0 ? 1 : -1)
-                    debugLogSettle(
-                        sample: sample,
-                        decision: decision,
-                        currentYawDegrees: currentYawDegrees
-                    )
                     startSettlingAnimation(
                         decision: decision,
                         direction: direction,
                         velocityX: v.x,
-                        restPitch: restPitch,
+                        restPitch: restPitch
                     )
-                    WeatherAudioPlayer.shared.playSpinLoop(
-                        tier: spinController.spinSoundTier(for: sample, decision: decision)
-                    )
+                    switch spinController.releaseAudioVariant(for: decision) {
+                    case .none:
+                        break
+                    case .slow:
+                        WeatherAudioPlayer.shared.playSpinLoop(fast: false)
+                    case .fast:
+                        WeatherAudioPlayer.shared.playSpinLoop(fast: true)
+                    }
                 } else {
                     let sample = WeatherSpinGestureSample(
                         translationRatio: 0,
                         predictedTranslationRatio: 0,
                         velocityPointsPerSecond: v.x,
-                        duration: max(
-                            CACurrentMediaTime() - (panSession?.startTimestamp ?? CACurrentMediaTime()),
-                            0.01
-                        )
+                        duration: max(CACurrentMediaTime() - (panSession?.startTimestamp ?? CACurrentMediaTime()), 0.01)
                     )
                     let decision = WeatherSpinSettleDecision(
                         mode: .reverseReturnToFront,
@@ -645,15 +861,9 @@ struct WeatherSceneView: UIViewRepresentable {
                         restPitch: restPitch
                     )
                     debugLogSettle(sample: sample, decision: decision, currentYawDegrees: 0)
-                    WeatherAudioPlayer.shared.playSpinLoop(
-                        tier: spinSoundTier(for: v)
-                    )
+                    let fast = hypot(v.x, v.y) > 650
+                    WeatherAudioPlayer.shared.playSpinLoop(fast: fast)
                 }
-                SCNTransaction.begin()
-                SCNTransaction.animationDuration = 0.22
-                let currentScale = node.scale.x / 1.02
-                node.scale = SCNVector3(currentScale, currentScale, currentScale)
-                SCNTransaction.commit()
             default:
                 isPanning = false
                 lastPanPoint = nil
@@ -668,26 +878,10 @@ struct WeatherSceneView: UIViewRepresentable {
             let hits = scnView.hitTest(location, options: [SCNHitTestOption.searchMode: SCNHitTestSearchMode.all.rawValue])
             // Ignore temperature digits so tapping numbers does not trigger sun interaction.
             if hits.contains(where: { isInteractiveNode($0.node) && !isTemperatureNode($0.node) }) {
-                let screenLocation = projectedSunCenter(in: scnView)
-                    ?? gesture.location(in: scnView.window)
-                onSunTap?(screenLocation)
+                onSunTap?()
             } else {
                 onBackgroundTap?()
             }
-        }
-
-        private func projectedSunCenter(in scnView: SCNView) -> CGPoint? {
-            guard let sunNode = manager?.sunNode else { return nil }
-
-            let worldPosition = sunNode.presentation.worldPosition
-            let projected = scnView.projectPoint(worldPosition)
-            guard projected.z.isFinite else { return nil }
-
-            let localPoint = CGPoint(
-                x: CGFloat(projected.x),
-                y: CGFloat(projected.y)
-            )
-            return scnView.convert(localPoint, to: scnView.window)
         }
 
         private func isInteractiveNode(_ node: SCNNode?) -> Bool {

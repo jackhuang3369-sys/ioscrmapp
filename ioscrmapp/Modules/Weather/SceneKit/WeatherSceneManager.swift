@@ -10,105 +10,40 @@ enum WeatherSceneMode {
 
 final class WeatherSceneManager: ObservableObject {
 
-    private enum SunBurstRayDepthLayer {
-        case foreground
-        case middle
-        case background
+    private enum SunBurstTuning {
+        static let rayCount = WeatherSunBurstCore.rayCount
+        static let minLength = WeatherSunBurstCore.minRayLength
+        static let maxLength = WeatherSunBurstCore.maxRayLength
+        static let minJitter = WeatherSunBurstCore.minJitter
+        static let maxJitter = WeatherSunBurstCore.maxJitter
+        static let sunRadius = WeatherSunBurstCore.sunRadius
+        static let burstZOffset = WeatherSunBurstCore.burstZOffset
+        static let layerDelayStep = WeatherSunBurstCore.layerDelayStep
+        static let springMainDuration = WeatherSunBurstCore.springMainDuration
+        static let springBounceDuration = WeatherSunBurstCore.springBounceDuration
+        static let springOvershootY = WeatherSunBurstCore.springOvershootY
+        static let springOvershootScale = WeatherSunBurstCore.springOvershootScale
+        static let maxElevation: Float = Float.pi / 2   // 完整球面，保留兼容
 
-        var opacityRange: ClosedRange<CGFloat> {
-            switch self {
-            case .foreground:
-                0.94...1.0
-            case .middle:
-                0.94...1.0
-            case .background:
-                0.94...1.0
-            }
+        static func colorWhite(forZ z: Float) -> Float {
+            WeatherSunBurstCore.colorWhite(forZ: z)
         }
 
-        var whiteRange: ClosedRange<CGFloat> {
-            switch self {
-            case .foreground:
-                0.02...0.08
-            case .middle:
-                0.18...0.30
-            case .background:
-                0.28...0.5
-            }
+        static func materialAlpha(forZ z: Float) -> Float {
+            WeatherSunBurstCore.materialAlpha(forZ: z)
         }
 
-        var emissionRange: ClosedRange<CGFloat> {
-            switch self {
-            case .foreground:
-                0.9...1
-            case .middle:
-                0.9...1
-            case .background:
-                0.9...1
-            }
+        static func thickness(forZ z: Float) -> Float {
+            WeatherSunBurstCore.thickness(forZ: z)
         }
 
-        var travelDistanceRange: ClosedRange<Float> {
-            switch self {
-            case .foreground:
-                2.4...4.0
-            case .middle:
-                1.3...2.5
-            case .background:
-                0.65...1.35
-            }
+        static func outwardDistance(forLength length: Float) -> Float {
+            WeatherSunBurstCore.outwardDistance(forLength: length)
         }
 
-        var depthRange: ClosedRange<Float> {
-            switch self {
-            case .foreground:
-                0.26...0.82
-            case .middle:
-                -0.10...0.24
-            case .background:
-                -0.88 ... -0.18
-            }
+        static func delayOffset(forZ z: Float) -> TimeInterval {
+            WeatherSunBurstCore.delayOffset(forZ: z)
         }
-
-        var metalness: Float {
-            switch self {
-            case .foreground:
-                0.08
-            case .middle:
-                0.05
-            case .background:
-                0.02
-            }
-        }
-
-        var roughness: Float {
-            switch self {
-            case .foreground:
-                0.90
-            case .middle:
-                0.94
-            case .background:
-                0.98
-            }
-        }
-    }
-
-    private struct SunBurstRayAnimationSpec {
-        let startPosition: SCNVector3
-        let endPosition: SCNVector3
-        let direction: SIMD3<Float>
-        let baseOpacity: CGFloat
-        let length: CGFloat
-        let thickness: CGFloat
-        let whiteValue: CGFloat
-        let emissionAlpha: CGFloat
-        let delay: TimeInterval
-        let fadeInDuration: TimeInterval
-        let flyDuration: TimeInterval
-        let fadeOutDuration: TimeInterval
-        let shrinkScaleY: Float
-        let depthThicknessMultiplier: CGFloat
-        let layer: SunBurstRayDepthLayer
     }
 
     static let sunDetailTransitionDuration: TimeInterval = 0.5 //入场动画，第一屏到第二屏的时间。
@@ -122,61 +57,45 @@ final class WeatherSceneManager: ObservableObject {
     private(set) var restTiltX: Float = -0.012
     private(set) var autoSpinSpeed: Float = 0
     private(set) var currentTemperature: Int
-    /// 场景动画进行中时为 true，Coordinator 不应写入方向。
-    private(set) var isPlayingSceneAnimation = false
+    /// 入场旋转动画进行中时为 true，Coordinator 不应写入方向。
+    private(set) var isPlayingEntryAnimation = false
 
     private let mode: WeatherSceneMode
+    var isSunDetailMode: Bool { mode == .sunDetail }
     private var cameraNode: SCNNode?
     private var sceneRootNode: SCNNode?
     private var detailTitleNode: SCNNode?
     private var sunBurstNode: SCNNode?
+    private var sunTapBurstOverlayNode: SCNNode?
     private var temperatureNode: SCNNode?
-    private var pendingTemperatureNode: SCNNode?
-    // Cache assembled temperature node trees by full text (for example "31").
-    // This avoids reparsing the OBJ digits on every timeline scrub update.
-    private var temperatureNodeCache: [String: SCNNode] = [:]
-    // Tracks what value is currently rendered so we can skip no-op updates.
-    private var displayedTemperature: Int?
+    private var temperatureNodePrototypeCache: [String: SCNNode] = [:]
     private var sunModelNode: SCNNode?
     private var sunBurstRayDirections: [ObjectIdentifier: SCNVector3] = [:]
     private var sunBurstRayStartPositions: [ObjectIdentifier: SCNVector3] = [:]
     private var sunBurstRayBaseOpacities: [ObjectIdentifier: CGFloat] = [:]
     private var transitionSourceRotation = SCNVector3(0, 0, 0)
     private var isTemperatureHidden: Bool = false
-    private var autoSpinSpeedBeforeInteraction: Float?
     private var transitionCompletionWorkItem: DispatchWorkItem?
+    private var burstAnimationWorkItem: DispatchWorkItem?
     private var entrySpinWorkItem: DispatchWorkItem?
-    private var detailSpinWorkItem: DispatchWorkItem?
-    private var detailSpinCompletionWorkItem: DispatchWorkItem?
     private var _birdsScene: SCNScene?   // 防止 ARC 过早释放鸟群场景
     private let weatherDataSubdirectory = "WeatherData"
     private let sunSpinAnimationKey = "sun_spin"
     private let sunTitleSpinAnimationKey = "sun_title_spin"
-    private let detailIntroSpinTurns: Float = 2
-    private let detailIntroSpinDuration: TimeInterval = 20
+    private let detailAutoSpinSpeed = -Float.pi * 2 / 30
     private let mainTemperatureScale: Float = 1.5
     private let mainSunScale: CGFloat = 1.12
-    private let mainSunPositionY: Float = 4.45
+    private let mainSunPositionY: Float = 4.40
     private let mainTemperaturePositionY: Float = -2.4
     private let mainCameraPosition = SCNVector3(0, 0.02, 24.9)
-    private let detailCameraPosition = SCNVector3(0, 0.38, 18.8)
+    private let detailCameraPosition = SCNVector3(0, -0.8, 23.4)
     private let mainRootPosition = SCNVector3(0, -1.94, 0)
     private let detailRootPosition = SCNVector3(0, -0.42, 0)
     private let mainPresentationRotation = SCNVector3(-0.012, 0, 0)
-    private let detailSunPosition = SCNVector3(0, 1.4, -0.1) //太阳落点位置
-    private let detailSunScale: Float = 0.68
-    private let detailTitlePosition = SCNVector3(0, 4.0, 0.34)
-    private let transitionRestRotation = SCNVector3(-0.004, 0, 0)
-    private let sunBurstRayCount = 18
-    private let sunBurstSurfaceRadius: Float = 2.44
-    private let sunBurstSpawnRingMinOffset: Float = 0.0
-    private let sunBurstSpawnRingMaxOffset: Float = 0.34
-    private let sunBurstHorizontalReach: Float = 4.4
-    private let sunBurstUpperReach: Float = 5.1
-    private let sunBurstLowerReach: Float = 7.0
-    private let sunBurstLengthRange: ClosedRange<CGFloat> = 0.55...3.1
-    private let sunBurstThicknessRange: ClosedRange<CGFloat> = 0.030...0.060
-    private let sunBurstDepthThicknessMultiplierRange: ClosedRange<CGFloat> = 1.10...1.34
+    private let detailSunPosition = SCNVector3(0, 0.39, -0.1) //太阳离SUN的距离
+    private let detailSunScale: Float = 0.84
+    private let detailTitlePosition = SCNVector3(0, 3.37, -0.1)
+    private let transitionRestRotation = SCNVector3(0, 0, 0)
 
     init(temperature: Int = MockWeatherData.today.temperature, mode: WeatherSceneMode = .main) {
         self.scene = SCNScene()
@@ -186,12 +105,10 @@ final class WeatherSceneManager: ObservableObject {
     }
 
     func setTemperature(_ temperature: Int, animated: Bool) {
-        currentTemperature = temperature
-        // Timeline dragging can hit the same value repeatedly. If the rendered
-        // node already matches and is still attached, there is nothing to rebuild.
-        if displayedTemperature == temperature, temperatureNode?.parent != nil {
+        guard temperature != currentTemperature || temperatureNode == nil else {
             return
         }
+        currentTemperature = temperature
         updateTemperature(animated: animated)
     }
 
@@ -239,10 +156,8 @@ final class WeatherSceneManager: ObservableObject {
 
     func isDisplayGroupFrontFacing(toleranceDegrees: CGFloat = 8) -> Bool {
         let yawDegrees = CGFloat(displayGroupRotation.y) * 180 / .pi
-        return WeatherSpinController(tuning: .default).isFrontFacing(
-            yawDegrees: yawDegrees,
-            toleranceDegrees: toleranceDegrees
-        )
+        let normalized = normalizeDegrees(yawDegrees)
+        return abs(normalized) <= toleranceDegrees
     }
 
     func alignDisplayGroupToFrontForDetail(
@@ -292,15 +207,16 @@ final class WeatherSceneManager: ObservableObject {
         currentTemperature = temperature
         cancelPendingTransitionWork()
         cancelEntryAnimation()
-        isPlayingSceneAnimation = true
-        reattachSunSpinAnimations()
+        resumeSunSpinAnimations()
         autoSpinSpeed = 0
-        stopDetailIntroSpin(resetOrientation: true)
         restTiltX = -0.012
         applyDisplayGroupRotation(transitionRestRotation)
 
         rotatingGroup.removeAllActions()
         root.removeAllActions()
+        root.removeAnimation(forKey: "weather_float")
+        // Reset root to exact detailRootPosition to clear any float offset before animating back
+        root.position = detailRootPosition
         cameraNode.removeAllActions()
         sunNode.removeAllActions()
         detailTitleNode.removeAllActions()
@@ -319,10 +235,10 @@ final class WeatherSceneManager: ObservableObject {
         runDetailTitleHide(on: detailTitleNode)
 
         let completionWorkItem = DispatchWorkItem { [weak self] in
-            self?.isPlayingSceneAnimation = false
-            self?.applyDisplayGroupRotation(self?.mainPresentationRotation ?? SCNVector3(0, 0, 0))
-            if let root = self?.sceneRootNode {
-                self?.attachFloatAnimation(to: root)
+            guard let self else { return }
+            self.applyDisplayGroupRotation(self.mainPresentationRotation)
+            if let root = self.sceneRootNode {
+                self.attachFloatAnimation(to: root)
             }
             completion()
         }
@@ -347,44 +263,36 @@ final class WeatherSceneManager: ObservableObject {
         }
 
         cancelPendingTransitionWork()
-        cancelEntryAnimation()
-        // 抑制 Coordinator，避免和 SCNAction 冲突
-        isPlayingSceneAnimation = true
         rotatingGroup.removeAllActions()
         sunNode.removeAllActions()
         root.removeAllActions()
-        // 捕获浮动动画当前位置后移除，避免跳变
-        let presentationPosition = root.presentation.position
         root.removeAnimation(forKey: "weather_float")
-        root.position = presentationPosition
         cameraNode.removeAllActions()
         temperatureNode.removeAllActions()
         detailTitleNode.removeAllActions()
         resetSunBurstState()
-        removeSunSpinAnimationsAndResetFront()
-
-        // 立即归零角度，确保静止展示时从 0° 开始
-        sunNode.eulerAngles.y = 0
-        detailTitleNode.eulerAngles.y = 0
 
         runTemperatureDepartureAnimation(on: temperatureNode)
         runSunExpansionAnimation(on: sunNode)
         runSceneShiftAnimation(root: root, cameraNode: cameraNode, rotatingGroup: rotatingGroup)
         runDetailTitleReveal(on: detailTitleNode)
-        runSunBurstAnimation()
+
+        // Burst 提前触发，与 sun-detail-enter.wav 峰值（t=100ms）对齐
+        // 80ms 延迟 + 20ms burstDelay = 100ms 首帧可见
+        let burstWorkItem = DispatchWorkItem { [weak self] in
+            self?.runSunBurstAnimation()
+        }
+        burstAnimationWorkItem = burstWorkItem
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.08, execute: burstWorkItem)
 
         let completionWorkItem = DispatchWorkItem { [weak self] in
             self?.restTiltX = -0.004
             self?.autoSpinSpeed = 0
             self?.applyDisplayGroupRotation(self?.transitionRestRotation ?? SCNVector3(0, 0, 0))
-            self?.stopSunAmbientAnimations(resetOrientation: true, resetScale: true)
-            // 静止 2 秒后再开始旋转，使用可取消的 DispatchWorkItem
-            self?.detailSpinWorkItem?.cancel()
-            let spinWorkItem = DispatchWorkItem { [weak self] in
-                self?.startDetailIntroSpinIfNeeded()
-            }
-            self?.detailSpinWorkItem = spinWorkItem
-            DispatchQueue.main.asyncAfter(deadline: .now() + 2.0, execute: spinWorkItem)
+            self?.sunModelNode?.eulerAngles = SCNVector3(0, 0, 0)
+            self?.detailTitleNode?.eulerAngles = SCNVector3(0, 0, 0)
+            self?.pauseSunSpinAnimations()
+            self?.scheduleEntrySpinAnimation()
             completion()
         }
         transitionCompletionWorkItem = completionWorkItem
@@ -396,26 +304,144 @@ final class WeatherSceneManager: ObservableObject {
 
     func pauseAutomaticSpinForInteraction() {
         guard mode == .sunDetail || mode == .sunTransition else { return }
+
         cancelEntryAnimation()
-        autoSpinSpeedBeforeInteraction = autoSpinSpeed
         autoSpinSpeed = 0
-        stopSunAmbientAnimations(resetOrientation: true, resetScale: true)
-        stopDetailIntroSpin(resetOrientation: true)
     }
 
     func resumeAutomaticSpinAfterInteraction() {
         guard mode == .sunDetail || mode == .sunTransition else { return }
-        autoSpinSpeed = WeatherAutoSpinRecovery.resumedSpeed(
-            speedBeforeInteraction: autoSpinSpeedBeforeInteraction,
-            fallbackCurrentSpeed: autoSpinSpeed
-        )
-        autoSpinSpeedBeforeInteraction = nil
+        // 入场动画完成后不再自动旋转，保持静止
     }
 
-    private func nearestFrontFacingYaw(from yaw: Float) -> Float {
-        let fullRotation = Float.pi * 2
-        let nearestTurn = round(yaw / fullRotation)
-        return nearestTurn * fullRotation
+    func triggerDetailSunTapBurst() {
+        guard mode == .sunTransition,
+              let root = sceneRootNode,
+              let sunRef = sunNode
+        else { return }
+
+        resetSunBurstState()
+
+        // Cancel any previous tap burst still animating
+        sunTapBurstOverlayNode?.removeFromParentNode()
+
+        let rayCount = WeatherSunDetailTapBurstCore.rayCount
+        let totalDuration = WeatherSunDetailTapBurstCore.totalDuration
+        let staggerStep = WeatherSunDetailTapBurstCore.staggerStep
+        let maxDelay = staggerStep * Double(rayCount - 1)
+
+        // Place overlay at sun center in sceneRootNode-local space, pushed toward camera
+        let sunCenterInRoot = sunRef.convertPosition(SCNVector3Zero, to: root)
+        let overlayNode = SCNNode()
+        overlayNode.position = SCNVector3(
+            sunCenterInRoot.x,
+            sunCenterInRoot.y,
+            sunCenterInRoot.z + WeatherSunDetailTapBurstCore.overlayZOffset
+        )
+        root.addChildNode(overlayNode)
+        sunTapBurstOverlayNode = overlayNode
+
+        overlayNode.runAction(.sequence([
+            .wait(duration: maxDelay + totalDuration),
+            .run { [weak self] node in
+                node.removeFromParentNode()
+                if self?.sunTapBurstOverlayNode === node {
+                    self?.sunTapBurstOverlayNode = nil
+                }
+            }
+        ]))
+
+        let tapThickness = CGFloat(WeatherSunDetailTapBurstCore.tapRayThickness)
+        let flyDist = WeatherSunDetailTapBurstCore.tapOutwardDistance
+        let tailFrac = WeatherSunDetailTapBurstCore.tailStartFraction
+        let cs = WeatherSunDetailTapBurstCore.crossScale
+
+        for index in 0 ..< rayCount {
+            let flatDir = WeatherSunDetailTapBurstCore.planarDirection(index: index, totalCount: rayCount)
+            let elevation = Float.random(in: WeatherSunDetailTapBurstCore.tapMinElevation ... WeatherSunDetailTapBurstCore.tapMaxElevation)
+            let cosEl = cos(elevation)
+            let sinEl = sin(elevation)
+            // Hemisphere direction: radial XY component scaled by cosEl, +Z by sinEl
+            let dir3D = SIMD3<Float>(flatDir.x * cosEl, flatDir.y * cosEl, sinEl)
+
+            let origLength = Float.random(in: WeatherSunDetailTapBurstCore.tapRayMinLength ... WeatherSunDetailTapBurstCore.tapRayMaxLength)
+            let innerOffset = Float.random(in: WeatherSunDetailTapBurstCore.tapMinStartOffset ... WeatherSunDetailTapBurstCore.tapMaxStartOffset)
+            let zVar = Float.random(in: WeatherSunDetailTapBurstCore.minZVariation ... WeatherSunDetailTapBurstCore.maxZVariation)
+            let grayValue = WeatherSunDetailTapBurstCore.grayscale(forZVariation: zVar)
+
+            let rayGeometry = SCNBox(
+                width: tapThickness,
+                height: CGFloat(origLength),
+                length: tapThickness * 1.2,
+                chamferRadius: tapThickness * 0.4
+            )
+            let material = SCNMaterial()
+            material.lightingModel = .constant
+            material.diffuse.contents = UIColor.black
+            material.emission.contents = UIColor(white: 0.0, alpha: 0.0)
+            material.isDoubleSided = true
+            rayGeometry.firstMaterial = material
+
+            let rayNode = SCNNode(geometry: rayGeometry)
+            rayNode.simdOrientation = simd_quatf(from: SIMD3<Float>(0, 1, 0), to: dir3D)
+            // Start collapsed at innerOffset along hemisphere direction
+            rayNode.position = SCNVector3(dir3D.x * innerOffset, dir3D.y * innerOffset, zVar + dir3D.z * innerOffset)
+            rayNode.opacity = 0
+            rayNode.scale = SCNVector3(cs, 0.001, cs)
+            overlayNode.addChildNode(rayNode)
+
+            let delay = Double(index) * staggerStep
+            // Capture loop variables for closure
+            let capturedFlyDist = flyDist
+            let capturedInnerOffset = innerOffset
+            let capturedOrigLength = origLength
+            let capturedZVar = zVar
+            let capturedDir3D = dir3D
+            let capturedCs = cs
+
+            rayNode.runAction(.sequence([
+                .wait(duration: delay),
+                SCNAction.customAction(duration: totalDuration) { node, elapsed in
+                    let t = Double(elapsed) / totalDuration
+
+                    // Head (outer tip): easeOut from innerOffset outward
+                    let headT = Float(WeatherSunDetailTapBurstCore.easeOut(t))
+                    let headDist = capturedInnerOffset + headT * capturedFlyDist
+
+                    // Tail (inner tip): stationary until tailFrac, then constant speed
+                    let tFloat = Float(t)
+                    let tailFracF = Float(tailFrac)
+                    let tailT: Float = tFloat < tailFracF ? 0.0 : (tFloat - tailFracF) / (1.0 - tailFracF)
+                    let tailDist = capturedInnerOffset + tailT * capturedFlyDist
+
+                    let lineLength = max(0.0, headDist - tailDist)
+                    let centerDist = tailDist + lineLength / 2.0
+
+                    node.position = SCNVector3(
+                        capturedDir3D.x * centerDist,
+                        capturedDir3D.y * centerDist,
+                        capturedZVar + capturedDir3D.z * centerDist
+                    )
+                    let scaleY = capturedOrigLength > 0 ? lineLength / capturedOrigLength : 0.0
+                    node.scale = SCNVector3(capturedCs, max(0.001, scaleY), capturedCs)
+                    node.opacity = lineLength > 0.05 ? 1.0 : 0.0
+                }
+            ]))
+        }
+    }
+
+    private func nearestFrontFacingYaw(from currentYaw: Float) -> Float {
+        let fullTurn = Float.pi * 2
+        let normalized = fmodf(currentYaw, fullTurn)
+        let candidates: [Float] = [0, fullTurn, -fullTurn]
+        return candidates.min(by: { abs($0 - normalized) < abs($1 - normalized) }) ?? 0
+    }
+
+    private func normalizeDegrees(_ value: CGFloat) -> CGFloat {
+        var normalized = value.truncatingRemainder(dividingBy: 360)
+        if normalized > 180 { normalized -= 360 }
+        if normalized < -180 { normalized += 360 }
+        return normalized
     }
 
     private func buildScene() {
@@ -426,9 +452,9 @@ final class WeatherSceneManager: ObservableObject {
         sceneRootNode = nil
         detailTitleNode = nil
         sunBurstNode = nil
+        sunTapBurstOverlayNode?.removeFromParentNode()
+        sunTapBurstOverlayNode = nil
         temperatureNode = nil
-        pendingTemperatureNode = nil
-        displayedTemperature = nil
         sunNode = nil
         sunModelNode = nil
         sunBurstRayDirections.removeAll()
@@ -438,7 +464,7 @@ final class WeatherSceneManager: ObservableObject {
         let isDetailMode = mode == .sunDetail
         let isTransitionMode = mode == .sunTransition
         restTiltX = isDetailMode ? -0.004 : -0.012
-        autoSpinSpeed = 0
+        autoSpinSpeed = isDetailMode ? detailAutoSpinSpeed : 0
 
         let camera = SCNCamera()
         camera.fieldOfView = isDetailMode ? 24 : 31
@@ -512,6 +538,7 @@ final class WeatherSceneManager: ObservableObject {
             title.position = detailTitlePosition
             rotatingGroup.addChildNode(title)
             detailTitleNode = title
+            attachSunSpin(to: title, animationKey: sunTitleSpinAnimationKey)
 
             sunNode = sunAssembly
             sunModelNode = sun
@@ -521,10 +548,15 @@ final class WeatherSceneManager: ObservableObject {
             sunAssembly.position = SCNVector3(0, mainSunPositionY, -0.1)
 
             sun.position = SCNVector3(0, 0, 0)
+            // 先于射线渲染并写入深度缓冲，确保太阳完全遮挡后方射线
+            // 需递归设置子节点，因为实际几何体在 child nodes 上
+            sun.renderingOrder = -1
+            sun.enumerateChildNodes { child, _ in child.renderingOrder = -1 }
             sunAssembly.addChildNode(sun)
 
             let burstNode = makeSunBurstNode()
-            burstNode.position = SCNVector3(0, 0, 0)
+            burstNode.position = SCNVector3(0, 0, WeatherSunBurstCore.burstZOffset)
+            burstNode.renderingOrder = 0
             sunAssembly.addChildNode(burstNode)
             sunBurstNode = burstNode
 
@@ -534,9 +566,10 @@ final class WeatherSceneManager: ObservableObject {
             title.name = SceneNode.sunTitle
             title.position = detailTitlePosition
             title.opacity = 0
-            title.scale = SCNVector3(1, 1, 1)
+            title.scale = SCNVector3(0.88, 0.88, 0.88)
             rotatingGroup.addChildNode(title)
             detailTitleNode = title
+            attachSunSpin(to: title, animationKey: sunTitleSpinAnimationKey)
 
             sunNode = sunAssembly
             sunModelNode = sun
@@ -553,27 +586,14 @@ final class WeatherSceneManager: ObservableObject {
             digits.position = SCNVector3(0, mainTemperaturePositionY, 0.12)
             rotatingGroup.addChildNode(digits)
             temperatureNode = digits
-            displayedTemperature = currentTemperature
         }
 
         if mode != .sunDetail {
             attachFloatAnimation(to: root)
-            attachSunPulse(to: sun)
         }
+        attachSunPulse(to: sun)
         if mode == .main || mode == .sunTransition {
             attachSunSpin(to: sun, animationKey: sunSpinAnimationKey)
-        }
-        if mode == .sunDetail {
-            // 立即归零角度，确保静止展示时从 0° 开始
-            sunNode?.eulerAngles.y = 0
-            detailTitleNode?.eulerAngles.y = 0
-            // 静止 2 秒后再开始旋转，使用可取消的 DispatchWorkItem
-            detailSpinWorkItem?.cancel()
-            let spinWorkItem = DispatchWorkItem { [weak self] in
-                self?.startDetailIntroSpinIfNeeded()
-            }
-            detailSpinWorkItem = spinWorkItem
-            DispatchQueue.main.asyncAfter(deadline: .now() + 2.0, execute: spinWorkItem)
         }
     }
 
@@ -589,7 +609,7 @@ final class WeatherSceneManager: ObservableObject {
         let root = SCNNode()
         root.name = SceneNode.sun
 
-        let sphere = SCNSphere(radius: mode == .sunDetail ? 2.37 : 2.16 * mainSunScale)
+        let sphere = SCNSphere(radius: mode == .sunDetail ? 3.107 : 2.16 * mainSunScale)
         sphere.segmentCount = 80
 
         let material = SCNMaterial()
@@ -621,20 +641,18 @@ final class WeatherSceneManager: ObservableObject {
     }
 
     private func makeTemperatureNode(text: String) -> SCNNode {
-        // Cache the fully assembled temperature subtree so scrubbing the hourly
-        // timeline reuses cloned nodes instead of rebuilding OBJ content each time.
-        if let cachedNode = temperatureNodeCache[text] {
-            return cachedNode.clone()
+        if let prototype = temperatureNodePrototypeCache[text] {
+            return prototype.clone()
         }
 
-        let templateNode: SCNNode
+        let prototype: SCNNode
         if let modelNode = makeTemperatureModelNode(text: text) {
-            templateNode = modelNode
+            prototype = modelNode
         } else {
-            templateNode = makeFallbackTemperatureNode(text: text)
+            prototype = makeFallbackTemperatureNode(text: text)
         }
-        temperatureNodeCache[text] = templateNode
-        return templateNode.clone()
+        temperatureNodePrototypeCache[text] = prototype
+        return prototype.clone()
     }
 
     private func makeSunDetailTitleNode(text: String) -> SCNNode {
@@ -644,7 +662,7 @@ final class WeatherSceneManager: ObservableObject {
         frontTitle.position.z = 0
         container.addChildNode(frontTitle)
 
-        container.eulerAngles = SCNVector3(0.02, -0.04, 0.01)
+        container.eulerAngles = SCNVector3(0, 0, 0)
         container.castsShadow = false
         return container
     }
@@ -655,163 +673,106 @@ final class WeatherSceneManager: ObservableObject {
         container.opacity = 0
         container.isHidden = true
 
-        for index in 0..<sunBurstRayCount {
-            container.addChildNode(makeSunBurstRayNode(index: index))
+        for index in 0 ..< SunBurstTuning.rayCount {
+            // XY 平面方位角均匀分布，每个方向都有射线，叠加小随机抖动避免过于规则
+            let baseAzimuth = Float(index) / Float(SunBurstTuning.rayCount) * Float.pi * 2
+            let azimuthJitter = Float.random(in: -0.18 ... 0.18)
+            let azimuth = baseAzimuth + azimuthJitter
+            // 仅后半球采样（z≤0），避免射线向相机方向延伸穿透太阳正面
+            let u = Float.random(in: -1 ... 0)
+            let elevation = asin(u)
+            let planarRadius = cos(elevation)
+            let direction = SIMD3<Float>(
+                planarRadius * cos(azimuth),
+                planarRadius * sin(azimuth),
+                sin(elevation)              // Z 轴方向 = 深度
+            )
+
+            let lengthRoll = Float.random(in: 0 ... 1)
+            let length: Float
+            switch lengthRoll {
+            case ..<0.20:
+                length = Float.random(in: 2.0 ... 3.0)
+            case ..<0.80:
+                length = Float.random(in: 3.0 ... 4.8)
+            default:
+                length = Float.random(in: 4.8 ... 6.5)
+            }
+
+            let jitter = Float.random(in: SunBurstTuning.minJitter ... SunBurstTuning.maxJitter)
+
+            container.addChildNode(
+                makeSunBurstRayNode(
+                    direction: direction,
+                    length: length,
+                    jitter: jitter
+                )
+            )
         }
 
         return container
     }
 
-    private func makeSunBurstRayNode(index: Int) -> SCNNode {
-        let length: CGFloat = 2.6
-        let thickness: CGFloat = 0.042
+    private func makeSunBurstRayNode(direction: SIMD3<Float>, length: Float, jitter: Float) -> SCNNode {
+        let normalizedDirection = simd_normalize(direction)
+        // 后半球采样 z∈[-1,0]，线性重映射到 [-1,+1] 供颜色/厚度函数使用
+        // z=0（赤道，可见）→ colorZ=+1（近黑），z=-1（深后，隐藏）→ colorZ=-1（近白）
+        let colorZ = normalizedDirection.z * 2 + 1
+        let thickness = CGFloat(SunBurstTuning.thickness(forZ: colorZ)) * 1.5
+        let rayLength = CGFloat(length)
         let rayGeometry = SCNBox(
             width: thickness,
-            height: length,
-            length: thickness * 1.3,
+            height: rayLength,
+            length: thickness * 1.35,
             chamferRadius: thickness * 0.4
         )
 
         let material = SCNMaterial()
-        material.lightingModel = .physicallyBased
-        material.diffuse.contents = UIColor(
-            white: 0.10,
-            alpha: 0
-        )
-        material.emission.contents = UIColor(
-            white: 0.0,
-            alpha: 0.0
-        )
-        material.metalness.contents = Float(0.04)
-        material.roughness.contents = Float(0.96)
+        configureBaseRayMaterial(material, for: colorZ)
         material.isDoubleSided = true
-        rayGeometry.materials = Array(repeating: material, count: 6)
+        rayGeometry.firstMaterial = material
 
         let rayNode = SCNNode(geometry: rayGeometry)
-        let angle = Float(index) / Float(max(sunBurstRayCount, 1)) * (.pi * 2)
-        let placement = SIMD3<Float>(
-            cos(angle) * (sunBurstSurfaceRadius + Float(length) * 0.5),
-            sin(angle) * (sunBurstSurfaceRadius + Float(length) * 0.5),
-            0
-        )
-        let direction = simd_normalize(
-            SIMD3<Float>(
-                cos(angle),
-                sin(angle),
-                index.isMultiple(of: 2) ? 0.18 : -0.12
-            )
-        )
+        let halfLength = length / 2
+        let distanceFromCenter = SunBurstTuning.sunRadius * jitter + halfLength
+        let placement = normalizedDirection * distanceFromCenter
         rayNode.position = SCNVector3(placement.x, placement.y, placement.z)
         rayNode.simdOrientation = simd_quatf(
             from: SIMD3<Float>(0, 1, 0),
-            to: direction
+            to: normalizedDirection
         )
         rayNode.scale = SCNVector3(1, 1, 1)
-        rayNode.opacity = 0
-        rayNode.name = "sun_burst_ray_\(index)"
-        rayNode.castsShadow = false
+        rayNode.opacity = 1
         sunBurstRayDirections[ObjectIdentifier(rayNode)] = SCNVector3(
-            direction.x,
-            direction.y,
-            direction.z
+            normalizedDirection.x,
+            normalizedDirection.y,
+            normalizedDirection.z
         )
         sunBurstRayStartPositions[ObjectIdentifier(rayNode)] = rayNode.position
-        sunBurstRayBaseOpacities[ObjectIdentifier(rayNode)] = 0
+        sunBurstRayBaseOpacities[ObjectIdentifier(rayNode)] = 1
         return rayNode
     }
 
     private func makeSingleSunDetailTitleNode(text: String) -> SCNNode {
-        let font = UIFont.systemFont(ofSize: 10.8, weight: .black)
-        let container = SCNNode()
-        var cursorX: Float = 0
-        let letterSpacing: Float = 0.18
-
-        for character in text {
-            let letterNode = makeSunDetailTitleLetterNode(character: String(character), font: font)
-            let (minBounds, maxBounds) = letterNode.boundingBox
-            let width = maxBounds.x - minBounds.x
-            letterNode.position = SCNVector3(cursorX - minBounds.x, -minBounds.y, 0)
-            container.addChildNode(letterNode)
-            cursorX += width + letterSpacing
-        }
-
-        let (minBounds, maxBounds) = container.boundingBox
-        let width = maxBounds.x - minBounds.x
-        let height = maxBounds.y - minBounds.y
-        container.pivot = SCNMatrix4MakeTranslation(
-            minBounds.x + width / 2,
-            minBounds.y + height / 2,
-            0
+        let attributedTitle = NSAttributedString(
+            string: text,
+            attributes: [
+                .font: UIFont.systemFont(ofSize: 9.2, weight: .black),
+                // Negative stroke width draws fill + stroke; tuned for visibly thicker front glyphs.
+                .strokeWidth: -8.0
+            ]
         )
-        container.scale = SCNVector3(0.09, 0.09, 0.09)
-        return container
-    }
 
-    private func makeSunDetailTitleLetterNode(character: String, font: UIFont) -> SCNNode {
-        let textGeometry = makeSunDetailTitleLetterGeometry(character: character, font: font)
-        let measureNode = SCNNode(geometry: textGeometry)
-        let (minBounds, maxBounds) = measureNode.boundingBox
-        let centerX = minBounds.x + (maxBounds.x - minBounds.x) / 2
-        let centerY = minBounds.y + (maxBounds.y - minBounds.y) / 2
-
-        let container = SCNNode()
-
-        // Build a visible faux-bold outline with several enlarged underlays.
-        let outlineOffsets: [SCNVector3] = [
-            SCNVector3(0, 0, -0.06),
-            SCNVector3(-0.38, 0, -0.08),
-            SCNVector3(0.38, 0, -0.08),
-            SCNVector3(0, -0.32, -0.08),
-            SCNVector3(0, 0.32, -0.08),
-            SCNVector3(-0.28, -0.28, -0.08),
-            SCNVector3(0.28, -0.28, -0.08),
-            SCNVector3(-0.28, 0.28, -0.08),
-            SCNVector3(0.28, 0.28, -0.08)
-        ]
-        for offset in outlineOffsets {
-            let outlineGeometry = textGeometry.copy() as? SCNGeometry
-                ?? makeSunDetailTitleLetterGeometry(character: character, font: font)
-            let outlineNode = SCNNode(geometry: outlineGeometry)
-            outlineNode.pivot = SCNMatrix4MakeTranslation(centerX, centerY, 0)
-            outlineNode.position = SCNVector3(centerX + offset.x, centerY + offset.y, offset.z)
-            outlineNode.scale = SCNVector3(1.18, 1.18, 1)
-            container.addChildNode(outlineNode)
-        }
-
-        let foregroundNode = SCNNode(geometry: textGeometry)
-        foregroundNode.pivot = SCNMatrix4MakeTranslation(centerX, centerY, 0)
-        foregroundNode.position = SCNVector3(centerX, centerY, 0)
-        container.addChildNode(foregroundNode)
-
-        return container
-    }
-
-    private func makeSunDetailTitleLetterGeometry(character: String, font: UIFont) -> SCNText {
-        let attributes: [NSAttributedString.Key: Any] = [
-            .font: font,
-            .strokeWidth: NSNumber(value: -3),
-            .strokeColor: UIColor(red: 0.16, green: 0.16, blue: 0.17, alpha: 1)
-        ]
-        let textGeometry = SCNText(
-            string: NSAttributedString(string: character, attributes: attributes),
-            extrusionDepth: 1.9
-        )
+        let textGeometry = SCNText(string: attributedTitle, extrusionDepth: 1.8)
         textGeometry.flatness = 0.06
         textGeometry.chamferRadius = 0.10
-        textGeometry.truncationMode = CATextLayerTruncationMode.none.rawValue
-        textGeometry.alignmentMode = CATextLayerAlignmentMode.left.rawValue
-        textGeometry.isWrapped = false
-        textGeometry.materials = makeSunDetailTitleMaterials()
-        return textGeometry
-    }
 
-    private func makeSunDetailTitleMaterials() -> [SCNMaterial] {
         let front = SCNMaterial()
         front.lightingModel = .physicallyBased
-        front.diffuse.contents = UIColor(red: 0.16, green: 0.16, blue: 0.17, alpha: 1)
-        front.metalness.contents = Float(0.52)
-        front.roughness.contents = Float(0.24)
-        front.specular.contents = UIColor(white: 0.98, alpha: 1)
+        front.diffuse.contents = UIColor(red: 0.11, green: 0.11, blue: 0.12, alpha: 1)
+        front.metalness.contents = Float(0.26)
+        front.roughness.contents = Float(0.50)
+        front.specular.contents = UIColor(white: 0.70, alpha: 1)
         front.isDoubleSided = false
 
         let side = SCNMaterial()
@@ -821,7 +782,15 @@ final class WeatherSceneManager: ObservableObject {
         side.roughness.contents = Float(0.20)
         side.isDoubleSided = false
 
-        return [front, side, side, side, front]
+        textGeometry.materials = [front, side, side, side, front]
+
+        let node = SCNNode(geometry: textGeometry)
+        let (minBounds, maxBounds) = node.boundingBox
+        let width = maxBounds.x - minBounds.x
+        let height = maxBounds.y - minBounds.y
+        node.pivot = SCNMatrix4MakeTranslation(minBounds.x + width / 2, minBounds.y + height / 2, 0)
+        node.scale = SCNVector3(0.1088, 0.1088, 0.1088)
+        return node
     }
 
     private func makeFallbackTemperatureNode(text: String) -> SCNNode {
@@ -857,7 +826,7 @@ final class WeatherSceneManager: ObservableObject {
     }
 
     private func makeSunModelNode() -> SCNNode? {
-        let targetHeight: Float = mode == .sunDetail ? 4.72 : 4.02 * Float(mainSunScale)
+        let targetHeight: Float = mode == .sunDetail ? 6.192 : 4.02 * Float(mainSunScale)
         guard let payload = loadNormalizedModelNode(named: "sun", fileExtension: "obj", targetHeight: targetHeight) else {
             return nil
         }
@@ -1134,7 +1103,9 @@ final class WeatherSceneManager: ObservableObject {
         material.emission.contents = UIColor(red: 0.55, green: 0.06, blue: 0.02, alpha: 1)
         material.metalness.contents = Float(0.0)
         material.roughness.contents = Float(0.62)  // 稍降粗糙度，纹理细节更清晰
-        material.isDoubleSided     = true
+        material.isDoubleSided      = true
+        material.writesToDepthBuffer = true        // 确保遮挡后方射线
+        material.readsFromDepthBuffer = true
         geometry.materials = [material]
     }
 
@@ -1165,24 +1136,21 @@ final class WeatherSceneManager: ObservableObject {
     private func cancelPendingTransitionWork() {
         transitionCompletionWorkItem?.cancel()
         transitionCompletionWorkItem = nil
+        burstAnimationWorkItem?.cancel()
+        burstAnimationWorkItem = nil
     }
 
-    // MARK: - 入场动画（正面复位 → 静止2秒 → 旋转3圈 → 停止）
+    // MARK: - 入场旋转动画（静止2秒 → 转4圈 → 正面停止）
 
-    private func removeSunSpinAnimationsAndResetFront() {
+    private func pauseSunSpinAnimations() {
+        // 移除 CAAnimation（而非暂停），让 model layer eulerAngles 生效
         sunModelNode?.removeAnimation(forKey: sunSpinAnimationKey)
-        sunModelNode?.eulerAngles.y = 0
         detailTitleNode?.removeAnimation(forKey: sunTitleSpinAnimationKey)
-        detailTitleNode?.eulerAngles.y = 0
     }
 
-    private func reattachSunSpinAnimations() {
-        if let sun = sunModelNode {
-            attachSunSpin(to: sun, animationKey: sunSpinAnimationKey)
-        }
-        if let title = detailTitleNode {
-            attachSunSpin(to: title, animationKey: sunTitleSpinAnimationKey)
-        }
+    private func resumeSunSpinAnimations() {
+        sunModelNode?.animationPlayer(forKey: sunSpinAnimationKey)?.paused = false
+        detailTitleNode?.animationPlayer(forKey: sunTitleSpinAnimationKey)?.paused = false
     }
 
     private func scheduleEntrySpinAnimation() {
@@ -1191,45 +1159,35 @@ final class WeatherSceneManager: ObservableObject {
             self?.runEntrySpinAnimation()
         }
         entrySpinWorkItem = workItem
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0, execute: workItem)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5, execute: workItem)
     }
 
     private func runEntrySpinAnimation() {
-        guard let sunNode, let titleNode = detailTitleNode else { return }
+        guard let rotatingGroup = conditionGroup else { return }
+        isPlayingEntryAnimation = true
 
-        let totalYawRotation = -Float.pi * 2 * 2  // 2圈
-        let spinDuration: TimeInterval = 60.0  // 30秒/圈 × 2圈
+        let startAngles = rotatingGroup.eulerAngles
+        let totalYawRotation = -Float.pi * 2 * 2  // 2圈向左
+        let endAngles = SCNVector3(
+            startAngles.x,
+            startAngles.y + totalYawRotation,
+            startAngles.z
+        )
+        let spinDuration: TimeInterval = 60.0  // 30秒/圈 × 2圈，缓慢匀速
 
-        // 太阳旋转2圈
-        let sunStart = sunNode.eulerAngles
-        let sunEnd = SCNVector3(sunStart.x, sunStart.y + totalYawRotation, sunStart.z)
-        let sunSpin = makeEulerAnglesAction(
-            from: sunStart, to: sunEnd,
+        let spinAction = makeEulerAnglesAction(
+            from: startAngles,
+            to: endAngles,
             duration: spinDuration,
             easing: { $0 }  // 线性匀速
         )
 
-        let titleStart = titleNode.eulerAngles
-        let titleEnd = SCNVector3(titleStart.x, titleStart.y + totalYawRotation, titleStart.z)
-        let titleSpin = makeEulerAnglesAction(
-            from: titleStart, to: titleEnd,
-            duration: spinDuration,
-            easing: { $0 }
-        )
-
-        // 太阳旋转完成后解除 Coordinator 抑制
-        sunNode.runAction(sunSpin) { [weak self] in
+        rotatingGroup.runAction(spinAction) { [weak self] in
             DispatchQueue.main.async {
                 guard let self else { return }
-                self.sunNode?.eulerAngles.y = 0
-                self.isPlayingSceneAnimation = false
+                // 2圈转完，归零使 Sun 文字面向 0°
+                self.isPlayingEntryAnimation = false
                 self.applyDisplayGroupRotation(self.transitionRestRotation)
-            }
-        }
-
-        titleNode.runAction(titleSpin) { [weak self] in
-            DispatchQueue.main.async {
-                self?.detailTitleNode?.eulerAngles.y = 0
             }
         }
     }
@@ -1237,17 +1195,9 @@ final class WeatherSceneManager: ObservableObject {
     func cancelEntryAnimation() {
         entrySpinWorkItem?.cancel()
         entrySpinWorkItem = nil
-        detailSpinWorkItem?.cancel()
-        detailSpinWorkItem = nil
-        detailSpinCompletionWorkItem?.cancel()
-        detailSpinCompletionWorkItem = nil
-        if isPlayingSceneAnimation {
-            sunNode?.removeAllActions()
-            detailTitleNode?.removeAllActions()
-            // 归零角度，确保下次进入时从 0° 开始
-            sunNode?.eulerAngles.y = 0
-            detailTitleNode?.eulerAngles.y = 0
-            isPlayingSceneAnimation = false
+        if isPlayingEntryAnimation {
+            conditionGroup?.removeAllActions()
+            isPlayingEntryAnimation = false
         }
     }
 
@@ -1283,17 +1233,17 @@ final class WeatherSceneManager: ObservableObject {
     }
 
     private func runSunExpansionAnimation(on node: SCNNode) {
-        let moveAction = SCNAction.move(to: detailSunPosition, duration: Self.sunDetailTransitionDuration)
-        moveAction.timingMode = .easeInEaseOut
+        let moveToDest = SCNAction.move(to: detailSunPosition, duration: Self.sunDetailTransitionDuration)
+        moveToDest.timingMode = .easeInEaseOut
 
-        let scaleAction = makeScaleAction(
+        let scaleToDest = makeScaleAction(
             from: node.scale,
             to: SCNVector3(detailSunScale, detailSunScale, detailSunScale),
             duration: Self.sunDetailTransitionDuration,
             easing: easeInOutCubic
         )
 
-        node.runAction(.group([moveAction, scaleAction]))
+        node.runAction(.group([moveToDest, scaleToDest]))
     }
 
     private func runSunReturnAnimation(on node: SCNNode) {
@@ -1309,14 +1259,8 @@ final class WeatherSceneManager: ObservableObject {
             duration: Self.sunReturnTransitionDuration,
             easing: easeInOutCubic
         )
-        let rotationAction = makeEulerAnglesAction(
-            from: node.eulerAngles,
-            to: SCNVector3(0, 0, 0),
-            duration: Self.sunReturnTransitionDuration,
-            easing: easeInOutCubic
-        )
 
-        node.runAction(.group([moveAction, scaleAction, rotationAction]))
+        node.runAction(.group([moveAction, scaleAction]))
     }
 
     private func runSceneShiftAnimation(root: SCNNode, cameraNode: SCNNode, rotatingGroup: SCNNode) {
@@ -1344,8 +1288,11 @@ final class WeatherSceneManager: ObservableObject {
     }
 
     private func runSceneReturnAnimation(root: SCNNode, cameraNode: SCNNode, rotatingGroup: SCNNode) {
+        // Animate root to the float operating center (y=0) instead of mainRootPosition (y=-1.94).
+        // The float animation is non-additive and operates at absolute y ∈ [-0.08, +0.08], so
+        // ending at y=0 ensures attachFloatAnimation starts without a visible jump.
         let rootMove = SCNAction.move(
-            to: mainRootPosition,
+            to: SCNVector3(0, 0, 0),
             duration: Self.sunReturnTransitionDuration
         )
         rootMove.timingMode = .easeInEaseOut
@@ -1375,27 +1322,24 @@ final class WeatherSceneManager: ObservableObject {
 
     private func runDetailTitleReveal(on node: SCNNode) {
         let revealDelay = Self.sunDetailTransitionDuration * 0.60
-        let revealDuration = Self.sunDetailTransitionDuration * 0.24
+        let revealDuration = Self.sunDetailTransitionDuration * 0.30
 
-        let moveAction = SCNAction.move(
-            to: detailTitlePosition,
-            duration: revealDuration
+        let scaleAction = makeScaleAction(
+            from: node.scale,
+            to: SCNVector3(1, 1, 1),
+            duration: revealDuration,
+            easing: easeOutCubic
         )
-        moveAction.timingMode = .easeOut
 
-        let fadeAction = SCNAction.fadeOpacity(to: 1, duration: revealDuration * 0.78)
+        let fadeAction = SCNAction.fadeOpacity(to: 1, duration: revealDuration)
         fadeAction.timingMode = .easeOut
 
-        node.position = SCNVector3(
-            detailTitlePosition.x,
-            detailTitlePosition.y + 0.18,
-            detailTitlePosition.z
-        )
+        node.position = detailTitlePosition
 
         node.runAction(
             .sequence([
                 .wait(duration: revealDelay),
-                .group([moveAction, fadeAction])
+                .group([scaleAction, fadeAction])
             ])
         )
     }
@@ -1420,66 +1364,96 @@ final class WeatherSceneManager: ObservableObject {
         guard let sunBurstNode else { return }
 
         resetSunBurstState()
-        var generator = SystemRandomNumberGenerator()
-        var longestRayDuration: TimeInterval = 0
-        let leadDelay = Self.sunDetailTransitionDuration * 0.02
-
-        for rayNode in sunBurstNode.childNodes {
-            let spec = makeSunBurstRayAnimationSpec(using: &generator)
-            configureSunBurstRayNode(rayNode, with: spec)
-
-            let moveAction = makeMoveAction(
-                from: spec.startPosition,
-                to: spec.endPosition,
-                duration: spec.flyDuration,
-                easing: easeOutCubic
-            )
-            let scaleAction = makeScaleYAction(
-                from: 1,
-                to: spec.shrinkScaleY,
-                duration: spec.flyDuration,
-                easing: easeInOutCubic
-            )
-            let fadeInAction = SCNAction.fadeOpacity(to: spec.baseOpacity, duration: spec.fadeInDuration)
-            fadeInAction.timingMode = .easeOut
-
-            let fadeOutLeadDuration = max(
-                spec.flyDuration - spec.fadeInDuration - spec.fadeOutDuration * 0.78,
-                0
-            )
-            let fadeOutAction = SCNAction.fadeOut(duration: spec.fadeOutDuration)
-            fadeOutAction.timingMode = .easeIn
-
-            let opacityAction = SCNAction.sequence([
-                fadeInAction,
-                .wait(duration: fadeOutLeadDuration),
-                fadeOutAction
-            ])
-            let rayStartDelay = leadDelay + spec.delay
-            let completionDuration = rayStartDelay
-                + max(spec.flyDuration, spec.fadeInDuration + fadeOutLeadDuration + spec.fadeOutDuration)
-            longestRayDuration = max(longestRayDuration, completionDuration)
-
-            rayNode.runAction(
-                .sequence([
-                    .wait(duration: rayStartDelay),
-                    .group([moveAction, scaleAction, opacityAction])
-                ])
-            )
-        }
-
         sunBurstNode.isHidden = false
         sunBurstNode.opacity = 1
-        sunBurstNode.runAction(
-            .sequence([
-                .wait(duration: longestRayDuration + 0.04),
-                .run { [weak self] node in
+
+        // 与点击太阳效果相同：前端 easeOut 飞出，后端延迟追赶，两端相遇后线段消失
+        let burstDelay: TimeInterval = 0.02
+        let burstFlyDuration: TimeInterval = 0.38
+        let tailFrac: Float = 0.50   // 后端在 50% 进度后开始追赶（比前端快，线段更长）
+
+        for rayNode in sunBurstNode.childNodes {
+            // 初始状态：折叠不可见，80% 黑色 / 20% 灰色
+            rayNode.scale = SCNVector3(1, 0.001, 1)
+            rayNode.opacity = 0
+            if let material = rayNode.geometry?.firstMaterial {
+                let isGray = Float.random(in: 0..<1) < 0.4
+                material.diffuse.contents = isGray ? UIColor(white: 0.55, alpha: 1) : UIColor.black
+            }
+
+            let direction = rayDirection(for: rayNode)
+            let dir3D = SIMD3<Float>(direction.x, direction.y, direction.z)
+            let startPos = initialRayPosition(for: rayNode)
+            let startPosSIMD = SIMD3<Float>(startPos.x, startPos.y, startPos.z)
+
+            let rayLength: Float
+            if let box = rayNode.geometry as? SCNBox {
+                rayLength = Float(box.height)
+            } else {
+                rayLength = 3.0
+            }
+
+            // innerOffset：射线内端到 burstNode 中心的距离
+            // 同时用球面交叉公式确保内端点 ≥ 太阳球面（避免线段起点在太阳内部）
+            // burstNode 位于 sunAssembly (0,0,burstZOffset)，太阳球半径 sunRadius
+            // 沿 dir3D 方向到球面的距离：t = -oz*d.z + sqrt(R²- oz²*(dx²+dy²))
+            let oz = SunBurstTuning.burstZOffset    // -1.22
+            let sunR = SunBurstTuning.sunRadius      // 2.44
+            let planarSq: Float = dir3D.x * dir3D.x + dir3D.y * dir3D.y
+            let discriminant: Float = sunR * sunR - oz * oz * planarSq
+            let sphereSurfaceDist: Float = (-oz) * dir3D.z + sqrt(max(0, discriminant))
+            let rawInnerOffset = simd_length(startPosSIMD) - rayLength / 2
+            let innerOffset = max(rawInnerOffset, sphereSurfaceDist + 0.05)
+            let flyDist = SunBurstTuning.outwardDistance(forLength: rayLength) * 7
+            let rayDelay = burstDelay + SunBurstTuning.delayOffset(forZ: direction.z * 2 + 1)
+
+            let capturedDir = dir3D
+            let capturedInnerOffset = innerOffset
+            let capturedFlyDist = flyDist
+            let capturedOrigLength = rayLength
+            let capturedTailFrac = tailFrac
+
+            rayNode.runAction(.sequence([
+                .wait(duration: rayDelay),
+                SCNAction.customAction(duration: burstFlyDuration) { node, elapsed in
+                    let t = Float(elapsed) / Float(burstFlyDuration)
+
+                    // 前端（外端）：三次方 easeOut 向外飞出
+                    let eased: Float = 1 - pow(1 - min(t, 1), 3)
+                    let headDist = capturedInnerOffset + eased * capturedFlyDist
+
+                    // 后端（内端）：延迟到 tailFrac 后匀速追赶，追上后线段消失
+                    let tailT: Float = t < capturedTailFrac ? 0 : (t - capturedTailFrac) / (1 - capturedTailFrac)
+                    let tailDist = capturedInnerOffset + tailT * capturedFlyDist
+
+                    let lineLength = max(0, headDist - tailDist)
+                    let centerDist = tailDist + lineLength / 2
+
+                    node.position = SCNVector3(
+                        capturedDir.x * centerDist,
+                        capturedDir.y * centerDist,
+                        capturedDir.z * centerDist
+                    )
+                    let scaleY = capturedOrigLength > 0 ? lineLength / capturedOrigLength : 0.001
+                    node.scale = SCNVector3(1, max(0.001, scaleY), 1)
+                    node.opacity = lineLength > 0.05 ? 1.0 : 0.0
+                },
+                .run { node in
                     node.opacity = 0
-                    node.isHidden = true
-                    self?.resetSunBurstState()
+                    node.scale = SCNVector3(1, 0.001, 1)
                 }
-            ])
-        )
+            ]))
+        }
+
+        // 全部射线结束后隐藏容器
+        let cleanupDelay = burstDelay + SunBurstTuning.layerDelayStep * 3 + burstFlyDuration + 0.05
+        sunBurstNode.runAction(.sequence([
+            .wait(duration: cleanupDelay),
+            .run { node in
+                node.opacity = 0
+                node.isHidden = true
+            }
+        ]))
     }
 
     private func prepareTemperatureNodeForReturn() -> SCNNode? {
@@ -1495,7 +1469,6 @@ final class WeatherSceneManager: ObservableObject {
         digits.opacity = 0
         root.addChildNode(digits)
         temperatureNode = digits
-        displayedTemperature = currentTemperature
         return digits
     }
 
@@ -1512,7 +1485,7 @@ final class WeatherSceneManager: ObservableObject {
 
         let rotationAction = makeEulerAnglesAction(
             from: node.eulerAngles,
-            to: SCNVector3(0, 0, 0),
+            to: SCNVector3(0.02, -0.05, 0.01),
             duration: 0.38,
             easing: easeOutCubic
         )
@@ -1523,97 +1496,16 @@ final class WeatherSceneManager: ObservableObject {
         node.runAction(.group([moveAction, scaleAction, rotationAction, fadeAction]))
     }
 
-    private func startDetailIntroSpinIfNeeded() {
-        guard mode == .sunDetail || mode == .sunTransition else { return }
-        guard let sunNode, let detailTitleNode else { return }
-
-        isPlayingSceneAnimation = true
-        stopSunAmbientAnimations(resetOrientation: true, resetScale: true)
-        stopDetailIntroSpin(resetOrientation: true)
-        applyDisplayGroupRotation(transitionRestRotation)
-
-        // 两个节点同步启动旋转动画，不传 completion
-        runDetailIntroSpin(on: sunNode, actionKey: sunSpinAnimationKey)
-        runDetailIntroSpin(on: detailTitleNode, actionKey: sunTitleSpinAnimationKey)
-
-        // 统一在动画时长结束后归零并触发回调，确保两者同步
-        detailSpinCompletionWorkItem?.cancel()
-        let completionWorkItem = DispatchWorkItem { [weak self] in
-            guard let self else { return }
-            self.stopDetailIntroSpin(resetOrientation: true)
-            self.isPlayingSceneAnimation = false
-            self.applyDisplayGroupRotation(self.transitionRestRotation)
-        }
-        detailSpinCompletionWorkItem = completionWorkItem
-        DispatchQueue.main.asyncAfter(deadline: .now() + detailIntroSpinDuration, execute: completionWorkItem)
-    }
-
-    private func stopDetailIntroSpin(resetOrientation: Bool) {
-        sunNode?.removeAction(forKey: sunSpinAnimationKey)
-        detailTitleNode?.removeAction(forKey: sunTitleSpinAnimationKey)
-        isPlayingSceneAnimation = false
-
-        guard resetOrientation else { return }
-
-        if let sunNode {
-            sunNode.eulerAngles = SCNVector3(sunNode.eulerAngles.x, 0, sunNode.eulerAngles.z)
-        }
-
-        if let detailTitleNode {
-            detailTitleNode.eulerAngles = SCNVector3(
-                detailTitleNode.eulerAngles.x,
-                0,
-                detailTitleNode.eulerAngles.z
-            )
-        }
-    }
-
-    private func runDetailIntroSpin(
-        on node: SCNNode,
-        actionKey: String,
-        completion: (() -> Void)? = nil
-    ) {
-        let startAngles = node.eulerAngles
-        let endAngles = SCNVector3(
-            startAngles.x,
-            startAngles.y - Float.pi * 2 * detailIntroSpinTurns,
-            startAngles.z
-        )
-        let spinAction = makeEulerAnglesAction(
-            from: startAngles,
-            to: endAngles,
-            duration: detailIntroSpinDuration,
-            easing: { $0 }
-        )
-
-        node.runAction(spinAction, forKey: actionKey) { [weak node] in
-            guard let node else { return }
-            node.eulerAngles = SCNVector3(node.eulerAngles.x, 0, node.eulerAngles.z)
-            completion?()
-        }
-    }
-
-    private func stopSunAmbientAnimations(resetOrientation: Bool, resetScale: Bool) {
-        sunModelNode?.removeAnimation(forKey: sunSpinAnimationKey, blendOutDuration: 0)
-        sunModelNode?.removeAnimation(forKey: "sun_pulse", blendOutDuration: 0)
-
-        guard let sunModelNode else { return }
-
-        if resetOrientation {
-            sunModelNode.eulerAngles = SCNVector3(
-                sunModelNode.eulerAngles.x,
-                0,
-                sunModelNode.eulerAngles.z
-            )
-        }
-
-        if resetScale {
-            sunModelNode.scale = SCNVector3(1, 1, 1)
-        }
+    private func rayDirection(for node: SCNNode) -> SCNVector3 {
+        sunBurstRayDirections[ObjectIdentifier(node)] ?? SCNVector3(0, 1, 0)
     }
 
     private func initialRayPosition(for node: SCNNode) -> SCNVector3 {
         sunBurstRayStartPositions[ObjectIdentifier(node)] ?? node.position
+    }
+
+    private func baseRayOpacity(for node: SCNNode) -> CGFloat {
+        sunBurstRayBaseOpacities[ObjectIdentifier(node)] ?? 1
     }
 
     private func resetSunBurstState() {
@@ -1626,191 +1518,36 @@ final class WeatherSceneManager: ObservableObject {
             rayNode.removeAllActions()
             rayNode.position = initialRayPosition(for: rayNode)
             rayNode.scale = SCNVector3(1, 1, 1)
-            rayNode.opacity = 0
+            rayNode.opacity = baseRayOpacity(for: rayNode)
+            let dir = rayDirection(for: rayNode)
+            let dirSIMD = SIMD3<Float>(dir.x, dir.y, dir.z)
+            let safeDir = simd_length(dirSIMD) > 0.001 ? simd_normalize(dirSIMD) : SIMD3<Float>(0, 1, 0)
+            rayNode.simdOrientation = simd_quatf(from: SIMD3<Float>(0, 1, 0), to: safeDir)
+            if let material = rayNode.geometry?.firstMaterial {
+                configureBaseRayMaterial(material, for: dir.z * 2 + 1)
+            }
         }
     }
 
-    private func configureSunBurstRayNode(_ rayNode: SCNNode, with spec: SunBurstRayAnimationSpec) {
-        let rayGeometry: SCNBox
-        if let existingGeometry = rayNode.geometry as? SCNBox {
-            rayGeometry = existingGeometry
-        } else {
-            rayGeometry = SCNBox(
-                width: spec.thickness,
-                height: spec.length,
-                length: spec.thickness * spec.depthThicknessMultiplier,
-                chamferRadius: spec.thickness * 0.38
-            )
-            rayNode.geometry = rayGeometry
-        }
-
-        rayGeometry.width = spec.thickness
-        rayGeometry.height = spec.length
-        rayGeometry.length = spec.thickness * spec.depthThicknessMultiplier
-        rayGeometry.chamferRadius = spec.thickness * 0.38
-
-        let material = rayGeometry.firstMaterial ?? SCNMaterial()
+    private func configureBaseRayMaterial(_ material: SCNMaterial, for z: Float) {
         material.lightingModel = .constant
         material.diffuse.contents = UIColor(
-            white: spec.whiteValue,
-            alpha: 1
+            white: CGFloat(SunBurstTuning.colorWhite(forZ: z)),
+            alpha: CGFloat(SunBurstTuning.materialAlpha(forZ: z))
         )
-        material.emission.contents = UIColor(
-            white: spec.whiteValue,
-            alpha: spec.emissionAlpha
-        )
-        material.metalness.contents = spec.layer.metalness
-        material.roughness.contents = spec.layer.roughness
-        material.isDoubleSided = true
-        material.blendMode = .alpha
-        rayGeometry.materials = Array(repeating: material, count: 6)
-
-        rayNode.position = spec.startPosition
-        rayNode.simdOrientation = simd_quatf(
-            from: SIMD3<Float>(0, 1, 0),
-            to: spec.direction
-        )
-        rayNode.scale = SCNVector3(1, 1, 1)
-        rayNode.opacity = 0
-        sunBurstRayDirections[ObjectIdentifier(rayNode)] = SCNVector3(
-            spec.direction.x,
-            spec.direction.y,
-            spec.direction.z
-        )
-        sunBurstRayStartPositions[ObjectIdentifier(rayNode)] = spec.startPosition
-        sunBurstRayBaseOpacities[ObjectIdentifier(rayNode)] = spec.baseOpacity
+        material.emission.contents = UIColor(white: 0.0, alpha: 0.0)
+        material.metalness.contents = Float(0)
+        material.roughness.contents = Float(1)
     }
 
-    private func makeSunBurstRayAnimationSpec<G: RandomNumberGenerator>(
-        using generator: inout G
-    ) -> SunBurstRayAnimationSpec {
-        let startAngle = Float.random(in: -Float.pi...Float.pi, using: &generator)
-        let endAngle = startAngle + Float.random(in: -0.16...0.16, using: &generator)
-        let screenFacingDepth = Float.random(in: -0.82...0.86, using: &generator)
-        let screenForwardness = normalizedScreenForwardness(for: screenFacingDepth)
-        let layer = makeSunBurstRayDepthLayer(screenForwardness: screenForwardness)
-        let startRadius = sunBurstSurfaceRadius
-            + Float.random(
-                in: sunBurstSpawnRingMinOffset...sunBurstSpawnRingMaxOffset,
-                using: &generator
-            )
-        let verticalReach = sin(endAngle) < -0.14 ? sunBurstLowerReach : sunBurstUpperReach
-        let maximumEndRadius = ellipseBoundaryDistance(
-            for: endAngle,
-            horizontalRadius: sunBurstHorizontalReach,
-            verticalRadius: verticalReach
-        )
-        let travelDistance = Float.random(in: layer.travelDistanceRange, using: &generator)
-        let minimumEndRadius = max(startRadius + travelDistance, maximumEndRadius * 0.42)
-        let preferredMaximumEndRadius = max(
-            minimumEndRadius + 0.16,
-            maximumEndRadius * (sin(endAngle) < -0.14 ? 0.92 : 0.84)
-        )
-        let endRadius = Float.random(
-            in: minimumEndRadius...preferredMaximumEndRadius,
-            using: &generator
-        )
+    private func applyDetailTapAppearance(to rayNode: SCNNode) {
+        guard let material = rayNode.geometry?.firstMaterial else { return }
 
-        let startAnchor = SIMD3<Float>(
-            cos(startAngle) * startRadius,
-            sin(startAngle) * startRadius,
-            Float.random(
-                in: max(layer.depthRange.lowerBound * 0.22, -0.18)...min(layer.depthRange.upperBound * 0.22, 0.22),
-                using: &generator
-            )
-        )
-        var endAnchor = SIMD3<Float>(
-            cos(endAngle) * endRadius,
-            sin(endAngle) * endRadius,
-            screenFacingDepth * Float.random(in: 0.52...0.92, using: &generator)
-                + Float.random(in: -0.06...0.06, using: &generator)
-        )
-
-        let length = CGFloat.random(in: sunBurstLengthRange, using: &generator)
-        let thickness = CGFloat.random(in: sunBurstThicknessRange, using: &generator)
-        let depthThicknessMultiplier = CGFloat.random(
-            in: sunBurstDepthThicknessMultiplierRange,
-            using: &generator
-        )
-        let minimumSpan = Float(length) + 0.24
-        var rawDirection = endAnchor - startAnchor
-        if simd_length(rawDirection) < minimumSpan {
-            let fallbackDirection = simd_normalize(
-                SIMD3<Float>(
-                    cos(endAngle),
-                    sin(endAngle),
-                    max(screenFacingDepth, endAnchor.z - startAnchor.z)
-                )
-            )
-            endAnchor = startAnchor + fallbackDirection * minimumSpan
-            rawDirection = endAnchor - startAnchor
-        }
-
-        let direction = simd_normalize(rawDirection)
-        let halfLength = Float(length) * 0.5
-        let startPosition = startAnchor + direction * halfLength
-        let endPosition = endAnchor - direction * halfLength
-
-        return SunBurstRayAnimationSpec(
-            startPosition: scnVector(from: startPosition),
-            endPosition: scnVector(from: endPosition),
-            direction: direction,
-            baseOpacity: CGFloat.random(in: layer.opacityRange, using: &generator),
-            length: length,
-            thickness: thickness,
-            whiteValue: CGFloat.random(in: layer.whiteRange, using: &generator),
-            emissionAlpha: CGFloat.random(in: layer.emissionRange, using: &generator),
-            delay: TimeInterval.random(
-                in: 0...(Self.sunDetailTransitionDuration * 0.82),
-                using: &generator
-            ),
-            fadeInDuration: TimeInterval.random(in: 0.02...0.04, using: &generator),
-            flyDuration: TimeInterval.random(
-                in: Self.sunDetailTransitionDuration * 0.18...Self.sunDetailTransitionDuration * 0.32,
-                using: &generator
-            ),
-            fadeOutDuration: TimeInterval.random(in: 0.05...0.09, using: &generator),
-            shrinkScaleY: Float.random(in: 0.48...0.82, using: &generator),
-            depthThicknessMultiplier: depthThicknessMultiplier,
-            layer: layer
-        )
-    }
-
-    private func makeSunBurstRayDepthLayer(screenForwardness: CGFloat) -> SunBurstRayDepthLayer {
-        switch screenForwardness {
-        case ..<0.34:
-            return .background
-        case ..<0.68:
-            return .middle
-        default:
-            return .foreground
-        }
-    }
-
-    private func normalizedScreenForwardness(for depth: Float) -> CGFloat {
-        let clampedDepth = min(max(depth, -0.82), 0.86)
-        return CGFloat((clampedDepth + 0.82) / 1.68)
-    }
-
-    private func ellipseBoundaryDistance(
-        for angle: Float,
-        horizontalRadius: Float,
-        verticalRadius: Float
-    ) -> Float {
-        let cosine = cos(angle)
-        let sine = sin(angle)
-        let denominator = sqrt(
-            (cosine * cosine) / (horizontalRadius * horizontalRadius)
-                + (sine * sine) / (verticalRadius * verticalRadius)
-        )
-        guard denominator > 0.0001 else {
-            return min(horizontalRadius, verticalRadius)
-        }
-        return 1 / denominator
-    }
-
-    private func scnVector(from value: SIMD3<Float>) -> SCNVector3 {
-        SCNVector3(value.x, value.y, value.z)
+        material.lightingModel = .constant
+        material.diffuse.contents = UIColor(white: 0.98, alpha: 0.94)
+        material.emission.contents = UIColor(white: 1.0, alpha: 0.10)
+        material.metalness.contents = Float(0)
+        material.roughness.contents = Float(1)
     }
 
     private func makeMoveAction(
@@ -1908,33 +1645,6 @@ final class WeatherSceneManager: ObservableObject {
         guard mode == .main || mode == .sunTransition else { return }
         guard let root = conditionGroup else { return }
 
-        // Hide 3D temperature display when it's 35 (model not ready)
-        if currentTemperature == 35 {
-            if let existingNode = temperatureNode, existingNode.parent != nil {
-                if animated {
-                    SCNTransaction.begin()
-                    SCNTransaction.animationDuration = 0.12
-                    existingNode.opacity = 0
-                    SCNTransaction.completionBlock = { [weak self] in
-                        self?.temperatureNode?.removeFromParentNode()
-                        self?.temperatureNode = nil
-                    }
-                    SCNTransaction.commit()
-                } else {
-                    existingNode.removeFromParentNode()
-                    temperatureNode = nil
-                }
-            }
-            displayedTemperature = currentTemperature
-            return
-        }
-
-        guard displayedTemperature != currentTemperature || temperatureNode?.parent == nil else { return }
-
-        pendingTemperatureNode?.removeAllActions()
-        pendingTemperatureNode?.removeFromParentNode()
-        pendingTemperatureNode = nil
-
         let replacement = makeTemperatureNode(text: "\(currentTemperature)")
         replacement.name = SceneNode.temperature
         replacement.position = SCNVector3(0, mainTemperaturePositionY, 0.12) // 同步 buildScene 数字位置
@@ -1943,26 +1653,18 @@ final class WeatherSceneManager: ObservableObject {
         root.addChildNode(replacement)
 
         if animated {
-            pendingTemperatureNode = replacement
             SCNTransaction.begin()
-            SCNTransaction.animationDuration = 0.12
+            SCNTransaction.animationDuration = 0.22
             temperatureNode?.opacity = 0
             replacement.opacity = targetOpacity
             SCNTransaction.completionBlock = { [weak self] in
-                guard let self else { return }
-                self.temperatureNode?.removeFromParentNode()
-                self.temperatureNode = replacement
-                if self.pendingTemperatureNode === replacement {
-                    self.pendingTemperatureNode = nil
-                }
-                self.displayedTemperature = self.currentTemperature
+                self?.temperatureNode?.removeFromParentNode()
+                self?.temperatureNode = replacement
             }
             SCNTransaction.commit()
         } else {
             temperatureNode?.removeFromParentNode()
-            pendingTemperatureNode = nil
             temperatureNode = replacement
-            displayedTemperature = currentTemperature
         }
     }
 
@@ -1975,6 +1677,9 @@ final class WeatherSceneManager: ObservableObject {
         animation.autoreverses = true
         animation.repeatCount = .infinity
         animation.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+        // Start at the midpoint of the oscillation cycle (offset = 0) to avoid
+        // a sudden dip when the animation is re-attached after a transition.
+        animation.timeOffset = animation.duration / 2
         node.addAnimation(animation, forKey: "weather_float")
     }
 

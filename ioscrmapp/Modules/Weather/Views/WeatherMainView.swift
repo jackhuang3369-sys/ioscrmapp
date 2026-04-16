@@ -1,6 +1,5 @@
 import SwiftUI
 import SceneKit
-import UIKit
 
 struct WeatherMainView: View {
     @Environment(\.dismiss) private var dismiss
@@ -11,17 +10,9 @@ struct WeatherMainView: View {
     @State private var isSunTransitionActive = false
     @State private var detailOverlayOpacity = 0.0
     @State private var sceneInteractionResetVersion = 0
-@State private var isHourlyStripDragging = false
-    // Toggle for the detail-page background burst so we can quickly compare with/without the effect.
-    private let isSunRayBurstEnabled = true
-    @State private var sunRayBurstTrigger = 0
-    @State private var sunRayBurstCenter = CGPoint.zero
-
-    // Clear Sky lift state
     @State private var hourlyBubbleState = WeatherHourlyBubbleState(isVisible: false, bubbleTopY: 0)
     @State private var forecastStripMinY: CGFloat = 0
     @State private var clearSkyIdleBaselineY: CGFloat?
-    @State private var clearSkySampledOffsets: [CGFloat] = []
 
     private let clearSkyFallbackLiftOffset: CGFloat = -24
     
@@ -97,23 +88,10 @@ struct WeatherMainView: View {
     private func mainScene(in proxy: GeometryProxy) -> some View {
         let mainSceneHeight = mainSceneHeight(for: proxy)
         let hourlyStripBottomPadding = hourlyStripBottomPadding(for: proxy)
-        let globalFrame = proxy.frame(in: .global)
-        let defaultRayCenter = CGPoint(
-            x: proxy.size.width * 0.5,
-            y: min(proxy.size.height * 0.40, mainSceneHeight * 0.70)
-        )
-        let burstCenter = sunRayBurstCenter == .zero
-            ? defaultRayCenter
-            : CGPoint(
-                x: sunRayBurstCenter.x - globalFrame.minX,
-                // The projected SceneKit tap point still reads slightly high in
-                // the composed detail screen, so we bias the 2D burst center down.
-                y: sunRayBurstCenter.y - globalFrame.minY + 62
-            )
 
         return ZStack {
             background
-
+            
             VStack(spacing: 0) {
                 headerBar
                     .zIndex(2)
@@ -121,7 +99,7 @@ struct WeatherMainView: View {
                 WeatherSceneView(
                     scene: sceneManager.scene,
                     manager: sceneManager,
-                    onSunTap: handleSunTap(at:),
+                    onSunTap: handleSunTap,
                     onBackgroundTap: isSunDetailPresented ? exitSunDetail : nil,
                     interactionResetVersion: sceneInteractionResetVersion
                 )
@@ -134,28 +112,11 @@ struct WeatherMainView: View {
 
                 mainForecastSection(
                     width: proxy.size.width * 0.8,
-                    bottomPadding: hourlyStripBottomPadding,
-                    screenHeight: proxy.size.height
+                    bottomPadding: hourlyStripBottomPadding
                 )
-            }
-
-            if isSunRayBurstEnabled && isSunDetailPresented {
-                // Keep the burst above the SceneKit sun so the rays read as a
-                // luminous overlay emitted from the detail sun itself.
-                WeatherSunRayBurstBackground(
-                    trigger: sunRayBurstTrigger,
-                    sunCenter: burstCenter
-                )
-                .opacity(detailOverlayOpacity)
-                .zIndex(3)
             }
         }
         .ignoresSafeArea()
-        .businessAIAssistant(
-            session: session,
-            aiChatService: aiChatService,
-            onNavigate: handleAIChatNavigation(_:)
-        )
     }
     
     private var background: some View {
@@ -167,21 +128,15 @@ struct WeatherMainView: View {
         }
     }
 
-    private func mainForecastSection(width: CGFloat, bottomPadding: CGFloat, screenHeight: CGFloat) -> some View {
-        let adaptationProgress = heightAdaptationProgress(for: screenHeight)
+    private func mainForecastSection(width: CGFloat, bottomPadding: CGFloat) -> some View {
         let isClearSkyLifted = hourlyBubbleState.isVisible
         let clearSkyLiftOffset = clearSkyTitleLiftOffset()
-        // Combine both drag-based and Clear Sky lift title animations
-        let restingTitleOffset: CGFloat = 14
-        let draggingTitleOffset = -20 + adaptationProgress * 4
-        let totalTitleOffset = isHourlyStripDragging ? draggingTitleOffset : restingTitleOffset + clearSkyLiftOffset
 
         return VStack(spacing: 0) {
             clearSkyTitleText(isLifted: isClearSkyLifted)
                 .padding(.bottom, 8)
-                .offset(y: totalTitleOffset)
+                .offset(y: 14 + clearSkyLiftOffset)
                 .zIndex(12)
-                .animation(.spring(response: 0.26, dampingFraction: 0.86), value: isHourlyStripDragging)
                 .background {
                     GeometryReader { proxy in
                         Color.clear
@@ -194,42 +149,36 @@ struct WeatherMainView: View {
 
             WeatherHourlyStrip(
                 points: hourlyPoints,
-                selectedID: selectedTimelineID,
-                onSelect: { entry, isDragSelection in
-                    guard entry.id != selectedTimelineID else { return }
-                    if isDragSelection {
-                        selectedTimelineID = entry.id
-                    } else {
-                        withAnimation(.spring(response: 0.28, dampingFraction: 0.82)) {
-                            selectedTimelineID = entry.id
-                        }
+                selectedID: selectedTimelineID
+            ) { entry, isDragSelection in
+                guard entry.id != selectedTimelineID else { return }
+                let previousTemperature = selectedEntry.temperature
+                if isDragSelection {
+                    selectedTimelineID = entry.id
+                    if entry.temperature != previousTemperature {
+                        sceneManager.setTemperature(entry.temperature, animated: false)
                     }
-                    sceneManager.setTemperature(
-                        entry.temperature,
-                        animated: WeatherHourlyStripCore.shouldAnimateSceneTemperatureChange(isDragging: isDragSelection)
-                    )
-                },
-                onDragStateChange: { isDragging in
-                    isHourlyStripDragging = isDragging
-                },
-                onBubbleStateChange: { bubbleState in
-                    if bubbleState.isVisible {
-                        hourlyBubbleState = bubbleState
-                    } else {
-                        withAnimation(.easeOut(duration: WeatherHourlyStripCore.clearSkyRestoreAnimationDuration)) {
-                            hourlyBubbleState = bubbleState
-                        }
-                    }
-                    if bubbleState.isVisible {
-                        clearSkySampledOffsets.append(clearSkyTitleLiftOffset(for: bubbleState))
-                        if clearSkySampledOffsets.count > 240 {
-                            clearSkySampledOffsets.removeFirst(clearSkySampledOffsets.count - 240)
-                        }
-                    } else {
-                        clearSkySampledOffsets.removeAll(keepingCapacity: true)
-                    }
+                    return
                 }
-            )
+
+                withAnimation(.spring(response: 0.28, dampingFraction: 0.82)) {
+                    selectedTimelineID = entry.id
+                }
+                sceneManager.setTemperature(entry.temperature, animated: true)
+            } onBubbleStateChange: { bubbleState in
+                if bubbleState.isVisible {
+                    if hourlyBubbleState.isVisible,
+                       abs(hourlyBubbleState.bubbleTopY - bubbleState.bubbleTopY) < 0.25 {
+                        return
+                    }
+                    hourlyBubbleState = bubbleState
+                } else {
+                    withAnimation(.easeOut(duration: WeatherHourlyStripCore.clearSkyRestoreAnimationDuration)) {
+                        hourlyBubbleState = bubbleState
+                    }
+                    sceneManager.setTemperature(selectedEntry.temperature, animated: false)
+                }
+            }
             .frame(width: width)
             .offset(y: -6)
             .background {
@@ -368,7 +317,9 @@ struct WeatherMainView: View {
     private func mainSceneHeight(for proxy: GeometryProxy) -> CGFloat {
         let adaptationProgress = heightAdaptationProgress(for: proxy.size.height)
         let sceneHeightRatio = 0.74 + adaptationProgress * 0.04
-        return proxy.size.height * sceneHeightRatio - 10
+        let computedHeight = proxy.size.height * sceneHeightRatio - 10
+        guard computedHeight.isFinite else { return 0 }
+        return max(0, computedHeight)
     }
 
     private func hourlyStripBottomPadding(for proxy: GeometryProxy) -> CGFloat {
@@ -411,7 +362,7 @@ struct WeatherMainView: View {
         detailOverlayOpacity = 0
         isSunTransitionActive = true
 
-        withAnimation(.spring(response: 0.42, dampingFraction: 0.88, blendDuration: 0.10)) {
+        withAnimation(.easeInOut(duration: 0.42)) {
             isSunDetailPresented = true
         }
 
@@ -428,24 +379,18 @@ struct WeatherMainView: View {
             sceneInteractionResetVersion += 1
             isSunTransitionActive = false
         }
-        WeatherAudioPlayer.shared.playDetailedEnter()
+        WeatherAudioPlayer.shared.playSunDetailEnter()
     }
 
-    private func handleSunTap(at screenPoint: CGPoint) {
+    private func handleSunTap() {
         if isSunDetailPresented {
-            triggerSunRayBurst(at: screenPoint)
-        } else {
-            enterSunDetail()
+            guard !isSunTransitionActive else { return }
+            WeatherAudioPlayer.shared.playSunTapBurst()
+            sceneManager.triggerDetailSunTapBurst()
+            return
         }
-    }
 
-    private func triggerSunRayBurst(at screenPoint: CGPoint) {
-        guard isSunRayBurstEnabled, isSunDetailPresented, !isSunTransitionActive else { return }
-        // Detail-page sun taps should still produce an immediate tap cue even
-        // though they no longer transition screens.
-        WeatherAudioPlayer.shared.playDetailSunTap()
-        sunRayBurstCenter = screenPoint
-        sunRayBurstTrigger += 1
+        enterSunDetail()
     }
     
     private func exitSunDetail() {
@@ -465,7 +410,7 @@ struct WeatherMainView: View {
             isSunTransitionActive = false
             sceneInteractionResetVersion += 1
         }
-        WeatherAudioPlayer.shared.playShapeTap()
+        WeatherAudioPlayer.shared.playSunDetailExit()
     }
     private func handleAIChatNavigation(_ target: AIChatNavigationTarget) {
         guard shouldForwardAIChatNavigation(target) else {
@@ -534,9 +479,9 @@ struct WeatherMainView: View {
                     .allowsHitTesting(allowsInteraction)
                     
                     WeatherSunInsightPanel()
-                        .frame(width: size.width * 0.6)
-                        .padding(.bottom, (max(safeAreaInsets.bottom, 14) + 2) * 2)
-                        .offset(y: (1 - interfaceOpacity) * 180)
+                        .frame(width: size.width * 0.67)
+                        .padding(.bottom, max(safeAreaInsets.bottom, 14) + 2)
+                        .offset(y: (1 - interfaceOpacity) * 180 - 15)
                 }
                 .opacity(interfaceOpacity)
             }
@@ -676,201 +621,6 @@ struct WeatherMainView: View {
             .accessibilityHidden(true)
         }
     }
-
-    // Detail-page overlay burst that radiates from the sun edge instead of the
-    // center, so the rays feel like a short glow flare emitted by the sun.
-    private struct WeatherSunRayBurstBackground: View {
-        let trigger: Int
-        let sunCenter: CGPoint
-
-        @State private var rays: [WeatherSunRaySpec] = []
-        @State private var burstStartTime: TimeInterval = -10
-
-        var body: some View {
-            TimelineView(.animation(minimumInterval: 1.0 / 60.0, paused: false)) { context in
-                Canvas { canvas, size in
-                    let elapsed = context.date.timeIntervalSinceReferenceDate - burstStartTime
-                    guard elapsed >= 0, elapsed <= 1.24, !rays.isEmpty else { return }
-
-                    drawRays(in: canvas, size: size, elapsed: elapsed)
-                }
-            }
-            .onAppear {
-                guard trigger > 0 else { return }
-                activateBurst(for: trigger)
-            }
-            .onChange(of: trigger) { newValue in
-                guard newValue > 0 else { return }
-                activateBurst(for: newValue)
-            }
-            .allowsHitTesting(false)
-            .accessibilityHidden(true)
-        }
-
-        private func activateBurst(for trigger: Int) {
-            rays = WeatherSunRaySpec.makeSet(seed: trigger)
-            burstStartTime = Date().timeIntervalSinceReferenceDate
-        }
-
-        private func drawRays(
-            in canvas: GraphicsContext,
-            size: CGSize,
-            elapsed: TimeInterval
-        ) {
-            _ = size
-            // Short lead-in, then a longer outward travel before the burst fades.
-            let leadDelay: TimeInterval = 0.06
-            let flyDuration: TimeInterval = 0.48
-            let fadeDuration: TimeInterval = 0.24
-
-            canvas.withCGContext { ctx in
-                ctx.saveGState()
-                ctx.setLineCap(.round)
-                ctx.setLineJoin(.round)
-                ctx.setBlendMode(.normal)
-
-                for ray in rays {
-                    let localElapsed = elapsed - leadDelay - ray.delay
-                    guard localElapsed > 0 else { continue }
-
-                    let rayFlyDuration = flyDuration * ray.speedScale
-                    let rayFadeDuration = fadeDuration * (0.92 + ray.speedScale * 0.18)
-                    let flyProgress = min(max(localElapsed / rayFlyDuration, 0), 1)
-                    let fadeProgress = min(max((localElapsed - rayFlyDuration) / rayFadeDuration, 0), 1)
-                    let revealProgress = min(max(localElapsed / 0.04, 0), 1)
-                    let opacityProgress = revealProgress * (1 - fadeProgress)
-                    guard opacityProgress > 0.001 else { continue }
-
-                    let travel = easeOutCubic(CGFloat(flyProgress))
-                    // Keep the segment short and translate the whole ray outward
-                    // so the flare reads as motion, not as a line growing longer.
-                    let radialTravel = ray.travelDistance * travel
-                    let currentLength = ray.length * (1 - easeInOutCubic(CGFloat(flyProgress)) * 0.06)
-                    let startRadius = ray.originRadius + radialTravel
-                    let endRadius = startRadius + currentLength
-                    let start = point(
-                        from: sunCenter,
-                        angle: ray.angle,
-                        distance: startRadius
-                    )
-                    let end = point(
-                        from: sunCenter,
-                        angle: ray.angle,
-                        distance: endRadius
-                    )
-
-                    let alpha = ray.opacity * Double(opacityProgress)
-                    let color = UIColor(white: ray.white, alpha: alpha)
-
-                    ctx.saveGState()
-                    ctx.setShadow(offset: .zero, blur: ray.blurRadius, color: color.cgColor)
-                    ctx.setStrokeColor(color.cgColor)
-                    ctx.setLineWidth(ray.width)
-                    ctx.move(to: start)
-                    ctx.addLine(to: end)
-                    ctx.strokePath()
-                    ctx.restoreGState()
-                }
-
-                ctx.restoreGState()
-            }
-        }
-
-        private func point(from center: CGPoint, angle: CGFloat, distance: CGFloat) -> CGPoint {
-            CGPoint(
-                x: center.x + cos(angle) * distance,
-                y: center.y + sin(angle) * distance
-            )
-        }
-
-        private func easeOutCubic(_ value: CGFloat) -> CGFloat {
-            let reversed = 1 - value
-            return 1 - reversed * reversed * reversed
-        }
-
-        private func easeInOutCubic(_ value: CGFloat) -> CGFloat {
-            if value < 0.5 {
-                return 4 * value * value * value
-            }
-            let reversed = -2 * value + 2
-            return 1 - (reversed * reversed * reversed) / 2
-        }
-    }
-
-    // Fixed-direction burst rays with controlled randomness so each tap feels a
-    // little different without losing the sun-flare silhouette.
-    private struct WeatherSunRaySpec {
-        let angle: CGFloat
-        let originRadius: CGFloat
-        let travelDistance: CGFloat
-        let length: CGFloat
-        let width: CGFloat
-        let opacity: Double
-        let white: CGFloat
-        let blurRadius: CGFloat
-        let delay: CGFloat
-        let speedScale: CGFloat
-
-        static func makeSet(seed: Int, count: Int = 12) -> [WeatherSunRaySpec] {
-            var generator = SeededRandomGenerator(
-                seed: UInt64(max(seed, 1)) &* 0x9E3779B97F4A7C15
-            )
-            let rotationOffset = CGFloat.random(in: -0.55...0.55, using: &generator)
-            let presetAngles: [CGFloat] = [
-                -.pi / 2,
-                -1.12,
-                -0.52,
-                -0.06,
-                0.60,
-                1.18,
-                .pi / 2,
-                2.10,
-                2.68,
-                .pi,
-                -2.72,
-                -1.92
-            ]
-            let maximumVisibleCount = min(count, presetAngles.count)
-            let minimumVisibleCount = min(8, maximumVisibleCount)
-            let visibleCount = Int.random(in: minimumVisibleCount...maximumVisibleCount, using: &generator)
-            let activeAngles = Array(presetAngles.shuffled(using: &generator).prefix(visibleCount))
-
-            return activeAngles.enumerated().map { index, baseAngle in
-                let randomSpread = CGFloat.random(in: -0.12...0.12, using: &generator)
-                let isAxisRay = index.isMultiple(of: 3)
-
-                return WeatherSunRaySpec(
-                    angle: baseAngle + rotationOffset + randomSpread,
-                    // Let some rays start near the rim and some slightly inside
-                    // the sun so the burst feels less mechanically uniform.
-                    originRadius: CGFloat.random(in: isAxisRay ? 84...132 : 76...124, using: &generator),
-                    travelDistance: CGFloat.random(in: isAxisRay ? 28...36 : 22...30, using: &generator),
-                    length: CGFloat.random(in: isAxisRay ? 8...11 : 6...9, using: &generator),
-                    width: CGFloat.random(in: isAxisRay ? 1.95...2.75 : 1.45...2.2, using: &generator),
-                    opacity: Double.random(in: isAxisRay ? 0.62...0.80 : 0.50...0.68, using: &generator),
-                    // Keep the existing tone as the darkest baseline and randomize
-                    // toward lighter variants so the burst has subtle depth.
-                    white: CGFloat.random(in: 0.03...0.20, using: &generator),
-                    blurRadius: CGFloat.random(in: 0.3...0.9, using: &generator),
-                    delay: CGFloat.random(in: 0...0.04, using: &generator),
-                    speedScale: CGFloat.random(in: 0.82...1.18, using: &generator)
-                )
-            }
-        }
-    }
-
-    private struct SeededRandomGenerator: RandomNumberGenerator {
-        private var state: UInt64
-
-        init(seed: UInt64) {
-            state = seed == 0 ? 0x123456789ABCDEF : seed
-        }
-
-        mutating func next() -> UInt64 {
-            state = state &* 6364136223846793005 &+ 1442695040888963407
-            return state
-        }
-    }
     
     private struct WeatherSunDismissEdges: View {
         let onDismiss: () -> Void
@@ -927,9 +677,11 @@ struct WeatherMainView: View {
         
         var body: some View {
             VStack(spacing: 8) {
-                metricRow(title: "UV", value: "4", highlighted: true)
-                metricRow(title: "Sunrise", value: "6:06 AM", highlighted: false)
-                metricRow(title: "Sunset", value: "6:36 PM", highlighted: false)
+                VStack(spacing: 4) {
+                    metricRow(title: "UV", value: "4", highlighted: true)
+                    metricRow(title: "Sunrise", value: "6:06 AM", highlighted: false)
+                    metricRow(title: "Sunset", value: "6:36 PM", highlighted: false)
+                }
                 
                 HStack {
                     Text("Now")
@@ -999,7 +751,7 @@ struct WeatherMainView: View {
                     .foregroundColor(highlighted ? Color.white.opacity(0.96) : Color.black.opacity(0.88))
             }
             .padding(.horizontal, 12)
-            .frame(height: highlighted ? 28 : 22)
+            .frame(height: highlighted ? 26 : 22)
             .background(
                 Capsule()
                     .fill(highlighted ? Color.black.opacity(0.92) : Color.clear)
