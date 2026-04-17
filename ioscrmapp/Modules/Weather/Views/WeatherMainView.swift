@@ -357,6 +357,7 @@ struct WeatherMainView: View {
             temperature: selectedEntry.temperature,
             sourceRotation: sceneManager.displayGroupRotation
         )
+        WeatherHapticPlayer.shared.prepareSunTransition()
         sceneManager.setTemperatureVisibility(isHidden: true, animated: true)
 
         detailOverlayOpacity = 0
@@ -380,6 +381,7 @@ struct WeatherMainView: View {
             isSunTransitionActive = false
         }
         WeatherAudioPlayer.shared.playSunDetailEnter()
+        WeatherHapticPlayer.shared.playSunTransitionFade()
     }
 
     private func handleSunTap() {

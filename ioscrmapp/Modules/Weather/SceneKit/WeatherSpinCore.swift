@@ -22,6 +22,12 @@ struct WeatherSpinTuning {
     let velocityPerTurn: CGFloat
     /// Under quarter-screen distance, swipes faster than this still commit forward turns.
     let shortSwipeSpinMinVelocity: CGFloat
+    /// Shared settle model target speed in rad/s.
+    let targetAngularSpeedRadPerSec: Float
+    /// Shared settle model minimum duration.
+    let minimumSettleDuration: Float
+    /// Shared settle model maximum duration.
+    let maximumSettleDuration: Float
 
     static let `default` = WeatherSpinTuning(
         fullScreenTurnDegrees: 360,
@@ -34,7 +40,10 @@ struct WeatherSpinTuning {
         maxMomentumTurns: 8,
         finalTurnSlowdownStartRatio: 0.82,
         velocityPerTurn: 800,
-        shortSwipeSpinMinVelocity: 1650
+        shortSwipeSpinMinVelocity: 1650,
+        targetAngularSpeedRadPerSec: 4.8,
+        minimumSettleDuration: 0.48,
+        maximumSettleDuration: 1.45
     )
 }
 
@@ -82,6 +91,11 @@ struct WeatherAutoSpinRecovery {
 struct WeatherSpinController {
     let tuning: WeatherSpinTuning
 
+    func settleDuration(distanceRadians: Float) -> Float {
+        let unclamped = distanceRadians / tuning.targetAngularSpeedRadPerSec
+        return min(tuning.maximumSettleDuration, max(tuning.minimumSettleDuration, unclamped))
+    }
+
     func releaseAudioVariant(for decision: WeatherSpinSettleDecision) -> WeatherSpinReleaseAudioVariant {
         if decision.targetTurnCount >= 2 {
             return .fast
@@ -96,6 +110,17 @@ struct WeatherSpinController {
     /// This avoids reversing through all accumulated turns when settling to 0/360.
     func sunDetailSnapYaw(currentYaw: Float, direction: Float) -> Float {
         frontFacingYaw(from: currentYaw, direction: direction >= 0 ? 1 : -1, extraTurns: 0)
+    }
+
+    /// Second-screen settle target using the shared 180-degree rule.
+    /// <180° returns to start yaw, >=180° continues in release direction to one full turn.
+    func sunDetailSettleTargetYaw(startYaw: Float, currentYaw: Float, direction: Float) -> Float {
+        let absoluteDelta = abs(currentYaw - startYaw)
+        if absoluteDelta < Float.pi {
+            return startYaw
+        }
+        let fullTurn = Float.pi * 2
+        return startYaw + (direction >= 0 ? fullTurn : -fullTurn)
     }
 
     /// Collapses accumulated yaw to an equivalent front-facing angle near zero.

@@ -95,6 +95,8 @@
 		A10000000000000000000068 /* MallImagePreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000068 /* MallImagePreviewView.swift */; };
 		A10000000000000000000070 /* WeatherHourlyStripCore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000070 /* WeatherHourlyStripCore.swift */; };
 		A10000000000000000000072 /* WeatherSunBurstCore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000072 /* WeatherSunBurstCore.swift */; };
+		A10000000000000000000073 /* WeatherSunTransitionHapticCore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000073 /* WeatherSunTransitionHapticCore.swift */; };
+		A10000000000000000000074 /* WeatherHapticPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000074 /* WeatherHapticPlayer.swift */; };
 		A10000000000000000000071 /* Fonts in Resources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000071 /* Fonts */; };
 		B10000000000000000000001 /* BillingAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000001 /* BillingAPI.swift */; };
 		B10000000000000000000002 /* BillingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000002 /* BillingService.swift */; };
@@ -224,6 +226,8 @@
 		A20000000000000000000068 /* MallImagePreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MallImagePreviewView.swift; sourceTree = "<group>"; };
 		A20000000000000000000070 /* WeatherHourlyStripCore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherHourlyStripCore.swift; sourceTree = "<group>"; };
 		A20000000000000000000072 /* WeatherSunBurstCore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherSunBurstCore.swift; sourceTree = "<group>"; };
+		A20000000000000000000073 /* WeatherSunTransitionHapticCore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherSunTransitionHapticCore.swift; sourceTree = "<group>"; };
+		A20000000000000000000074 /* WeatherHapticPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherHapticPlayer.swift; sourceTree = "<group>"; };
 		A20000000000000000000071 /* Fonts */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Fonts; sourceTree = "<group>"; };
 		B20000000000000000000001 /* BillingAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BillingAPI.swift; sourceTree = "<group>"; };
 		B20000000000000000000002 /* BillingService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BillingService.swift; sourceTree = "<group>"; };
@@ -738,6 +742,8 @@
 				A2000000000000000000004E /* WeatherSceneView.swift */,
 				A20000000000000000000060 /* WeatherAudioPlayer.swift */,
 				A20000000000000000000072 /* WeatherSunBurstCore.swift */,
+				A20000000000000000000073 /* WeatherSunTransitionHapticCore.swift */,
+				A20000000000000000000074 /* WeatherHapticPlayer.swift */,
 			);
 			path = SceneKit;
 			sourceTree = "<group>";
@@ -1132,6 +1138,8 @@
 				A1000000000000000000004E /* WeatherSceneView.swift in Sources */,
 				A10000000000000000000060 /* WeatherAudioPlayer.swift in Sources */,
 				A10000000000000000000072 /* WeatherSunBurstCore.swift in Sources */,
+				A10000000000000000000073 /* WeatherSunTransitionHapticCore.swift in Sources */,
+				A10000000000000000000074 /* WeatherHapticPlayer.swift in Sources */,
 				A10000000000000000000054 /* WeatherHourlyStrip.swift in Sources */,
 				A10000000000000000000055 /* WeatherMainView.swift in Sources */,
 				A10000000000000000000061 /* WeatherWindBackgroundView.swift in Sources */,

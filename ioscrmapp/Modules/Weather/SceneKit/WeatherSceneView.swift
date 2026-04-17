@@ -23,6 +23,9 @@ struct WeatherSpinTuning {
     let finalTurnSlowdownStartRatio: CGFloat
     let velocityPerTurn: CGFloat
     let shortSwipeSpinMinVelocity: CGFloat
+    let targetAngularSpeedRadPerSec: Float
+    let minimumSettleDuration: Float
+    let maximumSettleDuration: Float
 
     static let `default` = WeatherSpinTuning(
         fullScreenTurnDegrees: 360,
@@ -35,7 +38,10 @@ struct WeatherSpinTuning {
         maxMomentumTurns: 8,
         finalTurnSlowdownStartRatio: 0.82,
         velocityPerTurn: 800,
-        shortSwipeSpinMinVelocity: 1650
+        shortSwipeSpinMinVelocity: 1650,
+        targetAngularSpeedRadPerSec: 4.8,
+        minimumSettleDuration: 0.48,
+        maximumSettleDuration: 1.45
     )
 }
 
@@ -77,6 +83,11 @@ enum WeatherSpinReleaseAudioVariant: Equatable {
 struct WeatherSpinController {
     let tuning: WeatherSpinTuning
 
+    func settleDuration(distanceRadians: Float) -> Float {
+        let unclamped = distanceRadians / tuning.targetAngularSpeedRadPerSec
+        return min(tuning.maximumSettleDuration, max(tuning.minimumSettleDuration, unclamped))
+    }
+
     func releaseAudioVariant(for decision: WeatherSpinSettleDecision) -> WeatherSpinReleaseAudioVariant {
         if decision.targetTurnCount >= 2 {
             return .fast
@@ -91,6 +102,17 @@ struct WeatherSpinController {
     /// This avoids reversing through all accumulated turns when settling to 0/360.
     func sunDetailSnapYaw(currentYaw: Float, direction: Float) -> Float {
         frontFacingYaw(from: currentYaw, direction: direction >= 0 ? 1 : -1, extraTurns: 0)
+    }
+
+    /// Second-screen settle target using the shared 180-degree rule.
+    /// <180° returns to start yaw, >=180° continues in release direction to one full turn.
+    func sunDetailSettleTargetYaw(startYaw: Float, currentYaw: Float, direction: Float) -> Float {
+        let absoluteDelta = abs(currentYaw - startYaw)
+        if absoluteDelta < Float.pi {
+            return startYaw
+        }
+        let fullTurn = Float.pi * 2
+        return startYaw + (direction >= 0 ? fullTurn : -fullTurn)
     }
 
     /// Collapses accumulated yaw to an equivalent front-facing angle near zero.
@@ -353,8 +375,6 @@ struct WeatherSceneView: UIViewRepresentable {
         private let idleFollow:       Float = 0.36
         private let pitchReturnStrength: Float = 0.24
         private let rollReturnStrength: Float = 0.22
-        private let minimumSettleDuration: Float = 0.36
-        private let maximumSettleDuration: Float = 1.6
 
         init(
             manager: WeatherSceneManager?,
@@ -548,7 +568,6 @@ struct WeatherSceneView: UIViewRepresentable {
         private func startSettlingAnimation(
             decision: WeatherSpinSettleDecision,
             direction: Float,
-            velocityX: CGFloat,
             restPitch: Float
         ) {
             let settleDirection: Float = decision.mode == .reverseReturnToFront
@@ -561,26 +580,11 @@ struct WeatherSceneView: UIViewRepresentable {
                 extraTurns: extraTurns
             )
             let settleDistance = abs(destinationYaw - currentYaw)
-            let oneTurnRadians = Float.pi * 2
-            let settleTurns = settleDistance / oneTurnRadians
-            // Velocity-matched duration:
-            // easeOutDecay (k=3) has f'(0) = k/(1-e^{-k}) ≈ 3.16 × average velocity
-            // => duration = 3.16 × settle_radians / finger_rad_per_sec
-            let baseDuration: Float
-            if decision.mode == .reverseReturnToFront {
-                // Reverse snap: fixed short duration proportional to distance
-                baseDuration = max(minimumSettleDuration, 0.40 + Float(settleTurns) * 0.22)
-            } else {
-                let velRadPerSec = Float(abs(velocityX)) / max(panReferenceWidth, minimumPanReferenceWidth) * Float.pi * 2
-                let matched = velRadPerSec > 0.5
-                    ? 3.16 * settleDistance / velRadPerSec
-                    : maximumSettleDuration
-                baseDuration = min(maximumSettleDuration, max(minimumSettleDuration, matched))
-            }
+            let baseDuration = spinController.settleDuration(distanceRadians: settleDistance)
 
             pendingOrientationAnimation = nil
             orientationAnimation = OrientationAnimation(
-                yawCurve: decision.mode == .reverseReturnToFront ? .easeOutQuint : .easeOutDecay,
+                yawCurve: .easeOutDecay,
                 tiltCurve: .easeOutCubic,
                 startYaw: currentYaw,
                 endYaw: destinationYaw,
@@ -610,13 +614,17 @@ struct WeatherSceneView: UIViewRepresentable {
             rollVelocity = 0
         }
 
-        /// 第二屏专用：松手后沿当前方向平滑滑行到最近的 0/360 朝向。
-        private func snapBackToZero(restPitch: Float, direction: Float) {
-            let destinationYaw = spinController.sunDetailSnapYaw(currentYaw: currentYaw, direction: direction)
+        /// 第二屏专用：按共享 180° 阈值规则，<180 回起始朝向，>=180 沿释放方向补到 360。
+        private func snapBackToZero(restPitch: Float, direction: Float, panStartYaw: Float) {
+            let destinationYaw = spinController.sunDetailSettleTargetYaw(
+                startYaw: panStartYaw,
+                currentYaw: currentYaw,
+                direction: direction
+            )
             let distance = abs(destinationYaw - currentYaw)
-            let duration = min(0.55, max(0.28, Double(distance / .pi) * 0.50))
+            let duration = spinController.settleDuration(distanceRadians: distance)
             orientationAnimation = OrientationAnimation(
-                yawCurve: .easeOutCubic,
+                yawCurve: .easeOutDecay,
                 tiltCurve: .easeOutCubic,
                 startYaw: currentYaw,
                 endYaw: destinationYaw,
@@ -624,7 +632,7 @@ struct WeatherSceneView: UIViewRepresentable {
                 endPitch: restPitch,
                 startRoll: currentRoll,
                 endRoll: 0,
-                duration: duration
+                duration: CFTimeInterval(duration)
             )
             pendingOrientationAnimation = nil
             targetYaw = currentYaw
@@ -796,11 +804,12 @@ struct WeatherSceneView: UIViewRepresentable {
 
                 // 第二屏：保持当前旋转方向，滑行到最近的 0/360 朝向（不反向吐圈）
                 if manager?.isSunDetailMode == true {
+                    let panStartYaw = panSession?.startYaw ?? currentYaw
                     let yawDelta = targetYaw - (panSession?.startYaw ?? targetYaw)
                     let settleDirection: Float = yawDelta == 0
                         ? (v.x >= 0 ? 1 : -1)
                         : (yawDelta > 0 ? 1 : -1)
-                    snapBackToZero(restPitch: restPitch, direction: settleDirection)
+                    snapBackToZero(restPitch: restPitch, direction: settleDirection, panStartYaw: panStartYaw)
                     break
                 }
                 if interactionMode == .horizontalYawOnly {
@@ -830,7 +839,6 @@ struct WeatherSceneView: UIViewRepresentable {
                     startSettlingAnimation(
                         decision: decision,
                         direction: direction,
-                        velocityX: v.x,
                         restPitch: restPitch
                     )
                     switch spinController.releaseAudioVariant(for: decision) {
@@ -857,7 +865,6 @@ struct WeatherSceneView: UIViewRepresentable {
                     startSettlingAnimation(
                         decision: decision,
                         direction: v.x >= 0 ? 1 : -1,
-                        velocityX: v.x,
                         restPitch: restPitch
                     )
                     debugLogSettle(sample: sample, decision: decision, currentYawDegrees: 0)
