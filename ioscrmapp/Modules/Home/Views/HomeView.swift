@@ -1880,7 +1880,7 @@ private struct HomeOrbitingBorderEffect: View {
 
                         graphicsContext.stroke(
                             segment,
-                            with: .color(.white.opacity(opacity)),
+                            with: .color(DUColorPrimitives.Neutral.white.opacity(opacity)),
                             style: StrokeStyle(lineWidth: lineWidth, lineCap: .round)
                         )
                     }
@@ -1891,11 +1891,11 @@ private struct HomeOrbitingBorderEffect: View {
 
                     graphicsContext.fill(
                         Path(ellipseIn: glowRect),
-                        with: .color(.white.opacity(0.26))
+                        with: .color(DUColorPrimitives.Neutral.white.opacity(0.26))
                     )
                     graphicsContext.fill(
                         Path(ellipseIn: dotRect),
-                        with: .color(.white)
+                        with: .color(DUColorPrimitives.Neutral.white)
                     )
                 }
             }
@@ -1917,27 +1917,27 @@ private struct HomePalette {
     }
 
     var pageBase: Color {
-        isDark ? theme.colors.background.canvas : Color(hex: 0xEFF7FF)
+        theme.colors.background.canvas
     }
 
     var pageImageTintPrimary: Color {
-        isDark ? theme.colors.brand.secondary.opacity(0.22) : Color(hex: 0x1032FF, opacity: 0.18)
+        theme.colors.brand.secondary.opacity(isDark ? 0.22 : 0.18)
     }
 
     var pageImageTintSecondary: Color {
-        isDark ? theme.colors.brand.indigo.opacity(0.14) : Color(hex: 0x5E47FF, opacity: 0.10)
+        theme.colors.brand.indigo.opacity(isDark ? 0.14 : 0.10)
     }
 
     var pageOverlayPrimary: Color {
-        isDark ? theme.colors.brand.secondary.opacity(0.24) : Color(hex: 0x173BFA, opacity: 0.24)
+        theme.colors.brand.secondary.opacity(0.24)
     }
 
     var pageOverlaySecondary: Color {
-        isDark ? theme.colors.brand.indigo.opacity(0.16) : Color(hex: 0x2D4DF7, opacity: 0.14)
+        theme.colors.brand.indigo.opacity(isDark ? 0.16 : 0.14)
     }
 
     var pageOverlayTertiary: Color {
-        isDark ? theme.colors.brand.magenta.opacity(0.10) : Color(hex: 0x7457F5, opacity: 0.10)
+        theme.colors.brand.magenta.opacity(0.10)
     }
 
     var pageFadeStart: Color {
@@ -1964,8 +1964,8 @@ private struct HomePalette {
                     theme.colors.surface.card
                 ]
                 : [
-                    Color(red: 232 / 255, green: 236 / 255, blue: 255 / 255, opacity: 0.88),
-                    Color.white.opacity(0.96)
+                    theme.colors.background.secondary.opacity(0.78),
+                    theme.colors.surface.card.opacity(0.96)
                 ],
             startPoint: .topLeading,
             endPoint: .bottomTrailing
@@ -1973,25 +1973,27 @@ private struct HomePalette {
     }
 
     var accountCardBorder: Color {
-        isDark ? theme.colors.border.default.opacity(0.92) : Color.white.opacity(0.22)
+        isDark
+            ? theme.colors.border.default.opacity(0.92)
+            : DUColorPrimitives.Neutral.white.opacity(0.22)
     }
 
     var accountCardShadow: Color {
         isDark
-            ? Color.black.opacity(0.32)
-            : Color(red: 29 / 255, green: 46 / 255, blue: 122 / 255, opacity: 0.18)
+            ? theme.components.card.elevation.color.opacity(1)
+            : theme.colors.brand.secondary.opacity(0.18)
     }
 
     var accountTitle: Color {
-        isDark ? theme.colors.text.secondary : Color(hex: 0x4C5A75)
+        theme.colors.text.secondary
     }
 
     var balanceAmount: Color {
-        isDark ? theme.colors.brand.primaryLight : Color(hex: 0x167DFF)
+        isDark ? theme.colors.brand.primaryLight : theme.colors.brand.primary
     }
 
     var balanceCurrency: Color {
-        isDark ? theme.colors.text.tertiary : Color(hex: 0x6F7F99)
+        theme.colors.text.tertiary
     }
 
     var sectionPrimaryText: Color {
@@ -2003,33 +2005,35 @@ private struct HomePalette {
     }
 
     var usageSecondaryText: Color {
-        isDark ? theme.colors.text.tertiary : Color(hex: 0x74839E)
+        theme.colors.text.tertiary
     }
 
     var usageTrack: Color {
-        isDark ? theme.colors.border.default : Color(hex: 0xE0E7F1)
+        theme.colors.border.subtle
     }
 
     var cardDivider: Color {
-        isDark ? theme.colors.border.default.opacity(0.82) : Color.white
+        isDark
+            ? theme.colors.border.default.opacity(0.82)
+            : DUColorPrimitives.Neutral.white
     }
 
     var creditLimitTotalBackground: Color {
         isDark
             ? theme.colors.brand.primaryBackground
-            : Color(red: 199 / 255, green: 219 / 255, blue: 255 / 255, opacity: 0.76)
+            : theme.colors.action.primaryBackground.opacity(0.88)
     }
 
     var creditLimitUsedBackground: Color {
         isDark
             ? theme.colors.status.warningBackground
-            : Color(red: 245 / 255, green: 214 / 255, blue: 224 / 255, opacity: 0.82)
+            : theme.colors.status.warningBackground.opacity(0.92)
     }
 
     var creditLimitRemainingBackground: Color {
         isDark
             ? theme.colors.status.successBackground
-            : Color(red: 208 / 255, green: 236 / 255, blue: 229 / 255, opacity: 0.84)
+            : theme.colors.status.successBackground.opacity(0.94)
     }
 
     var bannerBackground: Color {
@@ -2053,11 +2057,15 @@ private struct HomePalette {
     }
 
     var tabBarStroke: Color {
-        isDark ? theme.colors.border.default.opacity(0.78) : Color.white.opacity(0.60)
+        isDark
+            ? theme.colors.border.default.opacity(0.78)
+            : DUColorPrimitives.Neutral.white.opacity(0.60)
     }
 
     var tabBarShadow: Color {
-        isDark ? Color.black.opacity(0.42) : Color.black.opacity(0.08)
+        isDark
+            ? theme.components.card.elevation.color.opacity(1)
+            : theme.components.card.elevation.color.opacity(0.42)
     }
 
     var inactiveTabLabel: Color {
@@ -2065,55 +2073,59 @@ private struct HomePalette {
     }
 
     var activeTabLabel: Color {
-        .white
+        DUColorPrimitives.Neutral.white
     }
 
     var activeTabStart: Color {
-        isDark ? theme.colors.brand.primary : Color(hex: 0x1E9BFF)
+        theme.colors.brand.primary
     }
 
     var activeTabEnd: Color {
-        isDark ? theme.colors.brand.secondary : Color(hex: 0x0E7BFF)
+        theme.colors.brand.secondary
     }
 
     var activeTabBorder: Color {
-        isDark ? theme.colors.border.default.opacity(0.44) : Color.white.opacity(0.30)
+        isDark
+            ? theme.colors.border.default.opacity(0.44)
+            : DUColorPrimitives.Neutral.white.opacity(0.30)
     }
 
     var activeTabShadow: Color {
-        (isDark ? theme.colors.brand.secondary : Color(hex: 0x1176FF)).opacity(isDark ? 0.34 : 0.28)
+        theme.colors.brand.secondary.opacity(isDark ? 0.34 : 0.28)
     }
 
     var pillStart: Color {
-        isDark ? theme.colors.brand.primary : Color(hex: 0x48A9FF)
+        theme.colors.brand.primary
     }
 
     var pillEnd: Color {
-        isDark ? theme.colors.brand.secondary : Color(hex: 0x2B80FF)
+        theme.colors.brand.secondary
     }
 
     var pillBorder: Color {
-        isDark ? theme.colors.border.default.opacity(0.64) : Color.white.opacity(0.65)
+        isDark
+            ? theme.colors.border.default.opacity(0.64)
+            : DUColorPrimitives.Neutral.white.opacity(0.65)
     }
 
     var pillShadow: Color {
-        isDark ? theme.colors.brand.secondary : Color(hex: 0x287FFF)
+        theme.colors.brand.secondary
     }
 
     var heroChromeFill: Color {
-        Color.white.opacity(isDark ? 0.16 : 0.18)
+        DUColorPrimitives.Neutral.white.opacity(isDark ? 0.16 : 0.18)
     }
 
     var heroChromeBorder: Color {
-        Color.white.opacity(isDark ? 0.38 : 0.50)
+        DUColorPrimitives.Neutral.white.opacity(isDark ? 0.38 : 0.50)
     }
 
     var heroChromeForeground: Color {
-        Color.white.opacity(0.92)
+        DUColorPrimitives.Neutral.white.opacity(0.92)
     }
 
     var heroSunAccent: Color {
-        isDark ? theme.colors.status.warning : Color(hex: 0xFFD351)
+        theme.colors.status.warning
     }
 
     var heroSunShadow: Color {

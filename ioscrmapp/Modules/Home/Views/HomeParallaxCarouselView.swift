@@ -498,10 +498,10 @@ private struct HomeParallaxCarouselCardView: View {
     var body: some View {
         let baseFill = theme.resolvedColorScheme == .dark
             ? theme.colors.surface.raised.opacity(0.66)
-            : Color.black.opacity(0.08)
+            : theme.colors.background.tertiary.opacity(0.72)
         let borderColor = theme.resolvedColorScheme == .dark
             ? theme.colors.border.default.opacity(0.86)
-            : Color.white.opacity(0.68)
+            : DUColorPrimitives.Neutral.white.opacity(0.68)
 
         ZStack {
             RoundedRectangle(cornerRadius: effect.cornerRadius, style: .continuous)
@@ -523,9 +523,9 @@ private struct HomeParallaxCarouselCardView: View {
                 .overlay(
                     LinearGradient(
                         colors: [
-                            Color.white.opacity(0.08),
-                            Color.clear,
-                            Color.black.opacity(0.22)
+                            DUColorPrimitives.Neutral.white.opacity(0.08),
+                            DUColorPrimitives.Chrome.transparent,
+                            DUColorPrimitives.Neutral.black.opacity(0.22)
                         ],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
@@ -540,7 +540,7 @@ private struct HomeParallaxCarouselCardView: View {
                 .stroke(borderColor, lineWidth: 1)
         )
         .shadow(
-            color: Color.black.opacity(effect.shadowOpacity),
+            color: theme.components.card.elevation.color.opacity(Double(effect.shadowOpacity)),
             radius: effect.shadowRadius,
             x: 0,
             y: effect.shadowYOffset

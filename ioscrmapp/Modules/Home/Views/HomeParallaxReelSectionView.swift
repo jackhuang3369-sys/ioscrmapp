@@ -111,7 +111,7 @@ private struct HomeParallaxReelIOS17ContentView: View {
                                 titleSpacing: titleSpacing,
                                 showsBorder: false,
                                 captionOpacity: 1,
-                                shadowColor: Color.black.opacity(0.20 - (distanceRatio * 0.08)),
+                                shadowColor: DUColorPrimitives.Neutral.black.opacity(0.20 - (distanceRatio * 0.08)),
                                 shadowRadius: 16
                             )
                             .frame(width: cardSize.width, height: proxy.size.height, alignment: .top)
@@ -166,7 +166,7 @@ private struct HomeParallaxReelLegacyCardView: View {
                 titleSpacing: titleSpacing,
                 showsBorder: true,
                 captionOpacity: 1 - (distanceRatio * 0.24),
-                shadowColor: Color.black.opacity(0.20 - (distanceRatio * 0.08)),
+                shadowColor: DUColorPrimitives.Neutral.black.opacity(0.20 - (distanceRatio * 0.08)),
                 shadowRadius: 16
             )
             .frame(width: cardSize.width, height: itemHeight, alignment: .top)
@@ -213,7 +213,7 @@ private struct HomeParallaxReelCardUnitView: View {
     var body: some View {
         let borderColor = theme.resolvedColorScheme == .dark
             ? theme.colors.border.default.opacity(0.72)
-            : Color.white.opacity(0.28)
+            : DUColorPrimitives.Neutral.white.opacity(0.28)
 
         VStack(spacing: titleSpacing) {
             HomeParallaxReelCardContentView(
@@ -282,9 +282,9 @@ private struct HomeParallaxReelCardContentView: View {
 
             LinearGradient(
                 colors: [
-                    Color.clear,
-                    Color.black.opacity(0.14),
-                    Color.black.opacity(0.64)
+                    DUColorPrimitives.Chrome.transparent,
+                    DUColorPrimitives.Neutral.black.opacity(0.14),
+                    DUColorPrimitives.Neutral.black.opacity(0.64)
                 ],
                 startPoint: .top,
                 endPoint: .bottom
