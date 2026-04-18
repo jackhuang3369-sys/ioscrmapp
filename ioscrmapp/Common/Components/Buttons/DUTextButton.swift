@@ -7,11 +7,12 @@ struct DUTextButton: View {
     var color: Color?
     var fontSize: CGFloat = 14
     var weight: Font.Weight = .semibold
+    var textStyle: DUTextStyle? = nil
     let action: () -> Void
 
     var body: some View {
         Button(title, action: action)
-            .font(.du(fontSize, weight: weight))
+            .font(textStyle.map(Font.du) ?? .du(fontSize, weight: weight))
             .foregroundColor(color ?? theme.colors.action.primary)
             .buttonStyle(.plain)
     }

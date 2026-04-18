@@ -34,17 +34,17 @@ struct BadgeDetailContentView: View {
                         assetName: badge.iconAssetName,
                         url: badge.iconURL,
                         fallbackSystemName: badge.iconSystemName,
-                        symbolFont: .du(42, weight: .bold),
+                        symbolFont: .du(.display),
                         padding: 18
                     )
                 }
 
                 VStack(alignment: .leading, spacing: DUSpacing.sm) {
                     Text(localizedText(badge.title))
-                        .font(.du(24, weight: .bold))
+                        .font(.du(.headline))
                         .foregroundColor(DUColorPrimitives.Neutral.white)
                     Text(localizedText(badge.subtitle))
-                        .font(.du(13, weight: .medium))
+                        .font(.du(.label))
                         .foregroundColor(DUColorPrimitives.Neutral.white.opacity(0.88))
 
                     HStack(spacing: DUSpacing.sm) {
@@ -65,12 +65,12 @@ struct BadgeDetailContentView: View {
             if let progress = badge.progress {
                 VStack(alignment: .leading, spacing: DUSpacing.xs) {
                     Text(localized("badgeCenter.detail.progress", []))
-                        .font(.du(12, weight: .bold))
+                        .font(.du(.bodySmallEmphasized))
                         .foregroundColor(DUColorPrimitives.Neutral.white.opacity(0.9))
                     ProgressView(value: progress.completionRatio)
                         .tint(DUColorPrimitives.Neutral.white)
                     Text(localizedText(progress.summary))
-                        .font(.du(12, weight: .medium))
+                        .font(.du(.bodySmall))
                         .foregroundColor(DUColorPrimitives.Neutral.white.opacity(0.88))
                 }
             }
@@ -78,8 +78,13 @@ struct BadgeDetailContentView: View {
         .padding(DUSpacing.xl)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(heroBackground)
-        .clipShape(RoundedRectangle(cornerRadius: theme.components.sheet.cornerRadius + 4, style: .continuous))
-        .shadow(color: badge.level.levelColor(theme: theme).opacity(0.22), radius: 18, x: 0, y: 10)
+        .clipShape(RoundedRectangle(cornerRadius: DURadius.hero, style: .continuous))
+        .shadow(
+            color: badge.level.levelColor(theme: theme).opacity(0.22),
+            radius: DUElevation.spotlight.radius,
+            x: DUElevation.spotlight.x,
+            y: DUElevation.spotlight.y
+        )
     }
 
     private var heroBackground: some View {
@@ -136,10 +141,10 @@ struct BadgeDetailContentView: View {
                 ForEach(badge.requirementItems) { item in
                     HStack(alignment: .top, spacing: DUSpacing.sm) {
                         Image(systemName: item.isCompleted ? "checkmark.circle.fill" : "lock.circle.fill")
-                            .font(.du(16, weight: .bold))
+                            .font(.du(.bodyLargeStrong))
                             .foregroundColor(item.isCompleted ? theme.colors.status.success : theme.colors.status.warning)
                         Text(localizedText(item.title))
-                            .font(.du(14, weight: .medium))
+                            .font(.du(.bodySmall))
                             .foregroundColor(theme.colors.text.primary)
                             .multilineTextAlignment(.leading)
                         Spacer()
@@ -157,7 +162,7 @@ struct BadgeDetailContentView: View {
                     VStack(alignment: .leading, spacing: DUSpacing.sm) {
                         HStack(spacing: DUSpacing.sm) {
                             Text(localizedText(item.title))
-                                .font(.du(15, weight: .bold))
+                                .font(.du(.bodyEmphasized))
                                 .foregroundColor(theme.colors.text.primary)
                             Spacer()
                             BadgeSmallPill(
@@ -167,7 +172,7 @@ struct BadgeDetailContentView: View {
                         }
 
                         Text(localizedText(item.description))
-                            .font(.du(13, weight: .medium))
+                            .font(.du(.label))
                             .foregroundColor(theme.colors.text.secondary)
                             .multilineTextAlignment(.leading)
                     }
@@ -184,7 +189,7 @@ struct BadgeDetailContentView: View {
     private var storySection: some View {
         DUSectionCard(title: localized("badgeCenter.detail.badgeStory", [])) {
             Text(localizedText(badge.badgeStory))
-                .font(.du(14, weight: .medium))
+                .font(.du(.bodySmall))
                 .foregroundColor(theme.colors.text.secondary)
                 .multilineTextAlignment(.leading)
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -196,7 +201,7 @@ struct BadgeDetailContentView: View {
             Group {
                 if badge.history.isEmpty {
                     Text(localized("badgeCenter.detail.historyEmpty", []))
-                        .font(.du(13, weight: .medium))
+                        .font(.du(.label))
                         .foregroundColor(theme.colors.text.tertiary)
                         .frame(maxWidth: .infinity, alignment: .leading)
                 } else {
@@ -205,15 +210,15 @@ struct BadgeDetailContentView: View {
                             VStack(alignment: .leading, spacing: DUSpacing.xs) {
                                 HStack(alignment: .firstTextBaseline) {
                                     Text(localizedText(item.title))
-                                        .font(.du(14, weight: .bold))
+                                        .font(.du(.bodySmallEmphasized))
                                         .foregroundColor(theme.colors.text.primary)
                                     Spacer()
                                     Text(item.timestampText)
-                                        .font(.du(11, weight: .semibold))
+                                        .font(.du(.captionStrong))
                                         .foregroundColor(theme.colors.text.tertiary)
                                 }
                                 Text(localizedText(item.subtitle))
-                                    .font(.du(13, weight: .medium))
+                                    .font(.du(.label))
                                     .foregroundColor(theme.colors.text.secondary)
                             }
                             .frame(maxWidth: .infinity, alignment: .leading)
@@ -231,10 +236,10 @@ struct BadgeDetailContentView: View {
     private func detailInfoRow(title: String, value: String) -> some View {
         VStack(alignment: .leading, spacing: DUSpacing.xs) {
             Text(title)
-                .font(.du(12, weight: .bold))
+                .font(.du(.bodySmallEmphasized))
                 .foregroundColor(theme.colors.text.tertiary)
             Text(value)
-                .font(.du(14, weight: .medium))
+                .font(.du(.bodySmall))
                 .foregroundColor(theme.colors.text.primary)
                 .multilineTextAlignment(.leading)
         }

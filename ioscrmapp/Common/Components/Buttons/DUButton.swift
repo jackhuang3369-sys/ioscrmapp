@@ -17,6 +17,7 @@ struct DUButton: View {
     var fixedWidth: CGFloat? = nil
     var cornerRadius: CGFloat = DURadius.button
     var fontSize: CGFloat = 16
+    var textStyle: DUTextStyle? = nil
     var horizontalPadding: CGFloat = 0
     let action: () -> Void
 
@@ -29,7 +30,7 @@ struct DUButton: View {
                 }
 
                 Text(title)
-                    .font(.du(fontSize, weight: .bold))
+                    .font(buttonFont)
             }
             .foregroundColor(foregroundColor)
             .frame(maxWidth: fixedWidth == nil ? .infinity : nil)
@@ -39,13 +40,21 @@ struct DUButton: View {
             .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
             .shadow(
                 color: style == .primary && isEnabled ? buttonTokens.shadowColor : .clear,
-                radius: 18,
-                x: 0,
-                y: 8
+                radius: DUElevation.primaryButton.radius,
+                x: DUElevation.primaryButton.x,
+                y: DUElevation.primaryButton.y
             )
         }
         .buttonStyle(.plain)
         .disabled(!isEnabled)
+    }
+
+    private var buttonFont: Font {
+        if let textStyle {
+            return .du(textStyle)
+        }
+
+        return .du(fontSize, weight: .bold)
     }
 
     private var foregroundColor: Color {

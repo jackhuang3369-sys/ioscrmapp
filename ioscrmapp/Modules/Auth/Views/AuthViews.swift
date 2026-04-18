@@ -74,10 +74,10 @@ struct AuthLoginContainerView: View {
     private var header: some View {
         VStack(spacing: DUSpacing.sm) {
             Text(localized("auth.header.title"))
-                .font(.du(28, weight: .bold))
+                .font(.du(.hero))
                 .foregroundColor(theme.colors.text.primary)
             Text(localized("auth.header.subtitle"))
-                .font(.du(15, weight: .medium))
+                .font(.du(.body))
                 .foregroundColor(theme.colors.text.tertiary)
         }
     }
@@ -91,7 +91,7 @@ struct AuthLoginContainerView: View {
                     }
                 } label: {
                     Text(localized(mode.titleKey))
-                        .font(.du(15, weight: .semibold))
+                        .font(.du(.bodyStrong))
                         .foregroundColor(viewModel.selectedMode == mode ? theme.colors.text.primary : theme.colors.text.secondary)
                         .frame(maxWidth: .infinity)
                         .frame(height: 48)
@@ -139,7 +139,7 @@ struct AuthLoginContainerView: View {
     private var otpField: some View {
         VStack(alignment: .leading, spacing: DUSpacing.sm) {
             Text(localized("auth.field.otp.title"))
-                .font(.du(14, weight: .semibold))
+                .font(.du(.bodySmallStrong))
                 .foregroundColor(theme.colors.text.secondary)
             HStack(alignment: .top, spacing: DUSpacing.md) {
                 DUTextField(
@@ -154,13 +154,13 @@ struct AuthLoginContainerView: View {
                     style: .secondary,
                     isEnabled: viewModel.isSendOTPEnabled,
                     fixedWidth: 114,
-                    fontSize: 14
+                    textStyle: .bodySmallEmphasized
                 ) {
                     viewModel.sendOTP()
                 }
             }
             Text(localized("auth.otp.expiry"))
-                .font(.du(12, weight: .medium))
+                .font(.du(.bodySmall))
                 .foregroundColor(theme.colors.text.tertiary)
         }
     }
@@ -176,7 +176,7 @@ struct AuthLoginContainerView: View {
                     Text(localized("auth.option.rememberMe"))
                         .foregroundColor(theme.colors.text.secondary)
                 }
-                .font(.du(13, weight: .medium))
+                .font(.du(.label))
             }
             .buttonStyle(.plain)
 
@@ -184,8 +184,7 @@ struct AuthLoginContainerView: View {
 
             DUTextButton(
                 title: localized("auth.option.forgotPassword"),
-                fontSize: 13,
-                weight: .medium
+                textStyle: .label
             ) {
                 isShowingForgotPassword = true
             }
@@ -203,7 +202,7 @@ struct AuthLoginContainerView: View {
             isLoading: viewModel.isLoading,
             isEnabled: viewModel.isPrimaryActionEnabled,
             height: 56,
-            fontSize: 17
+            textStyle: .titleSmall
         ) {
             viewModel.login()
         }
@@ -216,7 +215,7 @@ struct AuthLoginContainerView: View {
                     .fill(theme.colors.border.subtle)
                     .frame(height: 1)
                 Text(localized("auth.social.otherWays"))
-                    .font(.du(13, weight: .medium))
+                    .font(.du(.label))
                     .foregroundColor(theme.colors.text.tertiary)
                     .padding(.horizontal, DUSpacing.sm)
                 Rectangle()
@@ -269,13 +268,12 @@ struct AuthLoginContainerView: View {
                 .foregroundColor(theme.colors.text.tertiary)
             DUTextButton(
                 title: localized("auth.register.action"),
-                fontSize: 14,
-                weight: .medium
+                textStyle: .body
             ) {
                 isShowingRegistration = true
             }
         }
-        .font(.du(14, weight: .medium))
+        .font(.du(.bodySmall))
         .padding(.bottom, DUSpacing.xxxl)
     }
 
@@ -408,11 +406,11 @@ private struct AuthForgotPasswordVerifyView: View {
     private var header: some View {
         VStack(spacing: DUSpacing.sm) {
             Text(localized("auth.forgot.title"))
-                .font(.du(28, weight: .bold))
+                .font(.du(.hero))
                 .foregroundColor(theme.colors.text.primary)
                 .multilineTextAlignment(.center)
             Text(localized("auth.forgot.subtitle"))
-                .font(.du(15, weight: .medium))
+                .font(.du(.body))
                 .foregroundColor(theme.colors.text.tertiary)
                 .multilineTextAlignment(.center)
         }
@@ -432,7 +430,7 @@ private struct AuthForgotPasswordVerifyView: View {
 
             VStack(alignment: .leading, spacing: DUSpacing.sm) {
                 Text(localized("auth.field.otp.title"))
-                    .font(.du(14, weight: .semibold))
+                    .font(.du(.bodySmallStrong))
                     .foregroundColor(theme.colors.text.secondary)
 
                 HStack(alignment: .top, spacing: DUSpacing.md) {
@@ -449,14 +447,14 @@ private struct AuthForgotPasswordVerifyView: View {
                         style: .secondary,
                         isEnabled: viewModel.canSendOTP,
                         fixedWidth: 114,
-                        fontSize: 14
+                        textStyle: .bodySmallEmphasized
                     ) {
                         viewModel.sendOTP()
                     }
                 }
 
                 Text(localized(viewModel.otpHelperText))
-                    .font(.du(12, weight: .medium))
+                    .font(.du(.bodySmall))
                     .foregroundColor(theme.colors.text.tertiary)
             }
 
@@ -466,7 +464,7 @@ private struct AuthForgotPasswordVerifyView: View {
                 isLoading: viewModel.isLoading,
                 isEnabled: viewModel.canVerifyOTP,
                 height: 56,
-                fontSize: 17
+                textStyle: .titleSmall
             ) {
                 verifyAction()
             }
@@ -533,11 +531,11 @@ private struct AuthForgotPasswordPasswordView: View {
     private var header: some View {
         VStack(spacing: DUSpacing.sm) {
             Text(localized("auth.forgot.passwordTitle"))
-                .font(.du(28, weight: .bold))
+                .font(.du(.hero))
                 .foregroundColor(theme.colors.text.primary)
                 .multilineTextAlignment(.center)
             Text(localized("auth.forgot.passwordSubtitle"))
-                .font(.du(15, weight: .medium))
+                .font(.du(.body))
                 .foregroundColor(theme.colors.text.tertiary)
                 .multilineTextAlignment(.center)
         }
@@ -569,7 +567,7 @@ private struct AuthForgotPasswordPasswordView: View {
                 isLoading: viewModel.isLoading,
                 isEnabled: viewModel.canSubmitPasswordReset,
                 height: 56,
-                fontSize: 17
+                textStyle: .titleSmall
             ) {
                 submitAction()
             }
@@ -581,10 +579,10 @@ private struct AuthForgotPasswordPasswordView: View {
     private var verifiedPhoneSummary: some View {
         VStack(alignment: .leading, spacing: DUSpacing.sm) {
             Text(localized("auth.forgot.summary.verifiedPhone"))
-                .font(.du(13, weight: .semibold))
+                .font(.du(.labelStrong))
                 .foregroundColor(theme.colors.text.tertiary)
             Text(AuthValidator.formattedPhone(viewModel.verifiedContext?.phoneNumber ?? viewModel.phoneNumber))
-                .font(.du(18, weight: .bold))
+                .font(.du(.titleSmallStrong))
                 .foregroundColor(theme.colors.text.primary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -720,11 +718,11 @@ private struct AuthRegistrationVerifyView: View {
     private var header: some View {
         VStack(spacing: DUSpacing.sm) {
             Text(localized("auth.registration.title"))
-                .font(.du(28, weight: .bold))
+                .font(.du(.hero))
                 .foregroundColor(theme.colors.text.primary)
                 .multilineTextAlignment(.center)
             Text(localized("auth.registration.subtitle"))
-                .font(.du(15, weight: .medium))
+                .font(.du(.body))
                 .foregroundColor(theme.colors.text.tertiary)
                 .multilineTextAlignment(.center)
         }
@@ -744,7 +742,7 @@ private struct AuthRegistrationVerifyView: View {
 
             VStack(alignment: .leading, spacing: DUSpacing.sm) {
                 Text(localized("auth.field.otp.title"))
-                    .font(.du(14, weight: .semibold))
+                    .font(.du(.bodySmallStrong))
                     .foregroundColor(theme.colors.text.secondary)
 
                 HStack(alignment: .top, spacing: DUSpacing.md) {
@@ -761,14 +759,14 @@ private struct AuthRegistrationVerifyView: View {
                         style: .secondary,
                         isEnabled: viewModel.canSendOTP,
                         fixedWidth: 114,
-                        fontSize: 14
+                        textStyle: .bodySmallEmphasized
                     ) {
                         viewModel.sendOTP()
                     }
                 }
 
                 Text(localized(viewModel.otpHelperText))
-                    .font(.du(12, weight: .medium))
+                    .font(.du(.bodySmall))
                     .foregroundColor(theme.colors.text.tertiary)
             }
 
@@ -778,7 +776,7 @@ private struct AuthRegistrationVerifyView: View {
                 isLoading: viewModel.isLoading,
                 isEnabled: viewModel.canVerifyOTP,
                 height: 56,
-                fontSize: 17
+                textStyle: .titleSmall
             ) {
                 verifyAction()
             }
@@ -788,7 +786,7 @@ private struct AuthRegistrationVerifyView: View {
                     title: localized("auth.registration.action.goToLogin"),
                     style: .secondary,
                     height: 50,
-                    fontSize: 15
+                    textStyle: .bodyEmphasized
                 ) {
                     goToLoginAction()
                 }
@@ -857,11 +855,11 @@ private struct AuthRegistrationPasswordView: View {
     private var header: some View {
         VStack(spacing: DUSpacing.sm) {
             Text(localized("auth.registration.passwordTitle"))
-                .font(.du(28, weight: .bold))
+                .font(.du(.hero))
                 .foregroundColor(theme.colors.text.primary)
                 .multilineTextAlignment(.center)
             Text(localized("auth.registration.passwordSubtitle"))
-                .font(.du(15, weight: .medium))
+                .font(.du(.body))
                 .foregroundColor(theme.colors.text.tertiary)
                 .multilineTextAlignment(.center)
         }
@@ -893,7 +891,7 @@ private struct AuthRegistrationPasswordView: View {
                 isLoading: viewModel.isLoading,
                 isEnabled: viewModel.canSubmitRegistration,
                 height: 56,
-                fontSize: 17
+                textStyle: .titleSmall
             ) {
                 submitAction()
             }
@@ -905,10 +903,10 @@ private struct AuthRegistrationPasswordView: View {
     private var verifiedPhoneSummary: some View {
         VStack(alignment: .leading, spacing: DUSpacing.sm) {
             Text(localized("auth.registration.summary.verifiedPhone"))
-                .font(.du(13, weight: .semibold))
+                .font(.du(.labelStrong))
                 .foregroundColor(theme.colors.text.tertiary)
             Text(AuthValidator.formattedPhone(viewModel.verifiedContext?.phoneNumber ?? viewModel.phoneNumber))
-                .font(.du(18, weight: .bold))
+                .font(.du(.titleSmallStrong))
                 .foregroundColor(theme.colors.text.primary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -955,7 +953,7 @@ private struct AuthBrandMark: View {
                     y: theme.components.card.elevation.y
                 )
             Text("du")
-                .font(.du(32, weight: .bold))
+                .font(.du(.screenTitle))
                 .foregroundColor(DUColorPrimitives.Neutral.white)
         }
         .padding(.top, DUSpacing.sm)
@@ -980,7 +978,7 @@ private struct AuthFlowChrome: View {
                     shadowY: DUElevation.control.y
                 ) {
                     Image(systemName: "chevron.left")
-                        .font(.du(16, weight: .semibold))
+                        .font(.du(.bodyLargeSemibold))
                         .foregroundColor(theme.colors.text.primary)
                 } action: {
                     backAction()
@@ -1001,7 +999,7 @@ private struct AuthFlowChrome: View {
                 shadowY: DUElevation.control.y
             ) {
                 Image(systemName: "xmark")
-                    .font(.du(16, weight: .semibold))
+                    .font(.du(.bodyLargeSemibold))
                     .foregroundColor(theme.colors.text.primary)
             } action: {
                 closeAction()
@@ -1017,7 +1015,7 @@ private struct AuthStepBadge: View {
 
     var body: some View {
         Text(title)
-            .font(.du(13, weight: .semibold))
+            .font(.du(.labelStrong))
             .foregroundColor(theme.colors.action.primary)
             .padding(.horizontal, DUSpacing.lg)
             .padding(.vertical, DUSpacing.sm)
@@ -1055,7 +1053,7 @@ private struct AuthBannerView: View {
         return HStack(spacing: DUSpacing.sm) {
             Image(systemName: iconName)
             Text(message)
-                .font(.du(13, weight: .semibold))
+                .font(.du(.labelStrong))
                 .multilineTextAlignment(.leading)
             Spacer()
         }

@@ -60,7 +60,7 @@ struct HomeView: View {
     @StateObject private var chromeState = HomeChromeState()
 
     private let pageHorizontalPadding: CGFloat = DUSpacing.sm
-    private let headerContentHorizontalPadding: CGFloat = 14
+    private let headerContentHorizontalPadding: CGFloat = DUSpacing.compact
     private let accountCardBottomSpacingScale: CGFloat = 0.85 * 0.7 * 0.85
     private let parallaxReelTopSpacingScale: CGFloat = 0.8
     private var homeDashboardSectionSpacing: CGFloat { DUSpacing.md * accountCardBottomSpacingScale }
@@ -407,7 +407,7 @@ struct HomeView: View {
                 ProgressView()
                     .progressViewStyle(.circular)
                 Text(localized("home.state.loadingTitle"))
-                    .font(homeFont(15, weight: .semibold))
+                    .font(.du(.bodyStrong))
                     .foregroundColor(theme.colors.text.secondary)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -419,23 +419,28 @@ struct HomeView: View {
         topInset: CGFloat,
         dashboard: HomeDashboardSnapshot
     ) -> some View {
-        VStack(spacing: 14) {
-            VStack(spacing: 14) {
+        VStack(spacing: DUSpacing.compact) {
+            VStack(spacing: DUSpacing.compact) {
                 HStack(alignment: .center) {
-                    HStack(spacing: 6) {
+                    HStack(spacing: DUSpacing.smd) {
                         Image(systemName: "sun.max.fill")
-                            .font(homeFont(13, weight: .semibold))
+                            .font(.du(.labelStrong))
                             .foregroundColor(homePalette.heroSunAccent)
-                            .shadow(color: homePalette.heroSunShadow, radius: 6)
+                            .shadow(
+                                color: homePalette.heroSunShadow,
+                                radius: DUElevation.control.radius,
+                                x: DUElevation.control.x,
+                                y: DUElevation.control.y
+                            )
 
                         Text(localized("home.greeting.morning"))
-                            .font(homeFont(13, weight: .medium))
+                            .font(.du(.label))
                             .foregroundColor(.white.opacity(0.86))
                     }
 
                     Spacer()
 
-                    HStack(spacing: 10) {
+                    HStack(spacing: DUSpacing.base) {
                         HomeHeaderActionButton(assetName: "HomeSearchButtonIcon") {
                             placeholderMessage = .key("home.placeholder.search")
                         }
@@ -445,8 +450,8 @@ struct HomeView: View {
                     }
                 }
 
-                HStack(alignment: .center, spacing: 12) {
-                    HStack(spacing: 12) {
+                HStack(alignment: .center, spacing: DUSpacing.md) {
+                    HStack(spacing: DUSpacing.md) {
                         Image("HomeHeroAvatar")
                             .renderingMode(.original)
                             .resizable()
@@ -456,11 +461,11 @@ struct HomeView: View {
 
                         VStack(alignment: .leading, spacing: 0) {
                             Text(dashboard.profile.displayName)
-                                .font(homeFont(15, weight: .semibold))
+                                .font(.du(.bodyStrong))
                                 .foregroundColor(.white)
                                 .lineLimit(1)
 
-                            HStack(spacing: 6) {
+                            HStack(spacing: DUSpacing.smd) {
                                 if let packageName = localizedPackageName(for: dashboard.profile.packageName) {
                                     Text(packageName)
                                         .lineLimit(1)
@@ -477,16 +482,16 @@ struct HomeView: View {
                                         .lineLimit(1)
                                 }
                             }
-                            .font(homeFont(11, weight: .medium))
+                            .font(.du(.caption))
                             .foregroundColor(.white.opacity(0.84))
-                            .padding(.top, 5)
+                            .padding(.top, DUSpacing.xs + 1)
 
-                            HStack(spacing: 8) {
+                            HStack(spacing: DUSpacing.sm) {
                                 Text(dashboard.profile.serviceNumber)
-                                    .font(homeFont(10, weight: .medium))
+                                    .font(.du(.tiny))
                                     .foregroundColor(.white.opacity(0.92))
-                                    .padding(.horizontal, 7)
-                                    .padding(.vertical, 2)
+                                    .padding(.horizontal, DUSpacing.sm - 1)
+                                    .padding(.vertical, DUSpacing.xxs)
                                     .background(
                                         Capsule()
                                             .fill(.white.opacity(0.14))
@@ -494,12 +499,12 @@ struct HomeView: View {
 
                                 if let networkStatus = dashboard.profile.networkStatus {
                                     Text(localized(networkStatus.textValue))
-                                        .font(homeFont(10, weight: .medium))
+                                        .font(.du(.tiny))
                                         .foregroundColor(.white.opacity(0.72))
                                         .lineLimit(1)
                                 }
                             }
-                            .padding(.top, 8)
+                            .padding(.top, DUSpacing.sm)
                         }
                     }
 
@@ -508,7 +513,7 @@ struct HomeView: View {
                     Button {
                         isBadgeCenterPresented = true
                     } label: {
-                        HStack(spacing: 6) {
+                        HStack(spacing: DUSpacing.smd) {
                             Image("HomeHeroBadgeIcon")
                                 .renderingMode(.original)
                                 .resizable()
@@ -516,11 +521,11 @@ struct HomeView: View {
                                 .frame(width: 18, height: 18)
 
                             Text(localized("home.profile.advanced"))
-                                .font(homeFont(9, weight: .medium))
+                                .font(.du(.micro))
                                 .foregroundColor(.white.opacity(0.82))
                         }
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 5)
+                        .padding(.horizontal, DUSpacing.sm)
+                        .padding(.vertical, DUSpacing.xs + 1)
                         .background(
                             Capsule()
                                 .fill(.white.opacity(0.12))
@@ -538,7 +543,7 @@ struct HomeView: View {
             )
             .padding(.horizontal, pageHorizontalPadding)
         }
-        .padding(.top, max(topInset, 8) + 6)
+        .padding(.top, max(topInset, DUSpacing.sm) + DUSpacing.smd)
         .padding(.bottom, headerBottomPadding)
     }
 
@@ -549,19 +554,17 @@ struct HomeView: View {
         let palette = homePalette
 
         return VStack(alignment: .leading, spacing: 0) {
-            HStack(alignment: .top, spacing: 10) {
-                VStack(alignment: .leading, spacing: 4) {
+            HStack(alignment: .top, spacing: DUSpacing.base) {
+                VStack(alignment: .leading, spacing: DUSpacing.xs) {
                     Text(localized("home.header.accountBalanceTitle"))
-                        .font(homeFont(12, weight: .semibold))
+                        .font(.du(.metaStrong))
                         .foregroundColor(palette.accountTitle)
 
                     metricValueText(
                         summary.balanceValue,
-                        amountFontSize: 20,
-                        amountWeight: .bold,
+                        amountStyle: .title,
                         amountColor: palette.balanceAmount,
-                        currencyFontSize: 12,
-                        currencyWeight: .semibold,
+                        currencyStyle: .metaStrong,
                         currencyColor: palette.balanceCurrency
                     )
                 }
@@ -572,7 +575,7 @@ struct HomeView: View {
             }
 
             if summary.showsPostpaidDetails || summary.creditLimit != nil {
-                HStack(alignment: .top, spacing: 12) {
+                HStack(alignment: .top, spacing: DUSpacing.md) {
                     billMeta(
                         titleKey: "home.header.currentBillTitle",
                         value: summary.currentBillValue
@@ -602,17 +605,17 @@ struct HomeView: View {
                                 )
                                 .overlay(
                                     Image(systemName: "chevron.down")
-                                        .font(homeFont(10, weight: .semibold))
+                                        .font(.du(.tinyStrong))
                                         .foregroundColor(palette.heroChromeForeground)
                                         .rotationEffect(.degrees(isCreditLimitExpanded ? 180 : 0))
                                 )
                         }
                         .buttonStyle(.plain)
-                        .padding(.top, 12)
+                        .padding(.top, DUSpacing.md)
                         .accessibilityLabel(localized("home.header.creditLimitTitle"))
                     }
                 }
-                .padding(.top, 10)
+                .padding(.top, DUSpacing.base)
             }
 
             if let creditLimit = summary.creditLimit {
@@ -620,7 +623,7 @@ struct HomeView: View {
                     creditLimit,
                     palette: palette
                 )
-                    .padding(.top, isCreditLimitExpanded ? 10 : 0)
+                    .padding(.top, isCreditLimitExpanded ? DUSpacing.base : 0)
                     .frame(maxHeight: isCreditLimitExpanded ? 120 : 0, alignment: .top)
                     .opacity(isCreditLimitExpanded ? 1 : 0)
                     .scaleEffect(y: isCreditLimitExpanded ? 1 : 0.92, anchor: .top)
@@ -629,18 +632,23 @@ struct HomeView: View {
             }
 
             usageMetricsRow(usage.cards)
-                .padding(.top, 12)
+                .padding(.top, DUSpacing.md)
         }
-        .padding(.top, 15)
-        .padding(.horizontal, 14)
-        .padding(.bottom, 14)
+        .padding(.top, DUSpacing.compact + 1)
+        .padding(.horizontal, DUSpacing.compact)
+        .padding(.bottom, DUSpacing.compact)
         .background(palette.accountCardBackground)
-        .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: DURadius.hero, style: .continuous))
         .overlay(
-            RoundedRectangle(cornerRadius: 28, style: .continuous)
+            RoundedRectangle(cornerRadius: DURadius.hero, style: .continuous)
                 .stroke(palette.accountCardBorder, lineWidth: 1)
         )
-        .shadow(color: palette.accountCardShadow, radius: 15, x: 0, y: 10)
+        .shadow(
+            color: palette.accountCardShadow,
+            radius: DUElevation.hero.radius,
+            x: DUElevation.hero.x,
+            y: DUElevation.hero.y
+        )
         .animation(
             isCreditLimitExpanded
             ? homeCreditLimitExpandAnimation
@@ -653,12 +661,12 @@ struct HomeView: View {
         _ creditLimit: HomeCreditLimitSection,
         palette: HomePalette
     ) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: DUSpacing.sm) {
             Text(localized("home.header.creditLimitTitle"))
-                .font(homeFont(11, weight: .semibold))
+                .font(.du(.captionStrong))
                 .foregroundColor(palette.sectionPrimaryText)
 
-            HStack(spacing: 8) {
+            HStack(spacing: DUSpacing.sm) {
                 creditLimitCard(
                     titleKey: "home.header.creditTotalTitle",
                     value: creditLimit.totalValue,
@@ -682,13 +690,13 @@ struct HomeView: View {
         titleKey: String,
         value: LocalizedTextValue
     ) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: DUSpacing.xs) {
             Text(localized(titleKey))
-                .font(homeFont(11, weight: .regular))
+                .font(.du(.captionRegular))
                 .foregroundColor(homePalette.sectionSecondaryText)
 
             Text(normalizedMetricValue(localized(value)))
-                .font(homeFont(12, weight: .semibold))
+                .font(.du(.metaStrong))
                 .foregroundColor(homePalette.sectionPrimaryText)
                 .lineLimit(1)
                 .minimumScaleFactor(0.85)
@@ -701,37 +709,35 @@ struct HomeView: View {
         value: LocalizedTextValue,
         backgroundColor: Color
     ) -> some View {
-        VStack(alignment: .leading, spacing: 5) {
+        VStack(alignment: .leading, spacing: DUSpacing.xs + 1) {
             Text(localized(titleKey))
-                .font(homeFont(10, weight: .regular))
+                .font(.du(.tinyRegular))
                 .foregroundColor(homePalette.sectionSecondaryText)
 
             metricValueText(
                 value,
-                amountFontSize: 11,
-                amountWeight: .bold,
+                amountStyle: .captionEmphasized,
                 amountColor: homePalette.sectionPrimaryText,
-                currencyFontSize: 11,
-                currencyWeight: .semibold,
+                currencyStyle: .captionStrong,
                 currencyColor: homePalette.sectionPrimaryText
             )
             .lineLimit(1)
             .minimumScaleFactor(0.8)
         }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 9)
+        .padding(.horizontal, DUSpacing.base)
+        .padding(.vertical, DUSpacing.base - 1)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(backgroundColor)
-        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: DURadius.sm, style: .continuous))
     }
 
     private func usageMetricsRow(_ cards: [HomeUsageCard]) -> some View {
-        HStack(spacing: 12) {
+        HStack(spacing: DUSpacing.md) {
             ForEach(cards) { card in
                 usageMetric(card)
             }
         }
-        .padding(.top, 12)
+        .padding(.top, DUSpacing.md)
         .overlay(alignment: .top) {
             Capsule()
                 .fill(
@@ -746,7 +752,7 @@ struct HomeView: View {
                     )
                 )
                 .frame(height: 2)
-                .padding(.horizontal, 2)
+                .padding(.horizontal, DUSpacing.xxs)
         }
     }
 
@@ -754,13 +760,13 @@ struct HomeView: View {
         let design = usageDesign(for: card.kind)
 
         return VStack(alignment: .leading, spacing: 0) {
-            HStack(spacing: 4) {
+            HStack(spacing: DUSpacing.xs) {
                 Image(systemName: design.systemName)
-                    .font(homeFont(13, weight: .semibold))
+                    .font(.du(.labelStrong))
                     .foregroundColor(design.tintColor)
 
                 Text(localized(card.title))
-                    .font(homeFont(11, weight: .medium))
+                    .font(.du(.caption))
                     .foregroundColor(homePalette.sectionSecondaryText)
             }
 
@@ -769,7 +775,7 @@ struct HomeView: View {
                 primaryColor: homePalette.sectionPrimaryText,
                 secondaryColor: homePalette.usageSecondaryText
             )
-            .padding(.top, 5)
+            .padding(.top, DUSpacing.xs + 1)
 
             GeometryReader { proxy in
                 ZStack(alignment: .leading) {
@@ -782,7 +788,7 @@ struct HomeView: View {
                 }
             }
             .frame(height: 4)
-            .padding(.top, 6)
+            .padding(.top, DUSpacing.smd)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -791,7 +797,7 @@ struct HomeView: View {
         _ value: LocalizedTextValue
     ) -> some View {
         Text(localized(value))
-            .font(homeFont(11, weight: .medium))
+            .font(.du(.caption))
             .foregroundColor(theme.colors.text.secondary)
     }
 
@@ -800,21 +806,21 @@ struct HomeView: View {
     ) -> some View {
         HStack(spacing: DUSpacing.sm) {
             Image(systemName: "arrow.triangle.2.circlepath")
-                .font(homeFont(13, weight: .semibold))
+                .font(.du(.labelStrong))
                 .foregroundColor(homePalette.bannerIcon)
 
             Text(localized(message))
-                .font(homeFont(12, weight: .medium))
+                .font(.du(.meta))
                 .foregroundColor(homePalette.bannerText)
 
             Spacer()
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 12)
+        .padding(.horizontal, DUSpacing.lg)
+        .padding(.vertical, DUSpacing.md)
         .background(homePalette.bannerBackground)
-        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: DURadius.control, style: .continuous))
         .overlay(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
+            RoundedRectangle(cornerRadius: DURadius.control, style: .continuous)
                 .stroke(homePalette.bannerBorder, lineWidth: 1)
         )
         .padding(.horizontal, pageHorizontalPadding)
@@ -823,20 +829,19 @@ struct HomeView: View {
     private var quickActionsSection: some View {
         DUSectionCard(
             spacing: 0,
-            horizontalPadding: 10,
-            verticalPadding: 12
+            horizontalPadding: DUSpacing.base,
+            verticalPadding: DUSpacing.md
         ) {
             LazyVGrid(
-                columns: Array(repeating: GridItem(.flexible(), spacing: 2), count: 4),
-                spacing: 2
+                columns: Array(repeating: GridItem(.flexible(), spacing: DUSpacing.xxs), count: 4),
+                spacing: DUSpacing.xxs
             ) {
                 ForEach(filteredQuickActions) { item in
                     HomeIconGridButton(
                         title: localized(item.title),
                         assetName: item.assetName,
                         iconSize: 48,
-                        titleFontSize: 11,
-                        titleWeight: .semibold
+                        titleTextStyle: .captionStrong
                     ) {
                         handleAction(item)
                     }
@@ -846,57 +851,33 @@ struct HomeView: View {
         .padding(.horizontal, pageHorizontalPadding)
     }
 
-//    private var featuredCarouselSection: some View {
-//        HomeFeatureCarouselView(items: featuredCarouselItems) { item in
-//            handleFeaturedCarouselSelection(item)
-//        }
-//            .padding(.horizontal, 12)
-//            .padding(.top, 16)
-//            .padding(.bottom, 14)
-//            .background(Color.white)
-//            .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
-//            .shadow(color: Color.black.opacity(0.08), radius: 14, x: 0, y: 8)
-//            .padding(.horizontal, pageHorizontalPadding)
-//    }
-
     private var parallaxReelSection: some View {
         HomeParallaxReelSectionView(items: featuredCarouselItems) { item in
             handleFeaturedCarouselSelection(item)
         }
     }
 
-//    private var parallaxCarouselSection: some View {
-//        HomeParallaxCarouselView(
-//            items: featuredCarouselItems,
-//            onSelectItem: handleFeaturedCarouselSelection,
-//            isParentScrollLocked: $isParallaxCarouselDraggingHorizontally
-//        )
-//            .padding(.top, 6)
-//            .padding(.bottom, 10)
-//    }
-
     private var servicesSection: some View {
         DUSectionCard(
             title: localized("home.section.popularServices"),
             trailingTitle: localized("home.section.viewAll"),
-            spacing: 14,
-            horizontalPadding: 14,
-            verticalPadding: 16,
+            spacing: DUSpacing.compact,
+            horizontalPadding: DUSpacing.compact,
+            verticalPadding: DUSpacing.lg,
             trailingAction: {
                 selectedTab = .service
             }
         ) {
             LazyVGrid(
-                columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 4),
-                spacing: 8
+                columns: Array(repeating: GridItem(.flexible(), spacing: DUSpacing.sm), count: 4),
+                spacing: DUSpacing.sm
             ) {
                 ForEach(services) { item in
                     HomeIconGridButton(
                         title: localized(item.title),
                         assetName: item.assetName,
                         iconSize: 46,
-                        titleFontSize: 10,
-                        titleWeight: .medium
+                        titleTextStyle: .tiny
                     ) {
                         handleAction(item)
                     }
@@ -947,7 +928,12 @@ struct HomeView: View {
                             baseHeight: baseBarHeight
                         )
                     )
-                    .shadow(color: homePalette.tabBarShadow, radius: 18, x: 0, y: 10)
+                    .shadow(
+                        color: homePalette.tabBarShadow,
+                        radius: DUElevation.spotlight.radius,
+                        x: DUElevation.spotlight.x,
+                        y: DUElevation.spotlight.y
+                    )
                     .frame(width: barWidth, height: containerHeight)
 
                 HStack(spacing: 0) {
@@ -1164,29 +1150,27 @@ struct HomeView: View {
     @ViewBuilder
     private func metricValueText(
         _ value: LocalizedTextValue,
-        amountFontSize: CGFloat,
-        amountWeight: Font.Weight,
+        amountStyle: DUTextStyle,
         amountColor: Color,
-        currencyFontSize: CGFloat,
-        currencyWeight: Font.Weight,
+        currencyStyle: DUTextStyle,
         currencyColor: Color
     ) -> some View {
         let resolvedValue = normalizedMetricValue(localized(value))
 
         if let moneyParts = splitMoneyValue(resolvedValue) {
-            HStack(alignment: .firstTextBaseline, spacing: 4) {
+            HStack(alignment: .firstTextBaseline, spacing: DUSpacing.xs) {
                 Text(moneyParts.amount)
-                    .font(homeFont(amountFontSize, weight: amountWeight))
+                    .font(.du(amountStyle))
                     .foregroundColor(amountColor)
 
                 Text(moneyParts.currency)
-                    .font(homeFont(currencyFontSize, weight: currencyWeight))
+                    .font(.du(currencyStyle))
                     .foregroundColor(currencyColor)
             }
             .environment(\.layoutDirection, .leftToRight)
         } else {
             Text(resolvedValue)
-                .font(homeFont(amountFontSize, weight: amountWeight))
+                .font(.du(amountStyle))
                 .foregroundColor(amountColor)
         }
     }
@@ -1202,11 +1186,11 @@ struct HomeView: View {
         if let usageParts = splitUsageValue(resolvedValue) {
             HStack(alignment: .firstTextBaseline, spacing: 0) {
                 Text(usageParts.primary)
-                    .font(homeFont(15, weight: .bold))
+                    .font(.du(.bodyEmphasized))
                     .foregroundColor(primaryColor)
 
                 Text(usageParts.secondary)
-                    .font(homeFont(11, weight: .semibold))
+                    .font(.du(.captionStrong))
                     .foregroundColor(secondaryColor)
             }
             .environment(\.layoutDirection, .leftToRight)
@@ -1214,7 +1198,7 @@ struct HomeView: View {
             .minimumScaleFactor(0.8)
         } else {
             Text(resolvedValue)
-                .font(homeFont(15, weight: .bold))
+                .font(.du(.bodyEmphasized))
                 .foregroundColor(primaryColor)
                 .lineLimit(1)
                 .minimumScaleFactor(0.8)
@@ -1352,13 +1336,6 @@ private var homePageBackground: some View {
     HomePageBackground()
 }
 
-private func homeFont(
-    _ size: CGFloat,
-    weight: Font.Weight = .regular
-) -> Font {
-    .du(size, weight: weight)
-}
-
 private struct HomePageBackground: View {
     @Environment(\.duTheme) private var theme
 
@@ -1457,8 +1434,7 @@ private struct HomeIconGridButton: View {
     let title: String
     let assetName: String
     let iconSize: CGFloat
-    let titleFontSize: CGFloat
-    let titleWeight: Font.Weight
+    let titleTextStyle: DUTextStyle
     let action: () -> Void
 
     var body: some View {
@@ -1471,7 +1447,7 @@ private struct HomeIconGridButton: View {
                     .frame(width: iconSize, height: iconSize)
 
                 Text(title)
-                    .font(homeFont(titleFontSize, weight: titleWeight))
+                    .font(.du(titleTextStyle))
                     .foregroundColor(theme.colors.text.primary)
                     .multilineTextAlignment(.center)
                     .lineLimit(2)
@@ -1508,7 +1484,7 @@ private struct HomeBottomTabBarButton: View {
         Button(action: action) {
             ZStack {
                 if isActive {
-                    RoundedRectangle(cornerRadius: 20, style: .continuous)
+                    RoundedRectangle(cornerRadius: DURadius.card, style: .continuous)
                         .fill(
                             LinearGradient(
                                 colors: [
@@ -1530,18 +1506,23 @@ private struct HomeBottomTabBarButton: View {
                                     .stroke(Color.white.opacity(outerRippleOpacity), lineWidth: 1.2)
                                     .scaleEffect(outerRippleScale)
                             }
-                            .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+                            .clipShape(RoundedRectangle(cornerRadius: DURadius.card, style: .continuous))
                         }
                         .overlay(
-                            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                            RoundedRectangle(cornerRadius: DURadius.card, style: .continuous)
                                 .stroke(palette.activeTabBorder, lineWidth: 1)
                         )
-                        .shadow(color: palette.activeTabShadow, radius: 14, x: 0, y: 8)
+                        .shadow(
+                            color: palette.activeTabShadow,
+                            radius: DUElevation.lifted.radius,
+                            x: DUElevation.lifted.x,
+                            y: DUElevation.lifted.y
+                        )
                         .scaleEffect(x: dropletScaleX, y: dropletScaleY, anchor: .center)
                         .offset(y: dropletOffsetY)
                 }
 
-                VStack(spacing: 4) {
+                VStack(spacing: DUSpacing.xs) {
                     Image(isActive ? activeAssetName : inactiveAssetName)
                         .renderingMode(.original)
                         .resizable()
@@ -1549,7 +1530,7 @@ private struct HomeBottomTabBarButton: View {
                         .frame(width: 20, height: 20)
 
                     Text(title)
-                        .font(homeFont(10, weight: .medium))
+                        .font(.du(.tiny))
                         .foregroundColor(isActive ? palette.activeTabLabel : palette.inactiveTabLabel)
                         .lineLimit(1)
                         .minimumScaleFactor(0.85)
@@ -1636,7 +1617,7 @@ private struct HomeAIAgentTabButton: View {
                 }
 
                 Text(title)
-                    .font(homeFont(10, weight: .medium))
+                    .font(.du(.tiny))
                     .foregroundColor(HomePalette(theme: theme).inactiveTabLabel)
                     .lineLimit(1)
                     .minimumScaleFactor(0.85)
@@ -1655,9 +1636,9 @@ private struct HomePrimaryPillButtonStyle: ButtonStyle {
         let palette = HomePalette(theme: theme)
 
         configuration.label
-            .font(homeFont(13, weight: .semibold))
+            .font(.du(.labelStrong))
             .foregroundColor(.white)
-            .padding(.horizontal, 18)
+            .padding(.horizontal, DUSpacing.section)
             .frame(height: 40)
             .background(
                 LinearGradient(
@@ -1676,9 +1657,9 @@ private struct HomePrimaryPillButtonStyle: ButtonStyle {
             )
             .shadow(
                 color: palette.pillShadow.opacity(configuration.isPressed ? 0.22 : 0.38),
-                radius: 10,
-                x: 0,
-                y: 8
+                radius: DUElevation.primaryButton.radius,
+                x: DUElevation.primaryButton.x,
+                y: DUElevation.primaryButton.y
             )
             .scaleEffect(configuration.isPressed ? 0.98 : 1)
     }
@@ -2340,7 +2321,7 @@ private struct TicketsContainerView: View {
                         title: languageStore.string("tickets.action.backHome"),
                         style: .secondary,
                         height: 46,
-                        fontSize: 15,
+                        textStyle: .bodyEmphasized,
                         horizontalPadding: DUSpacing.xxl
                     ) {
                         dismiss()

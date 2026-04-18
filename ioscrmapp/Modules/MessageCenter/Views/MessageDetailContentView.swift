@@ -16,13 +16,13 @@ struct MessageDetailContentView: View {
 
                     VStack(alignment: .leading, spacing: DUSpacing.md) {
                         Text(message.detailTitle(for: language))
-                            .font(.du(24, weight: .bold))
+                            .font(.du(.headline))
                             .foregroundColor(theme.colors.text.primary)
                             .multilineTextAlignment(.leading)
                             .accessibilityIdentifier("messageCenter.detail.titleLabel")
 
                         Text(message.detailBody(for: language))
-                            .font(.du(15, weight: .medium))
+                            .font(.du(.body))
                             .foregroundColor(theme.colors.text.secondary)
                             .multilineTextAlignment(.leading)
                             .lineSpacing(4)
@@ -58,16 +58,16 @@ struct MessageDetailContentView: View {
                 .accessibilityIdentifier("messageCenter.detail.avatar")
 
             HStack(alignment: .center, spacing: DUSpacing.md) {
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: DUSpacing.xs) {
                     Text(message.displaySender())
-                        .font(.du(20, weight: .bold))
+                        .font(.du(.title))
                         .foregroundColor(theme.colors.text.primary)
                         .multilineTextAlignment(.leading)
                         .fixedSize(horizontal: false, vertical: true)
                         .accessibilityIdentifier("messageCenter.detail.senderLabel")
 
                     Text(detailDateText)
-                        .font(.du(14, weight: .medium))
+                        .font(.du(.bodySmall))
                         .foregroundColor(theme.colors.text.tertiary)
                         .multilineTextAlignment(.leading)
                         .accessibilityIdentifier("messageCenter.detail.timeLabel")

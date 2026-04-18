@@ -25,17 +25,17 @@ struct BadgeUnlockPromptView: View {
                             assetName: event.iconAssetName,
                             url: event.iconURL,
                             fallbackSystemName: "sparkles",
-                            symbolFont: .du(28, weight: .bold),
+                            symbolFont: .du(.hero),
                             padding: 12
                         )
                     }
 
                     VStack(alignment: .leading, spacing: DUSpacing.xs) {
                         Text(localized(event.title))
-                            .font(.du(20, weight: .bold))
+                            .font(.du(.title))
                             .foregroundColor(theme.colors.text.primary)
                         Text(localized(event.badgeName))
-                            .font(.du(14, weight: .semibold))
+                            .font(.du(.bodySmallStrong))
                             .foregroundColor(theme.colors.action.primary)
                     }
 
@@ -43,7 +43,7 @@ struct BadgeUnlockPromptView: View {
                 }
 
                 Text(localized(event.message))
-                    .font(.du(14, weight: .medium))
+                    .font(.du(.bodySmall))
                     .foregroundColor(theme.colors.text.secondary)
                     .multilineTextAlignment(.leading)
 
@@ -70,7 +70,7 @@ struct BadgeUnlockPromptView: View {
             }
             .padding(DUSpacing.xl)
             .background(theme.colors.surface.card)
-            .clipShape(RoundedRectangle(cornerRadius: theme.components.sheet.cornerRadius + 4, style: .continuous))
+            .clipShape(RoundedRectangle(cornerRadius: DURadius.hero, style: .continuous))
             .padding(.horizontal, DUSpacing.xl)
             .accessibilityIdentifier("badgeCenter.unlockPrompt")
         }

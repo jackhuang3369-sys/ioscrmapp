@@ -12,7 +12,7 @@ struct BadgeCenterOverviewCard: View {
         VStack(alignment: .leading, spacing: DUSpacing.md) {
             VStack(alignment: .leading, spacing: DUSpacing.xs) {
                 Text(displayName)
-                    .font(.du(18, weight: .bold))
+                    .font(.du(.titleSmallStrong))
                     .foregroundColor(DUColorPrimitives.Neutral.white)
                 Text(
                     localized(
@@ -23,7 +23,7 @@ struct BadgeCenterOverviewCard: View {
                         ]
                     )
                 )
-                .font(.du(12, weight: .medium))
+                .font(.du(.bodySmall))
                 .foregroundColor(DUColorPrimitives.Neutral.white.opacity(0.84))
             }
 
@@ -55,16 +55,21 @@ struct BadgeCenterOverviewCard: View {
             )
         )
         .clipShape(RoundedRectangle(cornerRadius: theme.components.field.cornerRadius, style: .continuous))
-        .shadow(color: theme.colors.brand.indigo.opacity(0.18), radius: 14, x: 0, y: 8)
+        .shadow(
+            color: theme.colors.brand.indigo.opacity(0.18),
+            radius: DUElevation.lifted.radius,
+            x: DUElevation.lifted.x,
+            y: DUElevation.lifted.y
+        )
     }
 
     private func overviewStatItem(titleKey: String, value: Int) -> some View {
         HStack(spacing: DUSpacing.xs) {
             Text(String(value))
-                .font(.du(28, weight: .bold))
+                .font(.du(.hero))
                 .foregroundColor(DUColorPrimitives.Neutral.white)
             Text(localized(titleKey, []))
-                .font(.du(13, weight: .semibold))
+                .font(.du(.labelStrong))
                 .foregroundColor(DUColorPrimitives.Neutral.white.opacity(0.84))
         }
         .frame(maxWidth: .infinity)
@@ -100,7 +105,7 @@ struct BadgeFilterChip: View {
     var body: some View {
         Button(action: action) {
             Text(title)
-                .font(.du(13, weight: .semibold))
+                .font(.du(.labelStrong))
                 .foregroundColor(isSelected ? DUColorPrimitives.Neutral.white : theme.colors.text.secondary)
                 .padding(.horizontal, DUSpacing.md)
                 .frame(height: 36)
@@ -113,9 +118,9 @@ struct BadgeFilterChip: View {
                 .overlay(alignment: .topTrailing) {
                     if let countText {
                         Text(countText)
-                            .font(.du(10, weight: .bold))
+                            .font(.du(.tinyEmphasized))
                             .foregroundColor(isSelected ? theme.colors.brand.secondary : theme.colors.text.secondary)
-                            .padding(.horizontal, 5)
+                            .padding(.horizontal, DUSpacing.xs + 1)
                             .frame(height: 16)
                             .background(isSelected ? DUColorPrimitives.Neutral.white : theme.colors.background.secondary)
                             .clipShape(Capsule())
@@ -147,19 +152,19 @@ struct BadgeCardView: View {
                         assetName: badge.iconAssetName,
                         url: badge.iconURL,
                         fallbackSystemName: badge.iconSystemName,
-                        symbolFont: .du(22, weight: .bold),
+                        symbolFont: .du(.titleStrong),
                         padding: 10
                     )
                 }
 
                 Text(localizedText(badge.title))
-                    .font(.du(14, weight: .bold))
+                    .font(.du(.bodySmallEmphasized))
                     .foregroundColor(badge.cardTitleColor(theme: theme))
                     .multilineTextAlignment(.center)
                     .lineLimit(2)
 
                 Text(cardSupportingText)
-                    .font(.du(10, weight: .medium))
+                    .font(.du(.tiny))
                     .foregroundColor(badge.cardBodyColor(theme: theme))
                     .multilineTextAlignment(.center)
                     .lineLimit(2)
@@ -176,7 +181,12 @@ struct BadgeCardView: View {
             .frame(minHeight: 142, alignment: .top)
             .background(theme.colors.surface.card)
             .clipShape(RoundedRectangle(cornerRadius: theme.components.sheet.cornerRadius, style: .continuous))
-            .shadow(color: theme.components.card.elevation.color, radius: 12, x: 0, y: 6)
+            .shadow(
+                color: theme.components.card.elevation.color,
+                radius: DUElevation.control.radius,
+                x: DUElevation.control.x,
+                y: DUElevation.control.y
+            )
             .overlay(lockedOverlay)
             .overlay(alignment: .topTrailing) {
                 if badge.isUnread {

@@ -253,11 +253,11 @@ struct BillingContainerView: View {
     private func summaryHero(_ summary: BillingSummary) -> some View {
         VStack(alignment: .leading, spacing: DUSpacing.lg) {
             Text(localized("billing.summary.outstanding"))
-                .font(.du(12, weight: .semibold))
+                .font(.du(.bodySmallStrong))
                 .foregroundColor(.white.opacity(0.78))
 
             Text(summary.totalDueAmountText)
-                .font(.du(32, weight: .bold))
+                .font(.du(.screenTitle))
                 .foregroundColor(.white)
                 .lineLimit(1)
                 .minimumScaleFactor(0.8)
@@ -294,10 +294,10 @@ struct BillingContainerView: View {
     private func summaryMetric(titleKey: String, value: String) -> some View {
         VStack(alignment: .leading, spacing: DUSpacing.xs) {
             Text(localized(titleKey))
-                .font(.du(11, weight: .medium))
+                .font(.du(.caption))
                 .foregroundColor(.white.opacity(0.7))
             Text(value)
-                .font(.du(14, weight: .semibold))
+                .font(.du(.bodySmallStrong))
                 .foregroundColor(.white)
                 .lineLimit(1)
                 .minimumScaleFactor(0.8)
@@ -305,16 +305,16 @@ struct BillingContainerView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(DUSpacing.md)
         .background(Color.white.opacity(0.12))
-        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: DURadius.lg, style: .continuous))
     }
 
     private func supportMetricCard(title: String, value: String, heroStyle: Bool) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: DUSpacing.smd) {
             Text(title)
-                .font(.du(11, weight: .medium))
+                .font(.du(.caption))
                 .foregroundColor(heroStyle ? .white.opacity(0.72) : theme.colors.text.tertiary)
             Text(value)
-                .font(.du(13, weight: .bold))
+                .font(.du(.labelEmphasized))
                 .foregroundColor(heroStyle ? .white : theme.colors.text.primary)
                 .lineLimit(1)
                 .minimumScaleFactor(0.75)
@@ -322,7 +322,7 @@ struct BillingContainerView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(DUSpacing.md)
         .background(heroStyle ? Color.white.opacity(0.12) : theme.colors.surface.card)
-        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: DURadius.lg, style: .continuous))
     }
 
     private func supportMetricActionCard(
@@ -333,13 +333,13 @@ struct BillingContainerView: View {
     ) -> some View {
         Button(action: action) {
             HStack(alignment: .top, spacing: DUSpacing.sm) {
-                VStack(alignment: .leading, spacing: 6) {
+                VStack(alignment: .leading, spacing: DUSpacing.smd) {
                     Text(title)
-                        .font(.du(11, weight: .medium))
+                        .font(.du(.caption))
                         .foregroundColor(heroStyle ? .white.opacity(0.72) : theme.colors.text.tertiary)
                     HStack(alignment: .center, spacing: DUSpacing.sm) {
                         Text(value)
-                            .font(.du(13, weight: .bold))
+                            .font(.du(.labelEmphasized))
                             .foregroundColor(heroStyle ? .white : theme.colors.text.primary)
                             .lineLimit(1)
                             .minimumScaleFactor(0.75)
@@ -347,14 +347,14 @@ struct BillingContainerView: View {
                         Spacer(minLength: 0)
 
                         Image(systemName: "chevron.right")
-                            .font(.du(12, weight: .bold))
+                            .font(.du(.bodySmallEmphasized))
                             .foregroundColor(heroStyle ? .white.opacity(0.76) : theme.colors.text.tertiary)
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(DUSpacing.md)
                 .background(heroStyle ? Color.white.opacity(0.12) : theme.colors.surface.card)
-                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                .clipShape(RoundedRectangle(cornerRadius: DURadius.lg, style: .continuous))
             }
         }
         .buttonStyle(.plain)
@@ -372,22 +372,22 @@ struct BillingContainerView: View {
 
                 HStack(spacing: DUSpacing.sm) {
                     Image(systemName: "square.and.pencil")
-                        .font(.du(14, weight: .bold))
+                        .font(.du(.bodySmallEmphasized))
                         .foregroundColor(theme.colors.brand.primary)
 
                     TextField("0.00", text: amountText)
                         .keyboardType(.decimalPad)
-                        .font(.du(22, weight: .bold))
+                        .font(.du(.titleStrong))
                         .foregroundColor(theme.colors.text.primary)
 
                     Text("AED")
-                        .font(.du(14, weight: .bold))
+                        .font(.du(.bodySmallEmphasized))
                         .foregroundColor(theme.colors.text.tertiary)
                 }
                 .padding(.horizontal, DUSpacing.lg)
                 .frame(height: 58)
                 .background(theme.colors.background.secondary)
-                .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+                .clipShape(RoundedRectangle(cornerRadius: DURadius.control, style: .continuous))
             }
         }
     }
@@ -403,12 +403,12 @@ struct BillingContainerView: View {
                     amountText.wrappedValue = option
                 } label: {
                     Text("\(option) AED")
-                        .font(.du(14, weight: .bold))
+                        .font(.du(.bodySmallEmphasized))
                     .foregroundColor(isSelected ? .white : theme.colors.text.primary)
                     .frame(maxWidth: .infinity)
                     .frame(height: 62)
                     .background(isSelected ? theme.colors.brand.primary : theme.colors.background.secondary)
-                    .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                    .clipShape(RoundedRectangle(cornerRadius: DURadius.lg, style: .continuous))
                 }
                 .buttonStyle(.plain)
             }
@@ -423,21 +423,21 @@ struct BillingContainerView: View {
                         viewModel.selectedPaymentMethod = method
                     } label: {
                         HStack(spacing: DUSpacing.md) {
-                            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                            RoundedRectangle(cornerRadius: DURadius.md, style: .continuous)
                                 .fill(methodAccentColor(method))
                                 .frame(width: 40, height: 40)
                                 .overlay {
                                     Image(systemName: methodIcon(method))
-                                        .font(.du(16, weight: .bold))
+                                        .font(.du(.bodyLargeStrong))
                                         .foregroundColor(.white)
                                 }
 
-                            VStack(alignment: .leading, spacing: 2) {
+                            VStack(alignment: .leading, spacing: DUSpacing.xxs) {
                                 Text(localized(method.titleKey))
-                                    .font(.du(14, weight: .semibold))
+                                    .font(.du(.bodySmallStrong))
                                     .foregroundColor(theme.colors.text.primary)
                                 Text(methodDescription(method))
-                                    .font(.du(11, weight: .medium))
+                                    .font(.du(.caption))
                                     .foregroundColor(theme.colors.text.tertiary)
                             }
 
@@ -457,7 +457,7 @@ struct BillingContainerView: View {
 
                                 if viewModel.selectedPaymentMethod == method {
                                     Image(systemName: "checkmark")
-                                        .font(.du(11, weight: .bold))
+                                        .font(.du(.captionEmphasized))
                                         .foregroundColor(.white)
                                 }
                             }
@@ -465,7 +465,7 @@ struct BillingContainerView: View {
                         .padding(.horizontal, DUSpacing.lg)
                         .frame(height: 62)
                         .background(theme.colors.background.secondary)
-                        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+                        .clipShape(RoundedRectangle(cornerRadius: DURadius.control, style: .continuous))
                     }
                     .buttonStyle(.plain)
                 }
@@ -507,13 +507,13 @@ struct BillingContainerView: View {
     }
 
     private func billingHeaderSubtitle(title: String, subtitle: String? = nil) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: DUSpacing.xs) {
             Text(title)
-                .font(.du(24, weight: .bold))
+                .font(.du(.headline))
                 .foregroundColor(theme.colors.text.primary)
             if let subtitle, !subtitle.isEmpty {
                 Text(subtitle)
-                    .font(.du(13, weight: .medium))
+                    .font(.du(.label))
                     .foregroundColor(theme.colors.text.secondary)
             }
         }
@@ -525,13 +525,13 @@ struct BillingContainerView: View {
             HStack(alignment: .center) {
                 VStack(alignment: .leading, spacing: DUSpacing.xs) {
                     Text(displayBillCycle(invoice))
-                        .font(.du(17, weight: .bold))
+                        .font(.du(.titleSmall))
                         .foregroundColor(theme.colors.text.primary)
 
                     let metaText = invoiceMetaText(invoice)
                     if !metaText.isEmpty {
                         Text(metaText)
-                            .font(.du(12, weight: .medium))
+                            .font(.du(.bodySmall))
                             .foregroundColor(theme.colors.text.secondary)
                     }
                 }
@@ -553,7 +553,7 @@ struct BillingContainerView: View {
                         style: .primary,
                         isEnabled: !viewModel.disabledInvoiceIDs.contains(invoice.id),
                         height: 40,
-                        fontSize: 13
+                        textStyle: .labelEmphasized
                     ) {
                         viewModel.openInvoice(invoice)
                     }
@@ -563,7 +563,7 @@ struct BillingContainerView: View {
                     title: localized("billing.invoice.viewDetail"),
                     style: .secondary,
                     height: 40,
-                    fontSize: 13
+                    textStyle: .labelEmphasized
                 ) {
                     viewModel.openInvoice(invoice)
                 }
@@ -572,7 +572,7 @@ struct BillingContainerView: View {
                     title: localized("billing.invoice.previewPdf"),
                     style: .secondary,
                     height: 40,
-                    fontSize: 13
+                    textStyle: .labelEmphasized
                 ) {
                     Task {
                         await viewModel.previewPDF(for: invoice)
@@ -598,10 +598,10 @@ struct BillingContainerView: View {
     private func invoiceMetric(titleKey: String, value: String) -> some View {
         VStack(alignment: .leading, spacing: DUSpacing.xs) {
             Text(localized(titleKey))
-                .font(.du(11, weight: .medium))
+                .font(.du(.caption))
                 .foregroundColor(theme.colors.text.tertiary)
             Text(value)
-                .font(.du(14, weight: .bold))
+                .font(.du(.bodySmallEmphasized))
                 .foregroundColor(theme.colors.text.primary)
                 .lineLimit(1)
                 .minimumScaleFactor(0.8)
@@ -609,12 +609,12 @@ struct BillingContainerView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(DUSpacing.md)
         .background(theme.colors.background.secondary)
-        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: DURadius.lg, style: .continuous))
     }
 
     private func statusBadge(_ status: BillingInvoiceStatus) -> some View {
         Text(localized(status.titleKey))
-            .font(.du(11, weight: .semibold))
+            .font(.du(.captionStrong))
             .foregroundColor(status == .completed ? theme.colors.status.success : theme.colors.status.warning)
             .padding(.horizontal, DUSpacing.md)
             .frame(height: 28)
@@ -637,7 +637,7 @@ struct BillingContainerView: View {
         VStack(spacing: DUSpacing.lg) {
             ProgressView()
             Text(localized("billing.state.loadingTitle"))
-                .font(.du(15, weight: .semibold))
+                .font(.du(.bodyStrong))
                 .foregroundColor(theme.colors.text.secondary)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -780,16 +780,16 @@ private struct BillingDetailView: View {
     private func detailKPI(title: String, value: String) -> some View {
         VStack(alignment: .leading, spacing: DUSpacing.xs) {
             Text(title)
-                .font(.du(11, weight: .medium))
+                .font(.du(.caption))
                 .foregroundColor(theme.colors.text.tertiary)
             Text(value)
-                .font(.du(16, weight: .bold))
+                .font(.du(.bodyLargeStrong))
                 .foregroundColor(theme.colors.text.primary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(DUSpacing.lg)
         .background(theme.colors.surface.card)
-        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: DURadius.control, style: .continuous))
     }
 
     private var visualBillSection: some View {
@@ -802,16 +802,16 @@ private struct BillingDetailView: View {
                     visualMetric(titleKey: "billing.visual.otherCharges", value: breakdown.otherChargesText, tint: theme.colors.brand.secondary)
                 }
 
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                RoundedRectangle(cornerRadius: DURadius.control, style: .continuous)
                     .fill(theme.colors.background.secondary)
                     .frame(height: 18)
                     .overlay(alignment: .leading) {
                         GeometryReader { proxy in
                             HStack(spacing: 0) {
-                                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                                RoundedRectangle(cornerRadius: DURadius.control, style: .continuous)
                                     .fill(theme.colors.brand.primary)
                                     .frame(width: proxy.size.width * 0.68)
-                                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                                RoundedRectangle(cornerRadius: DURadius.control, style: .continuous)
                                     .fill(theme.colors.brand.secondaryLight)
                             }
                         }
@@ -823,10 +823,10 @@ private struct BillingDetailView: View {
     private func visualMetric(titleKey: String, value: String, tint: Color) -> some View {
         VStack(alignment: .leading, spacing: DUSpacing.xs) {
             Text(localized(titleKey))
-                .font(.du(11, weight: .medium))
+                .font(.du(.caption))
                 .foregroundColor(theme.colors.text.tertiary)
             Text(value)
-                .font(.du(14, weight: .bold))
+                .font(.du(.bodySmallEmphasized))
                 .foregroundColor(theme.colors.text.primary)
             Capsule()
                 .fill(tint)
@@ -835,7 +835,7 @@ private struct BillingDetailView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(DUSpacing.md)
         .background(theme.colors.background.secondary)
-        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: DURadius.lg, style: .continuous))
     }
 
     private var detailFacts: some View {
@@ -855,22 +855,22 @@ private struct BillingDetailView: View {
             VStack(alignment: .leading, spacing: DUSpacing.sm) {
                 HStack(spacing: DUSpacing.sm) {
                     Image(systemName: "square.and.pencil")
-                        .font(.du(14, weight: .bold))
+                        .font(.du(.bodySmallEmphasized))
                         .foregroundColor(theme.colors.brand.primary)
 
                     TextField("0.00", text: $amountText)
                         .keyboardType(.decimalPad)
-                        .font(.du(22, weight: .bold))
+                        .font(.du(.titleStrong))
                         .foregroundColor(theme.colors.text.primary)
 
                     Text("AED")
-                        .font(.du(14, weight: .bold))
+                        .font(.du(.bodySmallEmphasized))
                         .foregroundColor(theme.colors.text.tertiary)
                 }
                 .padding(.horizontal, DUSpacing.lg)
                 .frame(height: 58)
                 .background(theme.colors.background.secondary)
-                .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+                .clipShape(RoundedRectangle(cornerRadius: DURadius.control, style: .continuous))
             }
         }
     }
@@ -883,21 +883,21 @@ private struct BillingDetailView: View {
                         viewModel.selectedPaymentMethod = method
                     } label: {
                         HStack(spacing: DUSpacing.md) {
-                            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                            RoundedRectangle(cornerRadius: DURadius.md, style: .continuous)
                                 .fill(detailMethodAccentColor(method))
                                 .frame(width: 40, height: 40)
                                 .overlay {
                                     Image(systemName: detailMethodIcon(method))
-                                        .font(.du(16, weight: .bold))
+                                        .font(.du(.bodyLargeStrong))
                                         .foregroundColor(.white)
                                 }
 
-                            VStack(alignment: .leading, spacing: 2) {
+                            VStack(alignment: .leading, spacing: DUSpacing.xxs) {
                                 Text(localized(method.titleKey))
-                                    .font(.du(14, weight: .semibold))
+                                    .font(.du(.bodySmallStrong))
                                     .foregroundColor(theme.colors.text.primary)
                                 Text(detailMethodDescription(method))
-                                    .font(.du(11, weight: .medium))
+                                    .font(.du(.caption))
                                     .foregroundColor(theme.colors.text.tertiary)
                             }
 
@@ -917,7 +917,7 @@ private struct BillingDetailView: View {
 
                                 if viewModel.selectedPaymentMethod == method {
                                     Image(systemName: "checkmark")
-                                        .font(.du(11, weight: .bold))
+                                        .font(.du(.captionEmphasized))
                                         .foregroundColor(.white)
                                 }
                             }
@@ -925,7 +925,7 @@ private struct BillingDetailView: View {
                         .padding(.horizontal, DUSpacing.lg)
                         .frame(height: 62)
                         .background(theme.colors.background.secondary)
-                        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+                        .clipShape(RoundedRectangle(cornerRadius: DURadius.control, style: .continuous))
                     }
                     .buttonStyle(.plain)
                 }
@@ -979,11 +979,11 @@ private struct BillingDetailView: View {
     private func factRow(titleKey: String, value: String) -> some View {
         HStack {
             Text(localized(titleKey))
-                .font(.du(13, weight: .medium))
+                .font(.du(.label))
                 .foregroundColor(theme.colors.text.secondary)
             Spacer()
             Text(value)
-                .font(.du(13, weight: .semibold))
+                .font(.du(.labelStrong))
                 .foregroundColor(theme.colors.text.primary)
                 .multilineTextAlignment(.trailing)
         }
@@ -1017,9 +1017,9 @@ private struct BillingUnbilledDetailView: View {
     }
 
     private var pageHeader: some View {
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: DUSpacing.xs) {
             Text(localized("billing.unbilledDetail.title"))
-                .font(.du(24, weight: .bold))
+                .font(.du(.headline))
                 .foregroundColor(theme.colors.text.primary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -1028,11 +1028,11 @@ private struct BillingUnbilledDetailView: View {
     private var heroCard: some View {
         VStack(alignment: .leading, spacing: DUSpacing.lg) {
             Text(localized("billing.unbilledDetail.estimatedAmount"))
-                .font(.du(12, weight: .semibold))
+                .font(.du(.bodySmallStrong))
                 .foregroundColor(.white.opacity(0.78))
 
             Text(estimate.estimatedAmountText)
-                .font(.du(32, weight: .bold))
+                .font(.du(.screenTitle))
                 .foregroundColor(.white)
                 .lineLimit(1)
                 .minimumScaleFactor(0.8)
@@ -1063,16 +1063,16 @@ private struct BillingUnbilledDetailView: View {
     private func heroMetric(title: String, value: String) -> some View {
         VStack(alignment: .leading, spacing: DUSpacing.xs) {
             Text(title)
-                .font(.du(11, weight: .medium))
+                .font(.du(.caption))
                 .foregroundColor(.white.opacity(0.72))
             Text(value)
-                .font(.du(14, weight: .semibold))
+                .font(.du(.bodySmallStrong))
                 .foregroundColor(.white)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(DUSpacing.md)
         .background(Color.white.opacity(0.12))
-        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: DURadius.lg, style: .continuous))
     }
 
     private var chargeSection: some View {
@@ -1081,11 +1081,11 @@ private struct BillingUnbilledDetailView: View {
                 ForEach(estimate.chargeItems) { item in
                     HStack {
                         Text(localized(item.titleKey))
-                            .font(.du(13, weight: .medium))
+                            .font(.du(.label))
                             .foregroundColor(theme.colors.text.secondary)
                         Spacer()
                         Text(item.amountText)
-                            .font(.du(14, weight: .bold))
+                            .font(.du(.bodySmallEmphasized))
                             .foregroundColor(theme.colors.text.primary)
                     }
                 }
@@ -1100,11 +1100,11 @@ private struct BillingUnbilledDetailView: View {
                     VStack(alignment: .leading, spacing: DUSpacing.xs) {
                         HStack {
                             Text(localized(item.titleKey))
-                                .font(.du(13, weight: .semibold))
+                                .font(.du(.labelStrong))
                                 .foregroundColor(theme.colors.text.primary)
                             Spacer()
                             Text(item.valueText)
-                                .font(.du(12, weight: .medium))
+                                .font(.du(.bodySmall))
                                 .foregroundColor(theme.colors.text.secondary)
                         }
 
@@ -1136,18 +1136,18 @@ private struct BillingSubmissionView: View {
                     .fill(theme.colors.status.successBackground)
                     .frame(width: 110, height: 110)
                 Image(systemName: "paperplane.fill")
-                    .font(.du(34, weight: .bold))
+                    .font(.du(.featureHero))
                     .foregroundColor(theme.colors.status.success)
             }
 
             VStack(spacing: DUSpacing.sm) {
                 Text(statusText)
-                    .font(.du(28, weight: .bold))
+                    .font(.du(.hero))
                     .foregroundColor(theme.colors.text.primary)
                     .multilineTextAlignment(.center)
 
                 Text(localized("billing.submission.subtitle"))
-                    .font(.du(14, weight: .medium))
+                    .font(.du(.bodySmall))
                     .foregroundColor(theme.colors.text.secondary)
                     .multilineTextAlignment(.center)
             }

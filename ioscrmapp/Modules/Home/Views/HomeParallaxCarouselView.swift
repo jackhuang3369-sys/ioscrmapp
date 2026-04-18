@@ -441,9 +441,9 @@ private struct HomeParallaxCarouselCaptionView: View {
     let subtitle: String?
 
     var body: some View {
-        VStack(spacing: 4) {
+        VStack(spacing: DUSpacing.xs) {
             Text(title)
-                .font(.du(16, weight: .semibold))
+                .font(.du(.bodyLargeSemibold))
                 .foregroundColor(theme.colors.text.primary)
                 .multilineTextAlignment(.center)
                 .lineLimit(1)
@@ -451,7 +451,7 @@ private struct HomeParallaxCarouselCaptionView: View {
 
             if let subtitle, !subtitle.isEmpty {
                 Text(subtitle)
-                    .font(.du(12, weight: .medium))
+                    .font(.du(.bodySmall))
                     .foregroundColor(theme.colors.text.secondary)
                     .multilineTextAlignment(.center)
                     .lineLimit(2)

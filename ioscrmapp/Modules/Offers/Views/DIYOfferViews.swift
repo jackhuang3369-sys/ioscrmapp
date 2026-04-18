@@ -78,13 +78,13 @@ struct DIYOfferBuilderView: View {
     private var heroSection: some View {
         VStack(alignment: .leading, spacing: DUSpacing.md) {
             Text(localized("offers.diy.hero.eyebrow"))
-                .font(.du(12, weight: .bold))
+                .font(.du(.bodySmallEmphasized))
                 .foregroundColor(.white.opacity(0.78))
             Text(localized("offers.diy.hero.title"))
-                .font(.du(26, weight: .bold))
+                .font(.du(.headlineStrong))
                 .foregroundColor(.white)
             Text(localized("offers.diy.hero.subtitle"))
-                .font(.du(14, weight: .medium))
+                .font(.du(.bodySmall))
                 .foregroundColor(.white.opacity(0.88))
 
             HStack(spacing: DUSpacing.md) {
@@ -103,8 +103,8 @@ struct DIYOfferBuilderView: View {
                     title: localized("offers.diy.viewOrders"),
                     style: .primary,
                     height: 40,
-                    cornerRadius: 14,
-                    fontSize: 13
+                    cornerRadius: DURadius.md,
+                    textStyle: .labelEmphasized
                 ) {
                     onViewOrders()
                 }
@@ -112,27 +112,32 @@ struct DIYOfferBuilderView: View {
         }
         .padding(DUSpacing.xl)
         .background(theme.colors.gradient.brand)
-        .clipShape(RoundedRectangle(cornerRadius: 26, style: .continuous))
-        .shadow(color: theme.colors.brand.primary.opacity(0.22), radius: 20, x: 0, y: 10)
+        .clipShape(RoundedRectangle(cornerRadius: DURadius.sheetLarge, style: .continuous))
+        .shadow(
+            color: theme.colors.brand.primary.opacity(0.22),
+            radius: DUElevation.showcase.radius,
+            x: DUElevation.showcase.x,
+            y: DUElevation.showcase.y
+        )
     }
 
     private var periodSection: some View {
         DUSectionCard(title: localized("offers.diy.periods.title")) {
             VStack(alignment: .leading, spacing: DUSpacing.md) {
                 Text(localized("offers.diy.periods.subtitle"))
-                    .font(.du(13, weight: .medium))
+                    .font(.du(.label))
                     .foregroundColor(theme.colors.text.secondary)
 
                 periodChips
 
                 if let switchNotice = viewModel.switchNotice {
                     Text(localized(switchNotice))
-                        .font(.du(12, weight: .semibold))
+                        .font(.du(.bodySmallStrong))
                         .foregroundColor(theme.colors.status.warning)
                         .padding(DUSpacing.md)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .background(theme.colors.status.warningBackground)
-                        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                        .clipShape(RoundedRectangle(cornerRadius: DURadius.lg, style: .continuous))
                 }
 
                 if viewModel.isEmptyState {
@@ -156,7 +161,7 @@ struct DIYOfferBuilderView: View {
                         viewModel.selectPeriod(period)
                     } label: {
                         Text(period.title)
-                            .font(.du(13, weight: .bold))
+                            .font(.du(.labelEmphasized))
                             .foregroundColor(viewModel.activePeriodID == period.id ? .white : theme.colors.text.secondary)
                             .padding(.horizontal, DUSpacing.lg)
                             .frame(height: 36)
@@ -184,10 +189,10 @@ struct DIYOfferBuilderView: View {
     private var emptyState: some View {
         VStack(alignment: .leading, spacing: DUSpacing.md) {
             Text(localized("offers.diy.empty.title"))
-                .font(.du(18, weight: .bold))
+                .font(.du(.titleSmallStrong))
                 .foregroundColor(theme.colors.text.primary)
             Text(localized("offers.diy.empty.subtitle"))
-                .font(.du(14, weight: .medium))
+                .font(.du(.bodySmall))
                 .foregroundColor(theme.colors.text.secondary)
 
             HStack(spacing: DUSpacing.md) {
@@ -202,7 +207,7 @@ struct DIYOfferBuilderView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(DUSpacing.lg)
         .background(theme.colors.background.canvas)
-        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: DURadius.control, style: .continuous))
     }
 
     private func resourceCard(_ resource: DIYOfferResource) -> some View {
@@ -210,15 +215,15 @@ struct DIYOfferBuilderView: View {
             HStack(alignment: .top, spacing: DUSpacing.md) {
                 VStack(alignment: .leading, spacing: DUSpacing.xs) {
                     Text(resource.attrName)
-                        .font(.du(16, weight: .bold))
+                        .font(.du(.bodyLargeStrong))
                         .foregroundColor(theme.colors.text.primary)
                     Text(resource.attrCode)
-                        .font(.du(12, weight: .semibold))
+                        .font(.du(.bodySmallStrong))
                         .foregroundColor(theme.colors.text.tertiary)
                 }
                 Spacer()
                 Text(resource.unit)
-                    .font(.du(11, weight: .bold))
+                    .font(.du(.captionEmphasized))
                     .foregroundColor(theme.colors.brand.primary)
                     .padding(.horizontal, DUSpacing.md)
                     .frame(height: 28)
@@ -252,14 +257,14 @@ struct DIYOfferBuilderView: View {
                 Spacer()
                 Text(localized("offers.diy.range.max", arguments: ["\(resource.maxValue)", resource.unit]))
             }
-            .font(.du(11, weight: .semibold))
+            .font(.du(.captionStrong))
             .foregroundColor(theme.colors.text.tertiary)
         }
         .padding(DUSpacing.lg)
         .background(theme.colors.background.canvas)
-        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: DURadius.control, style: .continuous))
         .overlay(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
+            RoundedRectangle(cornerRadius: DURadius.control, style: .continuous)
                 .stroke(theme.colors.border.subtle, lineWidth: 1)
         )
     }
@@ -269,15 +274,15 @@ struct DIYOfferBuilderView: View {
             HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: DUSpacing.xs) {
                     Text(localized("offers.diy.pricing.title"))
-                        .font(.du(15, weight: .bold))
+                        .font(.du(.bodyEmphasized))
                         .foregroundColor(.white.opacity(0.82))
                     Text(viewModel.totalDisplayText)
-                        .font(.du(30, weight: .bold))
+                        .font(.du(.heroStrong))
                         .foregroundColor(.white)
                 }
                 Spacer()
                 Text(viewModel.isPricingLoading ? localized("offers.diy.pricing.loading") : localized("offers.diy.pricing.debounce"))
-                    .font(.du(11, weight: .bold))
+                    .font(.du(.captionEmphasized))
                     .foregroundColor(.white)
                     .padding(.horizontal, DUSpacing.md)
                     .frame(height: 28)
@@ -292,7 +297,7 @@ struct DIYOfferBuilderView: View {
                         Spacer()
                         Text("\(item.subtotalAmount) \(viewModel.bootstrap?.currencyName ?? "")")
                     }
-                    .font(.du(12, weight: .semibold))
+                    .font(.du(.bodySmallStrong))
                     .foregroundColor(.white)
                 }
             }
@@ -302,8 +307,8 @@ struct DIYOfferBuilderView: View {
                     title: localized("offers.diy.priceDetail"),
                     style: .secondary,
                     height: 40,
-                    cornerRadius: 14,
-                    fontSize: 13
+                    cornerRadius: DURadius.md,
+                    textStyle: .labelEmphasized
                 ) {
                     isPriceDetailPresented = true
                 }
@@ -318,15 +323,20 @@ struct DIYOfferBuilderView: View {
         }
         .padding(DUSpacing.xl)
         .background(theme.colors.gradient.brand)
-        .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
-        .shadow(color: theme.colors.brand.primary.opacity(0.2), radius: 18, x: 0, y: 10)
+        .clipShape(RoundedRectangle(cornerRadius: DURadius.sheet, style: .continuous))
+        .shadow(
+            color: theme.colors.brand.primary.opacity(0.2),
+            radius: DUElevation.spotlight.radius,
+            x: DUElevation.spotlight.x,
+            y: DUElevation.spotlight.y
+        )
     }
 
     private var loadingState: some View {
         VStack(spacing: DUSpacing.md) {
             ProgressView()
             Text(localized("offers.state.loadingTitle"))
-                .font(.du(15, weight: .medium))
+                .font(.du(.body))
                 .foregroundColor(theme.colors.text.secondary)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -352,37 +362,37 @@ struct DIYOfferBuilderView: View {
                 .foregroundColor(theme.colors.status.warning)
             VStack(alignment: .leading, spacing: DUSpacing.xs) {
                 Text(localized("offers.failure.title"))
-                    .font(.du(14, weight: .bold))
+                    .font(.du(.bodySmallEmphasized))
                     .foregroundColor(theme.colors.text.primary)
                 Text(localized(message))
-                    .font(.du(13, weight: .medium))
+                    .font(.du(.label))
                     .foregroundColor(theme.colors.text.secondary)
             }
             Spacer()
             Button(localized("common.ok")) {
                 viewModel.dismissBanner()
             }
-            .font(.du(12, weight: .bold))
+            .font(.du(.bodySmallEmphasized))
             .foregroundColor(theme.colors.brand.primary)
         }
         .padding(DUSpacing.lg)
         .background(theme.colors.status.warningBackground)
-        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: DURadius.control, style: .continuous))
     }
 
     private func factPill(title: String, value: String) -> some View {
         VStack(alignment: .leading, spacing: DUSpacing.xs) {
             Text(title)
-                .font(.du(11, weight: .semibold))
+                .font(.du(.captionStrong))
                 .foregroundColor(.white.opacity(0.72))
             Text(value)
-                .font(.du(14, weight: .bold))
+                .font(.du(.bodySmallEmphasized))
                 .foregroundColor(.white)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(DUSpacing.md)
         .background(Color.white.opacity(0.12))
-        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: DURadius.lg, style: .continuous))
     }
 
     private func localized(_ key: String, arguments: [String] = []) -> String {
@@ -432,11 +442,11 @@ private struct DIYOfferPriceDetailSheet: View {
     private func detailRow(_ key: String, _ value: String) -> some View {
         HStack {
             Text(localized(key))
-                .font(.du(13, weight: .semibold))
+                .font(.du(.labelStrong))
                 .foregroundColor(theme.colors.text.secondary)
             Spacer()
             Text(value)
-                .font(.du(13, weight: .bold))
+                .font(.du(.labelEmphasized))
                 .foregroundColor(theme.colors.text.primary)
         }
     }
@@ -460,11 +470,11 @@ private struct DIYOfferConfirmSheet: View {
                         ForEach(viewModel.confirmSummaryRows, id: \.0) { row in
                             HStack {
                                 Text(localized(row.0))
-                                    .font(.du(13, weight: .semibold))
+                                    .font(.du(.labelStrong))
                                     .foregroundColor(theme.colors.text.secondary)
                                 Spacer()
                                 Text(row.1.hasPrefix("offers.") ? localized(row.1) : row.1)
-                                    .font(.du(13, weight: .bold))
+                                    .font(.du(.labelEmphasized))
                                     .foregroundColor(theme.colors.text.primary)
                             }
                         }
@@ -476,11 +486,11 @@ private struct DIYOfferConfirmSheet: View {
                         ForEach(viewModel.pricing?.items ?? []) { item in
                             HStack {
                                 Text(item.title)
-                                    .font(.du(13, weight: .semibold))
+                                    .font(.du(.labelStrong))
                                     .foregroundColor(theme.colors.text.primary)
                                 Spacer()
                                 Text("\(item.quantity) \(item.unit)")
-                                    .font(.du(13, weight: .bold))
+                                    .font(.du(.labelEmphasized))
                                     .foregroundColor(theme.colors.text.secondary)
                             }
                         }
@@ -525,13 +535,13 @@ private struct DIYOfferAcceptedResultView: View {
             VStack(spacing: DUSpacing.lg) {
                 Spacer()
                 Image(systemName: "checkmark.circle.fill")
-                    .font(.du(56, weight: .bold))
+                    .font(.du(.resultDisplay))
                     .foregroundColor(theme.colors.status.success)
                 Text(languageStore.string("offers.accepted.subscribe.title"))
-                    .font(.du(24, weight: .bold))
+                    .font(.du(.headline))
                     .foregroundColor(theme.colors.text.primary)
                 Text(languageStore.string("offers.diy.accepted.subtitle"))
-                    .font(.du(14, weight: .medium))
+                    .font(.du(.bodySmall))
                     .foregroundColor(theme.colors.text.secondary)
                     .multilineTextAlignment(.center)
 
@@ -557,11 +567,11 @@ private struct DIYOfferAcceptedResultView: View {
     private func acceptedFact(_ key: String, _ value: String) -> some View {
         HStack {
             Text(languageStore.string(key))
-                .font(.du(13, weight: .semibold))
+                .font(.du(.labelStrong))
                 .foregroundColor(theme.colors.text.secondary)
             Spacer()
             Text(value)
-                .font(.du(13, weight: .bold))
+                .font(.du(.labelEmphasized))
                 .foregroundColor(theme.colors.text.primary)
         }
     }
@@ -579,13 +589,13 @@ private struct DIYOfferFailureResultView: View {
             VStack(spacing: DUSpacing.lg) {
                 Spacer()
                 Image(systemName: "exclamationmark.triangle.fill")
-                    .font(.du(56, weight: .bold))
+                    .font(.du(.resultDisplay))
                     .foregroundColor(theme.colors.status.error)
                 Text(languageStore.string("offers.failure.title"))
-                    .font(.du(24, weight: .bold))
+                    .font(.du(.headline))
                     .foregroundColor(theme.colors.text.primary)
                 Text(result.message)
-                    .font(.du(14, weight: .medium))
+                    .font(.du(.bodySmall))
                     .foregroundColor(theme.colors.text.secondary)
                     .multilineTextAlignment(.center)
 
@@ -612,11 +622,11 @@ private struct DIYOfferFailureResultView: View {
     private func acceptedFact(_ key: String, _ value: String) -> some View {
         HStack {
             Text(languageStore.string(key))
-                .font(.du(13, weight: .semibold))
+                .font(.du(.labelStrong))
                 .foregroundColor(theme.colors.text.secondary)
             Spacer()
             Text(value)
-                .font(.du(13, weight: .bold))
+                .font(.du(.labelEmphasized))
                 .foregroundColor(theme.colors.text.primary)
                 .multilineTextAlignment(.trailing)
         }

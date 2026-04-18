@@ -51,19 +51,19 @@ struct HomeFeatureCarouselView: View {
 
             if let selectedItem {
                 Text(languageStore.string(selectedItem.title))
-                    .font(.du(15, weight: .semibold))
+                    .font(.du(.bodyStrong))
                     .foregroundColor(theme.colors.text.primary)
                     .multilineTextAlignment(.center)
                     .lineLimit(1)
                     .truncationMode(.tail)
-                    .padding(.top, 14)
-                    .padding(.horizontal, 20)
+                    .padding(.top, DUSpacing.compact)
+                    .padding(.horizontal, DUSpacing.xl)
             }
 
             if items.count > 1 {
                 pageIndicator
-                    .padding(.top, 10)
-                    .padding(.bottom, 2)
+                    .padding(.top, DUSpacing.base)
+                    .padding(.bottom, DUSpacing.xxs)
             }
         }
         .task(id: autoAdvanceCycle) {
@@ -82,7 +82,7 @@ struct HomeFeatureCarouselView: View {
     }
 
     private var pageIndicator: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: DUSpacing.sm) {
             ForEach(items.indices, id: \.self) { index in
                 pageIndicatorDot(isSelected: index == selectedAssetIndex)
             }

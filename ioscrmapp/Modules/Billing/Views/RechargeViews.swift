@@ -233,7 +233,7 @@ struct RechargeContainerView: View {
 
     private func rechargeHeaderTitle(_ title: String) -> some View {
         Text(title)
-            .font(.du(24, weight: .bold))
+            .font(.du(.headline))
             .foregroundColor(theme.colors.text.primary)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -241,11 +241,11 @@ struct RechargeContainerView: View {
     private var rechargeHero: some View {
         VStack(alignment: .leading, spacing: DUSpacing.lg) {
             Text(localized("recharge.balance.title"))
-                .font(.du(12, weight: .semibold))
+                .font(.du(.bodySmallStrong))
                 .foregroundColor(.white.opacity(0.8))
 
             Text(viewModel.balanceText)
-                .font(.du(30, weight: .bold))
+                .font(.du(.heroStrong))
                 .foregroundColor(.white)
 
             rechargeHeroMetric(
@@ -256,16 +256,16 @@ struct RechargeContainerView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(DUSpacing.xl)
         .background(theme.colors.gradient.brand)
-        .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: DURadius.hero, style: .continuous))
     }
 
     private func rechargeHeroMetric(title: String, value: String) -> some View {
         VStack(alignment: .leading, spacing: DUSpacing.xs) {
             Text(title)
-                .font(.du(10, weight: .medium))
+                .font(.du(.tiny))
                 .foregroundColor(.white.opacity(0.72))
             Text(value)
-                .font(.du(14, weight: .semibold))
+                .font(.du(.bodySmallStrong))
                 .foregroundColor(.white)
                 .lineLimit(1)
                 .minimumScaleFactor(0.75)
@@ -273,7 +273,7 @@ struct RechargeContainerView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(DUSpacing.md)
         .background(Color.white.opacity(0.12))
-        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: DURadius.lg, style: .continuous))
     }
 
     private var rechargeAmountSection: some View {
@@ -281,11 +281,11 @@ struct RechargeContainerView: View {
             VStack(alignment: .leading, spacing: DUSpacing.md) {
                 HStack {
                     Text(localized("recharge.quick.title"))
-                        .font(.du(13, weight: .semibold))
+                        .font(.du(.labelStrong))
                         .foregroundColor(theme.colors.text.primary)
                     Spacer()
                     Text(localized("recharge.amount.minimum", arguments: [viewModel.minimumAmountDisplayText]))
-                        .font(.du(12, weight: .medium))
+                        .font(.du(.bodySmall))
                         .foregroundColor(theme.colors.text.tertiary)
                 }
 
@@ -304,12 +304,12 @@ struct RechargeContainerView: View {
                             viewModel.applyQuickAmount(amount)
                         } label: {
                             Text(BillingNumberParser.displayMoney(NSDecimalNumber(decimal: amount).stringValue))
-                                .font(.du(14, weight: .bold))
+                                .font(.du(.bodySmallEmphasized))
                                 .foregroundColor(isSelected ? .white : theme.colors.text.primary)
                                 .frame(maxWidth: .infinity)
                                 .frame(height: 54)
                                 .background(quickAmountBackground(isSelected: isSelected))
-                                .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+                                .clipShape(RoundedRectangle(cornerRadius: DURadius.control, style: .continuous))
                         }
                         .buttonStyle(.plain)
                     }
@@ -319,28 +319,28 @@ struct RechargeContainerView: View {
                     HStack(spacing: DUSpacing.md) {
                         TextField(localized("recharge.amount.placeholder"), text: $viewModel.amountText)
                             .keyboardType(.decimalPad)
-                            .font(.du(26, weight: .bold))
+                            .font(.du(.headlineStrong))
                             .foregroundColor(theme.colors.text.primary)
                             .onChange(of: viewModel.amountText) { _ in
                                 viewModel.sanitizeAmountInput()
                             }
 
                         Text("AED")
-                            .font(.du(15, weight: .bold))
+                            .font(.du(.bodyEmphasized))
                             .foregroundColor(viewModel.amountError == nil ? theme.colors.brand.primary : theme.colors.status.error)
                     }
                     .padding(.horizontal, DUSpacing.lg)
                     .frame(height: 64)
                     .background(theme.colors.background.secondary)
-                    .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+                    .clipShape(RoundedRectangle(cornerRadius: DURadius.card, style: .continuous))
                     .overlay(
-                        RoundedRectangle(cornerRadius: 20, style: .continuous)
+                        RoundedRectangle(cornerRadius: DURadius.card, style: .continuous)
                             .stroke(viewModel.amountError == nil ? theme.colors.border.default : theme.colors.status.error, lineWidth: 1.2)
                     )
 
                     if let amountError = viewModel.amountError {
                         Text(amountError)
-                            .font(.du(12, weight: .medium))
+                            .font(.du(.bodySmall))
                             .foregroundColor(theme.colors.status.error)
                     }
                 }
@@ -358,32 +358,32 @@ struct RechargeContainerView: View {
                         viewModel.selectedPaymentMethod = method
                     } label: {
                         HStack(spacing: DUSpacing.md) {
-                            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                            RoundedRectangle(cornerRadius: DURadius.lg, style: .continuous)
                                 .fill(paymentMethodAccent(method))
                                 .frame(width: 46, height: 46)
                                 .overlay {
                                     Image(systemName: paymentMethodIcon(method))
-                                        .font(.du(18, weight: .bold))
+                                        .font(.du(.titleSmallStrong))
                                         .foregroundColor(.white)
                                 }
 
-                            VStack(alignment: .leading, spacing: 4) {
+                            VStack(alignment: .leading, spacing: DUSpacing.xs) {
                                 Text(localized(method.titleKey))
-                                    .font(.du(15, weight: .semibold))
+                                    .font(.du(.bodyStrong))
                                     .foregroundColor(theme.colors.text.primary)
                             }
 
                             Spacer()
 
                             Image(systemName: isSelected ? "largecircle.fill.circle" : "circle")
-                                .font(.du(18, weight: .bold))
+                                .font(.du(.titleSmallStrong))
                                 .foregroundColor(isSelected ? theme.colors.brand.primary : theme.colors.text.disabled)
                         }
                         .padding(DUSpacing.lg)
                         .background(theme.colors.surface.card)
-                        .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+                        .clipShape(RoundedRectangle(cornerRadius: DURadius.cardLarge, style: .continuous))
                         .overlay(
-                            RoundedRectangle(cornerRadius: 22, style: .continuous)
+                            RoundedRectangle(cornerRadius: DURadius.cardLarge, style: .continuous)
                                 .stroke(isSelected ? theme.colors.brand.primary : theme.colors.border.subtle, lineWidth: 1)
                         )
                     }
@@ -448,9 +448,9 @@ struct RechargeContainerView: View {
                     } label: {
                     HStack(spacing: DUSpacing.xs) {
                         Image(systemName: "calendar")
-                            .font(.du(12, weight: .bold))
+                            .font(.du(.bodySmallEmphasized))
                         Text(dateFilterButtonTitle)
-                            .font(.du(12, weight: .semibold))
+                            .font(.du(.bodySmallStrong))
                             .lineLimit(1)
                     }
                     .foregroundColor(theme.colors.brand.primary)
@@ -479,7 +479,7 @@ struct RechargeContainerView: View {
     ) -> some View {
         Button(action: action) {
             Text(title)
-                .font(.du(12, weight: .semibold))
+                .font(.du(.bodySmallStrong))
                 .foregroundColor(isSelected ? .white : theme.colors.text.primary)
                 .padding(.horizontal, DUSpacing.md)
                 .frame(height: 34)
@@ -503,7 +503,7 @@ struct RechargeContainerView: View {
             VStack(spacing: DUSpacing.lg) {
                 VStack(alignment: .leading, spacing: DUSpacing.md) {
                     Text(localized("recharge.orders.filter.date"))
-                        .font(.du(15, weight: .bold))
+                        .font(.du(.bodyEmphasized))
                         .foregroundColor(theme.colors.text.primary)
 
                     HStack(spacing: DUSpacing.sm) {
@@ -515,7 +515,7 @@ struct RechargeContainerView: View {
                         }
 
                         Text("-")
-                            .font(.du(16, weight: .bold))
+                            .font(.du(.bodyLargeStrong))
                             .foregroundColor(theme.colors.text.secondary)
 
                         dateValueButton(
@@ -538,13 +538,13 @@ struct RechargeContainerView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(DUSpacing.lg)
                 .background(theme.colors.surface.card)
-                .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+                .clipShape(RoundedRectangle(cornerRadius: DURadius.sheet, style: .continuous))
 
                 HStack(spacing: DUSpacing.md) {
-                    DUButton(title: localized("recharge.orders.filter.apply"), style: .primary, fontSize: 14) {
+                    DUButton(title: localized("recharge.orders.filter.apply"), style: .primary, textStyle: .bodySmallEmphasized) {
                         applyDateFilter()
                     }
-                    DUButton(title: localized("recharge.orders.filter.clear"), style: .secondary, fontSize: 14) {
+                    DUButton(title: localized("recharge.orders.filter.clear"), style: .secondary, textStyle: .bodySmallEmphasized) {
                         clearDateFilter()
                     }
                 }
@@ -574,15 +574,15 @@ struct RechargeContainerView: View {
         Button(action: action) {
             HStack(spacing: DUSpacing.xs) {
                 Text(title)
-                    .font(.du(15, weight: .semibold))
+                    .font(.du(.bodyStrong))
                 Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
-                    .font(.du(11, weight: .bold))
+                    .font(.du(.captionEmphasized))
             }
             .foregroundColor(isExpanded ? .white : theme.colors.brand.primary)
             .frame(maxWidth: .infinity)
             .frame(height: 48)
             .background(isExpanded ? theme.colors.brand.primary : theme.colors.action.primaryBackground)
-            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .clipShape(RoundedRectangle(cornerRadius: DURadius.lg, style: .continuous))
         }
         .buttonStyle(.plain)
     }
@@ -593,14 +593,14 @@ struct RechargeContainerView: View {
     ) -> some View {
         VStack(alignment: .leading, spacing: DUSpacing.sm) {
             Text(title)
-                .font(.du(13, weight: .semibold))
+                .font(.du(.labelStrong))
                 .foregroundColor(theme.colors.text.secondary)
 
             RechargeNumericDatePicker(selection: selection)
         }
         .padding(DUSpacing.lg)
         .background(theme.colors.background.canvas)
-        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: DURadius.card, style: .continuous))
     }
 
     private func dateSelectionBinding(for field: RechargeDateFilterField) -> Binding<Date> {
@@ -651,10 +651,10 @@ struct RechargeContainerView: View {
     @ViewBuilder
     private func quickAmountBackground(isSelected: Bool) -> some View {
         if isSelected {
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
+            RoundedRectangle(cornerRadius: DURadius.control, style: .continuous)
                 .fill(theme.colors.gradient.brand)
         } else {
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
+            RoundedRectangle(cornerRadius: DURadius.control, style: .continuous)
                 .fill(theme.colors.background.secondary)
         }
     }
@@ -699,7 +699,7 @@ struct RechargeContainerView: View {
                 HStack(spacing: DUSpacing.sm) {
                     ProgressView()
                     Text(localized("recharge.orders.loadingMore"))
-                        .font(.du(12, weight: .medium))
+                        .font(.du(.bodySmall))
                         .foregroundColor(theme.colors.text.secondary)
                 }
                 .frame(maxWidth: .infinity)
@@ -716,17 +716,17 @@ struct RechargeContainerView: View {
                 HStack(alignment: .top) {
                     VStack(alignment: .leading, spacing: DUSpacing.xs) {
                         Text("#\(record.orderId)")
-                            .font(.du(15, weight: .bold))
+                            .font(.du(.bodyEmphasized))
                             .foregroundColor(theme.colors.text.primary)
                         Text(record.createdTimeText)
-                            .font(.du(12, weight: .medium))
+                            .font(.du(.bodySmall))
                             .foregroundColor(theme.colors.text.secondary)
                     }
 
                     Spacer()
 
                     Text(localized(record.status.titleKey))
-                        .font(.du(12, weight: .bold))
+                        .font(.du(.bodySmallEmphasized))
                         .foregroundColor(statusTint(record.status))
                         .padding(.horizontal, DUSpacing.md)
                         .frame(height: 30)
@@ -737,24 +737,24 @@ struct RechargeContainerView: View {
                 HStack(alignment: .center) {
                     VStack(alignment: .leading, spacing: DUSpacing.xs) {
                         Text(localized("recharge.receipt.chargeMethod"))
-                            .font(.du(11, weight: .medium))
+                            .font(.du(.caption))
                             .foregroundColor(theme.colors.text.tertiary)
                         Text(record.chargeMethod)
-                            .font(.du(14, weight: .semibold))
+                            .font(.du(.bodySmallStrong))
                             .foregroundColor(theme.colors.text.primary)
                     }
 
                     Spacer()
 
                     Text(record.amountText)
-                        .font(.du(18, weight: .bold))
+                        .font(.du(.titleSmallStrong))
                         .foregroundColor(theme.colors.text.primary)
                 }
 
                 HStack {
                     if let failureMessageKey = record.failureMessageKey {
                         Text(localized(failureMessageKey))
-                            .font(.du(12, weight: .medium))
+                            .font(.du(.bodySmall))
                             .foregroundColor(theme.colors.status.error)
                             .multilineTextAlignment(.leading)
                     }
@@ -762,13 +762,13 @@ struct RechargeContainerView: View {
                     Spacer(minLength: DUSpacing.sm)
 
                     Image(systemName: "chevron.right")
-                        .font(.du(12, weight: .bold))
+                        .font(.du(.bodySmallEmphasized))
                         .foregroundColor(theme.colors.text.tertiary)
                 }
             }
             .padding(DUSpacing.lg)
             .background(theme.colors.background.secondary)
-            .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+            .clipShape(RoundedRectangle(cornerRadius: DURadius.card, style: .continuous))
         }
         .buttonStyle(.plain)
     }
@@ -777,7 +777,7 @@ struct RechargeContainerView: View {
         VStack(spacing: DUSpacing.lg) {
             ProgressView()
             Text(localized("recharge.state.loading"))
-                .font(.du(15, weight: .semibold))
+                .font(.du(.bodyStrong))
                 .foregroundColor(theme.colors.text.secondary)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -1052,10 +1052,10 @@ private struct RechargeOrderDetailView: View {
                 if let failureMessageKey = record.failureMessageKey {
                     DUSectionCard(title: localized("recharge.orders.detail.failure")) {
                         Text(localized(failureMessageKey))
-                            .font(.du(14, weight: .medium))
+                            .font(.du(.bodySmall))
                             .foregroundColor(theme.colors.status.error)
                         Text(localized("recharge.orders.detail.failureHint"))
-                            .font(.du(12, weight: .medium))
+                            .font(.du(.bodySmall))
                             .foregroundColor(theme.colors.text.secondary)
                     }
                 }
@@ -1071,7 +1071,7 @@ private struct RechargeOrderDetailView: View {
     private var detailHero: some View {
         VStack(alignment: .leading, spacing: DUSpacing.lg) {
             Text(record.amountText)
-                .font(.du(30, weight: .bold))
+                .font(.du(.heroStrong))
                 .foregroundColor(.white)
 
             HStack(spacing: DUSpacing.md) {
@@ -1088,22 +1088,22 @@ private struct RechargeOrderDetailView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(DUSpacing.xl)
         .background(theme.colors.gradient.brand)
-        .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: DURadius.hero, style: .continuous))
     }
 
     private func detailHeroMetric(title: String, value: String) -> some View {
         VStack(alignment: .leading, spacing: DUSpacing.xs) {
             Text(title)
-                .font(.du(10, weight: .medium))
+                .font(.du(.tiny))
                 .foregroundColor(.white.opacity(0.72))
             Text(value)
-                .font(.du(14, weight: .semibold))
+                .font(.du(.bodySmallStrong))
                 .foregroundColor(.white)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(DUSpacing.md)
         .background(Color.white.opacity(0.12))
-        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: DURadius.lg, style: .continuous))
     }
 
     private var detailFacts: some View {
@@ -1122,11 +1122,11 @@ private struct RechargeOrderDetailView: View {
     private func detailFactRow(title: String, value: String) -> some View {
         HStack(alignment: .top, spacing: DUSpacing.md) {
             Text(title)
-                .font(.du(12, weight: .semibold))
+                .font(.du(.bodySmallStrong))
                 .foregroundColor(theme.colors.text.secondary)
             Spacer()
             Text(value)
-                .font(.du(14, weight: .semibold))
+                .font(.du(.bodySmallStrong))
                 .foregroundColor(theme.colors.text.primary)
                 .multilineTextAlignment(.trailing)
         }
@@ -1148,10 +1148,10 @@ private struct RechargeConfirmView: View {
                 VStack(spacing: DUSpacing.lg) {
                     VStack(alignment: .leading, spacing: DUSpacing.sm) {
                         Text("Confirm Payment")
-                            .font(.du(22, weight: .bold))
+                            .font(.du(.titleStrong))
                             .foregroundColor(theme.colors.text.primary)
                         Text("Verify the current number and recharge details before the request is accepted.")
-                            .font(.du(13, weight: .medium))
+                            .font(.du(.label))
                             .foregroundColor(theme.colors.text.secondary)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -1164,7 +1164,7 @@ private struct RechargeConfirmView: View {
                     }
                     .padding(DUSpacing.lg)
                     .background(theme.colors.surface.card)
-                    .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+                    .clipShape(RoundedRectangle(cornerRadius: DURadius.sheet, style: .continuous))
 
                     DUButton(
                         title: "Submit Recharge",
@@ -1195,10 +1195,10 @@ private struct RechargeConfirmView: View {
     private func rechargeConfirmMetric(title: String, value: String) -> some View {
         VStack(alignment: .leading, spacing: DUSpacing.xs) {
             Text(title)
-                .font(.du(11, weight: .medium))
+                .font(.du(.caption))
                 .foregroundColor(theme.colors.text.secondary)
             Text(value)
-                .font(.du(15, weight: .semibold))
+                .font(.du(.bodyStrong))
                 .foregroundColor(theme.colors.text.primary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -1221,15 +1221,15 @@ private struct RechargeAcceptedView: View {
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: DUSpacing.lg) {
                         Image(systemName: "checkmark.seal.fill")
-                            .font(.system(size: 56, weight: .bold))
+                            .font(.du(.resultDisplay))
                             .foregroundColor(theme.colors.status.success)
 
                         VStack(spacing: DUSpacing.xs) {
                             Text("Recharge Accepted")
-                                .font(.du(24, weight: .bold))
+                                .font(.du(.headline))
                                 .foregroundColor(theme.colors.text.primary)
                             Text("The recharge request was accepted. Tap back to review the latest status in Orders.")
-                                .font(.du(13, weight: .medium))
+                                .font(.du(.label))
                                 .foregroundColor(theme.colors.text.secondary)
                                 .multilineTextAlignment(.center)
                         }
@@ -1241,10 +1241,10 @@ private struct RechargeAcceptedView: View {
                         )
 
                         HStack(spacing: DUSpacing.md) {
-                            DUButton(title: "Save Screenshot", style: .secondary, fontSize: 14) {
+                            DUButton(title: "Save Screenshot", style: .secondary, textStyle: .bodySmallEmphasized) {
                                 onSaveSnapshot()
                             }
-                            DUButton(title: "Share Receipt", style: .primary, fontSize: 14) {
+                            DUButton(title: "Share Receipt", style: .primary, textStyle: .bodySmallEmphasized) {
                                 onShare()
                             }
                         }
@@ -1280,15 +1280,15 @@ private struct RechargeFailureView: View {
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: DUSpacing.lg) {
                         Image(systemName: "xmark.octagon.fill")
-                            .font(.system(size: 56, weight: .bold))
+                            .font(.du(.resultDisplay))
                             .foregroundColor(theme.colors.status.error)
 
                         Text("Recharge Failed")
-                            .font(.du(24, weight: .bold))
+                            .font(.du(.headline))
                             .foregroundColor(theme.colors.text.primary)
 
                         Text(failure.message)
-                            .font(.du(13, weight: .medium))
+                            .font(.du(.label))
                             .foregroundColor(theme.colors.text.secondary)
                             .multilineTextAlignment(.center)
 
@@ -1299,7 +1299,7 @@ private struct RechargeFailureView: View {
                         }
                         .padding(DUSpacing.lg)
                         .background(theme.colors.surface.card)
-                        .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+                        .clipShape(RoundedRectangle(cornerRadius: DURadius.sheet, style: .continuous))
 
                         HStack(spacing: DUSpacing.md) {
                             DUButton(title: "Retry", style: .primary) {
@@ -1323,10 +1323,10 @@ private struct RechargeFailureView: View {
     private func rechargeFailureMetric(title: String, value: String) -> some View {
         VStack(alignment: .leading, spacing: DUSpacing.xs) {
             Text(title)
-                .font(.du(11, weight: .medium))
+                .font(.du(.caption))
                 .foregroundColor(theme.colors.text.secondary)
             Text(value)
-                .font(.du(15, weight: .semibold))
+                .font(.du(.bodyStrong))
                 .foregroundColor(theme.colors.text.primary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -1342,11 +1342,11 @@ private struct RechargeReceiptSnapshotCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: DUSpacing.md) {
             Text(localizedTitle)
-                .font(.du(16, weight: .bold))
+                .font(.du(.bodyLargeStrong))
                 .foregroundColor(.white)
 
             Text(receipt.amountText)
-                .font(.du(30, weight: .bold))
+                .font(.du(.heroStrong))
                 .foregroundColor(.white)
 
             HStack(spacing: DUSpacing.md) {
@@ -1362,16 +1362,16 @@ private struct RechargeReceiptSnapshotCard: View {
         .padding(DUSpacing.xl)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(theme.colors.gradient.brand)
-        .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: DURadius.hero, style: .continuous))
     }
 
     private func receiptMetric(title: String, value: String) -> some View {
         VStack(alignment: .leading, spacing: DUSpacing.xs) {
             Text(title)
-                .font(.du(10, weight: .medium))
+                .font(.du(.tiny))
                 .foregroundColor(.white.opacity(0.72))
             Text(value)
-                .font(.du(13, weight: .semibold))
+                .font(.du(.labelStrong))
                 .foregroundColor(.white)
                 .lineLimit(2)
         }

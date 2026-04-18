@@ -72,7 +72,7 @@ struct SplashAdView: View {
 
             if let failureMessage = viewModel.failureMessage {
                 Text(languageStore.string(failureMessage))
-                    .font(.du(13, weight: .medium))
+                    .font(.du(.label))
                     .foregroundColor(DUColorPrimitives.Neutral.white)
                     .padding(.horizontal, DUSpacing.lg)
                     .padding(.vertical, DUSpacing.sm)

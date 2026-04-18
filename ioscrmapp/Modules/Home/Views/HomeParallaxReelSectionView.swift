@@ -223,10 +223,10 @@ private struct HomeParallaxReelCardUnitView: View {
                 cardHeight: cardSize.height
             )
             .frame(width: cardSize.width, height: cardSize.height)
-            .clipShape(RoundedRectangle(cornerRadius: 26, style: .continuous))
+            .clipShape(RoundedRectangle(cornerRadius: DURadius.sheetLarge, style: .continuous))
             .overlay {
                 if showsBorder {
-                    RoundedRectangle(cornerRadius: 26, style: .continuous)
+                    RoundedRectangle(cornerRadius: DURadius.sheetLarge, style: .continuous)
                         .stroke(borderColor, lineWidth: 1)
                 }
             }
@@ -253,7 +253,7 @@ private struct HomeParallaxReelCaptionView: View {
 
     var body: some View {
         Text(languageStore.string(item.title))
-            .font(.du(16, weight: .semibold))
+            .font(.du(.bodyLargeSemibold))
             .foregroundColor(theme.colors.text.primary)
             .multilineTextAlignment(.center)
             .lineLimit(2)

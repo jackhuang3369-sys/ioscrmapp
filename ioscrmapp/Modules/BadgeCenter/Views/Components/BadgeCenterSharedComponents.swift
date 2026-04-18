@@ -47,7 +47,7 @@ struct BadgeSmallPill: View {
 
     var body: some View {
         Text(title)
-            .font(.du(11, weight: .bold))
+            .font(.du(.captionEmphasized))
             .foregroundColor(color)
             .padding(.horizontal, DUSpacing.sm)
             .frame(height: 24)

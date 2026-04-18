@@ -114,7 +114,7 @@ struct BadgeCenterContainerView: View {
             Button(action: handleBackAction) {
                 HStack(spacing: DUSpacing.sm) {
                     Image(systemName: "chevron.backward")
-                        .font(.du(15, weight: .bold))
+                        .font(.du(.bodyEmphasized))
                     Text(
                         localized(
                             viewModel.isShowingDetail
@@ -122,7 +122,7 @@ struct BadgeCenterContainerView: View {
                                 : "badgeCenter.action.back"
                         )
                     )
-                    .font(.du(15, weight: .semibold))
+                    .font(.du(.bodyStrong))
                 }
                 .foregroundColor(theme.colors.text.primary)
             }
@@ -136,7 +136,7 @@ struct BadgeCenterContainerView: View {
             Spacer()
 
             Text(headerTitle)
-                .font(.du(20, weight: .bold))
+                .font(.du(.title))
                 .foregroundColor(theme.colors.text.primary)
                 .multilineTextAlignment(.center)
                 .lineLimit(1)
@@ -165,7 +165,7 @@ struct BadgeCenterContainerView: View {
                 .tint(theme.colors.action.primary)
 
             Text(localized("badgeCenter.loading"))
-                .font(.du(15, weight: .medium))
+                .font(.du(.body))
                 .foregroundColor(theme.colors.text.secondary)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -177,7 +177,7 @@ struct BadgeCenterContainerView: View {
                 .tint(theme.colors.action.primary)
 
             Text(localized("badgeCenter.detail.loading"))
-                .font(.du(15, weight: .medium))
+                .font(.du(.body))
                 .foregroundColor(theme.colors.text.secondary)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -252,13 +252,13 @@ struct BadgeCenterContainerView: View {
             } label: {
                 HStack(spacing: DUSpacing.xs) {
                     Image(systemName: "slider.horizontal.3")
-                        .font(.du(13, weight: .bold))
+                        .font(.du(.labelEmphasized))
                     Text(localized("badgeCenter.filter.button"))
-                        .font(.du(13, weight: .semibold))
+                        .font(.du(.labelStrong))
                     if viewModel.hasAdvancedFiltersApplied {
                         Text(String(viewModel.activeAdvancedFilterCount))
-                            .font(.du(11, weight: .bold))
-                            .padding(.horizontal, 6)
+                            .font(.du(.captionEmphasized))
+                            .padding(.horizontal, DUSpacing.smd)
                             .frame(height: 18)
                             .background(DUColorPrimitives.Neutral.white.opacity(0.22))
                             .clipShape(Capsule())
@@ -318,7 +318,7 @@ struct BadgeCenterContainerView: View {
     ) -> some View where Item.ID == String, Item: BadgeFilterDisplayable, Item: Equatable {
         VStack(alignment: .leading, spacing: DUSpacing.sm) {
             Text(title)
-                .font(.du(13, weight: .bold))
+                .font(.du(.labelEmphasized))
                 .foregroundColor(theme.colors.text.secondary)
 
             ScrollView(.horizontal, showsIndicators: false) {

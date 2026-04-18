@@ -113,7 +113,7 @@ struct MessageCenterView: View {
                 .tint(theme.colors.action.primary)
 
             Text(localized("messageCenter.loading"))
-                .font(.du(15, weight: .medium))
+                .font(.du(.body))
                 .foregroundColor(theme.colors.text.secondary)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -177,9 +177,9 @@ struct MessageCenterView: View {
             Button(action: handleBack) {
                 HStack(spacing: DUSpacing.sm) {
                     Image(systemName: "chevron.backward")
-                        .font(.du(15, weight: .bold))
+                        .font(.du(.bodyEmphasized))
                     Text(localized("messageCenter.action.back"))
-                        .font(.du(15, weight: .semibold))
+                        .font(.du(.bodyStrong))
                 }
                 .foregroundColor(theme.colors.text.primary)
             }
@@ -194,7 +194,7 @@ struct MessageCenterView: View {
 
             VStack(spacing: DUSpacing.xs) {
                 Text(headerTitle)
-                    .font(.du(20, weight: .bold))
+                    .font(.du(.title))
                     .foregroundColor(theme.colors.text.primary)
                     .multilineTextAlignment(.center)
             }
@@ -225,7 +225,7 @@ struct MessageCenterView: View {
                         ? "messageCenter.action.deselectAll"
                         : "messageCenter.action.selectAll"
                 ),
-                fontSize: 14
+                textStyle: .bodySmallStrong
             ) {
                 viewModel.toggleSelectAll()
             }
@@ -388,7 +388,7 @@ private struct MessageCenterBannerView: View {
                 .foregroundColor(style == .error ? theme.colors.status.error : theme.colors.status.warning)
 
             Text(message)
-                .font(.du(13, weight: .medium))
+                .font(.du(.label))
                 .foregroundColor(theme.colors.text.primary)
                 .multilineTextAlignment(.leading)
 
@@ -414,15 +414,15 @@ private struct MessageBellBadgeView: View {
                 .frame(width: 34, height: 34)
                 .overlay(
                     Image(systemName: "bell.fill")
-                        .font(.du(14, weight: .semibold))
+                        .font(.du(.bodySmallStrong))
                         .foregroundColor(theme.colors.text.primary)
                 )
 
             if unreadCount > 0 {
                 Text(unreadCount > 99 ? "99+" : "\(unreadCount)")
-                    .font(.du(9, weight: .bold))
+                    .font(.du(.microStrong))
                     .foregroundColor(DUColorPrimitives.Neutral.white)
-                    .padding(.horizontal, 6)
+                    .padding(.horizontal, DUSpacing.smd)
                     .frame(height: 18)
                     .background(theme.colors.status.error)
                     .clipShape(Capsule())
@@ -467,20 +467,20 @@ private struct MessageRowView: View {
         HStack(alignment: .top, spacing: DUSpacing.md) {
             if isSelectionMode {
                 Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
-                    .font(.du(22, weight: .semibold))
+                    .font(.du(.titleStrongSemibold))
                     .foregroundColor(isSelected ? theme.colors.action.primary : theme.colors.text.disabled)
                     .padding(.top, DUSpacing.sm)
                     .accessibilityIdentifier("\(cellIdentifier).selectionIndicator")
             }
 
             MessageAvatarView(message: message)
-                .padding(.top, 2)
+                .padding(.top, DUSpacing.xxs)
                 .accessibilityIdentifier("\(cellIdentifier).avatar")
 
             VStack(alignment: .leading, spacing: DUSpacing.sm) {
                 HStack(alignment: .top, spacing: DUSpacing.md) {
                     Text(message.displaySender())
-                        .font(.du(16, weight: message.isRead ? .semibold : .bold))
+                        .font(.du(message.isRead ? .bodyLargeSemibold : .bodyLargeStrong))
                         .foregroundColor(theme.colors.text.primary)
                         .multilineTextAlignment(.leading)
                         .lineLimit(1)
@@ -490,7 +490,7 @@ private struct MessageRowView: View {
 
                     VStack(alignment: .trailing, spacing: DUSpacing.sm) {
                         Text(rowDateText)
-                            .font(.du(11, weight: .medium))
+                            .font(.du(.caption))
                             .foregroundColor(theme.colors.text.tertiary)
                             .accessibilityIdentifier("\(cellIdentifier).timeLabel")
 
@@ -508,14 +508,14 @@ private struct MessageRowView: View {
                 }
 
                 Text(message.summary(for: language))
-                    .font(.du(14, weight: .medium))
+                    .font(.du(.bodySmall))
                     .foregroundColor(message.isRead ? theme.colors.text.secondary : theme.colors.text.primary)
                     .lineLimit(1)
                     .multilineTextAlignment(.leading)
                     .accessibilityIdentifier("\(cellIdentifier).subjectLabel")
 
                 Text(contentPreviewText)
-                    .font(.du(13, weight: .regular))
+                    .font(.du(.labelRegular))
                     .foregroundColor(theme.colors.text.tertiary)
                     .lineLimit(1)
                     .truncationMode(.tail)
@@ -768,7 +768,7 @@ struct MessageAvatarView: View {
                 .frame(width: 48, height: 48)
 
             Text(avatarText)
-                .font(.du(15, weight: .bold))
+                .font(.du(.bodyEmphasized))
                 .foregroundColor(DUColorPrimitives.Neutral.white)
         }
         .opacity(message.isRead ? 0.78 : 1)
