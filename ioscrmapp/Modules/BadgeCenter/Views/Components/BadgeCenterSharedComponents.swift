@@ -36,7 +36,7 @@ struct BadgeRemoteIconView: View {
     private var fallbackIcon: some View {
         Image(systemName: fallbackSystemName)
             .font(symbolFont)
-            .foregroundColor(.white)
+            .foregroundColor(DUColorPrimitives.Neutral.white)
             .padding(padding)
     }
 }
@@ -57,67 +57,67 @@ struct BadgeSmallPill: View {
 }
 
 extension BadgeSummary {
-    var accentGradient: LinearGradient {
-        accentStyle.gradient
+    func accentGradient(theme: DUTheme) -> LinearGradient {
+        accentStyle.gradient(theme: theme)
     }
 
-    var cardTitleColor: Color {
-        status == .locked ? DUTheme.inkSecondary : DUTheme.ink
+    func cardTitleColor(theme: DUTheme) -> Color {
+        status == .locked ? theme.colors.text.secondary : theme.colors.text.primary
     }
 
-    var cardBodyColor: Color {
+    func cardBodyColor(theme: DUTheme) -> Color {
         switch status {
         case .acquired:
-            return DUTheme.inkSecondary
+            return theme.colors.text.secondary
         case .locked, .expired:
-            return DUTheme.inkTertiary
+            return theme.colors.text.tertiary
         }
     }
 }
 
 extension BadgeDetail {
-    var accentGradient: LinearGradient {
-        accentStyle.gradient
+    func accentGradient(theme: DUTheme) -> LinearGradient {
+        accentStyle.gradient(theme: theme)
     }
 }
 
 extension BadgeDisplayStatus {
-    var statusColor: Color {
+    func statusColor(theme: DUTheme) -> Color {
         switch self {
         case .acquired:
-            return DUTheme.success
+            return theme.colors.status.success
         case .locked:
-            return DUTheme.warning
+            return theme.colors.status.warning
         case .expired:
-            return DUTheme.inkDisabled
+            return theme.colors.text.disabled
         }
     }
 }
 
 extension BadgeBenefitStatus {
-    var statusColor: Color {
+    func statusColor(theme: DUTheme) -> Color {
         switch self {
         case .active:
-            return DUTheme.success
+            return theme.colors.status.success
         case .upcoming:
-            return DUTheme.warning
+            return theme.colors.status.warning
         case .unavailable, .expired:
-            return DUTheme.inkDisabled
+            return theme.colors.text.disabled
         }
     }
 }
 
 extension BadgeLevel {
-    var levelColor: Color {
+    func levelColor(theme: DUTheme) -> Color {
         switch self {
         case .base:
-            return DUTheme.cyan
+            return theme.colors.brand.primary
         case .advanced:
-            return DUTheme.blue
+            return theme.colors.brand.secondary
         case .premium:
-            return DUTheme.magenta
+            return theme.colors.brand.magenta
         case .ultimate:
-            return DUTheme.warning
+            return theme.colors.status.warning
         }
     }
 }
@@ -152,6 +152,41 @@ extension BadgeAccentStyle {
         case .graphite:
             return LinearGradient(
                 colors: [DUTheme.inkSecondary, DUTheme.ink, DUTheme.inkTertiary],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        }
+    }
+
+    func gradient(theme: DUTheme) -> LinearGradient {
+        switch self {
+        case .aurora:
+            return LinearGradient(
+                colors: [theme.colors.brand.primary, theme.colors.brand.secondary, theme.colors.brand.indigo],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        case .ocean:
+            return LinearGradient(
+                colors: [theme.colors.brand.secondaryLight, theme.colors.brand.primary, theme.colors.brand.secondary],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        case .sunrise:
+            return LinearGradient(
+                colors: [theme.colors.status.warning, theme.colors.brand.magenta, theme.colors.brand.indigo],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        case .night:
+            return LinearGradient(
+                colors: [theme.colors.text.primary, theme.colors.brand.indigo, theme.colors.brand.secondary],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        case .graphite:
+            return LinearGradient(
+                colors: [theme.colors.text.secondary, theme.colors.text.primary, theme.colors.text.tertiary],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )

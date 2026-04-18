@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct BadgeUnlockPromptView: View {
+    @Environment(\.duTheme) private var theme
+
     let event: BadgeUnlockEvent
     let isLoading: Bool
     let onLater: () -> Void
@@ -9,14 +11,14 @@ struct BadgeUnlockPromptView: View {
 
     var body: some View {
         ZStack {
-            Color.black.opacity(0.28)
+            theme.colors.chrome.splashDisabled
                 .ignoresSafeArea()
 
             VStack(alignment: .leading, spacing: DUSpacing.lg) {
                 HStack(spacing: DUSpacing.md) {
                     ZStack {
-                        RoundedRectangle(cornerRadius: 22, style: .continuous)
-                            .fill(DUTheme.brandGradient)
+                        RoundedRectangle(cornerRadius: theme.components.card.cornerRadius, style: .continuous)
+                            .fill(theme.colors.gradient.brand)
                             .frame(width: 64, height: 64)
 
                         BadgeRemoteIconView(
@@ -31,10 +33,10 @@ struct BadgeUnlockPromptView: View {
                     VStack(alignment: .leading, spacing: DUSpacing.xs) {
                         Text(localized(event.title))
                             .font(.du(20, weight: .bold))
-                            .foregroundColor(DUTheme.ink)
+                            .foregroundColor(theme.colors.text.primary)
                         Text(localized(event.badgeName))
                             .font(.du(14, weight: .semibold))
-                            .foregroundColor(DUTheme.cyan)
+                            .foregroundColor(theme.colors.action.primary)
                     }
 
                     Spacer()
@@ -42,7 +44,7 @@ struct BadgeUnlockPromptView: View {
 
                 Text(localized(event.message))
                     .font(.du(14, weight: .medium))
-                    .foregroundColor(DUTheme.inkSecondary)
+                    .foregroundColor(theme.colors.text.secondary)
                     .multilineTextAlignment(.leading)
 
                 HStack(spacing: DUSpacing.md) {
@@ -67,8 +69,8 @@ struct BadgeUnlockPromptView: View {
                 }
             }
             .padding(DUSpacing.xl)
-            .background(DUTheme.panel)
-            .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
+            .background(theme.colors.surface.card)
+            .clipShape(RoundedRectangle(cornerRadius: theme.components.sheet.cornerRadius + 4, style: .continuous))
             .padding(.horizontal, DUSpacing.xl)
             .accessibilityIdentifier("badgeCenter.unlockPrompt")
         }

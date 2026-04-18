@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct BadgeCenterOverviewCard: View {
+    @Environment(\.duTheme) private var theme
+
     let displayName: String
     let overview: BadgeCenterOverview?
     let totalBadgeCount: Int
@@ -11,7 +13,7 @@ struct BadgeCenterOverviewCard: View {
             VStack(alignment: .leading, spacing: DUSpacing.xs) {
                 Text(displayName)
                     .font(.du(18, weight: .bold))
-                    .foregroundColor(.white)
+                    .foregroundColor(DUColorPrimitives.Neutral.white)
                 Text(
                     localized(
                         "badgeCenter.overview.memberSubtitle",
@@ -22,7 +24,7 @@ struct BadgeCenterOverviewCard: View {
                     )
                 )
                 .font(.du(12, weight: .medium))
-                .foregroundColor(.white.opacity(0.84))
+                .foregroundColor(DUColorPrimitives.Neutral.white.opacity(0.84))
             }
 
             HStack(spacing: 0) {
@@ -47,30 +49,30 @@ struct BadgeCenterOverviewCard: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             LinearGradient(
-                colors: [DUTheme.blue, DUTheme.indigo, DUTheme.magenta],
+                colors: [theme.colors.brand.secondary, theme.colors.brand.indigo, theme.colors.brand.magenta],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
         )
-        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-        .shadow(color: DUTheme.indigo.opacity(0.18), radius: 14, x: 0, y: 8)
+        .clipShape(RoundedRectangle(cornerRadius: theme.components.field.cornerRadius, style: .continuous))
+        .shadow(color: theme.colors.brand.indigo.opacity(0.18), radius: 14, x: 0, y: 8)
     }
 
     private func overviewStatItem(titleKey: String, value: Int) -> some View {
         HStack(spacing: DUSpacing.xs) {
             Text(String(value))
                 .font(.du(28, weight: .bold))
-                .foregroundColor(.white)
+                .foregroundColor(DUColorPrimitives.Neutral.white)
             Text(localized(titleKey, []))
                 .font(.du(13, weight: .semibold))
-                .foregroundColor(.white.opacity(0.84))
+                .foregroundColor(DUColorPrimitives.Neutral.white.opacity(0.84))
         }
         .frame(maxWidth: .infinity)
     }
 
     private var overviewDivider: some View {
         Rectangle()
-            .fill(Color.white.opacity(0.18))
+            .fill(DUColorPrimitives.Neutral.white.opacity(0.18))
             .frame(width: 1, height: 42)
     }
 }
@@ -88,6 +90,8 @@ extension BadgeLevelFilter: BadgeFilterDisplayable {
 }
 
 struct BadgeFilterChip: View {
+    @Environment(\.duTheme) private var theme
+
     let title: String
     var countText: String? = nil
     let isSelected: Bool
@@ -97,23 +101,23 @@ struct BadgeFilterChip: View {
         Button(action: action) {
             Text(title)
                 .font(.du(13, weight: .semibold))
-                .foregroundColor(isSelected ? .white : DUTheme.inkSecondary)
+                .foregroundColor(isSelected ? DUColorPrimitives.Neutral.white : theme.colors.text.secondary)
                 .padding(.horizontal, DUSpacing.md)
                 .frame(height: 36)
-                .background(isSelected ? DUTheme.blue : Color.white)
+                .background(isSelected ? theme.colors.brand.secondary : theme.colors.surface.card)
                 .clipShape(Capsule())
                 .overlay(
                     Capsule()
-                        .stroke(DUTheme.lineLight, lineWidth: isSelected ? 0 : 1)
+                        .stroke(theme.colors.border.subtle, lineWidth: isSelected ? 0 : 1)
                 )
                 .overlay(alignment: .topTrailing) {
                     if let countText {
                         Text(countText)
                             .font(.du(10, weight: .bold))
-                            .foregroundColor(isSelected ? DUTheme.blue : DUTheme.inkSecondary)
+                            .foregroundColor(isSelected ? theme.colors.brand.secondary : theme.colors.text.secondary)
                             .padding(.horizontal, 5)
                             .frame(height: 16)
-                            .background(isSelected ? Color.white : Color(hex: 0xF1F3F6))
+                            .background(isSelected ? DUColorPrimitives.Neutral.white : theme.colors.background.secondary)
                             .clipShape(Capsule())
                             .offset(x: 6, y: -6)
                     }
@@ -124,6 +128,8 @@ struct BadgeFilterChip: View {
 }
 
 struct BadgeCardView: View {
+    @Environment(\.duTheme) private var theme
+
     let badge: BadgeSummary
     let localized: (String, [String]) -> String
     let localizedText: (LocalizedTextValue?) -> String
@@ -134,7 +140,7 @@ struct BadgeCardView: View {
             VStack(alignment: .center, spacing: DUSpacing.sm) {
                 ZStack {
                     Circle()
-                        .fill(badge.accentGradient)
+                        .fill(badge.accentGradient(theme: theme))
                         .frame(width: 54, height: 54)
 
                     BadgeRemoteIconView(
@@ -148,38 +154,38 @@ struct BadgeCardView: View {
 
                 Text(localizedText(badge.title))
                     .font(.du(14, weight: .bold))
-                    .foregroundColor(badge.cardTitleColor)
+                    .foregroundColor(badge.cardTitleColor(theme: theme))
                     .multilineTextAlignment(.center)
                     .lineLimit(2)
 
                 Text(cardSupportingText)
                     .font(.du(10, weight: .medium))
-                    .foregroundColor(badge.cardBodyColor)
+                    .foregroundColor(badge.cardBodyColor(theme: theme))
                     .multilineTextAlignment(.center)
                     .lineLimit(2)
                     .frame(maxWidth: .infinity)
 
                 BadgeSmallPill(
                     title: localized(badge.status.titleKey, []),
-                    color: badge.status.statusColor
+                    color: badge.status.statusColor(theme: theme)
                 )
             }
             .padding(.horizontal, DUSpacing.sm)
             .padding(.vertical, DUSpacing.md)
             .frame(maxWidth: .infinity)
             .frame(minHeight: 142, alignment: .top)
-            .background(DUTheme.panel)
-            .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
-            .shadow(color: Color.black.opacity(0.05), radius: 12, x: 0, y: 6)
+            .background(theme.colors.surface.card)
+            .clipShape(RoundedRectangle(cornerRadius: theme.components.sheet.cornerRadius, style: .continuous))
+            .shadow(color: theme.components.card.elevation.color, radius: 12, x: 0, y: 6)
             .overlay(lockedOverlay)
             .overlay(alignment: .topTrailing) {
                 if badge.isUnread {
                     Circle()
-                        .fill(DUTheme.error)
+                        .fill(theme.colors.status.error)
                         .frame(width: 12, height: 12)
                         .overlay(
                             Circle()
-                                .stroke(Color.white, lineWidth: 2)
+                                .stroke(theme.colors.surface.card, lineWidth: 2)
                         )
                         .padding(DUSpacing.md)
                 }
@@ -205,12 +211,23 @@ struct BadgeCardView: View {
     @ViewBuilder
     private var lockedOverlay: some View {
         if badge.status == .locked {
-            RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .fill(Color.white.opacity(0.5))
+            RoundedRectangle(cornerRadius: theme.components.sheet.cornerRadius, style: .continuous)
+                .fill(lockedOverlayFill)
                 .overlay(
-                    RoundedRectangle(cornerRadius: 24, style: .continuous)
-                        .stroke(DUTheme.line, lineWidth: 1)
+                    RoundedRectangle(cornerRadius: theme.components.sheet.cornerRadius, style: .continuous)
+                        .stroke(theme.colors.border.default, lineWidth: 1)
                 )
+        }
+    }
+
+    private var lockedOverlayFill: Color {
+        switch theme.resolvedColorScheme {
+        case .dark:
+            return DUColorPrimitives.Neutral.white.opacity(0.12)
+        case .light:
+            fallthrough
+        @unknown default:
+            return DUColorPrimitives.Neutral.white.opacity(0.5)
         }
     }
 }

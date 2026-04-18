@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct MessageDetailContentView: View {
+    @Environment(\.duTheme) private var theme
+
     let message: MessageCenterMessage
     let language: AppLanguage
     let locale: Locale
@@ -15,13 +17,13 @@ struct MessageDetailContentView: View {
                     VStack(alignment: .leading, spacing: DUSpacing.md) {
                         Text(message.detailTitle(for: language))
                             .font(.du(24, weight: .bold))
-                            .foregroundColor(DUTheme.ink)
+                            .foregroundColor(theme.colors.text.primary)
                             .multilineTextAlignment(.leading)
                             .accessibilityIdentifier("messageCenter.detail.titleLabel")
 
                         Text(message.detailBody(for: language))
                             .font(.du(15, weight: .medium))
-                            .foregroundColor(DUTheme.inkSecondary)
+                            .foregroundColor(theme.colors.text.secondary)
                             .multilineTextAlignment(.leading)
                             .lineSpacing(4)
                             .accessibilityIdentifier("messageCenter.detail.bodyLabel")
@@ -31,13 +33,18 @@ struct MessageDetailContentView: View {
                 }
                 .padding(DUSpacing.xl)
                 .frame(maxWidth: .infinity, minHeight: 280, alignment: .topLeading)
-                .background(DUTheme.panel)
-                .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+                .background(theme.colors.surface.card)
+                .clipShape(RoundedRectangle(cornerRadius: theme.components.card.cornerRadius, style: .continuous))
                 .overlay(
-                    RoundedRectangle(cornerRadius: 22, style: .continuous)
-                        .stroke(DUTheme.lineLight, lineWidth: 1)
+                    RoundedRectangle(cornerRadius: theme.components.card.cornerRadius, style: .continuous)
+                        .stroke(theme.colors.border.subtle, lineWidth: 1)
                 )
-                .shadow(color: Color.black.opacity(0.06), radius: 20, x: 0, y: 10)
+                .shadow(
+                    color: theme.components.card.elevation.color,
+                    radius: theme.components.card.elevation.radius,
+                    x: theme.components.card.elevation.x,
+                    y: theme.components.card.elevation.y
+                )
             }
             .padding(.horizontal, DUSpacing.lg)
             .padding(.vertical, DUSpacing.md)
@@ -54,14 +61,14 @@ struct MessageDetailContentView: View {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(message.displaySender())
                         .font(.du(20, weight: .bold))
-                        .foregroundColor(DUTheme.ink)
+                        .foregroundColor(theme.colors.text.primary)
                         .multilineTextAlignment(.leading)
                         .fixedSize(horizontal: false, vertical: true)
                         .accessibilityIdentifier("messageCenter.detail.senderLabel")
 
                     Text(detailDateText)
                         .font(.du(14, weight: .medium))
-                        .foregroundColor(DUTheme.inkTertiary)
+                        .foregroundColor(theme.colors.text.tertiary)
                         .multilineTextAlignment(.leading)
                         .accessibilityIdentifier("messageCenter.detail.timeLabel")
                 }

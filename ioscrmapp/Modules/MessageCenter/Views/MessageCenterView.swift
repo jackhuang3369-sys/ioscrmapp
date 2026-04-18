@@ -2,6 +2,7 @@ import SwiftUI
 
 struct MessageCenterView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.duTheme) private var theme
     @EnvironmentObject private var languageStore: AppLanguageStore
 
     @StateObject private var viewModel: MessageCenterViewModel
@@ -41,7 +42,7 @@ struct MessageCenterView: View {
             }
 
             Divider()
-                .background(DUTheme.lineLight)
+                .background(theme.colors.border.subtle)
 
             content
         }
@@ -84,14 +85,14 @@ struct MessageCenterView: View {
             case .empty:
                 DUStateView(
                     systemImage: "tray",
-                    iconColor: DUTheme.inkDisabled,
+                    iconColor: theme.colors.text.disabled,
                     title: localized("messageCenter.empty.title"),
                     subtitle: localized("messageCenter.empty.subtitle")
                 )
             case let .failed(message):
                 DUStateView(
                     systemImage: "wifi.exclamationmark",
-                    iconColor: DUTheme.warning,
+                    iconColor: theme.colors.status.warning,
                     title: localized("messageCenter.error.title"),
                     subtitle: localized(message),
                     actionTitle: localized("messageCenter.action.retry"),
@@ -109,11 +110,11 @@ struct MessageCenterView: View {
     private var loadingState: some View {
         VStack(spacing: DUSpacing.lg) {
             ProgressView()
-                .tint(DUTheme.cyan)
+                .tint(theme.colors.action.primary)
 
             Text(localized("messageCenter.loading"))
                 .font(.du(15, weight: .medium))
-                .foregroundColor(DUTheme.inkSecondary)
+                .foregroundColor(theme.colors.text.secondary)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
@@ -124,12 +125,12 @@ struct MessageCenterView: View {
                 messageCardRow(message)
                     .listRowInsets(EdgeInsets(top: DUSpacing.xs, leading: 0, bottom: DUSpacing.xs, trailing: 0))
                     .listRowSeparator(.hidden)
-                    .listRowBackground(Color.clear)
+                    .listRowBackground(DUColorPrimitives.Chrome.transparent)
             }
         }
         .listStyle(.plain)
         .modifier(MessageCenterListBackgroundModifier())
-        .background(DUTheme.background)
+        .background(theme.colors.background.canvas)
         .accessibilityIdentifier("messageCenter.list.list")
         .refreshable {
             await viewModel.reload()
@@ -166,7 +167,7 @@ struct MessageCenterView: View {
                             systemImage: "trash.fill"
                         )
                     }
-                    .tint(DUTheme.error)
+                    .tint(theme.colors.status.error)
                 }
         }
     }
@@ -180,7 +181,7 @@ struct MessageCenterView: View {
                     Text(localized("messageCenter.action.back"))
                         .font(.du(15, weight: .semibold))
                 }
-                .foregroundColor(DUTheme.ink)
+                .foregroundColor(theme.colors.text.primary)
             }
             .buttonStyle(.plain)
             .accessibilityIdentifier(
@@ -194,7 +195,7 @@ struct MessageCenterView: View {
             VStack(spacing: DUSpacing.xs) {
                 Text(headerTitle)
                     .font(.du(20, weight: .bold))
-                    .foregroundColor(DUTheme.ink)
+                    .foregroundColor(theme.colors.text.primary)
                     .multilineTextAlignment(.center)
             }
 
@@ -205,17 +206,17 @@ struct MessageCenterView: View {
         .padding(.horizontal, DUSpacing.lg)
         .padding(.top, DUSpacing.md)
         .padding(.bottom, DUSpacing.md)
-        .background(DUTheme.panel)
+        .background(theme.colors.surface.card)
     }
 
     private var screenBackground: Color {
-        viewModel.selectedMessage == nil ? DUTheme.panel : DUTheme.background
+        viewModel.selectedMessage == nil ? theme.colors.surface.card : theme.colors.background.canvas
     }
 
     @ViewBuilder
     private var headerTrailingView: some View {
         if viewModel.selectedMessage != nil {
-            Color.clear
+            DUColorPrimitives.Chrome.transparent
                 .frame(width: 82, height: 32)
         } else if viewModel.selectionMode {
             DUTextButton(
@@ -237,7 +238,7 @@ struct MessageCenterView: View {
     private var selectionActionBar: some View {
         VStack(spacing: DUSpacing.md) {
             Divider()
-                .background(DUTheme.lineLight)
+                .background(theme.colors.border.subtle)
 
             HStack(spacing: DUSpacing.md) {
                 DUButton(
@@ -279,7 +280,7 @@ struct MessageCenterView: View {
             .padding(.horizontal, DUSpacing.lg)
             .padding(.bottom, DUSpacing.md)
         }
-        .background(DUTheme.panel)
+        .background(theme.colors.surface.card)
         .accessibilityIdentifier("messageCenter.list.selectionBar")
     }
 
@@ -376,50 +377,54 @@ private enum PendingConfirmation: Identifiable {
 }
 
 private struct MessageCenterBannerView: View {
+    @Environment(\.duTheme) private var theme
+
     let message: String
     let style: MessageCenterBannerStyle
 
     var body: some View {
         HStack(spacing: DUSpacing.sm) {
             Image(systemName: style == .error ? "exclamationmark.circle.fill" : "exclamationmark.triangle.fill")
-                .foregroundColor(style == .error ? DUTheme.error : DUTheme.warning)
+                .foregroundColor(style == .error ? theme.colors.status.error : theme.colors.status.warning)
 
             Text(message)
                 .font(.du(13, weight: .medium))
-                .foregroundColor(DUTheme.ink)
+                .foregroundColor(theme.colors.text.primary)
                 .multilineTextAlignment(.leading)
 
             Spacer(minLength: 0)
         }
         .padding(.horizontal, DUSpacing.md)
         .padding(.vertical, DUSpacing.md)
-        .background(style == .error ? DUTheme.errorBackground : DUTheme.warningBackground)
-        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .background(style == .error ? theme.colors.status.errorBackground : theme.colors.status.warningBackground)
+        .clipShape(RoundedRectangle(cornerRadius: theme.components.field.cornerRadius, style: .continuous))
         .accessibilityIdentifier("messageCenter.list.banner")
     }
 }
 
 private struct MessageBellBadgeView: View {
+    @Environment(\.duTheme) private var theme
+
     let unreadCount: Int
 
     var body: some View {
         ZStack(alignment: .topTrailing) {
             Circle()
-                .fill(DUTheme.backgroundSecondary)
+                .fill(theme.colors.background.secondary)
                 .frame(width: 34, height: 34)
                 .overlay(
                     Image(systemName: "bell.fill")
                         .font(.du(14, weight: .semibold))
-                        .foregroundColor(DUTheme.ink)
+                        .foregroundColor(theme.colors.text.primary)
                 )
 
             if unreadCount > 0 {
                 Text(unreadCount > 99 ? "99+" : "\(unreadCount)")
                     .font(.du(9, weight: .bold))
-                    .foregroundColor(.white)
+                    .foregroundColor(DUColorPrimitives.Neutral.white)
                     .padding(.horizontal, 6)
                     .frame(height: 18)
-                    .background(DUTheme.error)
+                    .background(theme.colors.status.error)
                     .clipShape(Capsule())
                     .offset(x: 8, y: -6)
             }
@@ -440,6 +445,8 @@ private struct MessageCenterListBackgroundModifier: ViewModifier {
 }
 
 private struct MessageRowView: View {
+    @Environment(\.duTheme) private var theme
+
     let message: MessageCenterMessage
     let language: AppLanguage
     let isSelectionMode: Bool
@@ -447,7 +454,11 @@ private struct MessageRowView: View {
     let action: () -> Void
     let longPressAction: () -> Void
     @State private var suppressNextTap = false
-    private let cornerRadius: CGFloat = 22
+
+    private var cornerRadius: CGFloat {
+        theme.components.card.cornerRadius
+    }
+
     private var cellIdentifier: String {
         "messageCenter.list.messageCell.\(message.accessibilityKey)"
     }
@@ -457,7 +468,7 @@ private struct MessageRowView: View {
             if isSelectionMode {
                 Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
                     .font(.du(22, weight: .semibold))
-                    .foregroundColor(isSelected ? DUTheme.cyan : DUTheme.inkDisabled)
+                    .foregroundColor(isSelected ? theme.colors.action.primary : theme.colors.text.disabled)
                     .padding(.top, DUSpacing.sm)
                     .accessibilityIdentifier("\(cellIdentifier).selectionIndicator")
             }
@@ -470,7 +481,7 @@ private struct MessageRowView: View {
                 HStack(alignment: .top, spacing: DUSpacing.md) {
                     Text(message.displaySender())
                         .font(.du(16, weight: message.isRead ? .semibold : .bold))
-                        .foregroundColor(DUTheme.ink)
+                        .foregroundColor(theme.colors.text.primary)
                         .multilineTextAlignment(.leading)
                         .lineLimit(1)
                         .accessibilityIdentifier("\(cellIdentifier).senderLabel")
@@ -480,16 +491,16 @@ private struct MessageRowView: View {
                     VStack(alignment: .trailing, spacing: DUSpacing.sm) {
                         Text(rowDateText)
                             .font(.du(11, weight: .medium))
-                            .foregroundColor(DUTheme.inkTertiary)
+                            .foregroundColor(theme.colors.text.tertiary)
                             .accessibilityIdentifier("\(cellIdentifier).timeLabel")
 
                         if !message.isRead {
                             Circle()
-                                .fill(DUTheme.error)
+                                .fill(theme.colors.status.error)
                                 .frame(width: 10, height: 10)
                                 .overlay(
                                     Circle()
-                                        .stroke(DUTheme.panel, lineWidth: 2)
+                                        .stroke(theme.colors.surface.card, lineWidth: 2)
                                 )
                                 .accessibilityIdentifier("\(cellIdentifier).unreadBadge")
                         }
@@ -498,14 +509,14 @@ private struct MessageRowView: View {
 
                 Text(message.summary(for: language))
                     .font(.du(14, weight: .medium))
-                    .foregroundColor(message.isRead ? DUTheme.inkSecondary : DUTheme.ink)
+                    .foregroundColor(message.isRead ? theme.colors.text.secondary : theme.colors.text.primary)
                     .lineLimit(1)
                     .multilineTextAlignment(.leading)
                     .accessibilityIdentifier("\(cellIdentifier).subjectLabel")
 
                 Text(contentPreviewText)
                     .font(.du(13, weight: .regular))
-                    .foregroundColor(DUTheme.inkTertiary)
+                    .foregroundColor(theme.colors.text.tertiary)
                     .lineLimit(1)
                     .truncationMode(.tail)
                     .multilineTextAlignment(.leading)
@@ -533,7 +544,7 @@ private struct MessageRowView: View {
             .fill(cardFill)
             .overlay(
                 RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .fill(Color.white.opacity(message.isRead ? 0.08 : 0.2))
+                    .fill(cardHighlightColor)
                     .blendMode(.plusLighter)
             )
     }
@@ -541,7 +552,7 @@ private struct MessageRowView: View {
     private var cardFill: LinearGradient {
         if isSelectionMode && isSelected {
             return LinearGradient(
-                colors: [DUTheme.cyanBackground.opacity(0.9), DUTheme.panel],
+                colors: [theme.colors.action.primaryBackground.opacity(0.9), theme.colors.surface.card],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
@@ -549,14 +560,14 @@ private struct MessageRowView: View {
 
         if !message.isRead {
             return LinearGradient(
-                colors: [DUTheme.panel, Color(hex: 0xF7FCFF)],
+                colors: [theme.colors.surface.card, theme.colors.background.canvas],
                 startPoint: .top,
                 endPoint: .bottom
             )
         }
 
         return LinearGradient(
-            colors: [DUTheme.panel.opacity(0.98), Color.white],
+            colors: [theme.colors.surface.card.opacity(0.98), theme.colors.surface.raised],
             startPoint: .top,
             endPoint: .bottom
         )
@@ -569,18 +580,29 @@ private struct MessageRowView: View {
 
     private var borderColor: Color {
         if isSelectionMode && isSelected {
-            return DUTheme.cyan.opacity(0.32)
+            return theme.colors.action.primary.opacity(0.32)
         }
 
         if !message.isRead {
-            return DUTheme.cyan.opacity(0.16)
+            return theme.colors.action.primary.opacity(0.16)
         }
 
-        return DUTheme.lineLight
+        return theme.colors.border.subtle
     }
 
     private var borderWidth: CGFloat {
         isSelectionMode && isSelected ? 1.4 : 1
+    }
+
+    private var cardHighlightColor: Color {
+        switch theme.resolvedColorScheme {
+        case .dark:
+            return DUColorPrimitives.Neutral.white.opacity(message.isRead ? 0.04 : 0.08)
+        case .light:
+            fallthrough
+        @unknown default:
+            return DUColorPrimitives.Neutral.white.opacity(message.isRead ? 0.08 : 0.20)
+        }
     }
 
     private var rowDateText: String {
@@ -735,6 +757,8 @@ private extension MessageCenterMessage {
 }
 
 struct MessageAvatarView: View {
+    @Environment(\.duTheme) private var theme
+
     let message: MessageCenterMessage
 
     var body: some View {
@@ -745,12 +769,12 @@ struct MessageAvatarView: View {
 
             Text(avatarText)
                 .font(.du(15, weight: .bold))
-                .foregroundColor(.white)
+                .foregroundColor(DUColorPrimitives.Neutral.white)
         }
         .opacity(message.isRead ? 0.78 : 1)
         .overlay(
             Circle()
-                .stroke(Color.white.opacity(0.35), lineWidth: 1)
+                .stroke(DUColorPrimitives.Neutral.white.opacity(0.35), lineWidth: 1)
         )
     }
 
@@ -758,19 +782,19 @@ struct MessageAvatarView: View {
         switch message.category {
         case .system:
             return LinearGradient(
-                colors: [DUTheme.blueLight, DUTheme.blue],
+                colors: [theme.colors.brand.secondaryLight, theme.colors.brand.secondary],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
         case .promotion:
             return LinearGradient(
-                colors: [DUTheme.magenta.opacity(0.78), DUTheme.indigo],
+                colors: [theme.colors.brand.magenta.opacity(0.78), theme.colors.brand.indigo],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
         case .other:
             return LinearGradient(
-                colors: [DUTheme.cyanLight, DUTheme.cyan],
+                colors: [theme.colors.brand.primaryLight, theme.colors.brand.primary],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )

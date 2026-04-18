@@ -2,6 +2,7 @@ import SwiftUI
 
 struct BadgeCenterContainerView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.duTheme) private var theme
     @EnvironmentObject private var languageStore: AppLanguageStore
 
     @StateObject private var viewModel: BadgeCenterViewModel
@@ -33,7 +34,7 @@ struct BadgeCenterContainerView: View {
                 content
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-            .background(DUTheme.background.ignoresSafeArea())
+            .background(theme.colors.background.canvas.ignoresSafeArea())
 
             if let unlockEvent = viewModel.pendingUnlockEvent, !viewModel.isShowingDetail {
                 BadgeUnlockPromptView(
@@ -123,7 +124,7 @@ struct BadgeCenterContainerView: View {
                     )
                     .font(.du(15, weight: .semibold))
                 }
-                .foregroundColor(DUTheme.ink)
+                .foregroundColor(theme.colors.text.primary)
             }
             .buttonStyle(.plain)
             .accessibilityIdentifier(
@@ -136,19 +137,19 @@ struct BadgeCenterContainerView: View {
 
             Text(headerTitle)
                 .font(.du(20, weight: .bold))
-                .foregroundColor(DUTheme.ink)
+                .foregroundColor(theme.colors.text.primary)
                 .multilineTextAlignment(.center)
                 .lineLimit(1)
 
             Spacer()
 
-            Color.clear
+            DUColorPrimitives.Chrome.transparent
                 .frame(width: 82, height: 32)
         }
         .padding(.horizontal, DUSpacing.lg)
         .padding(.top, DUSpacing.md)
         .padding(.bottom, DUSpacing.md)
-        .background(DUTheme.panel)
+        .background(theme.colors.surface.card)
     }
 
     private var headerTitle: String {
@@ -161,11 +162,11 @@ struct BadgeCenterContainerView: View {
     private var loadingState: some View {
         VStack(spacing: DUSpacing.lg) {
             ProgressView()
-                .tint(DUTheme.cyan)
+                .tint(theme.colors.action.primary)
 
             Text(localized("badgeCenter.loading"))
                 .font(.du(15, weight: .medium))
-                .foregroundColor(DUTheme.inkSecondary)
+                .foregroundColor(theme.colors.text.secondary)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
@@ -173,11 +174,11 @@ struct BadgeCenterContainerView: View {
     private var detailLoadingState: some View {
         VStack(spacing: DUSpacing.lg) {
             ProgressView()
-                .tint(DUTheme.cyan)
+                .tint(theme.colors.action.primary)
 
             Text(localized("badgeCenter.detail.loading"))
                 .font(.du(15, weight: .medium))
-                .foregroundColor(DUTheme.inkSecondary)
+                .foregroundColor(theme.colors.text.secondary)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .accessibilityIdentifier("badgeCenter.detail.loading")
@@ -259,18 +260,18 @@ struct BadgeCenterContainerView: View {
                             .font(.du(11, weight: .bold))
                             .padding(.horizontal, 6)
                             .frame(height: 18)
-                            .background(Color.white.opacity(0.22))
+                            .background(DUColorPrimitives.Neutral.white.opacity(0.22))
                             .clipShape(Capsule())
                     }
                 }
-                .foregroundColor(viewModel.isAdvancedFiltersPresented ? .white : DUTheme.inkSecondary)
+                .foregroundColor(viewModel.isAdvancedFiltersPresented ? DUColorPrimitives.Neutral.white : theme.colors.text.secondary)
                 .padding(.horizontal, DUSpacing.md)
                 .frame(height: 36)
-                .background(viewModel.isAdvancedFiltersPresented ? DUTheme.ink : Color.white)
+                .background(viewModel.isAdvancedFiltersPresented ? theme.colors.text.primary : theme.colors.surface.card)
                 .clipShape(Capsule())
                 .overlay(
                     Capsule()
-                        .stroke(DUTheme.lineLight, lineWidth: viewModel.isAdvancedFiltersPresented ? 0 : 1)
+                        .stroke(theme.colors.border.subtle, lineWidth: viewModel.isAdvancedFiltersPresented ? 0 : 1)
                 )
             }
             .buttonStyle(.plain)
@@ -299,11 +300,11 @@ struct BadgeCenterContainerView: View {
             }
         }
         .padding(DUSpacing.md)
-        .background(Color.white)
-        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .background(theme.colors.surface.card)
+        .clipShape(RoundedRectangle(cornerRadius: theme.components.field.cornerRadius, style: .continuous))
         .overlay(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .stroke(DUTheme.lineLight, lineWidth: 1)
+            RoundedRectangle(cornerRadius: theme.components.field.cornerRadius, style: .continuous)
+                .stroke(theme.colors.border.subtle, lineWidth: 1)
         )
         .accessibilityIdentifier("badgeCenter.filter.advancedPanel")
     }
@@ -318,7 +319,7 @@ struct BadgeCenterContainerView: View {
         VStack(alignment: .leading, spacing: DUSpacing.sm) {
             Text(title)
                 .font(.du(13, weight: .bold))
-                .foregroundColor(DUTheme.inkSecondary)
+                .foregroundColor(theme.colors.text.secondary)
 
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: DUSpacing.sm) {
@@ -340,7 +341,7 @@ struct BadgeCenterContainerView: View {
     private var emptyState: some View {
         DUStateView(
             systemImage: "rosette",
-            iconColor: DUTheme.inkDisabled,
+            iconColor: theme.colors.text.disabled,
             title: localized("badgeCenter.empty.title"),
             subtitle: localized("badgeCenter.empty.subtitle"),
             actionTitle: localized("common.retry"),
@@ -355,7 +356,7 @@ struct BadgeCenterContainerView: View {
     private var filteredEmptyState: some View {
         DUStateView(
             systemImage: "line.3.horizontal.decrease.circle",
-            iconColor: DUTheme.warning,
+            iconColor: theme.colors.status.warning,
             title: localized("badgeCenter.empty.filteredTitle"),
             subtitle: localized("badgeCenter.empty.filteredSubtitle")
         )
@@ -365,7 +366,7 @@ struct BadgeCenterContainerView: View {
     private func failedState(message: LocalizedTextValue) -> some View {
         DUStateView(
             systemImage: "wifi.exclamationmark",
-            iconColor: DUTheme.warning,
+            iconColor: theme.colors.status.warning,
             title: localized("badgeCenter.error.title"),
             subtitle: localized(message),
             actionTitle: localized("common.retry"),

@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct BadgeDetailContentView: View {
+    @Environment(\.duTheme) private var theme
+
     let badge: BadgeDetail
     let localized: (String, [String]) -> String
     let localizedText: (LocalizedTextValue?) -> String
@@ -24,8 +26,8 @@ struct BadgeDetailContentView: View {
         VStack(alignment: .leading, spacing: DUSpacing.lg) {
             HStack(alignment: .center, spacing: DUSpacing.lg) {
                 ZStack {
-                    RoundedRectangle(cornerRadius: 26, style: .continuous)
-                        .fill(badge.accentGradient)
+                    RoundedRectangle(cornerRadius: theme.components.sheet.cornerRadius + 2, style: .continuous)
+                        .fill(badge.accentGradient(theme: theme))
                         .frame(width: 98, height: 98)
 
                     BadgeRemoteIconView(
@@ -40,19 +42,19 @@ struct BadgeDetailContentView: View {
                 VStack(alignment: .leading, spacing: DUSpacing.sm) {
                     Text(localizedText(badge.title))
                         .font(.du(24, weight: .bold))
-                        .foregroundColor(.white)
+                        .foregroundColor(DUColorPrimitives.Neutral.white)
                     Text(localizedText(badge.subtitle))
                         .font(.du(13, weight: .medium))
-                        .foregroundColor(.white.opacity(0.88))
+                        .foregroundColor(DUColorPrimitives.Neutral.white.opacity(0.88))
 
                     HStack(spacing: DUSpacing.sm) {
                         BadgeSmallPill(
                             title: localized(badge.level.titleKey, []),
-                            color: badge.level.levelColor
+                            color: badge.level.levelColor(theme: theme)
                         )
                         BadgeSmallPill(
                             title: localized(badge.category.titleKey, []),
-                            color: .white
+                            color: DUColorPrimitives.Neutral.white
                         )
                     }
                 }
@@ -64,25 +66,25 @@ struct BadgeDetailContentView: View {
                 VStack(alignment: .leading, spacing: DUSpacing.xs) {
                     Text(localized("badgeCenter.detail.progress", []))
                         .font(.du(12, weight: .bold))
-                        .foregroundColor(.white.opacity(0.9))
+                        .foregroundColor(DUColorPrimitives.Neutral.white.opacity(0.9))
                     ProgressView(value: progress.completionRatio)
-                        .tint(.white)
+                        .tint(DUColorPrimitives.Neutral.white)
                     Text(localizedText(progress.summary))
                         .font(.du(12, weight: .medium))
-                        .foregroundColor(.white.opacity(0.88))
+                        .foregroundColor(DUColorPrimitives.Neutral.white.opacity(0.88))
                 }
             }
         }
         .padding(DUSpacing.xl)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(heroBackground)
-        .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
-        .shadow(color: badge.level.levelColor.opacity(0.22), radius: 18, x: 0, y: 10)
+        .clipShape(RoundedRectangle(cornerRadius: theme.components.sheet.cornerRadius + 4, style: .continuous))
+        .shadow(color: badge.level.levelColor(theme: theme).opacity(0.22), radius: 18, x: 0, y: 10)
     }
 
     private var heroBackground: some View {
         ZStack {
-            badge.accentGradient
+            badge.accentGradient(theme: theme)
 
             if let backgroundURL = badge.backgroundURL {
                 AsyncImage(url: backgroundURL) { phase in
@@ -92,13 +94,13 @@ struct BadgeDetailContentView: View {
                             .resizable()
                             .scaledToFill()
                     default:
-                        Color.clear
+                        DUColorPrimitives.Chrome.transparent
                     }
                 }
             }
 
             LinearGradient(
-                colors: [Color.black.opacity(0.12), Color.black.opacity(0.38)],
+                colors: [DUColorPrimitives.Neutral.black.opacity(0.12), DUColorPrimitives.Neutral.black.opacity(0.38)],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
@@ -135,10 +137,10 @@ struct BadgeDetailContentView: View {
                     HStack(alignment: .top, spacing: DUSpacing.sm) {
                         Image(systemName: item.isCompleted ? "checkmark.circle.fill" : "lock.circle.fill")
                             .font(.du(16, weight: .bold))
-                            .foregroundColor(item.isCompleted ? DUTheme.success : DUTheme.warning)
+                            .foregroundColor(item.isCompleted ? theme.colors.status.success : theme.colors.status.warning)
                         Text(localizedText(item.title))
                             .font(.du(14, weight: .medium))
-                            .foregroundColor(DUTheme.ink)
+                            .foregroundColor(theme.colors.text.primary)
                             .multilineTextAlignment(.leading)
                         Spacer()
                     }
@@ -156,23 +158,23 @@ struct BadgeDetailContentView: View {
                         HStack(spacing: DUSpacing.sm) {
                             Text(localizedText(item.title))
                                 .font(.du(15, weight: .bold))
-                                .foregroundColor(DUTheme.ink)
+                                .foregroundColor(theme.colors.text.primary)
                             Spacer()
                             BadgeSmallPill(
                                 title: localized(item.status.titleKey, []),
-                                color: item.status.statusColor
+                                color: item.status.statusColor(theme: theme)
                             )
                         }
 
                         Text(localizedText(item.description))
                             .font(.du(13, weight: .medium))
-                            .foregroundColor(DUTheme.inkSecondary)
+                            .foregroundColor(theme.colors.text.secondary)
                             .multilineTextAlignment(.leading)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(DUSpacing.md)
-                    .background(DUTheme.background)
-                    .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+                    .background(theme.colors.background.secondary)
+                    .clipShape(RoundedRectangle(cornerRadius: theme.components.field.cornerRadius, style: .continuous))
                 }
             }
             .accessibilityIdentifier("badgeCenter.detail.\(badge.id).rewards")
@@ -183,7 +185,7 @@ struct BadgeDetailContentView: View {
         DUSectionCard(title: localized("badgeCenter.detail.badgeStory", [])) {
             Text(localizedText(badge.badgeStory))
                 .font(.du(14, weight: .medium))
-                .foregroundColor(DUTheme.inkSecondary)
+                .foregroundColor(theme.colors.text.secondary)
                 .multilineTextAlignment(.leading)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
@@ -195,7 +197,7 @@ struct BadgeDetailContentView: View {
                 if badge.history.isEmpty {
                     Text(localized("badgeCenter.detail.historyEmpty", []))
                         .font(.du(13, weight: .medium))
-                        .foregroundColor(DUTheme.inkTertiary)
+                        .foregroundColor(theme.colors.text.tertiary)
                         .frame(maxWidth: .infinity, alignment: .leading)
                 } else {
                     VStack(spacing: DUSpacing.md) {
@@ -204,20 +206,20 @@ struct BadgeDetailContentView: View {
                                 HStack(alignment: .firstTextBaseline) {
                                     Text(localizedText(item.title))
                                         .font(.du(14, weight: .bold))
-                                        .foregroundColor(DUTheme.ink)
+                                        .foregroundColor(theme.colors.text.primary)
                                     Spacer()
                                     Text(item.timestampText)
                                         .font(.du(11, weight: .semibold))
-                                        .foregroundColor(DUTheme.inkTertiary)
+                                        .foregroundColor(theme.colors.text.tertiary)
                                 }
                                 Text(localizedText(item.subtitle))
                                     .font(.du(13, weight: .medium))
-                                    .foregroundColor(DUTheme.inkSecondary)
+                                    .foregroundColor(theme.colors.text.secondary)
                             }
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(DUSpacing.md)
-                            .background(DUTheme.background)
-                            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+                            .background(theme.colors.background.secondary)
+                            .clipShape(RoundedRectangle(cornerRadius: theme.components.field.cornerRadius, style: .continuous))
                         }
                     }
                 }
@@ -230,10 +232,10 @@ struct BadgeDetailContentView: View {
         VStack(alignment: .leading, spacing: DUSpacing.xs) {
             Text(title)
                 .font(.du(12, weight: .bold))
-                .foregroundColor(DUTheme.inkTertiary)
+                .foregroundColor(theme.colors.text.tertiary)
             Text(value)
                 .font(.du(14, weight: .medium))
-                .foregroundColor(DUTheme.ink)
+                .foregroundColor(theme.colors.text.primary)
                 .multilineTextAlignment(.leading)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
