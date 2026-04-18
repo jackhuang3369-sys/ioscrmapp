@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct AppLaunchContainerView<Content: View>: View {
+    @Environment(\.duTheme) private var theme
     @StateObject private var viewModel: AppLaunchContainerViewModel
 
     private let content: Content
@@ -19,7 +20,7 @@ struct AppLaunchContainerView<Content: View>: View {
         Group {
             switch viewModel.route {
             case .resolving:
-                Color.clear
+                theme.colors.background.canvas
                     .ignoresSafeArea()
             case .content:
                 content

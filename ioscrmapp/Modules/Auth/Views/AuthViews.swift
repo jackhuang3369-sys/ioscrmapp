@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct AuthLoginContainerView: View {
+    @Environment(\.duTheme) private var theme
     @EnvironmentObject private var languageStore: AppLanguageStore
     @StateObject private var viewModel: AuthLoginViewModel
     @State private var isShowingRegistration = false
@@ -45,7 +46,7 @@ struct AuthLoginContainerView: View {
                 .padding(.top, max(proxy.safeAreaInsets.top, DUSpacing.sm))
                 .padding(.bottom, DUSpacing.xxxl)
             }
-            .background(DUTheme.background.ignoresSafeArea())
+            .background(theme.colors.background.canvas.ignoresSafeArea())
         }
         .fullScreenCover(isPresented: $isShowingRegistration) {
             AuthRegistrationContainerView(
@@ -74,10 +75,10 @@ struct AuthLoginContainerView: View {
         VStack(spacing: DUSpacing.sm) {
             Text(localized("auth.header.title"))
                 .font(.du(28, weight: .bold))
-                .foregroundColor(DUTheme.ink)
+                .foregroundColor(theme.colors.text.primary)
             Text(localized("auth.header.subtitle"))
                 .font(.du(15, weight: .medium))
-                .foregroundColor(DUTheme.inkTertiary)
+                .foregroundColor(theme.colors.text.tertiary)
         }
     }
 
@@ -91,17 +92,17 @@ struct AuthLoginContainerView: View {
                 } label: {
                     Text(localized(mode.titleKey))
                         .font(.du(15, weight: .semibold))
-                        .foregroundColor(viewModel.selectedMode == mode ? DUTheme.ink : DUTheme.inkSecondary)
+                        .foregroundColor(viewModel.selectedMode == mode ? theme.colors.text.primary : theme.colors.text.secondary)
                         .frame(maxWidth: .infinity)
                         .frame(height: 48)
                         .background(
-                            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                                .fill(viewModel.selectedMode == mode ? DUTheme.panel : .clear)
+                            RoundedRectangle(cornerRadius: DURadius.field, style: .continuous)
+                                .fill(viewModel.selectedMode == mode ? theme.colors.surface.card : DUColorPrimitives.Chrome.transparent)
                                 .shadow(
-                                    color: Color.black.opacity(viewModel.selectedMode == mode ? 0.06 : 0),
-                                    radius: 8,
-                                    x: 0,
-                                    y: 4
+                                    color: viewModel.selectedMode == mode ? theme.components.card.elevation.color : DUElevation.none.color,
+                                    radius: theme.components.card.elevation.radius,
+                                    x: theme.components.card.elevation.x,
+                                    y: theme.components.card.elevation.y
                                 )
                         )
                 }
@@ -109,8 +110,8 @@ struct AuthLoginContainerView: View {
             }
         }
         .padding(DUSpacing.xs)
-        .background(DUTheme.backgroundSecondary)
-        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+        .background(theme.colors.background.secondary)
+        .clipShape(RoundedRectangle(cornerRadius: theme.components.card.cornerRadius, style: .continuous))
     }
 
     private var phoneField: some View {
@@ -139,7 +140,7 @@ struct AuthLoginContainerView: View {
         VStack(alignment: .leading, spacing: DUSpacing.sm) {
             Text(localized("auth.field.otp.title"))
                 .font(.du(14, weight: .semibold))
-                .foregroundColor(DUTheme.inkSecondary)
+                .foregroundColor(theme.colors.text.secondary)
             HStack(alignment: .top, spacing: DUSpacing.md) {
                 DUTextField(
                     title: nil,
@@ -160,7 +161,7 @@ struct AuthLoginContainerView: View {
             }
             Text(localized("auth.otp.expiry"))
                 .font(.du(12, weight: .medium))
-                .foregroundColor(DUTheme.inkTertiary)
+                .foregroundColor(theme.colors.text.tertiary)
         }
     }
 
@@ -171,9 +172,9 @@ struct AuthLoginContainerView: View {
             } label: {
                 HStack(spacing: DUSpacing.sm) {
                     Image(systemName: viewModel.rememberMe ? "checkmark.square.fill" : "square")
-                        .foregroundColor(viewModel.rememberMe ? DUTheme.cyan : DUTheme.inkDisabled)
+                        .foregroundColor(viewModel.rememberMe ? theme.colors.action.primary : theme.colors.text.disabled)
                     Text(localized("auth.option.rememberMe"))
-                        .foregroundColor(DUTheme.inkSecondary)
+                        .foregroundColor(theme.colors.text.secondary)
                 }
                 .font(.du(13, weight: .medium))
             }
@@ -202,7 +203,6 @@ struct AuthLoginContainerView: View {
             isLoading: viewModel.isLoading,
             isEnabled: viewModel.isPrimaryActionEnabled,
             height: 56,
-            cornerRadius: 22,
             fontSize: 17
         ) {
             viewModel.login()
@@ -213,14 +213,14 @@ struct AuthLoginContainerView: View {
         VStack(spacing: DUSpacing.lg) {
             HStack {
                 Rectangle()
-                    .fill(DUTheme.lineLight)
+                    .fill(theme.colors.border.subtle)
                     .frame(height: 1)
                 Text(localized("auth.social.otherWays"))
                     .font(.du(13, weight: .medium))
-                    .foregroundColor(DUTheme.inkTertiary)
+                    .foregroundColor(theme.colors.text.tertiary)
                     .padding(.horizontal, DUSpacing.sm)
                 Rectangle()
-                    .fill(DUTheme.lineLight)
+                    .fill(theme.colors.border.subtle)
                     .frame(height: 1)
             }
 
@@ -244,7 +244,7 @@ struct AuthLoginContainerView: View {
 //                        .resizable()
 //                        .scaledToFit()
 //                        .frame(width: 30, height: 30)
-//                        .foregroundColor(DUTheme.inkSecondary)
+//                        .foregroundColor(theme.colors.text.secondary)
 //                } action: {
 //                    viewModel.showPlaceholderMessage(for: "auth.placeholder.fingerprint")
 //                }
@@ -255,7 +255,7 @@ struct AuthLoginContainerView: View {
                         .resizable()
                         .scaledToFit()
                         .frame(width: 30, height: 30)
-                        .foregroundColor(DUTheme.inkSecondary)
+                        .foregroundColor(theme.colors.text.secondary)
                 } action: {
                     viewModel.showPlaceholderMessage(for: "auth.placeholder.face")
                 }
@@ -266,7 +266,7 @@ struct AuthLoginContainerView: View {
     private var registerLink: some View {
         HStack(spacing: DUSpacing.xs) {
             Text(localized("auth.register.prompt"))
-                .foregroundColor(DUTheme.inkTertiary)
+                .foregroundColor(theme.colors.text.tertiary)
             DUTextButton(
                 title: localized("auth.register.action"),
                 fontSize: 14,
@@ -374,6 +374,7 @@ struct AuthForgotPasswordContainerView: View {
 }
 
 private struct AuthForgotPasswordVerifyView: View {
+    @Environment(\.duTheme) private var theme
     @EnvironmentObject private var languageStore: AppLanguageStore
     @ObservedObject var viewModel: AuthForgotPasswordViewModel
 
@@ -399,7 +400,7 @@ private struct AuthForgotPasswordVerifyView: View {
                 .padding(.top, max(proxy.safeAreaInsets.top, DUSpacing.sm))
                 .padding(.bottom, DUSpacing.xxxl)
             }
-            .background(DUTheme.background.ignoresSafeArea())
+            .background(theme.colors.background.canvas.ignoresSafeArea())
         }
         .navigationBarBackButtonHidden(true)
     }
@@ -408,11 +409,11 @@ private struct AuthForgotPasswordVerifyView: View {
         VStack(spacing: DUSpacing.sm) {
             Text(localized("auth.forgot.title"))
                 .font(.du(28, weight: .bold))
-                .foregroundColor(DUTheme.ink)
+                .foregroundColor(theme.colors.text.primary)
                 .multilineTextAlignment(.center)
             Text(localized("auth.forgot.subtitle"))
                 .font(.du(15, weight: .medium))
-                .foregroundColor(DUTheme.inkTertiary)
+                .foregroundColor(theme.colors.text.tertiary)
                 .multilineTextAlignment(.center)
         }
     }
@@ -432,7 +433,7 @@ private struct AuthForgotPasswordVerifyView: View {
             VStack(alignment: .leading, spacing: DUSpacing.sm) {
                 Text(localized("auth.field.otp.title"))
                     .font(.du(14, weight: .semibold))
-                    .foregroundColor(DUTheme.inkSecondary)
+                    .foregroundColor(theme.colors.text.secondary)
 
                 HStack(alignment: .top, spacing: DUSpacing.md) {
                     DUTextField(
@@ -456,7 +457,7 @@ private struct AuthForgotPasswordVerifyView: View {
 
                 Text(localized(viewModel.otpHelperText))
                     .font(.du(12, weight: .medium))
-                    .foregroundColor(DUTheme.inkTertiary)
+                    .foregroundColor(theme.colors.text.tertiary)
             }
 
             DUButton(
@@ -465,7 +466,6 @@ private struct AuthForgotPasswordVerifyView: View {
                 isLoading: viewModel.isLoading,
                 isEnabled: viewModel.canVerifyOTP,
                 height: 56,
-                cornerRadius: 22,
                 fontSize: 17
             ) {
                 verifyAction()
@@ -498,6 +498,7 @@ private struct AuthForgotPasswordVerifyView: View {
 }
 
 private struct AuthForgotPasswordPasswordView: View {
+    @Environment(\.duTheme) private var theme
     @EnvironmentObject private var languageStore: AppLanguageStore
     @ObservedObject var viewModel: AuthForgotPasswordViewModel
 
@@ -524,7 +525,7 @@ private struct AuthForgotPasswordPasswordView: View {
                 .padding(.top, max(proxy.safeAreaInsets.top, DUSpacing.sm))
                 .padding(.bottom, DUSpacing.xxxl)
             }
-            .background(DUTheme.background.ignoresSafeArea())
+            .background(theme.colors.background.canvas.ignoresSafeArea())
         }
         .navigationBarBackButtonHidden(true)
     }
@@ -533,11 +534,11 @@ private struct AuthForgotPasswordPasswordView: View {
         VStack(spacing: DUSpacing.sm) {
             Text(localized("auth.forgot.passwordTitle"))
                 .font(.du(28, weight: .bold))
-                .foregroundColor(DUTheme.ink)
+                .foregroundColor(theme.colors.text.primary)
                 .multilineTextAlignment(.center)
             Text(localized("auth.forgot.passwordSubtitle"))
                 .font(.du(15, weight: .medium))
-                .foregroundColor(DUTheme.inkTertiary)
+                .foregroundColor(theme.colors.text.tertiary)
                 .multilineTextAlignment(.center)
         }
     }
@@ -568,7 +569,6 @@ private struct AuthForgotPasswordPasswordView: View {
                 isLoading: viewModel.isLoading,
                 isEnabled: viewModel.canSubmitPasswordReset,
                 height: 56,
-                cornerRadius: 22,
                 fontSize: 17
             ) {
                 submitAction()
@@ -582,15 +582,15 @@ private struct AuthForgotPasswordPasswordView: View {
         VStack(alignment: .leading, spacing: DUSpacing.sm) {
             Text(localized("auth.forgot.summary.verifiedPhone"))
                 .font(.du(13, weight: .semibold))
-                .foregroundColor(DUTheme.inkTertiary)
+                .foregroundColor(theme.colors.text.tertiary)
             Text(AuthValidator.formattedPhone(viewModel.verifiedContext?.phoneNumber ?? viewModel.phoneNumber))
                 .font(.du(18, weight: .bold))
-                .foregroundColor(DUTheme.ink)
+                .foregroundColor(theme.colors.text.primary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(DUSpacing.lg)
-        .background(DUTheme.backgroundSecondary)
-        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .background(theme.colors.background.secondary)
+        .clipShape(RoundedRectangle(cornerRadius: theme.components.field.cornerRadius, style: .continuous))
     }
 
     private var loginFooter: some View {
@@ -686,6 +686,7 @@ struct AuthRegistrationContainerView: View {
 }
 
 private struct AuthRegistrationVerifyView: View {
+    @Environment(\.duTheme) private var theme
     @EnvironmentObject private var languageStore: AppLanguageStore
     @ObservedObject var viewModel: AuthRegistrationViewModel
 
@@ -711,7 +712,7 @@ private struct AuthRegistrationVerifyView: View {
                 .padding(.top, max(proxy.safeAreaInsets.top, DUSpacing.sm))
                 .padding(.bottom, DUSpacing.xxxl)
             }
-            .background(DUTheme.background.ignoresSafeArea())
+            .background(theme.colors.background.canvas.ignoresSafeArea())
         }
         .navigationBarBackButtonHidden(true)
     }
@@ -720,11 +721,11 @@ private struct AuthRegistrationVerifyView: View {
         VStack(spacing: DUSpacing.sm) {
             Text(localized("auth.registration.title"))
                 .font(.du(28, weight: .bold))
-                .foregroundColor(DUTheme.ink)
+                .foregroundColor(theme.colors.text.primary)
                 .multilineTextAlignment(.center)
             Text(localized("auth.registration.subtitle"))
                 .font(.du(15, weight: .medium))
-                .foregroundColor(DUTheme.inkTertiary)
+                .foregroundColor(theme.colors.text.tertiary)
                 .multilineTextAlignment(.center)
         }
     }
@@ -744,7 +745,7 @@ private struct AuthRegistrationVerifyView: View {
             VStack(alignment: .leading, spacing: DUSpacing.sm) {
                 Text(localized("auth.field.otp.title"))
                     .font(.du(14, weight: .semibold))
-                    .foregroundColor(DUTheme.inkSecondary)
+                    .foregroundColor(theme.colors.text.secondary)
 
                 HStack(alignment: .top, spacing: DUSpacing.md) {
                     DUTextField(
@@ -768,7 +769,7 @@ private struct AuthRegistrationVerifyView: View {
 
                 Text(localized(viewModel.otpHelperText))
                     .font(.du(12, weight: .medium))
-                    .foregroundColor(DUTheme.inkTertiary)
+                    .foregroundColor(theme.colors.text.tertiary)
             }
 
             DUButton(
@@ -777,7 +778,6 @@ private struct AuthRegistrationVerifyView: View {
                 isLoading: viewModel.isLoading,
                 isEnabled: viewModel.canVerifyOTP,
                 height: 56,
-                cornerRadius: 22,
                 fontSize: 17
             ) {
                 verifyAction()
@@ -822,6 +822,7 @@ private struct AuthRegistrationVerifyView: View {
 }
 
 private struct AuthRegistrationPasswordView: View {
+    @Environment(\.duTheme) private var theme
     @EnvironmentObject private var languageStore: AppLanguageStore
     @ObservedObject var viewModel: AuthRegistrationViewModel
 
@@ -848,7 +849,7 @@ private struct AuthRegistrationPasswordView: View {
                 .padding(.top, max(proxy.safeAreaInsets.top, DUSpacing.sm))
                 .padding(.bottom, DUSpacing.xxxl)
             }
-            .background(DUTheme.background.ignoresSafeArea())
+            .background(theme.colors.background.canvas.ignoresSafeArea())
         }
         .navigationBarBackButtonHidden(true)
     }
@@ -857,11 +858,11 @@ private struct AuthRegistrationPasswordView: View {
         VStack(spacing: DUSpacing.sm) {
             Text(localized("auth.registration.passwordTitle"))
                 .font(.du(28, weight: .bold))
-                .foregroundColor(DUTheme.ink)
+                .foregroundColor(theme.colors.text.primary)
                 .multilineTextAlignment(.center)
             Text(localized("auth.registration.passwordSubtitle"))
                 .font(.du(15, weight: .medium))
-                .foregroundColor(DUTheme.inkTertiary)
+                .foregroundColor(theme.colors.text.tertiary)
                 .multilineTextAlignment(.center)
         }
     }
@@ -892,7 +893,6 @@ private struct AuthRegistrationPasswordView: View {
                 isLoading: viewModel.isLoading,
                 isEnabled: viewModel.canSubmitRegistration,
                 height: 56,
-                cornerRadius: 22,
                 fontSize: 17
             ) {
                 submitAction()
@@ -906,15 +906,15 @@ private struct AuthRegistrationPasswordView: View {
         VStack(alignment: .leading, spacing: DUSpacing.sm) {
             Text(localized("auth.registration.summary.verifiedPhone"))
                 .font(.du(13, weight: .semibold))
-                .foregroundColor(DUTheme.inkTertiary)
+                .foregroundColor(theme.colors.text.tertiary)
             Text(AuthValidator.formattedPhone(viewModel.verifiedContext?.phoneNumber ?? viewModel.phoneNumber))
                 .font(.du(18, weight: .bold))
-                .foregroundColor(DUTheme.ink)
+                .foregroundColor(theme.colors.text.primary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(DUSpacing.lg)
-        .background(DUTheme.backgroundSecondary)
-        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .background(theme.colors.background.secondary)
+        .clipShape(RoundedRectangle(cornerRadius: theme.components.field.cornerRadius, style: .continuous))
     }
 
     private var loginFooter: some View {
@@ -941,21 +941,30 @@ private struct AuthRegistrationPasswordView: View {
 }
 
 private struct AuthBrandMark: View {
+    @Environment(\.duTheme) private var theme
+
     var body: some View {
         ZStack {
-            RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .fill(DUTheme.brandGradient)
+            RoundedRectangle(cornerRadius: theme.components.sheet.cornerRadius, style: .continuous)
+                .fill(theme.colors.gradient.brand)
                 .frame(width: 88, height: 88)
-                .shadow(color: DUTheme.cyan.opacity(0.25), radius: 18, x: 0, y: 8)
+                .shadow(
+                    color: theme.components.button.primary.shadowColor,
+                    radius: theme.components.card.elevation.radius,
+                    x: theme.components.card.elevation.x,
+                    y: theme.components.card.elevation.y
+                )
             Text("du")
                 .font(.du(32, weight: .bold))
-                .foregroundColor(.white)
+                .foregroundColor(DUColorPrimitives.Neutral.white)
         }
         .padding(.top, DUSpacing.sm)
     }
 }
 
 private struct AuthFlowChrome: View {
+    @Environment(\.duTheme) private var theme
+
     var backAction: (() -> Void)? = nil
     let closeAction: () -> Void
 
@@ -965,19 +974,19 @@ private struct AuthFlowChrome: View {
                 DUIconButton(
                     title: nil,
                     circleSize: 40,
-                    backgroundColor: DUTheme.panel,
-                    shadowColor: Color.black.opacity(0.06),
-                    shadowRadius: 10,
-                    shadowY: 6
+                    backgroundColor: theme.colors.surface.card,
+                    shadowColor: theme.components.card.elevation.color,
+                    shadowRadius: DUElevation.control.radius,
+                    shadowY: DUElevation.control.y
                 ) {
                     Image(systemName: "chevron.left")
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundColor(DUTheme.ink)
+                        .font(.du(16, weight: .semibold))
+                        .foregroundColor(theme.colors.text.primary)
                 } action: {
                     backAction()
                 }
             } else {
-                Color.clear
+                DUColorPrimitives.Chrome.transparent
                     .frame(width: 40, height: 40)
             }
 
@@ -986,14 +995,14 @@ private struct AuthFlowChrome: View {
             DUIconButton(
                 title: nil,
                 circleSize: 40,
-                backgroundColor: DUTheme.panel,
-                shadowColor: Color.black.opacity(0.06),
-                shadowRadius: 10,
-                shadowY: 6
+                backgroundColor: theme.colors.surface.card,
+                shadowColor: theme.components.card.elevation.color,
+                shadowRadius: DUElevation.control.radius,
+                shadowY: DUElevation.control.y
             ) {
                 Image(systemName: "xmark")
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(DUTheme.ink)
+                    .font(.du(16, weight: .semibold))
+                    .foregroundColor(theme.colors.text.primary)
             } action: {
                 closeAction()
             }
@@ -1002,20 +1011,24 @@ private struct AuthFlowChrome: View {
 }
 
 private struct AuthStepBadge: View {
+    @Environment(\.duTheme) private var theme
+
     let title: String
 
     var body: some View {
         Text(title)
             .font(.du(13, weight: .semibold))
-            .foregroundColor(DUTheme.cyan)
+            .foregroundColor(theme.colors.action.primary)
             .padding(.horizontal, DUSpacing.lg)
             .padding(.vertical, DUSpacing.sm)
-            .background(DUTheme.cyanBackground)
+            .background(theme.colors.action.primaryBackground)
             .clipShape(Capsule())
     }
 }
 
 private struct AuthBannerView: View {
+    @Environment(\.duTheme) private var theme
+
     let message: String
     let tone: AuthBannerTone
 
@@ -1026,16 +1039,16 @@ private struct AuthBannerView: View {
 
         switch tone {
         case .info:
-            background = DUTheme.cyanBackground
-            foreground = DUTheme.cyan
+            background = theme.colors.action.primaryBackground
+            foreground = theme.colors.action.primary
             iconName = "sparkles"
         case .success:
-            background = DUTheme.successBackground
-            foreground = DUTheme.success
+            background = theme.colors.status.successBackground
+            foreground = theme.colors.status.success
             iconName = "checkmark.circle.fill"
         case .error:
-            background = DUTheme.errorBackground
-            foreground = DUTheme.error
+            background = theme.colors.status.errorBackground
+            foreground = theme.colors.status.error
             iconName = "exclamationmark.triangle.fill"
         }
 
@@ -1049,7 +1062,7 @@ private struct AuthBannerView: View {
         .foregroundColor(foreground)
         .padding(DUSpacing.lg)
         .background(background)
-        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: theme.components.field.cornerRadius, style: .continuous))
     }
 }
 

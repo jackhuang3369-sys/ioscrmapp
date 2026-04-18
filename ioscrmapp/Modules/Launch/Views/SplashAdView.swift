@@ -2,6 +2,7 @@ import AVFoundation
 import SwiftUI
 
 struct SplashAdView: View {
+    @Environment(\.duTheme) private var theme
     @EnvironmentObject private var languageStore: AppLanguageStore
 
     @StateObject private var viewModel: SplashAdViewModel
@@ -21,12 +22,12 @@ struct SplashAdView: View {
     var body: some View {
         GeometryReader { proxy in
             ZStack {
-                Color.black
+                DUColorPrimitives.Neutral.black
                     .ignoresSafeArea()
 
                 SplashAdPlayerSurface(player: viewModel.player)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(Color.black)
+                    .background(DUColorPrimitives.Neutral.black)
                     .ignoresSafeArea()
 
                 if viewModel.isLoading || viewModel.failureMessage != nil {
@@ -67,21 +68,21 @@ struct SplashAdView: View {
         VStack(spacing: DUSpacing.md) {
             ProgressView()
                 .controlSize(.large)
-                .tint(.white)
+                .tint(DUColorPrimitives.Neutral.white)
 
             if let failureMessage = viewModel.failureMessage {
                 Text(languageStore.string(failureMessage))
                     .font(.du(13, weight: .medium))
-                    .foregroundColor(.white)
+                    .foregroundColor(DUColorPrimitives.Neutral.white)
                     .padding(.horizontal, DUSpacing.lg)
                     .padding(.vertical, DUSpacing.sm)
-                    .background(DUTheme.splashChrome)
+                    .background(theme.colors.chrome.splash)
                     .clipShape(Capsule())
             }
         }
         .padding(DUSpacing.xxl)
-        .background(DUTheme.splashChrome)
-        .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+        .background(theme.colors.chrome.splash)
+        .clipShape(RoundedRectangle(cornerRadius: theme.components.sheet.cornerRadius, style: .continuous))
     }
 }
 
