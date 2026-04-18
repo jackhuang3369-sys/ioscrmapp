@@ -33,11 +33,12 @@ struct ioscrmappApp: App {
     var body: some Scene {
         WindowGroup {
             rootContent
-            .environmentObject(languageStore)
-            .environmentObject(themeStore)
-            .environment(\.locale, languageStore.locale)
-            .environment(\.layoutDirection, languageStore.layoutDirection)
-            .duTheme(mode: themeStore.currentMode)
+                .environmentObject(languageStore)
+                .environmentObject(themeStore)
+                .environment(\.locale, languageStore.locale)
+                .environment(\.layoutDirection, languageStore.layoutDirection)
+                .duTheme(mode: themeStore.currentMode)
+                .preferredColorScheme(preferredColorScheme)
         }
     }
 
@@ -60,6 +61,17 @@ struct ioscrmappApp: App {
                 notificationService: services.notificationService,
                 authServerURL: services.configuration.mode == .remote ? services.configuration.serverURL : nil
             )
+        }
+    }
+
+    private var preferredColorScheme: ColorScheme? {
+        switch themeStore.currentMode {
+        case .system:
+            return nil
+        case .light:
+            return .light
+        case .dark:
+            return .dark
         }
     }
 }

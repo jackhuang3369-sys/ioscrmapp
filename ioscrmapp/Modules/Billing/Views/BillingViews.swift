@@ -10,6 +10,7 @@ import QuickLook
 
 struct BillingContainerView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.duTheme) private var theme
     @EnvironmentObject private var languageStore: AppLanguageStore
     @StateObject private var viewModel: BillingViewModel
     private let session: CustSubInfo
@@ -43,7 +44,7 @@ struct BillingContainerView: View {
                         listContent
                     }
                 }
-                .background(DUTheme.background.ignoresSafeArea())
+                .background(theme.colors.background.canvas.ignoresSafeArea())
             }
             .background(navigationLinks)
             .navigationTitle(localized("billing.title"))
@@ -286,8 +287,8 @@ struct BillingContainerView: View {
             }
         }
         .padding(DUSpacing.xl)
-        .background(DUTheme.brandGradient)
-        .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+        .background(theme.colors.gradient.brand)
+        .clipShape(RoundedRectangle(cornerRadius: theme.components.card.cornerRadius, style: .continuous))
     }
 
     private func summaryMetric(titleKey: String, value: String) -> some View {
@@ -311,16 +312,16 @@ struct BillingContainerView: View {
         VStack(alignment: .leading, spacing: 6) {
             Text(title)
                 .font(.du(11, weight: .medium))
-                .foregroundColor(heroStyle ? .white.opacity(0.72) : DUTheme.inkTertiary)
+                .foregroundColor(heroStyle ? .white.opacity(0.72) : theme.colors.text.tertiary)
             Text(value)
                 .font(.du(13, weight: .bold))
-                .foregroundColor(heroStyle ? .white : DUTheme.ink)
+                .foregroundColor(heroStyle ? .white : theme.colors.text.primary)
                 .lineLimit(1)
                 .minimumScaleFactor(0.75)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(DUSpacing.md)
-        .background(heroStyle ? Color.white.opacity(0.12) : DUTheme.panel)
+        .background(heroStyle ? Color.white.opacity(0.12) : theme.colors.surface.card)
         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
     }
 
@@ -335,11 +336,11 @@ struct BillingContainerView: View {
                 VStack(alignment: .leading, spacing: 6) {
                     Text(title)
                         .font(.du(11, weight: .medium))
-                        .foregroundColor(heroStyle ? .white.opacity(0.72) : DUTheme.inkTertiary)
+                        .foregroundColor(heroStyle ? .white.opacity(0.72) : theme.colors.text.tertiary)
                     HStack(alignment: .center, spacing: DUSpacing.sm) {
                         Text(value)
                             .font(.du(13, weight: .bold))
-                            .foregroundColor(heroStyle ? .white : DUTheme.ink)
+                            .foregroundColor(heroStyle ? .white : theme.colors.text.primary)
                             .lineLimit(1)
                             .minimumScaleFactor(0.75)
 
@@ -347,12 +348,12 @@ struct BillingContainerView: View {
 
                         Image(systemName: "chevron.right")
                             .font(.du(12, weight: .bold))
-                            .foregroundColor(heroStyle ? .white.opacity(0.76) : DUTheme.inkTertiary)
+                            .foregroundColor(heroStyle ? .white.opacity(0.76) : theme.colors.text.tertiary)
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(DUSpacing.md)
-                .background(heroStyle ? Color.white.opacity(0.12) : DUTheme.panel)
+                .background(heroStyle ? Color.white.opacity(0.12) : theme.colors.surface.card)
                 .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
             }
         }
@@ -372,20 +373,20 @@ struct BillingContainerView: View {
                 HStack(spacing: DUSpacing.sm) {
                     Image(systemName: "square.and.pencil")
                         .font(.du(14, weight: .bold))
-                        .foregroundColor(DUTheme.cyan)
+                        .foregroundColor(theme.colors.brand.primary)
 
                     TextField("0.00", text: amountText)
                         .keyboardType(.decimalPad)
                         .font(.du(22, weight: .bold))
-                        .foregroundColor(DUTheme.ink)
+                        .foregroundColor(theme.colors.text.primary)
 
                     Text("AED")
                         .font(.du(14, weight: .bold))
-                        .foregroundColor(DUTheme.inkTertiary)
+                        .foregroundColor(theme.colors.text.tertiary)
                 }
                 .padding(.horizontal, DUSpacing.lg)
                 .frame(height: 58)
-                .background(DUTheme.backgroundSecondary)
+                .background(theme.colors.background.secondary)
                 .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
             }
         }
@@ -403,10 +404,10 @@ struct BillingContainerView: View {
                 } label: {
                     Text("\(option) AED")
                         .font(.du(14, weight: .bold))
-                    .foregroundColor(isSelected ? .white : DUTheme.ink)
+                    .foregroundColor(isSelected ? .white : theme.colors.text.primary)
                     .frame(maxWidth: .infinity)
                     .frame(height: 62)
-                    .background(isSelected ? DUTheme.cyan : DUTheme.backgroundSecondary)
+                    .background(isSelected ? theme.colors.brand.primary : theme.colors.background.secondary)
                     .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                 }
                 .buttonStyle(.plain)
@@ -434,10 +435,10 @@ struct BillingContainerView: View {
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(localized(method.titleKey))
                                     .font(.du(14, weight: .semibold))
-                                    .foregroundColor(DUTheme.ink)
+                                    .foregroundColor(theme.colors.text.primary)
                                 Text(methodDescription(method))
                                     .font(.du(11, weight: .medium))
-                                    .foregroundColor(DUTheme.inkTertiary)
+                                    .foregroundColor(theme.colors.text.tertiary)
                             }
 
                             Spacer()
@@ -445,12 +446,12 @@ struct BillingContainerView: View {
                             ZStack {
                                 Circle()
                                     .strokeBorder(
-                                        viewModel.selectedPaymentMethod == method ? DUTheme.cyan : DUTheme.line,
+                                        viewModel.selectedPaymentMethod == method ? theme.colors.brand.primary : theme.colors.border.default,
                                         lineWidth: 2
                                     )
                                     .background(
                                         Circle()
-                                            .fill(viewModel.selectedPaymentMethod == method ? DUTheme.cyan : .clear)
+                                            .fill(viewModel.selectedPaymentMethod == method ? theme.colors.brand.primary : .clear)
                                     )
                                     .frame(width: 22, height: 22)
 
@@ -463,7 +464,7 @@ struct BillingContainerView: View {
                         }
                         .padding(.horizontal, DUSpacing.lg)
                         .frame(height: 62)
-                        .background(DUTheme.backgroundSecondary)
+                        .background(theme.colors.background.secondary)
                         .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
                     }
                     .buttonStyle(.plain)
@@ -486,11 +487,11 @@ struct BillingContainerView: View {
     private func methodAccentColor(_ method: BillingPaymentMethod) -> Color {
         switch method {
         case .creditCard:
-            return DUTheme.cyan
+            return theme.colors.brand.primary
         case .applePay:
-            return DUTheme.ink
+            return theme.colors.text.primary
         case .samsungPay:
-            return DUTheme.blue
+            return theme.colors.brand.secondary
         }
     }
 
@@ -509,11 +510,11 @@ struct BillingContainerView: View {
         VStack(alignment: .leading, spacing: 4) {
             Text(title)
                 .font(.du(24, weight: .bold))
-                .foregroundColor(DUTheme.ink)
+                .foregroundColor(theme.colors.text.primary)
             if let subtitle, !subtitle.isEmpty {
                 Text(subtitle)
                     .font(.du(13, weight: .medium))
-                    .foregroundColor(DUTheme.inkSecondary)
+                    .foregroundColor(theme.colors.text.secondary)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -525,13 +526,13 @@ struct BillingContainerView: View {
                 VStack(alignment: .leading, spacing: DUSpacing.xs) {
                     Text(displayBillCycle(invoice))
                         .font(.du(17, weight: .bold))
-                        .foregroundColor(DUTheme.ink)
+                        .foregroundColor(theme.colors.text.primary)
 
                     let metaText = invoiceMetaText(invoice)
                     if !metaText.isEmpty {
                         Text(metaText)
                             .font(.du(12, weight: .medium))
-                            .foregroundColor(DUTheme.inkSecondary)
+                            .foregroundColor(theme.colors.text.secondary)
                     }
                 }
 
@@ -598,27 +599,27 @@ struct BillingContainerView: View {
         VStack(alignment: .leading, spacing: DUSpacing.xs) {
             Text(localized(titleKey))
                 .font(.du(11, weight: .medium))
-                .foregroundColor(DUTheme.inkTertiary)
+                .foregroundColor(theme.colors.text.tertiary)
             Text(value)
                 .font(.du(14, weight: .bold))
-                .foregroundColor(DUTheme.ink)
+                .foregroundColor(theme.colors.text.primary)
                 .lineLimit(1)
                 .minimumScaleFactor(0.8)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(DUSpacing.md)
-        .background(DUTheme.backgroundSecondary)
+        .background(theme.colors.background.secondary)
         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
     }
 
     private func statusBadge(_ status: BillingInvoiceStatus) -> some View {
         Text(localized(status.titleKey))
             .font(.du(11, weight: .semibold))
-            .foregroundColor(status == .completed ? DUTheme.success : DUTheme.warning)
+            .foregroundColor(status == .completed ? theme.colors.status.success : theme.colors.status.warning)
             .padding(.horizontal, DUSpacing.md)
             .frame(height: 28)
             .background(
-                (status == .completed ? DUTheme.successBackground : DUTheme.warningBackground)
+                status == .completed ? theme.colors.status.successBackground : theme.colors.status.warningBackground
             )
             .clipShape(Capsule())
     }
@@ -637,16 +638,16 @@ struct BillingContainerView: View {
             ProgressView()
             Text(localized("billing.state.loadingTitle"))
                 .font(.du(15, weight: .semibold))
-                .foregroundColor(DUTheme.inkSecondary)
+                .foregroundColor(theme.colors.text.secondary)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(DUTheme.background.ignoresSafeArea())
+        .background(theme.colors.background.canvas.ignoresSafeArea())
     }
 
     private var billingEmptyState: some View {
         DUStateView(
             systemImage: "doc.text.magnifyingglass",
-            iconColor: DUTheme.cyan,
+            iconColor: theme.colors.brand.primary,
             title: localized("billing.empty.title"),
             subtitle: localized("billing.empty.subtitle"),
             actionTitle: localized("common.reload"),
@@ -661,7 +662,7 @@ struct BillingContainerView: View {
     private func billingErrorState(message: LocalizedTextValue, action: @escaping () -> Void) -> some View {
         DUStateView(
             systemImage: "wifi.exclamationmark",
-            iconColor: DUTheme.error,
+            iconColor: theme.colors.status.error,
             title: localized("billing.state.errorTitle"),
             subtitle: localized(message),
             actionTitle: localized("common.retry"),
@@ -707,6 +708,7 @@ struct BillingContainerView: View {
 }
 
 private struct BillingDetailView: View {
+    @Environment(\.duTheme) private var theme
     @EnvironmentObject private var languageStore: AppLanguageStore
     @ObservedObject var viewModel: BillingViewModel
 
@@ -761,7 +763,7 @@ private struct BillingDetailView: View {
             .padding(DUSpacing.lg)
             .padding(.bottom, DUSpacing.xxxl)
         }
-        .background(DUTheme.background.ignoresSafeArea())
+        .background(theme.colors.background.canvas.ignoresSafeArea())
         .navigationTitle(localized("billing.detail.title"))
         .navigationBarTitleDisplayMode(.inline)
     }
@@ -779,14 +781,14 @@ private struct BillingDetailView: View {
         VStack(alignment: .leading, spacing: DUSpacing.xs) {
             Text(title)
                 .font(.du(11, weight: .medium))
-                .foregroundColor(DUTheme.inkTertiary)
+                .foregroundColor(theme.colors.text.tertiary)
             Text(value)
                 .font(.du(16, weight: .bold))
-                .foregroundColor(DUTheme.ink)
+                .foregroundColor(theme.colors.text.primary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(DUSpacing.lg)
-        .background(DUTheme.panel)
+        .background(theme.colors.surface.card)
         .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
     }
 
@@ -796,21 +798,21 @@ private struct BillingDetailView: View {
         return DUSectionCard(title: localized("billing.detail.visualBill"), spacing: DUSpacing.md) {
             VStack(spacing: DUSpacing.md) {
                 HStack(spacing: DUSpacing.md) {
-                    visualMetric(titleKey: "billing.visual.monthlyFee", value: breakdown.monthlyFeeText, tint: DUTheme.cyan)
-                    visualMetric(titleKey: "billing.visual.otherCharges", value: breakdown.otherChargesText, tint: DUTheme.blue)
+                    visualMetric(titleKey: "billing.visual.monthlyFee", value: breakdown.monthlyFeeText, tint: theme.colors.brand.primary)
+                    visualMetric(titleKey: "billing.visual.otherCharges", value: breakdown.otherChargesText, tint: theme.colors.brand.secondary)
                 }
 
                 RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .fill(DUTheme.backgroundSecondary)
+                    .fill(theme.colors.background.secondary)
                     .frame(height: 18)
                     .overlay(alignment: .leading) {
                         GeometryReader { proxy in
                             HStack(spacing: 0) {
                                 RoundedRectangle(cornerRadius: 18, style: .continuous)
-                                    .fill(DUTheme.cyan)
+                                    .fill(theme.colors.brand.primary)
                                     .frame(width: proxy.size.width * 0.68)
                                 RoundedRectangle(cornerRadius: 18, style: .continuous)
-                                    .fill(DUTheme.blueLight)
+                                    .fill(theme.colors.brand.secondaryLight)
                             }
                         }
                     }
@@ -822,17 +824,17 @@ private struct BillingDetailView: View {
         VStack(alignment: .leading, spacing: DUSpacing.xs) {
             Text(localized(titleKey))
                 .font(.du(11, weight: .medium))
-                .foregroundColor(DUTheme.inkTertiary)
+                .foregroundColor(theme.colors.text.tertiary)
             Text(value)
                 .font(.du(14, weight: .bold))
-                .foregroundColor(DUTheme.ink)
+                .foregroundColor(theme.colors.text.primary)
             Capsule()
                 .fill(tint)
                 .frame(width: 22, height: 4)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(DUSpacing.md)
-        .background(DUTheme.backgroundSecondary)
+        .background(theme.colors.background.secondary)
         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
     }
 
@@ -854,20 +856,20 @@ private struct BillingDetailView: View {
                 HStack(spacing: DUSpacing.sm) {
                     Image(systemName: "square.and.pencil")
                         .font(.du(14, weight: .bold))
-                        .foregroundColor(DUTheme.cyan)
+                        .foregroundColor(theme.colors.brand.primary)
 
                     TextField("0.00", text: $amountText)
                         .keyboardType(.decimalPad)
                         .font(.du(22, weight: .bold))
-                        .foregroundColor(DUTheme.ink)
+                        .foregroundColor(theme.colors.text.primary)
 
                     Text("AED")
                         .font(.du(14, weight: .bold))
-                        .foregroundColor(DUTheme.inkTertiary)
+                        .foregroundColor(theme.colors.text.tertiary)
                 }
                 .padding(.horizontal, DUSpacing.lg)
                 .frame(height: 58)
-                .background(DUTheme.backgroundSecondary)
+                .background(theme.colors.background.secondary)
                 .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
             }
         }
@@ -893,10 +895,10 @@ private struct BillingDetailView: View {
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(localized(method.titleKey))
                                     .font(.du(14, weight: .semibold))
-                                    .foregroundColor(DUTheme.ink)
+                                    .foregroundColor(theme.colors.text.primary)
                                 Text(detailMethodDescription(method))
                                     .font(.du(11, weight: .medium))
-                                    .foregroundColor(DUTheme.inkTertiary)
+                                    .foregroundColor(theme.colors.text.tertiary)
                             }
 
                             Spacer()
@@ -904,12 +906,12 @@ private struct BillingDetailView: View {
                             ZStack {
                                 Circle()
                                     .strokeBorder(
-                                        viewModel.selectedPaymentMethod == method ? DUTheme.cyan : DUTheme.line,
+                                        viewModel.selectedPaymentMethod == method ? theme.colors.brand.primary : theme.colors.border.default,
                                         lineWidth: 2
                                     )
                                     .background(
                                         Circle()
-                                            .fill(viewModel.selectedPaymentMethod == method ? DUTheme.cyan : .clear)
+                                            .fill(viewModel.selectedPaymentMethod == method ? theme.colors.brand.primary : .clear)
                                     )
                                     .frame(width: 22, height: 22)
 
@@ -922,7 +924,7 @@ private struct BillingDetailView: View {
                         }
                         .padding(.horizontal, DUSpacing.lg)
                         .frame(height: 62)
-                        .background(DUTheme.backgroundSecondary)
+                        .background(theme.colors.background.secondary)
                         .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
                     }
                     .buttonStyle(.plain)
@@ -945,11 +947,11 @@ private struct BillingDetailView: View {
     private func detailMethodAccentColor(_ method: BillingPaymentMethod) -> Color {
         switch method {
         case .creditCard:
-            return DUTheme.cyan
+            return theme.colors.brand.primary
         case .applePay:
-            return DUTheme.ink
+            return theme.colors.text.primary
         case .samsungPay:
-            return DUTheme.blue
+            return theme.colors.brand.secondary
         }
     }
 
@@ -978,11 +980,11 @@ private struct BillingDetailView: View {
         HStack {
             Text(localized(titleKey))
                 .font(.du(13, weight: .medium))
-                .foregroundColor(DUTheme.inkSecondary)
+                .foregroundColor(theme.colors.text.secondary)
             Spacer()
             Text(value)
                 .font(.du(13, weight: .semibold))
-                .foregroundColor(DUTheme.ink)
+                .foregroundColor(theme.colors.text.primary)
                 .multilineTextAlignment(.trailing)
         }
     }
@@ -993,6 +995,7 @@ private struct BillingDetailView: View {
 }
 
 private struct BillingUnbilledDetailView: View {
+    @Environment(\.duTheme) private var theme
     @EnvironmentObject private var languageStore: AppLanguageStore
 
     let estimate: BillingUnbilledEstimate
@@ -1008,7 +1011,7 @@ private struct BillingUnbilledDetailView: View {
             .padding(DUSpacing.lg)
             .padding(.bottom, DUSpacing.xxxl)
         }
-        .background(DUTheme.background.ignoresSafeArea())
+        .background(theme.colors.background.canvas.ignoresSafeArea())
         .navigationTitle(localized("billing.unbilledDetail.title"))
         .navigationBarTitleDisplayMode(.inline)
     }
@@ -1017,7 +1020,7 @@ private struct BillingUnbilledDetailView: View {
         VStack(alignment: .leading, spacing: 4) {
             Text(localized("billing.unbilledDetail.title"))
                 .font(.du(24, weight: .bold))
-                .foregroundColor(DUTheme.ink)
+                .foregroundColor(theme.colors.text.primary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -1053,8 +1056,8 @@ private struct BillingUnbilledDetailView: View {
             }
         }
         .padding(DUSpacing.xl)
-        .background(DUTheme.brandGradient)
-        .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+        .background(theme.colors.gradient.brand)
+        .clipShape(RoundedRectangle(cornerRadius: theme.components.card.cornerRadius, style: .continuous))
     }
 
     private func heroMetric(title: String, value: String) -> some View {
@@ -1079,11 +1082,11 @@ private struct BillingUnbilledDetailView: View {
                     HStack {
                         Text(localized(item.titleKey))
                             .font(.du(13, weight: .medium))
-                            .foregroundColor(DUTheme.inkSecondary)
+                            .foregroundColor(theme.colors.text.secondary)
                         Spacer()
                         Text(item.amountText)
                             .font(.du(14, weight: .bold))
-                            .foregroundColor(DUTheme.ink)
+                            .foregroundColor(theme.colors.text.primary)
                     }
                 }
             }
@@ -1098,15 +1101,15 @@ private struct BillingUnbilledDetailView: View {
                         HStack {
                             Text(localized(item.titleKey))
                                 .font(.du(13, weight: .semibold))
-                                .foregroundColor(DUTheme.ink)
+                                .foregroundColor(theme.colors.text.primary)
                             Spacer()
                             Text(item.valueText)
                                 .font(.du(12, weight: .medium))
-                                .foregroundColor(DUTheme.inkSecondary)
+                                .foregroundColor(theme.colors.text.secondary)
                         }
 
                         ProgressView(value: item.progress)
-                            .tint(DUTheme.cyan)
+                            .tint(theme.colors.brand.primary)
                     }
                 }
             }
@@ -1118,6 +1121,7 @@ private struct BillingUnbilledDetailView: View {
 }
 
 private struct BillingSubmissionView: View {
+    @Environment(\.duTheme) private var theme
     @EnvironmentObject private var languageStore: AppLanguageStore
 
     let statusText: String
@@ -1129,22 +1133,22 @@ private struct BillingSubmissionView: View {
 
             ZStack {
                 Circle()
-                    .fill(DUTheme.successBackground)
+                    .fill(theme.colors.status.successBackground)
                     .frame(width: 110, height: 110)
                 Image(systemName: "paperplane.fill")
                     .font(.du(34, weight: .bold))
-                    .foregroundColor(DUTheme.success)
+                    .foregroundColor(theme.colors.status.success)
             }
 
             VStack(spacing: DUSpacing.sm) {
                 Text(statusText)
                     .font(.du(28, weight: .bold))
-                    .foregroundColor(DUTheme.ink)
+                    .foregroundColor(theme.colors.text.primary)
                     .multilineTextAlignment(.center)
 
                 Text(localized("billing.submission.subtitle"))
                     .font(.du(14, weight: .medium))
-                    .foregroundColor(DUTheme.inkSecondary)
+                    .foregroundColor(theme.colors.text.secondary)
                     .multilineTextAlignment(.center)
             }
             .padding(.horizontal, DUSpacing.xl)
@@ -1156,7 +1160,7 @@ private struct BillingSubmissionView: View {
                 .padding(.horizontal, DUSpacing.lg)
                 .padding(.bottom, DUSpacing.xxxl)
         }
-        .background(DUTheme.background.ignoresSafeArea())
+        .background(theme.colors.background.canvas.ignoresSafeArea())
     }
 
     private func localized(_ key: String, arguments: [String] = []) -> String {

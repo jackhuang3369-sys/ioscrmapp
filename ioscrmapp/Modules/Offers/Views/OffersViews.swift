@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct OffersLandingView: View {
+    @Environment(\.duTheme) private var theme
     @EnvironmentObject private var languageStore: AppLanguageStore
     @ObservedObject var viewModel: OffersViewModel
     let onOpenDIY: () -> Void
@@ -24,7 +25,7 @@ struct OffersLandingView: View {
                         .padding(DUSpacing.lg)
                         .padding(.bottom, DUSpacing.xxxl)
                     }
-                    .background(DUTheme.background.ignoresSafeArea())
+                    .background(theme.colors.background.canvas.ignoresSafeArea())
                     .refreshable {
                         await viewModel.refreshLanding()
                     }
@@ -47,7 +48,7 @@ struct OffersLandingView: View {
         VStack(alignment: .leading, spacing: DUSpacing.xs) {
             Text(localized("offers.landing.title"))
                 .font(.du(28, weight: .bold))
-                .foregroundColor(DUTheme.ink)
+                .foregroundColor(theme.colors.text.primary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -66,7 +67,7 @@ struct OffersLandingView: View {
                 Spacer(minLength: DUSpacing.md)
                 Text("Data")
                     .font(.du(11, weight: .bold))
-                    .foregroundColor(DUTheme.cyan)
+                    .foregroundColor(theme.colors.brand.primary)
                     .padding(.horizontal, DUSpacing.md)
                     .frame(height: 28)
                     .background(Color.white)
@@ -79,9 +80,9 @@ struct OffersLandingView: View {
             }
         }
         .padding(DUSpacing.xl)
-        .background(DUTheme.brandGradient)
+        .background(theme.colors.gradient.brand)
         .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
-        .shadow(color: DUTheme.cyan.opacity(0.18), radius: 18, x: 0, y: 10)
+        .shadow(color: theme.colors.brand.primary.opacity(0.18), radius: 18, x: 0, y: 10)
     }
 
     private func subscribedOffersCard(_ offers: [SubscribedOfferItem]) -> some View {
@@ -97,7 +98,7 @@ struct OffersLandingView: View {
             if offers.isEmpty {
                 Text(localized("offers.subscribed.empty"))
                     .font(.du(14, weight: .medium))
-                    .foregroundColor(DUTheme.inkSecondary)
+                    .foregroundColor(theme.colors.text.secondary)
             } else if viewModel.isSubscribedExpanded {
                 VStack(spacing: DUSpacing.md) {
                     ForEach(offers) { offer in
@@ -107,7 +108,7 @@ struct OffersLandingView: View {
             } else {
                 Text(localized("offers.subscribed.summary", arguments: ["\(offers.count)"]))
                     .font(.du(14, weight: .medium))
-                    .foregroundColor(DUTheme.inkSecondary)
+                    .foregroundColor(theme.colors.text.secondary)
             }
         }
     }
@@ -118,13 +119,13 @@ struct OffersLandingView: View {
                 VStack(alignment: .leading, spacing: DUSpacing.xs) {
                     Text(offer.offerName)
                         .font(.du(16, weight: .bold))
-                        .foregroundColor(DUTheme.ink)
+                        .foregroundColor(theme.colors.text.primary)
                     Text(offer.offerCategory)
                         .font(.du(11, weight: .bold))
-                        .foregroundColor(DUTheme.cyan)
+                        .foregroundColor(theme.colors.brand.primary)
                         .padding(.horizontal, DUSpacing.sm)
                         .frame(height: 24)
-                        .background(DUTheme.cyanBackground)
+                        .background(theme.colors.action.primaryBackground)
                         .clipShape(Capsule())
                 }
                 Spacer()
@@ -154,11 +155,11 @@ struct OffersLandingView: View {
             }
         }
         .padding(DUSpacing.lg)
-        .background(DUTheme.background)
+        .background(theme.colors.background.canvas)
         .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .stroke(DUTheme.lineLight, lineWidth: 1)
+                .stroke(theme.colors.border.subtle, lineWidth: 1)
         )
     }
 
@@ -187,36 +188,36 @@ struct OffersLandingView: View {
             ProgressView()
             Text(localized("offers.state.loadingTitle"))
                 .font(.du(15, weight: .medium))
-                .foregroundColor(DUTheme.inkSecondary)
+                .foregroundColor(theme.colors.text.secondary)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(DUTheme.background.ignoresSafeArea())
+        .background(theme.colors.background.canvas.ignoresSafeArea())
     }
 
     private func errorState(message: LocalizedTextValue) -> some View {
         DUStateView(
             systemImage: "wifi.exclamationmark",
-            iconColor: DUTheme.error,
+            iconColor: theme.colors.status.error,
             title: localized("offers.state.errorTitle"),
             subtitle: localized(message),
             actionTitle: localized("common.retry")
         ) {
             Task { await viewModel.refreshLanding() }
         }
-        .background(DUTheme.background.ignoresSafeArea())
+        .background(theme.colors.background.canvas.ignoresSafeArea())
     }
 
     private var emptyState: some View {
         DUStateView(
             systemImage: "tray",
-            iconColor: DUTheme.warning,
+            iconColor: theme.colors.status.warning,
             title: localized("offers.empty.title"),
             subtitle: localized("offers.empty.subtitle"),
             actionTitle: localized("common.reload")
         ) {
             Task { await viewModel.refreshLanding() }
         }
-        .background(DUTheme.background.ignoresSafeArea())
+        .background(theme.colors.background.canvas.ignoresSafeArea())
     }
 
     private func detailPill(title: String, value: String) -> some View {
@@ -238,14 +239,14 @@ struct OffersLandingView: View {
         VStack(alignment: .leading, spacing: DUSpacing.xs) {
             Text(title)
                 .font(.du(11, weight: .semibold))
-                .foregroundColor(DUTheme.inkTertiary)
+                .foregroundColor(theme.colors.text.tertiary)
             Text(value)
                 .font(.du(14, weight: .bold))
-                .foregroundColor(DUTheme.ink)
+                .foregroundColor(theme.colors.text.primary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(DUSpacing.md)
-        .background(DUTheme.panel)
+        .background(theme.colors.surface.card)
         .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
     }
 
@@ -259,6 +260,7 @@ struct OffersLandingView: View {
 }
 
 struct OffersPurchaseListView: View {
+    @Environment(\.duTheme) private var theme
     @EnvironmentObject private var languageStore: AppLanguageStore
     @ObservedObject var viewModel: OffersViewModel
 
@@ -293,7 +295,7 @@ struct OffersPurchaseListView: View {
                         if viewModel.filteredEligibleOffers.isEmpty {
                             DUStateView(
                                 systemImage: "line.3.horizontal.decrease.circle",
-                                iconColor: DUTheme.warning,
+                                iconColor: theme.colors.status.warning,
                                 title: localized("offers.purchase.emptyFiltered.title"),
                                 subtitle: localized("offers.purchase.emptyFiltered.subtitle"),
                                 actionTitle: localized("offers.filters.reset")
@@ -316,7 +318,7 @@ struct OffersPurchaseListView: View {
                 }
             }
         }
-        .background(DUTheme.background.ignoresSafeArea())
+        .background(theme.colors.background.canvas.ignoresSafeArea())
         .refreshable {
             await viewModel.refreshPurchaseList()
         }
@@ -348,10 +350,10 @@ struct OffersPurchaseListView: View {
         .padding(.horizontal, DUSpacing.lg)
         .padding(.top, DUSpacing.md)
         .padding(.bottom, DUSpacing.md)
-        .background(DUTheme.background)
+        .background(theme.colors.background.canvas)
         .overlay(alignment: .bottom) {
             Rectangle()
-                .fill(DUTheme.lineLight)
+                .fill(theme.colors.border.subtle)
                 .frame(height: 1)
         }
     }
@@ -373,10 +375,10 @@ struct OffersPurchaseListView: View {
                         .lineLimit(1)
                         .fixedSize(horizontal: true, vertical: false)
                 }
-                .foregroundColor(DUTheme.ink)
+                .foregroundColor(theme.colors.text.primary)
                 .padding(.horizontal, DUSpacing.md)
                 .frame(height: 40)
-                .background(DUTheme.panel)
+                .background(theme.colors.surface.card)
                 .clipShape(Capsule())
                 .fixedSize(horizontal: true, vertical: false)
             }
@@ -392,10 +394,10 @@ struct OffersPurchaseListView: View {
                         .lineLimit(1)
                         .fixedSize(horizontal: true, vertical: false)
                 }
-                .foregroundColor(DUTheme.ink)
+                .foregroundColor(theme.colors.text.primary)
                 .padding(.horizontal, DUSpacing.md)
                 .frame(height: 40)
-                .background(DUTheme.panel)
+                .background(theme.colors.surface.card)
                 .clipShape(Capsule())
                 .fixedSize(horizontal: true, vertical: false)
             }
@@ -417,7 +419,7 @@ struct OffersPurchaseListView: View {
                     VStack(alignment: .leading, spacing: DUSpacing.xs) {
                         Text(offer.offerName)
                             .font(.du(17, weight: .bold))
-                            .foregroundColor(DUTheme.ink)
+                            .foregroundColor(theme.colors.text.primary)
                         HStack(spacing: DUSpacing.sm) {
                             offerBadge(offer.offerType)
                             if let validityRaw = offer.validityRaw, !validityRaw.isEmpty {
@@ -430,7 +432,7 @@ struct OffersPurchaseListView: View {
                         if let priceText = offer.displayPriceText, !priceText.isEmpty {
                             Text(priceText)
                                 .font(.du(18, weight: .bold))
-                                .foregroundColor(DUTheme.cyan)
+                                .foregroundColor(theme.colors.brand.primary)
                                 .multilineTextAlignment(.trailing)
                                 .environment(\.layoutDirection, .leftToRight)
                         }
@@ -441,34 +443,34 @@ struct OffersPurchaseListView: View {
                     HStack(spacing: DUSpacing.sm) {
                         Image(systemName: "antenna.radiowaves.left.and.right")
                             .font(.du(12, weight: .bold))
-                            .foregroundColor(DUTheme.cyan)
+                            .foregroundColor(theme.colors.brand.primary)
                         Text(resourceSummary)
                             .font(.du(13, weight: .medium))
-                            .foregroundColor(DUTheme.inkSecondary)
+                            .foregroundColor(theme.colors.text.secondary)
                     }
                 }
 
                 HStack {
                     Text(localized("offers.purchase.popularRank", arguments: ["\((offer.popularRank ?? offer.originalIndex + 1))"]))
                         .font(.du(12, weight: .semibold))
-                        .foregroundColor(DUTheme.inkTertiary)
+                        .foregroundColor(theme.colors.text.tertiary)
                     Spacer()
                     HStack(spacing: DUSpacing.xs) {
                         Text(localized("offers.purchase.viewDetail"))
                             .font(.du(12, weight: .semibold))
-                            .foregroundColor(DUTheme.inkSecondary)
+                            .foregroundColor(theme.colors.text.secondary)
                         Image(systemName: "chevron.forward")
                             .font(.du(11, weight: .bold))
-                            .foregroundColor(DUTheme.inkDisabled)
+                            .foregroundColor(theme.colors.text.disabled)
                     }
                 }
             }
             .padding(DUSpacing.lg)
-            .background(DUTheme.panel)
+            .background(theme.colors.surface.card)
             .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .stroke(DUTheme.lineLight, lineWidth: 1)
+                    .stroke(theme.colors.border.subtle, lineWidth: 1)
             )
         }
         .buttonStyle(.plain)
@@ -505,37 +507,37 @@ struct OffersPurchaseListView: View {
             ProgressView()
             Text(localized("offers.state.loadingTitle"))
                 .font(.du(15, weight: .medium))
-                .foregroundColor(DUTheme.inkSecondary)
+                .foregroundColor(theme.colors.text.secondary)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(DUTheme.background.ignoresSafeArea())
+        .background(theme.colors.background.canvas.ignoresSafeArea())
     }
 
     private func purchaseErrorState(message: LocalizedTextValue) -> some View {
         DUStateView(
             systemImage: "wifi.exclamationmark",
-            iconColor: DUTheme.error,
+            iconColor: theme.colors.status.error,
             title: localized("offers.state.errorTitle"),
             subtitle: localized(message),
             actionTitle: localized("common.retry")
         ) {
             Task { await viewModel.refreshPurchaseList() }
         }
-        .background(DUTheme.background.ignoresSafeArea())
+        .background(theme.colors.background.canvas.ignoresSafeArea())
     }
 
     private func filterChip(title: String, isSelected: Bool, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Text(title)
                 .font(.du(13, weight: .semibold))
-                .foregroundColor(isSelected ? .white : DUTheme.ink)
+                .foregroundColor(isSelected ? .white : theme.colors.text.primary)
                 .padding(.horizontal, DUSpacing.lg)
                 .frame(height: 38)
                 .background(filterChipBackground(isSelected: isSelected))
                 .clipShape(Capsule())
                 .overlay(
                     Capsule()
-                        .stroke(isSelected ? Color.clear : DUTheme.lineLight, lineWidth: 1)
+                        .stroke(isSelected ? Color.clear : theme.colors.border.subtle, lineWidth: 1)
                 )
         }
         .buttonStyle(.plain)
@@ -546,14 +548,14 @@ struct OffersPurchaseListView: View {
             Text(title)
                 .font(.du(12, weight: .semibold))
                 .lineLimit(1)
-                .foregroundColor(isSelected ? .white : DUTheme.ink)
+                .foregroundColor(isSelected ? .white : theme.colors.text.primary)
                 .padding(.horizontal, DUSpacing.md)
                 .frame(height: 34)
                 .background(filterChipBackground(isSelected: isSelected))
                 .clipShape(Capsule())
                 .overlay(
                     Capsule()
-                        .stroke(isSelected ? Color.clear : DUTheme.lineLight, lineWidth: 1)
+                        .stroke(isSelected ? Color.clear : theme.colors.border.subtle, lineWidth: 1)
                 )
         }
         .buttonStyle(.plain)
@@ -563,29 +565,29 @@ struct OffersPurchaseListView: View {
     private func filterChipBackground(isSelected: Bool) -> some View {
         let shape = Capsule()
         if isSelected {
-            shape.fill(DUTheme.brandGradient)
+            shape.fill(theme.colors.gradient.brand)
         } else {
-            shape.fill(DUTheme.panel)
+            shape.fill(theme.colors.surface.card)
         }
     }
 
     private func offerBadge(_ title: String) -> some View {
         Text(title)
             .font(.du(11, weight: .bold))
-            .foregroundColor(DUTheme.cyan)
+            .foregroundColor(theme.colors.brand.primary)
             .padding(.horizontal, DUSpacing.sm)
             .frame(height: 24)
-            .background(DUTheme.cyanBackground)
+            .background(theme.colors.action.primaryBackground)
             .clipShape(Capsule())
     }
 
     private func subtleBadge(_ title: String) -> some View {
         Text(title)
             .font(.du(11, weight: .bold))
-            .foregroundColor(DUTheme.inkSecondary)
+            .foregroundColor(theme.colors.text.secondary)
             .padding(.horizontal, DUSpacing.sm)
             .frame(height: 24)
-            .background(DUTheme.backgroundSecondary)
+            .background(theme.colors.background.secondary)
             .clipShape(Capsule())
     }
 
@@ -599,6 +601,7 @@ struct OffersPurchaseListView: View {
 }
 
 struct OffersOrdersView: View {
+    @Environment(\.duTheme) private var theme
     @EnvironmentObject private var languageStore: AppLanguageStore
     @ObservedObject var viewModel: OffersViewModel
     @State private var isDateFilterPresented = false
@@ -663,22 +666,22 @@ struct OffersOrdersView: View {
                         if viewModel.orderEntrySource == .diy {
                             HStack(spacing: DUSpacing.sm) {
                                 Image(systemName: "arrowshape.turn.up.forward.fill")
-                                    .foregroundColor(DUTheme.cyan)
+                                    .foregroundColor(theme.colors.brand.primary)
                                 Text(localized("offers.orders.entryFromDIY"))
                                     .font(.du(13, weight: .bold))
-                                    .foregroundColor(DUTheme.cyan)
+                                    .foregroundColor(theme.colors.brand.primary)
                                 Spacer()
                             }
                             .padding(DUSpacing.md)
                             .frame(maxWidth: .infinity, alignment: .leading)
-                            .background(DUTheme.cyanBackground)
+                            .background(theme.colors.action.primaryBackground)
                             .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
                         }
 
                         if let snapshot = viewModel.ordersSnapshot, snapshot.records.isEmpty {
                             DUStateView(
                                 systemImage: "clock.arrow.circlepath",
-                                iconColor: DUTheme.warning,
+                                iconColor: theme.colors.status.warning,
                                 title: localized("offers.orders.empty.title"),
                                 subtitle: localized("offers.orders.empty.subtitle"),
                                 actionTitle: localized("offers.filters.reset")
@@ -702,7 +705,7 @@ struct OffersOrdersView: View {
                                         ProgressView()
                                         Text(localized("offers.orders.loadingMore"))
                                             .font(.du(12, weight: .medium))
-                                            .foregroundColor(DUTheme.inkSecondary)
+                                            .foregroundColor(theme.colors.text.secondary)
                                     }
                                     .frame(maxWidth: .infinity)
                                     .padding(.vertical, DUSpacing.md)
@@ -717,7 +720,7 @@ struct OffersOrdersView: View {
                 }
             }
         }
-        .background(DUTheme.background.ignoresSafeArea())
+        .background(theme.colors.background.canvas.ignoresSafeArea())
         .refreshable {
             await viewModel.refreshOrders()
         }
@@ -760,10 +763,10 @@ struct OffersOrdersView: View {
                                 .font(.du(12, weight: .semibold))
                                 .lineLimit(1)
                         }
-                        .foregroundColor(DUTheme.cyan)
+                        .foregroundColor(theme.colors.brand.primary)
                         .padding(.horizontal, DUSpacing.md)
                         .frame(height: 34)
-                        .background(DUTheme.cyanBackground)
+                        .background(theme.colors.action.primaryBackground)
                         .clipShape(Capsule())
                     }
                     .buttonStyle(.plain)
@@ -778,10 +781,10 @@ struct OffersOrdersView: View {
                                 .font(.du(12, weight: .semibold))
                                 .lineLimit(1)
                         }
-                        .foregroundColor(DUTheme.ink)
+                        .foregroundColor(theme.colors.text.primary)
                         .padding(.horizontal, DUSpacing.md)
                         .frame(height: 34)
-                        .background(DUTheme.panel)
+                        .background(theme.colors.surface.card)
                         .clipShape(Capsule())
                     }
                     .buttonStyle(.plain)
@@ -789,11 +792,11 @@ struct OffersOrdersView: View {
             }
             .padding(.horizontal, DUSpacing.lg)
             .padding(.vertical, DUSpacing.md)
-            .background(DUTheme.background)
+            .background(theme.colors.background.canvas)
         }
         .overlay(alignment: .bottom) {
             Rectangle()
-                .fill(DUTheme.lineLight)
+                .fill(theme.colors.border.subtle)
                 .frame(height: 1)
         }
     }
@@ -807,10 +810,10 @@ struct OffersOrdersView: View {
                     VStack(alignment: .leading, spacing: DUSpacing.xs) {
                         Text(record.offerName)
                             .font(.du(16, weight: .bold))
-                            .foregroundColor(DUTheme.ink)
+                            .foregroundColor(theme.colors.text.primary)
                         Text("#\(record.orderId)")
                             .font(.du(12, weight: .semibold))
-                            .foregroundColor(DUTheme.ink)
+                            .foregroundColor(theme.colors.text.primary)
                     }
 
                     Spacer()
@@ -838,25 +841,25 @@ struct OffersOrdersView: View {
                 HStack {
                     Text(record.createdTimeText)
                         .font(.du(12, weight: .medium))
-                        .foregroundColor(DUTheme.inkSecondary)
+                        .foregroundColor(theme.colors.text.secondary)
                     Spacer()
                     HStack(spacing: DUSpacing.xs) {
                         Text(localized("offers.purchase.viewDetail"))
                             .font(.du(12, weight: .semibold))
-                            .foregroundColor(DUTheme.inkSecondary)
+                            .foregroundColor(theme.colors.text.secondary)
                         Image(systemName: "chevron.right")
                             .font(.du(11, weight: .bold))
-                            .foregroundColor(DUTheme.inkTertiary)
+                            .foregroundColor(theme.colors.text.tertiary)
                     }
                 }
             }
             .padding(.horizontal, DUSpacing.lg)
             .padding(.vertical, DUSpacing.md)
-            .background(DUTheme.panel)
+            .background(theme.colors.surface.card)
             .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .stroke(DUTheme.lineLight, lineWidth: 1)
+                    .stroke(theme.colors.border.subtle, lineWidth: 1)
             )
         }
         .buttonStyle(.plain)
@@ -866,15 +869,15 @@ struct OffersOrdersView: View {
         VStack(alignment: .leading, spacing: DUSpacing.xs) {
             Text(title)
                 .font(.du(11, weight: .semibold))
-                .foregroundColor(DUTheme.inkTertiary)
+                .foregroundColor(theme.colors.text.tertiary)
             Text(value)
                 .font(.du(13, weight: .bold))
-                .foregroundColor(DUTheme.ink)
+                .foregroundColor(theme.colors.text.primary)
                 .environment(\.layoutDirection, .leftToRight)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(DUSpacing.md)
-        .background(DUTheme.background)
+        .background(theme.colors.background.canvas)
         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
     }
 
@@ -883,23 +886,23 @@ struct OffersOrdersView: View {
             ProgressView()
             Text(localized("offers.state.loadingTitle"))
                 .font(.du(15, weight: .medium))
-                .foregroundColor(DUTheme.inkSecondary)
+                .foregroundColor(theme.colors.text.secondary)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(DUTheme.background.ignoresSafeArea())
+        .background(theme.colors.background.canvas.ignoresSafeArea())
     }
 
     private func errorState(message: LocalizedTextValue) -> some View {
         DUStateView(
             systemImage: "clock.badge.exclamationmark",
-            iconColor: DUTheme.error,
+            iconColor: theme.colors.status.error,
             title: localized("offers.state.errorTitle"),
             subtitle: localized(message),
             actionTitle: localized("common.retry")
         ) {
             Task { await viewModel.refreshOrders() }
         }
-        .background(DUTheme.background.ignoresSafeArea())
+        .background(theme.colors.background.canvas.ignoresSafeArea())
     }
 
     private func displayDate(_ date: Date) -> String {
@@ -922,22 +925,22 @@ struct OffersOrdersView: View {
     private func orderStatusTint(_ status: OffersOrderStatus) -> Color {
         switch status {
         case .initial:
-            return DUTheme.warning
+            return theme.colors.status.warning
         case .success:
-            return DUTheme.success
+            return theme.colors.status.success
         case .abnormal:
-            return DUTheme.error
+            return theme.colors.status.error
         }
     }
 
     private func orderStatusBackground(_ status: OffersOrderStatus) -> Color {
         switch status {
         case .initial:
-            return DUTheme.warning.opacity(0.12)
+            return theme.colors.status.warningBackground
         case .success:
-            return DUTheme.success.opacity(0.12)
+            return theme.colors.status.successBackground
         case .abnormal:
-            return DUTheme.error.opacity(0.12)
+            return theme.colors.status.errorBackground
         }
     }
 
@@ -960,7 +963,7 @@ struct OffersOrdersView: View {
         Button(action: action) {
             Text(title)
                 .font(.du(12, weight: .semibold))
-                .foregroundColor(isSelected ? .white : DUTheme.ink)
+                .foregroundColor(isSelected ? .white : theme.colors.text.primary)
                 .padding(.horizontal, DUSpacing.md)
                 .frame(height: 34)
                 .background(statusFilterBackground(isSelected: isSelected))
@@ -973,9 +976,9 @@ struct OffersOrdersView: View {
     private func statusFilterBackground(isSelected: Bool) -> some View {
         let shape = Capsule()
         if isSelected {
-            shape.fill(DUTheme.brandGradient)
+            shape.fill(theme.colors.gradient.brand)
         } else {
-            shape.fill(DUTheme.panel)
+            shape.fill(theme.colors.surface.card)
         }
     }
 
@@ -1037,6 +1040,7 @@ private enum OffersOrderDateField {
 }
 
 struct OffersDetailView: View {
+    @Environment(\.duTheme) private var theme
     @EnvironmentObject private var languageStore: AppLanguageStore
     @ObservedObject var viewModel: OffersViewModel
     let offer: EligibleOfferItem
@@ -1049,7 +1053,7 @@ struct OffersDetailView: View {
                     DUSectionCard(title: localized("offers.detail.resource")) {
                         Text(resourceSummary)
                             .font(.du(15, weight: .bold))
-                            .foregroundColor(DUTheme.ink)
+                            .foregroundColor(theme.colors.text.primary)
                     }
                 }
                 DUSectionCard(title: localized("offers.detail.rules")) {
@@ -1075,7 +1079,7 @@ struct OffersDetailView: View {
             .padding(DUSpacing.lg)
             .padding(.bottom, DUSpacing.xxxl)
         }
-        .background(DUTheme.background.ignoresSafeArea())
+        .background(theme.colors.background.canvas.ignoresSafeArea())
         .navigationTitle(localized("offers.detail.title"))
         .navigationBarTitleDisplayMode(.inline)
         .sheet(item: $viewModel.pendingSubscribeOffer) { selectedOffer in
@@ -1099,7 +1103,7 @@ struct OffersDetailView: View {
             }
         }
         .padding(DUSpacing.xl)
-        .background(DUTheme.brandGradient)
+        .background(theme.colors.gradient.brand)
         .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
     }
 
@@ -1123,10 +1127,10 @@ struct OffersDetailView: View {
         VStack(alignment: .leading, spacing: DUSpacing.xs) {
             Text(title)
                 .font(.du(13, weight: .semibold))
-                .foregroundColor(DUTheme.ink)
+                .foregroundColor(theme.colors.text.primary)
             Text(detail)
                 .font(.du(14, weight: .medium))
-                .foregroundColor(DUTheme.inkSecondary)
+                .foregroundColor(theme.colors.text.secondary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -1137,6 +1141,7 @@ struct OffersDetailView: View {
 }
 
 private struct OffersSubscribeConfirmationSheet: View {
+    @Environment(\.duTheme) private var theme
     @EnvironmentObject private var languageStore: AppLanguageStore
     @Environment(\.dismiss) private var dismiss
 
@@ -1149,7 +1154,7 @@ private struct OffersSubscribeConfirmationSheet: View {
                 VStack(alignment: .leading, spacing: DUSpacing.sm) {
                     Text(localized("offers.subscribe.title"))
                         .font(.du(24, weight: .bold))
-                        .foregroundColor(DUTheme.ink)
+                        .foregroundColor(theme.colors.text.primary)
                         .padding(.vertical, DUSpacing.sm)
 
                     DUSectionCard {
@@ -1179,7 +1184,7 @@ private struct OffersSubscribeConfirmationSheet: View {
             .padding(.horizontal, DUSpacing.lg)
             .padding(.bottom, DUSpacing.lg)
             .frame(maxWidth: .infinity, alignment: .top)
-            .background(DUTheme.background.ignoresSafeArea())
+            .background(theme.colors.background.canvas.ignoresSafeArea())
             .navigationBarTitleDisplayMode(.inline)
         }
         .navigationViewStyle(.stack)
@@ -1190,10 +1195,10 @@ private struct OffersSubscribeConfirmationSheet: View {
         VStack(alignment: .leading, spacing: DUSpacing.xs) {
             Text(title)
                 .font(.du(12, weight: .semibold))
-                .foregroundColor(DUTheme.inkTertiary)
+                .foregroundColor(theme.colors.text.tertiary)
             Text(value)
                 .font(.du(15, weight: .bold))
-                .foregroundColor(DUTheme.ink)
+                .foregroundColor(theme.colors.text.primary)
                 .environment(\.layoutDirection, .leftToRight)
         }
     }
@@ -1204,6 +1209,7 @@ private struct OffersSubscribeConfirmationSheet: View {
 }
 
 private struct OffersUnsubscribeConfirmationSheet: View {
+    @Environment(\.duTheme) private var theme
     @EnvironmentObject private var languageStore: AppLanguageStore
     @Environment(\.dismiss) private var dismiss
 
@@ -1216,7 +1222,7 @@ private struct OffersUnsubscribeConfirmationSheet: View {
                 VStack(alignment: .leading, spacing: DUSpacing.sm) {
                     Text(localized("offers.unsubscribe.title"))
                         .font(.du(24, weight: .bold))
-                        .foregroundColor(DUTheme.ink)
+                        .foregroundColor(theme.colors.text.primary)
                         .padding(.vertical, DUSpacing.sm)
 
                     DUSectionCard {
@@ -1246,7 +1252,7 @@ private struct OffersUnsubscribeConfirmationSheet: View {
             .padding(.horizontal, DUSpacing.lg)
             .padding(.bottom, DUSpacing.lg)
             .frame(maxWidth: .infinity, alignment: .top)
-            .background(DUTheme.background.ignoresSafeArea())
+            .background(theme.colors.background.canvas.ignoresSafeArea())
             .navigationBarTitleDisplayMode(.inline)
         }
         .navigationViewStyle(.stack)
@@ -1257,10 +1263,10 @@ private struct OffersUnsubscribeConfirmationSheet: View {
         VStack(alignment: .leading, spacing: DUSpacing.xs) {
             Text(title)
                 .font(.du(12, weight: .semibold))
-                .foregroundColor(DUTheme.inkTertiary)
+                .foregroundColor(theme.colors.text.tertiary)
             Text(value)
                 .font(.du(15, weight: .bold))
-                .foregroundColor(DUTheme.ink)
+                .foregroundColor(theme.colors.text.primary)
         }
     }
 
@@ -1270,6 +1276,7 @@ private struct OffersUnsubscribeConfirmationSheet: View {
 }
 
 private struct OffersFilterSheet: View {
+    @Environment(\.duTheme) private var theme
     @EnvironmentObject private var languageStore: AppLanguageStore
     @Environment(\.dismiss) private var dismiss
     @ObservedObject var viewModel: OffersViewModel
@@ -1332,12 +1339,12 @@ private struct OffersFilterSheet: View {
                                 } else {
                                     Text(localized("offers.filters.categoryEmpty"))
                                         .font(.du(13, weight: .medium))
-                                        .foregroundColor(DUTheme.inkSecondary)
+                                        .foregroundColor(theme.colors.text.secondary)
                                         .padding(DUSpacing.md)
                                 }
                             }
                             .padding(DUSpacing.sm)
-                            .background(DUTheme.background)
+                            .background(theme.colors.background.canvas)
                             .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
                             .frame(maxWidth: .infinity, alignment: .topLeading)
                         }
@@ -1366,7 +1373,7 @@ private struct OffersFilterSheet: View {
                 .padding(DUSpacing.lg)
                 .padding(.bottom, DUSpacing.xxxl)
             }
-            .background(DUTheme.background.ignoresSafeArea())
+            .background(theme.colors.background.canvas.ignoresSafeArea())
             .navigationTitle(localized("offers.filters.title"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -1414,26 +1421,26 @@ private struct OffersFilterSheet: View {
         VStack(alignment: .leading, spacing: DUSpacing.sm) {
             Text(title)
                 .font(.du(12, weight: .semibold))
-                .foregroundColor(DUTheme.inkTertiary)
+                .foregroundColor(theme.colors.text.tertiary)
 
             HStack(spacing: DUSpacing.sm) {
                 TextField("0", text: text)
                     .keyboardType(.decimalPad)
                     .font(.du(15, weight: .semibold))
-                    .foregroundColor(DUTheme.ink)
+                    .foregroundColor(theme.colors.text.primary)
                     .environment(\.layoutDirection, .leftToRight)
 
                 Text("AED")
                     .font(.du(12, weight: .bold))
-                    .foregroundColor(DUTheme.inkSecondary)
+                    .foregroundColor(theme.colors.text.secondary)
             }
             .padding(.horizontal, DUSpacing.md)
             .frame(height: 48)
-            .background(DUTheme.panel)
+            .background(theme.colors.surface.card)
             .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .stroke(DUTheme.lineLight, lineWidth: 1)
+                    .stroke(theme.colors.border.subtle, lineWidth: 1)
             )
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -1443,14 +1450,14 @@ private struct OffersFilterSheet: View {
         Button(action: action) {
             Text(title)
                 .font(.du(13, weight: .semibold))
-                .foregroundColor(isSelected ? .white : DUTheme.ink)
+                .foregroundColor(isSelected ? .white : theme.colors.text.primary)
                 .padding(.horizontal, DUSpacing.md)
                 .frame(height: 36)
                 .background(validityChipBackground(isSelected: isSelected))
                 .clipShape(Capsule())
                 .overlay(
                     Capsule()
-                        .stroke(isSelected ? Color.clear : DUTheme.lineLight, lineWidth: 1)
+                        .stroke(isSelected ? Color.clear : theme.colors.border.subtle, lineWidth: 1)
                 )
         }
         .buttonStyle(.plain)
@@ -1460,9 +1467,9 @@ private struct OffersFilterSheet: View {
     private func validityChipBackground(isSelected: Bool) -> some View {
         let shape = Capsule()
         if isSelected {
-            shape.fill(DUTheme.brandGradient)
+            shape.fill(theme.colors.gradient.brand)
         } else {
-            shape.fill(DUTheme.panel)
+            shape.fill(theme.colors.surface.card)
         }
     }
 
@@ -1470,15 +1477,15 @@ private struct OffersFilterSheet: View {
         Button(action: action) {
             Text(title)
                 .font(.du(13, weight: .semibold))
-                .foregroundColor(isSelected ? DUTheme.cyan : DUTheme.ink)
+                .foregroundColor(isSelected ? theme.colors.brand.primary : theme.colors.text.primary)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, DUSpacing.md)
                 .padding(.vertical, DUSpacing.md)
-                .background(isSelected ? DUTheme.cyanBackground : DUTheme.panel)
+                .background(isSelected ? theme.colors.action.primaryBackground : theme.colors.surface.card)
                 .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                 .overlay(
                     RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .stroke(isSelected ? DUTheme.cyan.opacity(0.35) : DUTheme.lineLight, lineWidth: 1)
+                        .stroke(isSelected ? theme.colors.brand.primary.opacity(0.35) : theme.colors.border.subtle, lineWidth: 1)
                 )
         }
         .buttonStyle(.plain)
@@ -1489,16 +1496,16 @@ private struct OffersFilterSheet: View {
             HStack(spacing: DUSpacing.sm) {
                 Text(title)
                     .font(.du(13, weight: .semibold))
-                    .foregroundColor(DUTheme.ink)
+                    .foregroundColor(theme.colors.text.primary)
                     .frame(maxWidth: .infinity, alignment: .leading)
 
                 Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
                     .font(.du(16, weight: .bold))
-                    .foregroundColor(isSelected ? DUTheme.cyan : DUTheme.inkDisabled)
+                    .foregroundColor(isSelected ? theme.colors.brand.primary : theme.colors.text.disabled)
             }
             .padding(.horizontal, DUSpacing.md)
             .padding(.vertical, DUSpacing.md)
-            .background(isSelected ? DUTheme.panel : Color.clear)
+            .background(isSelected ? theme.colors.surface.card : Color.clear)
             .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
         }
         .buttonStyle(.plain)
@@ -1551,6 +1558,7 @@ private struct OffersFilterSheet: View {
 }
 
 private struct OffersOrdersFilterSheet: View {
+    @Environment(\.duTheme) private var theme
     @EnvironmentObject private var languageStore: AppLanguageStore
     @Environment(\.dismiss) private var dismiss
     @ObservedObject var viewModel: OffersViewModel
@@ -1609,7 +1617,7 @@ private struct OffersOrdersFilterSheet: View {
                 .padding(DUSpacing.lg)
                 .padding(.bottom, DUSpacing.xxxl)
             }
-            .background(DUTheme.background.ignoresSafeArea())
+            .background(theme.colors.background.canvas.ignoresSafeArea())
             .navigationTitle(localized("offers.orders.filters.title"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -1627,14 +1635,14 @@ private struct OffersOrdersFilterSheet: View {
         Button(action: action) {
             Text(title)
                 .font(.du(13, weight: .semibold))
-                .foregroundColor(isSelected ? .white : DUTheme.ink)
+                .foregroundColor(isSelected ? .white : theme.colors.text.primary)
                 .padding(.horizontal, DUSpacing.md)
                 .frame(height: 36)
                 .background(orderFilterChipBackground(isSelected: isSelected))
                 .clipShape(Capsule())
                 .overlay(
                     Capsule()
-                        .stroke(isSelected ? Color.clear : DUTheme.lineLight, lineWidth: 1)
+                        .stroke(isSelected ? Color.clear : theme.colors.border.subtle, lineWidth: 1)
                 )
         }
         .buttonStyle(.plain)
@@ -1644,9 +1652,9 @@ private struct OffersOrdersFilterSheet: View {
     private func orderFilterChipBackground(isSelected: Bool) -> some View {
         let shape = Capsule()
         if isSelected {
-            shape.fill(DUTheme.brandGradient)
+            shape.fill(theme.colors.gradient.brand)
         } else {
-            shape.fill(DUTheme.panel)
+            shape.fill(theme.colors.surface.card)
         }
     }
 
@@ -1656,6 +1664,7 @@ private struct OffersOrdersFilterSheet: View {
 }
 
 private struct OffersOrderDateFilterSheet: View {
+    @Environment(\.duTheme) private var theme
     @EnvironmentObject private var languageStore: AppLanguageStore
     @Environment(\.dismiss) private var dismiss
 
@@ -1672,7 +1681,7 @@ private struct OffersOrderDateFilterSheet: View {
                 VStack(alignment: .leading, spacing: DUSpacing.md) {
                     Text(localized("offers.orders.filters.date"))
                         .font(.du(15, weight: .bold))
-                        .foregroundColor(DUTheme.ink)
+                        .foregroundColor(theme.colors.text.primary)
 
                     HStack(spacing: DUSpacing.sm) {
                         dateValueButton(
@@ -1684,7 +1693,7 @@ private struct OffersOrderDateFilterSheet: View {
 
                         Text("-")
                             .font(.du(16, weight: .bold))
-                            .foregroundColor(DUTheme.inkSecondary)
+                            .foregroundColor(theme.colors.text.secondary)
 
                         dateValueButton(
                             title: Self.filterDateFormatter.string(from: endDate),
@@ -1723,7 +1732,7 @@ private struct OffersOrderDateFilterSheet: View {
             }
             .padding(DUSpacing.lg)
             .padding(.bottom, DUSpacing.xxxl)
-            .background(DUTheme.background.ignoresSafeArea())
+            .background(theme.colors.background.canvas.ignoresSafeArea())
             .navigationTitle(localized("offers.orders.filters.date"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -1746,19 +1755,19 @@ private struct OffersOrderDateFilterSheet: View {
             HStack(spacing: DUSpacing.sm) {
                 Text(title)
                     .font(.du(14, weight: .semibold))
-                    .foregroundColor(DUTheme.ink)
+                    .foregroundColor(theme.colors.text.primary)
                 Spacer(minLength: 0)
                 Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
                     .font(.du(11, weight: .bold))
-                    .foregroundColor(DUTheme.inkSecondary)
+                    .foregroundColor(theme.colors.text.secondary)
             }
             .padding(.horizontal, DUSpacing.md)
             .frame(height: 44)
-            .background(DUTheme.panel)
+            .background(theme.colors.surface.card)
             .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .stroke(isExpanded ? DUTheme.cyan : DUTheme.lineLight, lineWidth: 1)
+                    .stroke(isExpanded ? theme.colors.brand.primary : theme.colors.border.subtle, lineWidth: 1)
             )
         }
         .buttonStyle(.plain)
@@ -1768,11 +1777,11 @@ private struct OffersOrderDateFilterSheet: View {
         VStack(alignment: .leading, spacing: DUSpacing.md) {
             Text(title)
                 .font(.du(13, weight: .semibold))
-                .foregroundColor(DUTheme.inkSecondary)
+                .foregroundColor(theme.colors.text.secondary)
 
             OffersOrderNumericDatePicker(selection: selection)
                 .padding(DUSpacing.sm)
-                .background(DUTheme.panel)
+                .background(theme.colors.surface.card)
                 .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
         }
     }
@@ -1884,6 +1893,7 @@ private struct OffersOrderNumericDatePicker: View {
 }
 
 private struct OffersOrderDetailView: View {
+    @Environment(\.duTheme) private var theme
     @EnvironmentObject private var languageStore: AppLanguageStore
 
     @ObservedObject var viewModel: OffersViewModel
@@ -1898,7 +1908,7 @@ private struct OffersOrderDetailView: View {
             .padding(DUSpacing.lg)
             .padding(.bottom, DUSpacing.xxxl)
         }
-        .background(DUTheme.background.ignoresSafeArea())
+        .background(theme.colors.background.canvas.ignoresSafeArea())
         .navigationTitle(localized("offers.orders.detail.title"))
         .navigationBarTitleDisplayMode(.inline)
     }
@@ -1922,7 +1932,7 @@ private struct OffersOrderDetailView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(DUSpacing.xl)
-        .background(DUTheme.brandGradient)
+        .background(theme.colors.gradient.brand)
         .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
     }
 
@@ -1961,11 +1971,11 @@ private struct OffersOrderDetailView: View {
         HStack(alignment: .top, spacing: DUSpacing.md) {
             Text(title)
                 .font(.du(12, weight: .semibold))
-                .foregroundColor(DUTheme.inkSecondary)
+                .foregroundColor(theme.colors.text.secondary)
             Spacer()
             Text(value)
                 .font(.du(14, weight: .semibold))
-                .foregroundColor(DUTheme.ink)
+                .foregroundColor(theme.colors.text.primary)
                 .multilineTextAlignment(.trailing)
                 .environment(\.layoutDirection, .leftToRight)
         }
@@ -1990,6 +2000,7 @@ private struct OffersOrderDetailView: View {
 }
 
 struct OffersAcceptedResultView: View {
+    @Environment(\.duTheme) private var theme
     @EnvironmentObject private var languageStore: AppLanguageStore
 
     let result: OfferAcceptedResult
@@ -1999,17 +2010,17 @@ struct OffersAcceptedResultView: View {
         NavigationView {
             GeometryReader { proxy in
                 ZStack {
-                    DUTheme.background.ignoresSafeArea()
+                    theme.colors.background.canvas.ignoresSafeArea()
 
                     ScrollView(showsIndicators: false) {
                         VStack(spacing: DUSpacing.lg) {
                             Image(systemName: "checkmark.circle.fill")
                                 .font(.du(56, weight: .bold))
-                                .foregroundColor(DUTheme.success)
+                                .foregroundColor(theme.colors.status.success)
 
                         Text(localized(result.operationType.acceptedTitleKey))
                             .font(.du(24, weight: .bold))
-                            .foregroundColor(DUTheme.ink)
+                            .foregroundColor(theme.colors.text.primary)
 
                             DUSectionCard(title: localized("offers.accepted.title")) {
                                 VStack(alignment: .leading, spacing: DUSpacing.md) {
@@ -2037,10 +2048,10 @@ struct OffersAcceptedResultView: View {
         VStack(alignment: .leading, spacing: DUSpacing.xs) {
             Text(title)
                 .font(.du(12, weight: .semibold))
-                .foregroundColor(DUTheme.inkTertiary)
+                .foregroundColor(theme.colors.text.tertiary)
             Text(value)
                 .font(.du(15, weight: .bold))
-                .foregroundColor(DUTheme.ink)
+                .foregroundColor(theme.colors.text.primary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
