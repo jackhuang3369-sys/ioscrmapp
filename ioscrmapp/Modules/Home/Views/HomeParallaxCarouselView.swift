@@ -435,6 +435,8 @@ private struct HomeParallaxCarouselPanGestureOverlay: UIViewRepresentable {
 #endif
 
 private struct HomeParallaxCarouselCaptionView: View {
+    @Environment(\.duTheme) private var theme
+
     let title: String
     let subtitle: String?
 
@@ -442,7 +444,7 @@ private struct HomeParallaxCarouselCaptionView: View {
         VStack(spacing: 4) {
             Text(title)
                 .font(.du(16, weight: .semibold))
-                .foregroundColor(DUTheme.ink)
+                .foregroundColor(theme.colors.text.primary)
                 .multilineTextAlignment(.center)
                 .lineLimit(1)
                 .minimumScaleFactor(0.88)
@@ -450,7 +452,7 @@ private struct HomeParallaxCarouselCaptionView: View {
             if let subtitle, !subtitle.isEmpty {
                 Text(subtitle)
                     .font(.du(12, weight: .medium))
-                    .foregroundColor(DUTheme.inkSecondary)
+                    .foregroundColor(theme.colors.text.secondary)
                     .multilineTextAlignment(.center)
                     .lineLimit(2)
                     .fixedSize(horizontal: false, vertical: true)
@@ -488,13 +490,22 @@ private struct HomeParallaxCarouselCardUnitView: View {
 }
 
 private struct HomeParallaxCarouselCardView: View {
+    @Environment(\.duTheme) private var theme
+
     let assetName: String
     let effect: HomeParallaxCarouselCardEffect
 
     var body: some View {
+        let baseFill = theme.resolvedColorScheme == .dark
+            ? theme.colors.surface.raised.opacity(0.66)
+            : Color.black.opacity(0.08)
+        let borderColor = theme.resolvedColorScheme == .dark
+            ? theme.colors.border.default.opacity(0.86)
+            : Color.white.opacity(0.68)
+
         ZStack {
             RoundedRectangle(cornerRadius: effect.cornerRadius, style: .continuous)
-                .fill(Color.black.opacity(0.08))
+                .fill(baseFill)
 
             // Card and image move in the same screen-space direction. The local counter-shift
             // inside the viewport makes the background feel slower than the foreground card.
@@ -526,7 +537,7 @@ private struct HomeParallaxCarouselCardView: View {
         .clipShape(RoundedRectangle(cornerRadius: effect.cornerRadius, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: effect.cornerRadius, style: .continuous)
-                .stroke(Color.white.opacity(0.68), lineWidth: 1)
+                .stroke(borderColor, lineWidth: 1)
         )
         .shadow(
             color: Color.black.opacity(effect.shadowOpacity),

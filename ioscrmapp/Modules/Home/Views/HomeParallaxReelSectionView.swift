@@ -197,6 +197,8 @@ private struct HomeParallaxReelLegacyCardView: View {
 }
 
 private struct HomeParallaxReelCardUnitView: View {
+    @Environment(\.duTheme) private var theme
+
     let item: HomeFeatureCarouselItem
     let cardSize: CGSize
     let imageWidth: CGFloat
@@ -209,6 +211,10 @@ private struct HomeParallaxReelCardUnitView: View {
     let shadowRadius: CGFloat
 
     var body: some View {
+        let borderColor = theme.resolvedColorScheme == .dark
+            ? theme.colors.border.default.opacity(0.72)
+            : Color.white.opacity(0.28)
+
         VStack(spacing: titleSpacing) {
             HomeParallaxReelCardContentView(
                 item: item,
@@ -221,7 +227,7 @@ private struct HomeParallaxReelCardUnitView: View {
             .overlay {
                 if showsBorder {
                     RoundedRectangle(cornerRadius: 26, style: .continuous)
-                        .stroke(.white.opacity(0.28), lineWidth: 1)
+                        .stroke(borderColor, lineWidth: 1)
                 }
             }
             .shadow(
@@ -241,13 +247,14 @@ private struct HomeParallaxReelCardUnitView: View {
 
 private struct HomeParallaxReelCaptionView: View {
     @EnvironmentObject private var languageStore: AppLanguageStore
+    @Environment(\.duTheme) private var theme
 
     let item: HomeFeatureCarouselItem
 
     var body: some View {
         Text(languageStore.string(item.title))
-            .font(.custom("PingFangSC-Semibold", size: 16))
-            .foregroundColor(DUTheme.ink)
+            .font(.du(16, weight: .semibold))
+            .foregroundColor(theme.colors.text.primary)
             .multilineTextAlignment(.center)
             .lineLimit(2)
             .truncationMode(.tail)

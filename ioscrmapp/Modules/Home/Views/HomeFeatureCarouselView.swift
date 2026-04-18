@@ -8,6 +8,7 @@ import SwiftUI
 /// 两侧卡片继续保留灰度、透明度和尺寸差异，用来维持首页当前的层级感。
 struct HomeFeatureCarouselView: View {
     @EnvironmentObject private var languageStore: AppLanguageStore
+    @Environment(\.duTheme) private var theme
 
     let items: [HomeFeatureCarouselItem]
     let onSelectItem: (HomeFeatureCarouselItem) -> Void
@@ -51,7 +52,7 @@ struct HomeFeatureCarouselView: View {
             if let selectedItem {
                 Text(languageStore.string(selectedItem.title))
                     .font(.du(15, weight: .semibold))
-                    .foregroundColor(DUTheme.ink)
+                    .foregroundColor(theme.colors.text.primary)
                     .multilineTextAlignment(.center)
                     .lineLimit(1)
                     .truncationMode(.tail)
@@ -92,11 +93,11 @@ struct HomeFeatureCarouselView: View {
     private func pageIndicatorDot(isSelected: Bool) -> some View {
         if isSelected {
             Capsule()
-                .fill(DUTheme.homeCarouselIndicatorGradient)
+                .fill(theme.colors.gradient.homeCarouselIndicator)
                 .frame(width: 40, height: 8)
         } else {
             Capsule()
-                .fill(DUTheme.homeCarouselIndicatorInactive)
+                .fill(theme.colors.indicator.homeCarouselInactive)
                 .frame(width: 8, height: 8)
         }
     }
@@ -148,6 +149,9 @@ struct HomeFeatureCarouselView: View {
         let opacityValue = opacity(for: layout.position)
         let cardEffect = cardEffect(for: layout.position)
         let imageMotion = imageMotion(for: layout.position, cardSize: cardSize)
+        let borderColor = theme.resolvedColorScheme == .dark
+            ? theme.colors.border.default.opacity(0.88)
+            : Color.white.opacity(0.72)
 
         // 卡片整体沿轨道移动；图片层再叠加“横向掠过 + 轻微透视”效果。
         return HomeFeatureCarouselCardView(
@@ -166,7 +170,7 @@ struct HomeFeatureCarouselView: View {
                     cornerRadius: metrics.cornerRadius,
                     style: .continuous
                 )
-                .stroke(Color.white.opacity(0.72), lineWidth: 1)
+                .stroke(borderColor, lineWidth: 1)
             )
             .shadow(
                 color: Color.black.opacity(cardEffect.shadowOpacity),
@@ -491,8 +495,9 @@ struct HomeFeatureCarouselView_Previews: PreviewProvider {
             ]
         ) { _ in }
         .padding()
-        .background(DUTheme.background)
+        .background(DUColorTokens.resolve(for: .light).background.canvas)
         .previewLayout(.sizeThatFits)
+        .duTheme(mode: .light)
         .environmentObject(AppLanguageStore(initialLanguage: .english))
     }
 }

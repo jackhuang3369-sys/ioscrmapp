@@ -23,6 +23,7 @@ final class HomeChromeState: ObservableObject {
 
 struct HomeView: View {
     @EnvironmentObject private var languageStore: AppLanguageStore
+    @Environment(\.duTheme) private var theme
 
     let custSubInfo: CustSubInfo
     @ObservedObject var sessionStore: SessionStore
@@ -65,6 +66,7 @@ struct HomeView: View {
     private var homeDashboardSectionSpacing: CGFloat { DUSpacing.md * accountCardBottomSpacingScale }
     private var headerBottomPadding: CGFloat { 18 * accountCardBottomSpacingScale }
     private var parallaxReelTopSpacing: CGFloat { DUSpacing.md * parallaxReelTopSpacingScale }
+    private var homePalette: HomePalette { HomePalette(theme: theme) }
 
     private let quickActions: [HomeItem] = [
         .init(title: .key("home.quick.recharge"), assetName: "HomeQuickRechargeDesignIcon", action: .recharge),
@@ -389,7 +391,7 @@ struct HomeView: View {
         case let .failed(message):
             DUStateView(
                 systemImage: "wifi.exclamationmark",
-                iconColor: DUTheme.magenta,
+                iconColor: homePalette.errorAccent,
                 title: localized("home.state.errorTitle"),
                 subtitle: localized(message),
                 actionTitle: localized("common.reload"),
@@ -406,7 +408,7 @@ struct HomeView: View {
                     .progressViewStyle(.circular)
                 Text(localized("home.state.loadingTitle"))
                     .font(homeFont(15, weight: .semibold))
-                    .foregroundColor(DUTheme.inkSecondary)
+                    .foregroundColor(theme.colors.text.secondary)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(homePageBackground.ignoresSafeArea())
@@ -423,8 +425,8 @@ struct HomeView: View {
                     HStack(spacing: 6) {
                         Image(systemName: "sun.max.fill")
                             .font(homeFont(13, weight: .semibold))
-                            .foregroundColor(Color(hex: 0xFFD351))
-                            .shadow(color: Color(hex: 0xFFD351, opacity: 0.34), radius: 6)
+                            .foregroundColor(homePalette.heroSunAccent)
+                            .shadow(color: homePalette.heroSunShadow, radius: 6)
 
                         Text(localized("home.greeting.morning"))
                             .font(homeFont(13, weight: .medium))
@@ -544,21 +546,23 @@ struct HomeView: View {
         summary: HomeSummarySection,
         usage: HomeUsageSection
     ) -> some View {
-        VStack(alignment: .leading, spacing: 0) {
+        let palette = homePalette
+
+        return VStack(alignment: .leading, spacing: 0) {
             HStack(alignment: .top, spacing: 10) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(localized("home.header.accountBalanceTitle"))
                         .font(homeFont(12, weight: .semibold))
-                        .foregroundColor(Color(hex: 0x4C5A75))
+                        .foregroundColor(palette.accountTitle)
 
                     metricValueText(
                         summary.balanceValue,
                         amountFontSize: 20,
                         amountWeight: .bold,
-                        amountColor: Color(hex: 0x167DFF),
+                        amountColor: palette.balanceAmount,
                         currencyFontSize: 12,
                         currencyWeight: .semibold,
-                        currencyColor: Color(hex: 0x6F7F99)
+                        currencyColor: palette.balanceCurrency
                     )
                 }
 
@@ -590,16 +594,16 @@ struct HomeView: View {
                             }
                         } label: {
                             Circle()
-                                .fill(.white.opacity(0.18))
+                                .fill(palette.heroChromeFill)
                                 .frame(width: 24, height: 24)
                                 .overlay(
                                     Circle()
-                                        .stroke(.white.opacity(0.5), lineWidth: 1)
+                                        .stroke(palette.heroChromeBorder, lineWidth: 1)
                                 )
                                 .overlay(
                                     Image(systemName: "chevron.down")
                                         .font(homeFont(10, weight: .semibold))
-                                        .foregroundColor(.white.opacity(0.92))
+                                        .foregroundColor(palette.heroChromeForeground)
                                         .rotationEffect(.degrees(isCreditLimitExpanded ? 180 : 0))
                                 )
                         }
@@ -612,7 +616,10 @@ struct HomeView: View {
             }
 
             if let creditLimit = summary.creditLimit {
-                creditLimitSection(creditLimit)
+                creditLimitSection(
+                    creditLimit,
+                    palette: palette
+                )
                     .padding(.top, isCreditLimitExpanded ? 10 : 0)
                     .frame(maxHeight: isCreditLimitExpanded ? 120 : 0, alignment: .top)
                     .opacity(isCreditLimitExpanded ? 1 : 0)
@@ -627,22 +634,13 @@ struct HomeView: View {
         .padding(.top, 15)
         .padding(.horizontal, 14)
         .padding(.bottom, 14)
-        .background(
-            LinearGradient(
-                colors: [
-                    Color(red: 232 / 255, green: 236 / 255, blue: 255 / 255, opacity: 0.88),
-                    Color.white.opacity(0.96)
-                ],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-        )
+        .background(palette.accountCardBackground)
         .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: 28, style: .continuous)
-                .stroke(.white.opacity(0.22), lineWidth: 1)
+                .stroke(palette.accountCardBorder, lineWidth: 1)
         )
-        .shadow(color: Color(red: 29 / 255, green: 46 / 255, blue: 122 / 255, opacity: 0.18), radius: 15, x: 0, y: 10)
+        .shadow(color: palette.accountCardShadow, radius: 15, x: 0, y: 10)
         .animation(
             isCreditLimitExpanded
             ? homeCreditLimitExpandAnimation
@@ -652,28 +650,29 @@ struct HomeView: View {
     }
 
     private func creditLimitSection(
-        _ creditLimit: HomeCreditLimitSection
+        _ creditLimit: HomeCreditLimitSection,
+        palette: HomePalette
     ) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(localized("home.header.creditLimitTitle"))
                 .font(homeFont(11, weight: .semibold))
-                .foregroundColor(Color(hex: 0x50596D))
+                .foregroundColor(palette.sectionPrimaryText)
 
             HStack(spacing: 8) {
                 creditLimitCard(
                     titleKey: "home.header.creditTotalTitle",
                     value: creditLimit.totalValue,
-                    backgroundColor: Color(red: 199 / 255, green: 219 / 255, blue: 255 / 255, opacity: 0.76)
+                    backgroundColor: palette.creditLimitTotalBackground
                 )
                 creditLimitCard(
                     titleKey: "home.header.creditUsedTitle",
                     value: creditLimit.usedValue,
-                    backgroundColor: Color(red: 245 / 255, green: 214 / 255, blue: 224 / 255, opacity: 0.82)
+                    backgroundColor: palette.creditLimitUsedBackground
                 )
                 creditLimitCard(
                     titleKey: "home.header.creditRemainingTitle",
                     value: creditLimit.remainingValue,
-                    backgroundColor: Color(red: 208 / 255, green: 236 / 255, blue: 229 / 255, opacity: 0.84)
+                    backgroundColor: palette.creditLimitRemainingBackground
                 )
             }
         }
@@ -686,11 +685,11 @@ struct HomeView: View {
         VStack(alignment: .leading, spacing: 4) {
             Text(localized(titleKey))
                 .font(homeFont(11, weight: .regular))
-                .foregroundColor(Color(hex: 0x7F89A3))
+                .foregroundColor(homePalette.sectionSecondaryText)
 
             Text(normalizedMetricValue(localized(value)))
                 .font(homeFont(12, weight: .semibold))
-                .foregroundColor(Color(hex: 0x414A5C))
+                .foregroundColor(homePalette.sectionPrimaryText)
                 .lineLimit(1)
                 .minimumScaleFactor(0.85)
         }
@@ -705,16 +704,16 @@ struct HomeView: View {
         VStack(alignment: .leading, spacing: 5) {
             Text(localized(titleKey))
                 .font(homeFont(10, weight: .regular))
-                .foregroundColor(Color(hex: 0x7D88A2))
+                .foregroundColor(homePalette.sectionSecondaryText)
 
             metricValueText(
                 value,
                 amountFontSize: 11,
                 amountWeight: .bold,
-                amountColor: Color(hex: 0x3F4857),
+                amountColor: homePalette.sectionPrimaryText,
                 currencyFontSize: 11,
                 currencyWeight: .semibold,
-                currencyColor: Color(hex: 0x3F4857)
+                currencyColor: homePalette.sectionPrimaryText
             )
             .lineLimit(1)
             .minimumScaleFactor(0.8)
@@ -738,9 +737,9 @@ struct HomeView: View {
                 .fill(
                     LinearGradient(
                         colors: [
-                            Color.white.opacity(0),
-                            Color.white,
-                            Color.white.opacity(0)
+                            homePalette.cardDivider.opacity(0),
+                            homePalette.cardDivider,
+                            homePalette.cardDivider.opacity(0)
                         ],
                         startPoint: .leading,
                         endPoint: .trailing
@@ -762,20 +761,20 @@ struct HomeView: View {
 
                 Text(localized(card.title))
                     .font(homeFont(11, weight: .medium))
-                    .foregroundColor(Color(hex: 0x67748F))
+                    .foregroundColor(homePalette.sectionSecondaryText)
             }
 
             usageValueText(
                 card.value,
-                primaryColor: Color(hex: 0x435065),
-                secondaryColor: Color(hex: 0x74839E)
+                primaryColor: homePalette.sectionPrimaryText,
+                secondaryColor: homePalette.usageSecondaryText
             )
             .padding(.top, 5)
 
             GeometryReader { proxy in
                 ZStack(alignment: .leading) {
                     Capsule()
-                        .fill(Color(hex: 0xE0E7F1))
+                        .fill(homePalette.usageTrack)
 
                     Capsule()
                         .fill(design.tintColor)
@@ -793,7 +792,7 @@ struct HomeView: View {
     ) -> some View {
         Text(localized(value))
             .font(homeFont(11, weight: .medium))
-            .foregroundColor(Color(hex: 0x6E7B97))
+            .foregroundColor(theme.colors.text.secondary)
     }
 
     private func inlineBanner(
@@ -802,27 +801,31 @@ struct HomeView: View {
         HStack(spacing: DUSpacing.sm) {
             Image(systemName: "arrow.triangle.2.circlepath")
                 .font(homeFont(13, weight: .semibold))
-                .foregroundColor(Color(hex: 0x2B80FF))
+                .foregroundColor(homePalette.bannerIcon)
 
             Text(localized(message))
                 .font(homeFont(12, weight: .medium))
-                .foregroundColor(Color(hex: 0x4A5568))
+                .foregroundColor(homePalette.bannerText)
 
             Spacer()
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
-        .background(Color.white)
+        .background(homePalette.bannerBackground)
         .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .stroke(Color(hex: 0xE8EEF4), lineWidth: 1)
+                .stroke(homePalette.bannerBorder, lineWidth: 1)
         )
         .padding(.horizontal, pageHorizontalPadding)
     }
 
     private var quickActionsSection: some View {
-        VStack {
+        DUSectionCard(
+            spacing: 0,
+            horizontalPadding: 10,
+            verticalPadding: 12
+        ) {
             LazyVGrid(
                 columns: Array(repeating: GridItem(.flexible(), spacing: 2), count: 4),
                 spacing: 2
@@ -840,11 +843,6 @@ struct HomeView: View {
                 }
             }
         }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 12)
-        .background(Color.white)
-        .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
-        .shadow(color: Color.black.opacity(0.08), radius: 14, x: 0, y: 8)
         .padding(.horizontal, pageHorizontalPadding)
     }
 
@@ -878,24 +876,16 @@ struct HomeView: View {
 //    }
 
     private var servicesSection: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            HStack {
-                Text(localized("home.section.popularServices"))
-                    .font(homeFont(15, weight: .bold))
-                    .foregroundColor(Color(hex: 0x485064))
-
-                Spacer()
-
-                Button {
-                    selectedTab = .service
-                } label: {
-                    Text(localized("home.section.viewAll"))
-                        .font(homeFont(11, weight: .semibold))
-                        .foregroundColor(Color(hex: 0x549EFF))
-                }
-                .buttonStyle(.plain)
+        DUSectionCard(
+            title: localized("home.section.popularServices"),
+            trailingTitle: localized("home.section.viewAll"),
+            spacing: 14,
+            horizontalPadding: 14,
+            verticalPadding: 16,
+            trailingAction: {
+                selectedTab = .service
             }
-
+        ) {
             LazyVGrid(
                 columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 4),
                 spacing: 8
@@ -913,11 +903,6 @@ struct HomeView: View {
                 }
             }
         }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 16)
-        .background(Color.white)
-        .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
-        .shadow(color: Color.black.opacity(0.08), radius: 14, x: 0, y: 8)
         .padding(.horizontal, pageHorizontalPadding)
     }
 
@@ -945,14 +930,14 @@ struct HomeView: View {
 
             ZStack(alignment: .bottom) {
                 barShape
-                    .fill(Color.white)
+                    .fill(homePalette.tabBarFill)
                     .overlay(
                         barShape
-                            .fill(DUTheme.homeTabBarBackgroundGradient)
+                            .fill(theme.colors.gradient.homeTabBarBackground)
                     )
                     .overlay(
                         barShape
-                            .stroke(Color.white.opacity(0.60), lineWidth: 1)
+                            .stroke(homePalette.tabBarStroke, lineWidth: 1)
                     )
                     .overlay(
                         HomeOrbitingBorderEffect(
@@ -962,7 +947,7 @@ struct HomeView: View {
                             baseHeight: baseBarHeight
                         )
                     )
-                    .shadow(color: Color.black.opacity(0.08), radius: 18, x: 0, y: 10)
+                    .shadow(color: homePalette.tabBarShadow, radius: 18, x: 0, y: 10)
                     .frame(width: barWidth, height: containerHeight)
 
                 HStack(spacing: 0) {
@@ -1291,11 +1276,11 @@ struct HomeView: View {
     ) -> HomeUsageMetricDesign {
         switch kind {
         case .data:
-            return .init(systemName: "waveform.path.ecg", tintColor: Color(hex: 0x177DFF))
+            return .init(systemName: "waveform.path.ecg", tintColor: theme.colors.brand.secondary)
         case .voice:
-            return .init(systemName: "phone.fill", tintColor: Color(hex: 0xFF8B1A))
+            return .init(systemName: "phone.fill", tintColor: theme.colors.status.warning)
         case .sms:
-            return .init(systemName: "envelope.fill", tintColor: Color(hex: 0x27B654))
+            return .init(systemName: "envelope.fill", tintColor: theme.colors.status.success)
         }
     }
 
@@ -1371,27 +1356,18 @@ private func homeFont(
     _ size: CGFloat,
     weight: Font.Weight = .regular
 ) -> Font {
-    .custom(homeFontName(for: weight), size: size)
-}
-
-private func homeFontName(for weight: Font.Weight) -> String {
-    switch weight {
-    case .bold, .semibold, .heavy, .black:
-        return "PingFangSC-Semibold"
-    case .medium:
-        return "PingFangSC-Medium"
-    case .light, .thin, .ultraLight:
-        return "PingFangSC-Light"
-    default:
-        return "PingFangSC-Regular"
-    }
+    .du(size, weight: weight)
 }
 
 private struct HomePageBackground: View {
+    @Environment(\.duTheme) private var theme
+
     var body: some View {
+        let palette = HomePalette(theme: theme)
+
         GeometryReader { proxy in
             ZStack(alignment: .top) {
-                Color(hex: 0xEFF7FF)
+                palette.pageBase
 
                 Image("HomeHeroBackground")
                     .renderingMode(.original)
@@ -1402,8 +1378,8 @@ private struct HomePageBackground: View {
                     .overlay {
                         LinearGradient(
                             colors: [
-                                Color(hex: 0x1032FF, opacity: 0.18),
-                                Color(hex: 0x5E47FF, opacity: 0.10),
+                                palette.pageImageTintPrimary,
+                                palette.pageImageTintSecondary,
                                 Color.clear
                             ],
                             startPoint: .topLeading,
@@ -1428,10 +1404,10 @@ private struct HomePageBackground: View {
 
                 LinearGradient(
                     colors: [
-                        Color(hex: 0x173BFA, opacity: 0.24),
-                        Color(hex: 0x2D4DF7, opacity: 0.14),
-                        Color(hex: 0x7457F5, opacity: 0.10),
-                        Color(hex: 0xEFF7FF, opacity: 0)
+                        palette.pageOverlayPrimary,
+                        palette.pageOverlaySecondary,
+                        palette.pageOverlayTertiary,
+                        palette.pageBase.opacity(0)
                     ],
                     startPoint: .topLeading,
                     endPoint: .bottom
@@ -1442,9 +1418,9 @@ private struct HomePageBackground: View {
                 LinearGradient(
                     colors: [
                         Color.clear,
-                        Color(hex: 0xEFF7FF, opacity: 0.10),
-                        Color(hex: 0xEFF7FF, opacity: 0.72),
-                        Color(hex: 0xEFF7FF)
+                        palette.pageFadeStart,
+                        palette.pageFadeMid,
+                        palette.pageFadeEnd
                     ],
                     startPoint: .top,
                     endPoint: .bottom
@@ -1476,6 +1452,8 @@ private struct HomeHeaderActionButton: View {
 }
 
 private struct HomeIconGridButton: View {
+    @Environment(\.duTheme) private var theme
+
     let title: String
     let assetName: String
     let iconSize: CGFloat
@@ -1494,7 +1472,7 @@ private struct HomeIconGridButton: View {
 
                 Text(title)
                     .font(homeFont(titleFontSize, weight: titleWeight))
-                    .foregroundColor(Color(hex: 0x4D5568))
+                    .foregroundColor(theme.colors.text.primary)
                     .multilineTextAlignment(.center)
                     .lineLimit(2)
                     .minimumScaleFactor(0.82)
@@ -1506,6 +1484,8 @@ private struct HomeIconGridButton: View {
 }
 
 private struct HomeBottomTabBarButton: View {
+    @Environment(\.duTheme) private var theme
+
     let title: String
     let inactiveAssetName: String
     let activeAssetName: String
@@ -1522,6 +1502,7 @@ private struct HomeBottomTabBarButton: View {
     @State private var outerRippleOpacity: CGFloat = 0
 
     var body: some View {
+        let palette = HomePalette(theme: theme)
         let contentSize = CGSize(width: isActive ? 62 : 60, height: 40)
 
         Button(action: action) {
@@ -1531,8 +1512,8 @@ private struct HomeBottomTabBarButton: View {
                         .fill(
                             LinearGradient(
                                 colors: [
-                                    Color(hex: 0x1E9BFF),
-                                    Color(hex: 0x0E7BFF)
+                                    palette.activeTabStart,
+                                    palette.activeTabEnd
                                 ],
                                 startPoint: .top,
                                 endPoint: .bottom
@@ -1553,9 +1534,9 @@ private struct HomeBottomTabBarButton: View {
                         }
                         .overlay(
                             RoundedRectangle(cornerRadius: 20, style: .continuous)
-                                .stroke(Color.white.opacity(0.30), lineWidth: 1)
+                                .stroke(palette.activeTabBorder, lineWidth: 1)
                         )
-                        .shadow(color: Color(hex: 0x1176FF, opacity: 0.28), radius: 14, x: 0, y: 8)
+                        .shadow(color: palette.activeTabShadow, radius: 14, x: 0, y: 8)
                         .scaleEffect(x: dropletScaleX, y: dropletScaleY, anchor: .center)
                         .offset(y: dropletOffsetY)
                 }
@@ -1569,7 +1550,7 @@ private struct HomeBottomTabBarButton: View {
 
                     Text(title)
                         .font(homeFont(10, weight: .medium))
-                        .foregroundColor(isActive ? .white : Color(hex: 0x7D8DB9))
+                        .foregroundColor(isActive ? palette.activeTabLabel : palette.inactiveTabLabel)
                         .lineLimit(1)
                         .minimumScaleFactor(0.85)
                 }
@@ -1637,6 +1618,8 @@ private struct HomeBottomTabBarButton: View {
 }
 
 private struct HomeAIAgentTabButton: View {
+    @Environment(\.duTheme) private var theme
+
     let title: String
     let labelBottomPadding: CGFloat
     let action: () -> Void
@@ -1654,7 +1637,7 @@ private struct HomeAIAgentTabButton: View {
 
                 Text(title)
                     .font(homeFont(10, weight: .medium))
-                    .foregroundColor(Color(hex: 0x7D8DB9))
+                    .foregroundColor(HomePalette(theme: theme).inactiveTabLabel)
                     .lineLimit(1)
                     .minimumScaleFactor(0.85)
                     .padding(.bottom, labelBottomPadding)
@@ -1666,7 +1649,11 @@ private struct HomeAIAgentTabButton: View {
 }
 
 private struct HomePrimaryPillButtonStyle: ButtonStyle {
+    @Environment(\.duTheme) private var theme
+
     func makeBody(configuration: Configuration) -> some View {
+        let palette = HomePalette(theme: theme)
+
         configuration.label
             .font(homeFont(13, weight: .semibold))
             .foregroundColor(.white)
@@ -1675,8 +1662,8 @@ private struct HomePrimaryPillButtonStyle: ButtonStyle {
             .background(
                 LinearGradient(
                     colors: [
-                        Color(hex: 0x48A9FF),
-                        Color(hex: 0x2B80FF)
+                        palette.pillStart,
+                        palette.pillEnd
                     ],
                     startPoint: .top,
                     endPoint: .bottom
@@ -1685,9 +1672,14 @@ private struct HomePrimaryPillButtonStyle: ButtonStyle {
             .clipShape(Capsule())
             .overlay(
                 Capsule()
-                    .stroke(.white.opacity(0.65), lineWidth: 1)
+                    .stroke(palette.pillBorder, lineWidth: 1)
             )
-            .shadow(color: Color(hex: 0x287FFF, opacity: configuration.isPressed ? 0.22 : 0.38), radius: 10, x: 0, y: 8)
+            .shadow(
+                color: palette.pillShadow.opacity(configuration.isPressed ? 0.22 : 0.38),
+                radius: 10,
+                x: 0,
+                y: 8
+            )
             .scaleEffect(configuration.isPressed ? 0.98 : 1)
     }
 }
@@ -1936,6 +1928,218 @@ private struct HomeUsageMetricDesign {
     let tintColor: Color
 }
 
+private struct HomePalette {
+    let theme: DUTheme
+
+    private var isDark: Bool {
+        theme.resolvedColorScheme == .dark
+    }
+
+    var pageBase: Color {
+        isDark ? theme.colors.background.canvas : Color(hex: 0xEFF7FF)
+    }
+
+    var pageImageTintPrimary: Color {
+        isDark ? theme.colors.brand.secondary.opacity(0.22) : Color(hex: 0x1032FF, opacity: 0.18)
+    }
+
+    var pageImageTintSecondary: Color {
+        isDark ? theme.colors.brand.indigo.opacity(0.14) : Color(hex: 0x5E47FF, opacity: 0.10)
+    }
+
+    var pageOverlayPrimary: Color {
+        isDark ? theme.colors.brand.secondary.opacity(0.24) : Color(hex: 0x173BFA, opacity: 0.24)
+    }
+
+    var pageOverlaySecondary: Color {
+        isDark ? theme.colors.brand.indigo.opacity(0.16) : Color(hex: 0x2D4DF7, opacity: 0.14)
+    }
+
+    var pageOverlayTertiary: Color {
+        isDark ? theme.colors.brand.magenta.opacity(0.10) : Color(hex: 0x7457F5, opacity: 0.10)
+    }
+
+    var pageFadeStart: Color {
+        pageBase.opacity(isDark ? 0.12 : 0.10)
+    }
+
+    var pageFadeMid: Color {
+        pageBase.opacity(isDark ? 0.84 : 0.72)
+    }
+
+    var pageFadeEnd: Color {
+        pageBase
+    }
+
+    var errorAccent: Color {
+        theme.colors.brand.magenta
+    }
+
+    var accountCardBackground: LinearGradient {
+        LinearGradient(
+            colors: isDark
+                ? [
+                    theme.colors.surface.raised,
+                    theme.colors.surface.card
+                ]
+                : [
+                    Color(red: 232 / 255, green: 236 / 255, blue: 255 / 255, opacity: 0.88),
+                    Color.white.opacity(0.96)
+                ],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+    }
+
+    var accountCardBorder: Color {
+        isDark ? theme.colors.border.default.opacity(0.92) : Color.white.opacity(0.22)
+    }
+
+    var accountCardShadow: Color {
+        isDark
+            ? Color.black.opacity(0.32)
+            : Color(red: 29 / 255, green: 46 / 255, blue: 122 / 255, opacity: 0.18)
+    }
+
+    var accountTitle: Color {
+        isDark ? theme.colors.text.secondary : Color(hex: 0x4C5A75)
+    }
+
+    var balanceAmount: Color {
+        isDark ? theme.colors.brand.primaryLight : Color(hex: 0x167DFF)
+    }
+
+    var balanceCurrency: Color {
+        isDark ? theme.colors.text.tertiary : Color(hex: 0x6F7F99)
+    }
+
+    var sectionPrimaryText: Color {
+        theme.colors.text.primary
+    }
+
+    var sectionSecondaryText: Color {
+        theme.colors.text.secondary
+    }
+
+    var usageSecondaryText: Color {
+        isDark ? theme.colors.text.tertiary : Color(hex: 0x74839E)
+    }
+
+    var usageTrack: Color {
+        isDark ? theme.colors.border.default : Color(hex: 0xE0E7F1)
+    }
+
+    var cardDivider: Color {
+        isDark ? theme.colors.border.default.opacity(0.82) : Color.white
+    }
+
+    var creditLimitTotalBackground: Color {
+        isDark
+            ? theme.colors.brand.primaryBackground
+            : Color(red: 199 / 255, green: 219 / 255, blue: 255 / 255, opacity: 0.76)
+    }
+
+    var creditLimitUsedBackground: Color {
+        isDark
+            ? theme.colors.status.warningBackground
+            : Color(red: 245 / 255, green: 214 / 255, blue: 224 / 255, opacity: 0.82)
+    }
+
+    var creditLimitRemainingBackground: Color {
+        isDark
+            ? theme.colors.status.successBackground
+            : Color(red: 208 / 255, green: 236 / 255, blue: 229 / 255, opacity: 0.84)
+    }
+
+    var bannerBackground: Color {
+        isDark ? theme.colors.surface.raised : theme.colors.surface.card
+    }
+
+    var bannerBorder: Color {
+        theme.colors.border.subtle
+    }
+
+    var bannerText: Color {
+        theme.colors.text.primary
+    }
+
+    var bannerIcon: Color {
+        theme.colors.action.primary
+    }
+
+    var tabBarFill: Color {
+        isDark ? theme.colors.surface.raised : theme.colors.surface.card
+    }
+
+    var tabBarStroke: Color {
+        isDark ? theme.colors.border.default.opacity(0.78) : Color.white.opacity(0.60)
+    }
+
+    var tabBarShadow: Color {
+        isDark ? Color.black.opacity(0.42) : Color.black.opacity(0.08)
+    }
+
+    var inactiveTabLabel: Color {
+        theme.colors.text.secondary
+    }
+
+    var activeTabLabel: Color {
+        .white
+    }
+
+    var activeTabStart: Color {
+        isDark ? theme.colors.brand.primary : Color(hex: 0x1E9BFF)
+    }
+
+    var activeTabEnd: Color {
+        isDark ? theme.colors.brand.secondary : Color(hex: 0x0E7BFF)
+    }
+
+    var activeTabBorder: Color {
+        isDark ? theme.colors.border.default.opacity(0.44) : Color.white.opacity(0.30)
+    }
+
+    var activeTabShadow: Color {
+        (isDark ? theme.colors.brand.secondary : Color(hex: 0x1176FF)).opacity(isDark ? 0.34 : 0.28)
+    }
+
+    var pillStart: Color {
+        isDark ? theme.colors.brand.primary : Color(hex: 0x48A9FF)
+    }
+
+    var pillEnd: Color {
+        isDark ? theme.colors.brand.secondary : Color(hex: 0x2B80FF)
+    }
+
+    var pillBorder: Color {
+        isDark ? theme.colors.border.default.opacity(0.64) : Color.white.opacity(0.65)
+    }
+
+    var pillShadow: Color {
+        isDark ? theme.colors.brand.secondary : Color(hex: 0x287FFF)
+    }
+
+    var heroChromeFill: Color {
+        Color.white.opacity(isDark ? 0.16 : 0.18)
+    }
+
+    var heroChromeBorder: Color {
+        Color.white.opacity(isDark ? 0.38 : 0.50)
+    }
+
+    var heroChromeForeground: Color {
+        Color.white.opacity(0.92)
+    }
+
+    var heroSunAccent: Color {
+        isDark ? theme.colors.status.warning : Color(hex: 0xFFD351)
+    }
+
+    var heroSunShadow: Color {
+        heroSunAccent.opacity(isDark ? 0.26 : 0.34)
+    }
+}
+
 private struct TicketsModalContainerView: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var languageStore: AppLanguageStore
@@ -2063,6 +2267,7 @@ private struct HomeItem: Identifiable {
 private struct TicketsContainerView: View {
     @EnvironmentObject private var languageStore: AppLanguageStore
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.duTheme) private var theme
 
     let ticketsService: any TicketsServicing
 
@@ -2096,7 +2301,7 @@ private struct TicketsContainerView: View {
                         loadingOverlay
                     }
                 }
-                .background(DUTheme.background.ignoresSafeArea())
+                .background(theme.colors.background.canvas.ignoresSafeArea())
             case let .failed(allowsBackHome):
                 failureView(allowsBackHome: allowsBackHome)
             }
@@ -2110,7 +2315,7 @@ private struct TicketsContainerView: View {
 
     private var loadingView: some View {
         loadingOverlay
-            .background(DUTheme.background.ignoresSafeArea())
+            .background(theme.colors.background.canvas.ignoresSafeArea())
     }
 
     private var loadingOverlay: some View {
@@ -2119,13 +2324,13 @@ private struct TicketsContainerView: View {
                 .progressViewStyle(.circular)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(DUTheme.background.opacity(0.92).ignoresSafeArea())
+        .background(theme.colors.background.canvas.opacity(0.92).ignoresSafeArea())
     }
 
     private func failureView(allowsBackHome: Bool) -> some View {
         DUStateView(
             systemImage: "wifi.exclamationmark",
-            iconColor: DUTheme.magenta,
+            iconColor: theme.colors.brand.magenta,
             title: languageStore.string("tickets.state.errorTitle"),
             subtitle: languageStore.string("tickets.state.errorSubtitle"),
             actionTitle: languageStore.string("common.reload"),
@@ -2147,7 +2352,7 @@ private struct TicketsContainerView: View {
                 await viewModel.reload()
             }
         }
-        .background(DUTheme.background.ignoresSafeArea())
+        .background(theme.colors.background.canvas.ignoresSafeArea())
     }
 }
 
