@@ -12,6 +12,8 @@ enum DUListItemAccessory: Sendable {
 }
 
 struct DUListItem: View {
+    @Environment(\.duTheme) private var theme
+
     let title: String
     let subtitle: String?
     let leading: DUListItemLeading?
@@ -42,12 +44,12 @@ struct DUListItem: View {
                 VStack(alignment: .leading, spacing: subtitle == nil ? 0 : DUSpacing.xs) {
                     Text(title)
                         .font(.du(15, weight: .semibold))
-                        .foregroundColor(DUTheme.ink)
+                        .foregroundColor(theme.components.listItem.title)
 
                     if let subtitle {
                         Text(subtitle)
                             .font(.du(12, weight: .medium))
-                            .foregroundColor(DUTheme.inkTertiary)
+                            .foregroundColor(theme.components.listItem.subtitle)
                             .multilineTextAlignment(.leading)
                     }
                 }
@@ -84,19 +86,19 @@ struct DUListItem: View {
         case .chevron:
             Image(systemName: "chevron.forward")
                 .font(.du(12, weight: .bold))
-                .foregroundColor(DUTheme.inkDisabled)
+                .foregroundColor(theme.components.listItem.accessory)
         case let .badge(text):
             Text(text)
                 .font(.du(10, weight: .bold))
-                .foregroundColor(DUTheme.warning)
+                .foregroundColor(theme.components.listItem.badgeText)
                 .padding(.horizontal, DUSpacing.sm)
                 .frame(height: 22)
-                .background(DUTheme.warningBackground)
+                .background(theme.components.listItem.badgeBackground)
                 .clipShape(Capsule())
         case let .selection(isSelected):
             Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
                 .font(.du(20, weight: .semibold))
-                .foregroundColor(isSelected ? DUTheme.cyan : DUTheme.inkDisabled)
+                .foregroundColor(isSelected ? theme.components.listItem.selected : theme.components.listItem.accessory)
         }
     }
 }

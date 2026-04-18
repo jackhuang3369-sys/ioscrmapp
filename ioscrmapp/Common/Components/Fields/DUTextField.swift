@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct DUTextField: View {
+    @Environment(\.duTheme) private var theme
+
     let title: String?
     let placeholder: String
     @Binding var text: String
@@ -15,7 +17,7 @@ struct DUTextField: View {
             if let title {
                 Text(title)
                     .font(.du(14, weight: .semibold))
-                    .foregroundColor(DUTheme.inkSecondary)
+                    .foregroundColor(theme.components.field.label)
             }
 
             HStack(spacing: DUSpacing.sm) {
@@ -30,34 +32,24 @@ struct DUTextField: View {
                 .autocapitalization(.none)
                 .disableAutocorrection(true)
                 .font(.du(16, weight: .medium))
-                .foregroundColor(DUTheme.ink)
+                .foregroundColor(theme.components.field.text)
 
                 if isSecure {
                     Button {
                         isSecureRevealed.toggle()
                     } label: {
                         Image(systemName: isSecureRevealed ? "eye.slash" : "eye")
-                            .foregroundColor(DUTheme.inkTertiary)
+                            .foregroundColor(theme.components.field.placeholder)
                     }
                     .buttonStyle(.plain)
                 }
             }
-            .padding(.horizontal, DUSpacing.lg)
-            .frame(height: 52)
-            .background(
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .fill(DUTheme.panel)
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .stroke(error == nil ? DUTheme.line : DUTheme.error, lineWidth: 1.2)
-            )
-            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+            .duFieldShell(isError: error != nil)
 
             if let error {
                 Text(error)
                     .font(.du(12, weight: .medium))
-                    .foregroundColor(DUTheme.error)
+                    .foregroundColor(theme.components.field.errorText)
             }
         }
     }

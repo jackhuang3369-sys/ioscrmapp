@@ -29,6 +29,7 @@ private struct DUBottomSheetModifier<SheetContent: View>: ViewModifier {
         if #available(iOS 16.0, *) {
             content.sheet(isPresented: $isPresented) {
                 sheetContent()
+                    .duSurfaceStyle(.sheet)
                     .presentationDetents([.height(preferredHeight)])
                     .presentationDragIndicator(showsGrabber ? .visible : .hidden)
             }
@@ -70,7 +71,7 @@ private struct DULegacyBottomSheetPresenter<SheetContent: View>: UIViewControlle
                 from: uiViewController,
                 preferredHeight: preferredHeight,
                 showsGrabber: showsGrabber,
-                rootView: AnyView(sheetContent())
+                rootView: AnyView(sheetContent().duSurfaceStyle(.sheet))
             )
         } else {
             context.coordinator.dismissIfNeeded()
@@ -106,7 +107,7 @@ private struct DULegacyBottomSheetPresenter<SheetContent: View>: UIViewControlle
                 sheetController.detents = useMediumDetent ? [.medium(), .large()] : [.large()]
                 sheetController.selectedDetentIdentifier = useMediumDetent ? .medium : .large
                 sheetController.prefersGrabberVisible = showsGrabber
-                sheetController.preferredCornerRadius = 24
+                sheetController.preferredCornerRadius = DURadius.sheet
                 sheetController.prefersScrollingExpandsWhenScrolledToEdge = false
             }
 

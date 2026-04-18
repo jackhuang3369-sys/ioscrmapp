@@ -134,6 +134,26 @@
 		F10000000000000000000003 /* AIChatViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F20000000000000000000003 /* AIChatViewModel.swift */; };
 		F10000000000000000000004 /* AIChatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F20000000000000000000004 /* AIChatView.swift */; };
 		F10000000000000000000005 /* AIAssistantEntryComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = F20000000000000000000005 /* AIAssistantEntryComponents.swift */; };
+		AB1000000000000000000101 /* AppThemeStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000000000000000000101 /* AppThemeStore.swift */; };
+		AB1000000000000000000102 /* ThemeSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000000000000000000102 /* ThemeSettingsView.swift */; };
+		AB1000000000000000000103 /* DUColorPrimitives.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000000000000000000103 /* DUColorPrimitives.swift */; };
+		AB1000000000000000000104 /* DUTypographyPrimitives.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000000000000000000104 /* DUTypographyPrimitives.swift */; };
+		AB1000000000000000000105 /* DUSpacing.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000000000000000000105 /* DUSpacing.swift */; };
+		AB1000000000000000000106 /* DURadius.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000000000000000000106 /* DURadius.swift */; };
+		AB1000000000000000000107 /* DUElevation.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000000000000000000107 /* DUElevation.swift */; };
+		AB1000000000000000000108 /* DUMotion.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000000000000000000108 /* DUMotion.swift */; };
+		AB1000000000000000000109 /* DUColorTokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000000000000000000109 /* DUColorTokens.swift */; };
+		AB100000000000000000010A /* DUTypographyTokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB200000000000000000010A /* DUTypographyTokens.swift */; };
+		AB100000000000000000010B /* DUComponentTokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB200000000000000000010B /* DUComponentTokens.swift */; };
+		AB100000000000000000010C /* DUThemeMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB200000000000000000010C /* DUThemeMode.swift */; };
+		AB100000000000000000010D /* DUTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB200000000000000000010D /* DUTheme.swift */; };
+		AB100000000000000000010E /* DUThemeEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB200000000000000000010E /* DUThemeEnvironment.swift */; };
+		AB100000000000000000010F /* DULegacyThemeAliases.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB200000000000000000010F /* DULegacyThemeAliases.swift */; };
+		AB1000000000000000000110 /* DUCardStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000000000000000000110 /* DUCardStyle.swift */; };
+		AB1000000000000000000111 /* DUControlStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000000000000000000111 /* DUControlStyle.swift */; };
+		AB1000000000000000000112 /* DUFieldStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000000000000000000112 /* DUFieldStyle.swift */; };
+		AB1000000000000000000113 /* DUSurfaceStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000000000000000000113 /* DUSurfaceStyle.swift */; };
+		AB1000000000000000000114 /* DesignSystemPreviewCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000000000000000000114 /* DesignSystemPreviewCatalog.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -265,6 +285,26 @@
 		F20000000000000000000003 /* AIChatViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIChatViewModel.swift; sourceTree = "<group>"; };
 		F20000000000000000000004 /* AIChatView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIChatView.swift; sourceTree = "<group>"; };
 		F20000000000000000000005 /* AIAssistantEntryComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIAssistantEntryComponents.swift; sourceTree = "<group>"; };
+		AB2000000000000000000101 /* AppThemeStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppThemeStore.swift; sourceTree = "<group>"; };
+		AB2000000000000000000102 /* ThemeSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeSettingsView.swift; sourceTree = "<group>"; };
+		AB2000000000000000000103 /* DUColorPrimitives.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DUColorPrimitives.swift; sourceTree = "<group>"; };
+		AB2000000000000000000104 /* DUTypographyPrimitives.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DUTypographyPrimitives.swift; sourceTree = "<group>"; };
+		AB2000000000000000000105 /* DUSpacing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DUSpacing.swift; sourceTree = "<group>"; };
+		AB2000000000000000000106 /* DURadius.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DURadius.swift; sourceTree = "<group>"; };
+		AB2000000000000000000107 /* DUElevation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DUElevation.swift; sourceTree = "<group>"; };
+		AB2000000000000000000108 /* DUMotion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DUMotion.swift; sourceTree = "<group>"; };
+		AB2000000000000000000109 /* DUColorTokens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DUColorTokens.swift; sourceTree = "<group>"; };
+		AB200000000000000000010A /* DUTypographyTokens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DUTypographyTokens.swift; sourceTree = "<group>"; };
+		AB200000000000000000010B /* DUComponentTokens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DUComponentTokens.swift; sourceTree = "<group>"; };
+		AB200000000000000000010C /* DUThemeMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DUThemeMode.swift; sourceTree = "<group>"; };
+		AB200000000000000000010D /* DUTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DUTheme.swift; sourceTree = "<group>"; };
+		AB200000000000000000010E /* DUThemeEnvironment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DUThemeEnvironment.swift; sourceTree = "<group>"; };
+		AB200000000000000000010F /* DULegacyThemeAliases.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DULegacyThemeAliases.swift; sourceTree = "<group>"; };
+		AB2000000000000000000110 /* DUCardStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DUCardStyle.swift; sourceTree = "<group>"; };
+		AB2000000000000000000111 /* DUControlStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DUControlStyle.swift; sourceTree = "<group>"; };
+		AB2000000000000000000112 /* DUFieldStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DUFieldStyle.swift; sourceTree = "<group>"; };
+		AB2000000000000000000113 /* DUSurfaceStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DUSurfaceStyle.swift; sourceTree = "<group>"; };
+		AB2000000000000000000114 /* DesignSystemPreviewCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignSystemPreviewCatalog.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -325,6 +365,7 @@
 			children = (
 				A30000000000000000000012 /* Config */,
 				A30000000000000000000013 /* Localization */,
+				AB3000000000000000000101 /* Preferences */,
 				A30000000000000000000019 /* Networking */,
 				A30000000000000000000005 /* Storage */,
 			);
@@ -374,8 +415,90 @@
 			isa = PBXGroup;
 			children = (
 				A20000000000000000000007 /* DesignSystem.swift */,
+				AB3000000000000000000102 /* Tokens */,
+				AB3000000000000000000107 /* Styles */,
+				AB3000000000000000000108 /* Previews */,
 			);
 			path = DesignSystem;
+			sourceTree = "<group>";
+		};
+		AB3000000000000000000101 /* Preferences */ = {
+			isa = PBXGroup;
+			children = (
+				AB2000000000000000000101 /* AppThemeStore.swift */,
+			);
+			path = Preferences;
+			sourceTree = "<group>";
+		};
+		AB3000000000000000000102 /* Tokens */ = {
+			isa = PBXGroup;
+			children = (
+				AB3000000000000000000103 /* Primitives */,
+				AB3000000000000000000104 /* Semantics */,
+				AB3000000000000000000105 /* Runtime */,
+				AB3000000000000000000106 /* Compatibility */,
+			);
+			path = Tokens;
+			sourceTree = "<group>";
+		};
+		AB3000000000000000000103 /* Primitives */ = {
+			isa = PBXGroup;
+			children = (
+				AB2000000000000000000103 /* DUColorPrimitives.swift */,
+				AB2000000000000000000104 /* DUTypographyPrimitives.swift */,
+				AB2000000000000000000105 /* DUSpacing.swift */,
+				AB2000000000000000000106 /* DURadius.swift */,
+				AB2000000000000000000107 /* DUElevation.swift */,
+				AB2000000000000000000108 /* DUMotion.swift */,
+			);
+			path = Primitives;
+			sourceTree = "<group>";
+		};
+		AB3000000000000000000104 /* Semantics */ = {
+			isa = PBXGroup;
+			children = (
+				AB2000000000000000000109 /* DUColorTokens.swift */,
+				AB200000000000000000010A /* DUTypographyTokens.swift */,
+				AB200000000000000000010B /* DUComponentTokens.swift */,
+			);
+			path = Semantics;
+			sourceTree = "<group>";
+		};
+		AB3000000000000000000105 /* Runtime */ = {
+			isa = PBXGroup;
+			children = (
+				AB200000000000000000010C /* DUThemeMode.swift */,
+				AB200000000000000000010D /* DUTheme.swift */,
+				AB200000000000000000010E /* DUThemeEnvironment.swift */,
+			);
+			path = Runtime;
+			sourceTree = "<group>";
+		};
+		AB3000000000000000000106 /* Compatibility */ = {
+			isa = PBXGroup;
+			children = (
+				AB200000000000000000010F /* DULegacyThemeAliases.swift */,
+			);
+			path = Compatibility;
+			sourceTree = "<group>";
+		};
+		AB3000000000000000000107 /* Styles */ = {
+			isa = PBXGroup;
+			children = (
+				AB2000000000000000000110 /* DUCardStyle.swift */,
+				AB2000000000000000000111 /* DUControlStyle.swift */,
+				AB2000000000000000000112 /* DUFieldStyle.swift */,
+				AB2000000000000000000113 /* DUSurfaceStyle.swift */,
+			);
+			path = Styles;
+			sourceTree = "<group>";
+		};
+		AB3000000000000000000108 /* Previews */ = {
+			isa = PBXGroup;
+			children = (
+				AB2000000000000000000114 /* DesignSystemPreviewCatalog.swift */,
+			);
+			path = Previews;
 			sourceTree = "<group>";
 		};
 		A30000000000000000000005 /* Storage */ = {
@@ -473,6 +596,7 @@
 			isa = PBXGroup;
 			children = (
 				A20000000000000000000012 /* LanguageSettingsView.swift */,
+				AB2000000000000000000102 /* ThemeSettingsView.swift */,
 				A2000000000000000000000B /* MeViews.swift */,
 			);
 			path = Views;
@@ -1087,6 +1211,10 @@
 				B10000000000000000000001 /* BillingAPI.swift in Sources */,
 				A1000000000000000000002B /* NotificationAPI.swift in Sources */,
 				A1000000000000000000001B /* DUSectionCard.swift in Sources */,
+				AB1000000000000000000110 /* DUCardStyle.swift in Sources */,
+				AB1000000000000000000111 /* DUControlStyle.swift in Sources */,
+				AB1000000000000000000112 /* DUFieldStyle.swift in Sources */,
+				AB1000000000000000000113 /* DUSurfaceStyle.swift in Sources */,
 				A1000000000000000000001A /* DUStateView.swift in Sources */,
 				E10000000000000000000001 /* DUFeaturePlaceholderView.swift in Sources */,
 				A10000000000000000000019 /* DUIconButton.swift in Sources */,
@@ -1096,9 +1224,11 @@
 				A10000000000000000000015 /* DUTextField.swift in Sources */,
 				A10000000000000000000014 /* DUButton.swift in Sources */,
 				A10000000000000000000012 /* LanguageSettingsView.swift in Sources */,
+				AB1000000000000000000102 /* ThemeSettingsView.swift in Sources */,
 				A10000000000000000000011 /* LocalizedTextValue.swift in Sources */,
 				A10000000000000000000010 /* AppLanguageStore.swift in Sources */,
 				A1000000000000000000000F /* AppLanguage.swift in Sources */,
+				AB1000000000000000000101 /* AppThemeStore.swift in Sources */,
 				A1000000000000000000000E /* AppEnvironment.swift in Sources */,
 				A1000000000000000000000D /* AppServices.swift in Sources */,
 				C10000000000000000000001 /* BadgeCenterService.swift in Sources */,
@@ -1114,6 +1244,20 @@
 				A10000000000000000000003 /* AuthModels.swift in Sources */,
 				A10000000000000000000004 /* AuthLoginViewModel.swift in Sources */,
 				A10000000000000000000007 /* DesignSystem.swift in Sources */,
+				AB1000000000000000000103 /* DUColorPrimitives.swift in Sources */,
+				AB1000000000000000000104 /* DUTypographyPrimitives.swift in Sources */,
+				AB1000000000000000000105 /* DUSpacing.swift in Sources */,
+				AB1000000000000000000106 /* DURadius.swift in Sources */,
+				AB1000000000000000000107 /* DUElevation.swift in Sources */,
+				AB1000000000000000000108 /* DUMotion.swift in Sources */,
+				AB1000000000000000000109 /* DUColorTokens.swift in Sources */,
+				AB100000000000000000010A /* DUTypographyTokens.swift in Sources */,
+				AB100000000000000000010B /* DUComponentTokens.swift in Sources */,
+				AB100000000000000000010C /* DUThemeMode.swift in Sources */,
+				AB100000000000000000010D /* DUTheme.swift in Sources */,
+				AB100000000000000000010E /* DUThemeEnvironment.swift in Sources */,
+				AB100000000000000000010F /* DULegacyThemeAliases.swift in Sources */,
+				AB1000000000000000000114 /* DesignSystemPreviewCatalog.swift in Sources */,
 				C10000000000000000000002 /* BadgeCenterModels.swift in Sources */,
 				A10000000000000000000009 /* MeModels.swift in Sources */,
 				F10000000000000000000005 /* AIAssistantEntryComponents.swift in Sources */,

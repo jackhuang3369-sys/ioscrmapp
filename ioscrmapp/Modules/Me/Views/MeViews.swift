@@ -55,6 +55,13 @@ struct MeContainerView: View {
                     EmptyView()
                 }
                 .hidden()
+                NavigationLink(
+                    destination: ThemeSettingsView(),
+                    isActive: $viewModel.isThemeSettingsPresented
+                ) {
+                    EmptyView()
+                }
+                .hidden()
             }
             .background(DUTheme.background.ignoresSafeArea())
             .navigationBarHidden(true)
@@ -451,7 +458,7 @@ struct MeContainerView: View {
                 ForEach(Array(group.items.enumerated()), id: \.element.id) { index, item in
                     menuGroupRow(item)
 
-                    if item.actionID == .changeLanguage {
+                    if item.actionID == .changeTheme {
                         Divider()
                             .padding(.leading, 84)
 

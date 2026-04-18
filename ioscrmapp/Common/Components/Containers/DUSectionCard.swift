@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct DUSectionCard<Content: View>: View {
+    @Environment(\.duTheme) private var theme
+
     let title: String?
     let trailingTitle: String?
     var spacing: CGFloat = DUSpacing.lg
@@ -33,7 +35,7 @@ struct DUSectionCard<Content: View>: View {
                 HStack {
                     Text(title)
                         .font(.du(17, weight: .bold))
-                        .foregroundColor(DUTheme.ink)
+                        .foregroundColor(theme.colors.text.primary)
 
                     Spacer()
 

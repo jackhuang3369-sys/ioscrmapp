@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct DUPhoneField: View {
+    @Environment(\.duTheme) private var theme
+
     let title: String
     let countryCode: String
     let placeholder: String
@@ -22,15 +24,15 @@ struct DUPhoneField: View {
         VStack(alignment: .leading, spacing: DUSpacing.sm) {
             Text(title)
                 .font(.du(14, weight: .semibold))
-                .foregroundColor(DUTheme.inkSecondary)
+                .foregroundColor(theme.components.field.label)
 
             HStack(spacing: DUSpacing.md) {
                 Text(countryCode)
                     .font(.du(16, weight: .semibold))
-                    .foregroundColor(DUTheme.inkSecondary)
+                    .foregroundColor(theme.components.field.label)
 
                 Rectangle()
-                    .fill(DUTheme.lineLight)
+                    .fill(theme.components.field.divider)
                     .frame(width: 1, height: 22)
 
                 TextField(placeholder, text: sanitizedPhoneBinding)
@@ -38,24 +40,14 @@ struct DUPhoneField: View {
                     .autocapitalization(.none)
                     .disableAutocorrection(true)
                     .font(.du(16, weight: .medium))
-                    .foregroundColor(DUTheme.ink)
+                    .foregroundColor(theme.components.field.text)
             }
-            .padding(.horizontal, DUSpacing.lg)
-            .frame(height: 52)
-            .background(
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .fill(DUTheme.panel)
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .stroke(error == nil ? DUTheme.line : DUTheme.error, lineWidth: 1.2)
-            )
-            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+            .duFieldShell(isError: error != nil)
 
             if let error {
                 Text(error)
                     .font(.du(12, weight: .medium))
-                    .foregroundColor(DUTheme.error)
+                    .foregroundColor(theme.components.field.errorText)
             }
         }
     }

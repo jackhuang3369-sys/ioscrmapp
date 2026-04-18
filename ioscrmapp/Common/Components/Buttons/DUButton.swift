@@ -7,13 +7,15 @@ enum DUButtonStyle {
 }
 
 struct DUButton: View {
+    @Environment(\.duTheme) private var theme
+
     let title: String
     let style: DUButtonStyle
     var isLoading = false
     var isEnabled = true
     var height: CGFloat = 52
     var fixedWidth: CGFloat? = nil
-    var cornerRadius: CGFloat = 18
+    var cornerRadius: CGFloat = DURadius.button
     var fontSize: CGFloat = 16
     var horizontalPadding: CGFloat = 0
     let action: () -> Void
@@ -36,7 +38,7 @@ struct DUButton: View {
             .background(backgroundView)
             .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
             .shadow(
-                color: style == .primary && isEnabled ? DUTheme.cyan.opacity(0.28) : .clear,
+                color: style == .primary && isEnabled ? buttonTokens.shadowColor : .clear,
                 radius: 18,
                 x: 0,
                 y: 8
@@ -47,11 +49,17 @@ struct DUButton: View {
     }
 
     private var foregroundColor: Color {
+        isEnabled ? buttonTokens.foreground : buttonTokens.disabledForeground
+    }
+
+    private var buttonTokens: DUComponentTokens.ButtonVariantTokens {
         switch style {
-        case .primary, .danger:
-            return .white
+        case .primary:
+            return theme.components.button.primary
         case .secondary:
-            return isEnabled ? DUTheme.cyan : DUTheme.inkDisabled
+            return theme.components.button.secondary
+        case .danger:
+            return theme.components.button.danger
         }
     }
 
@@ -62,18 +70,18 @@ struct DUButton: View {
         switch style {
         case .primary:
             if isEnabled {
-                shape.fill(DUTheme.brandGradient)
+                shape.fill(theme.colors.gradient.brand)
             } else {
-                shape.fill(DUTheme.inkDisabled)
+                shape.fill(buttonTokens.disabledBackground)
             }
         case .secondary:
             if isEnabled {
-                shape.fill(DUTheme.cyanBackground)
+                shape.fill(buttonTokens.background)
             } else {
-                shape.fill(DUTheme.backgroundSecondary)
+                shape.fill(buttonTokens.disabledBackground)
             }
         case .danger:
-            shape.fill(DUTheme.error)
+            shape.fill(isEnabled ? buttonTokens.background : buttonTokens.disabledBackground)
         }
     }
 }

@@ -554,6 +554,10 @@
         "title": "Change Language",
         "subtitle": "App language and layout direction"
       },
+      "theme": {
+        "title": "Appearance",
+        "subtitle": "System, light, or dark mode"
+      },
       "help": {
         "title": "Help & Feedback",
         "subtitle": "FAQ, customer service"
@@ -593,6 +597,28 @@
       "english": "English",
       "chinese": "Simplified Chinese",
       "arabic": "Arabic"
+    }
+  },
+  "theme": {
+    "settings": {
+      "title": "Appearance",
+      "subtitle": "Choose how Design System surfaces, text, and controls adapt in the app.",
+      "current": "Current appearance",
+      "save": "Save"
+    },
+    "mode": {
+      "system": {
+        "title": "Follow System",
+        "subtitle": "Use the device appearance setting."
+      },
+      "light": {
+        "title": "Light",
+        "subtitle": "Use the light Design System theme."
+      },
+      "dark": {
+        "title": "Dark",
+        "subtitle": "Use the dark Design System theme."
+      }
     }
   },
   "offers": {

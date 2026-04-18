@@ -70,6 +70,7 @@ enum MeActionID: String, Sendable {
     case favorites
     case address
     case changeLanguage
+    case changeTheme
     case help
     case about
 }

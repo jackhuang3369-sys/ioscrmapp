@@ -146,6 +146,7 @@ actor MockMeService: MeServicing {
                     id: "settings",
                     items: [
                         MeMenuItem(id: "language", title: .key("me.menu.language.title"), subtitle: .key("me.menu.language.subtitle"), assetName: "MeMenuSettingsIcon", actionID: .changeLanguage, accessory: .chevron),
+                        MeMenuItem(id: "theme", title: .key("me.menu.theme.title"), subtitle: .key("me.menu.theme.subtitle"), assetName: "MeMenuSettingsIcon", actionID: .changeTheme, accessory: .chevron),
                         MeMenuItem(id: "help", title: .key("me.menu.help.title"), subtitle: .key("me.menu.help.subtitle"), assetName: "MeMenuHelpIcon", actionID: .help, accessory: .chevron),
                         MeMenuItem(id: "about", title: .key("me.menu.about.title"), subtitle: .key("me.menu.about.subtitle", arguments: [AppVersionFormatter.currentVersion]), assetName: "MeMenuAboutIcon", actionID: .about, accessory: .chevron)
                     ]

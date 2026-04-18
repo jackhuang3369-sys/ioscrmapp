@@ -60,6 +60,7 @@ struct ContentView_Previews: PreviewProvider {
 
     static var previews: some View {
         let languageStore = AppLanguageStore(initialLanguage: .english)
+        let themeStore = AppThemeStore(initialMode: .system)
 
         Group {
             ContentView(
@@ -79,6 +80,8 @@ struct ContentView_Previews: PreviewProvider {
                 authServerURL: previewServices.configuration.mode == .remote ? previewServices.configuration.serverURL : nil
             )
             .environmentObject(languageStore)
+            .environmentObject(themeStore)
+            .duTheme(mode: themeStore.currentMode)
             .previewDisplayName("Login")
 
             ContentView(
@@ -98,6 +101,8 @@ struct ContentView_Previews: PreviewProvider {
                 authServerURL: previewServices.configuration.mode == .remote ? previewServices.configuration.serverURL : nil
             )
             .environmentObject(languageStore)
+            .environmentObject(themeStore)
+            .duTheme(mode: themeStore.currentMode)
             .previewDisplayName("Home")
         }
     }

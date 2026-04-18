@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct DUSplashSkipButton: View {
+    @Environment(\.duTheme) private var theme
+
     let title: String
     let progress: Double
     let isEnabled: Bool
@@ -17,22 +19,22 @@ struct DUSplashSkipButton: View {
         Button(action: action) {
             ZStack {
                 Capsule()
-                    .fill(DUTheme.splashChrome)
+                    .fill(isEnabled ? theme.colors.chrome.splash : theme.colors.chrome.splashDisabled)
 
                 Capsule()
-                    .strokeBorder(Color.white.opacity(0.24), lineWidth: 1.25)
+                    .strokeBorder(DUColorPrimitives.Neutral.white.opacity(0.24), lineWidth: 1.25)
 
                 SplashSkipProgressShape()
                     .trim(from: 0, to: clampedProgress)
                     .stroke(
-                        DUTheme.splashProgressFill,
+                        theme.colors.chrome.splashProgressFill,
                         style: StrokeStyle(lineWidth: 2.5, lineCap: .round, lineJoin: .round)
                     )
                     .padding(1.5)
 
                 Text(title)
                     .font(.du(12, weight: .bold))
-                    .foregroundColor(.white)
+                    .foregroundColor(DUColorPrimitives.Neutral.white)
                     .lineLimit(1)
                     .minimumScaleFactor(0.75)
                     .padding(.horizontal, DUSpacing.sm)
@@ -76,6 +78,8 @@ private struct SplashSkipProgressShape: Shape {
 }
 
 struct DUSplashAudioButton: View {
+    @Environment(\.duTheme) private var theme
+
     let accessibilityLabel: String
     let systemImageName: String
     let action: () -> Void
@@ -85,13 +89,13 @@ struct DUSplashAudioButton: View {
     var body: some View {
         Button(action: action) {
             Image(systemName: systemImageName)
-                .font(.system(size: 16, weight: .semibold))
-                .foregroundColor(.white)
+                .font(.du(16, weight: .semibold))
+                .foregroundColor(DUColorPrimitives.Neutral.white)
                 .frame(width: buttonSize, height: buttonSize)
-                .background(DUTheme.splashChrome)
+                .background(theme.colors.chrome.splash)
                 .overlay {
                     Circle()
-                        .strokeBorder(Color.white.opacity(0.24), lineWidth: 1.25)
+                        .strokeBorder(DUColorPrimitives.Neutral.white.opacity(0.24), lineWidth: 1.25)
                 }
                 .clipShape(Circle())
         }

@@ -13,6 +13,7 @@ final class MeViewModel: ObservableObject {
     @Published var placeholderMessage: LocalizedTextValue?
     @Published var isRevealSheetPresented = false
     @Published var isLanguageSettingsPresented = false
+    @Published var isThemeSettingsPresented = false
     @Published var isBillingPresented = false
     @Published var isBadgeCenterPresented = false
     @Published var revealPassword = ""
@@ -73,6 +74,8 @@ final class MeViewModel: ObservableObject {
             isBadgeCenterPresented = true
         case .changeLanguage:
             isLanguageSettingsPresented = true
+        case .changeTheme:
+            isThemeSettingsPresented = true
         default:
             placeholderMessage = .key("common.placeholder.feature", arguments: [localizedTitle])
         }

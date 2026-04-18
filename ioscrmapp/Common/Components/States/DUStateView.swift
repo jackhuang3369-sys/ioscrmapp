@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct DUStateView: View {
+    @Environment(\.duTheme) private var theme
+
     let systemImage: String
     let iconColor: Color
     let title: String
@@ -20,11 +22,11 @@ struct DUStateView: View {
 
             Text(title)
                 .font(.du(22, weight: .bold))
-                .foregroundColor(DUTheme.ink)
+                .foregroundColor(theme.colors.text.primary)
 
             Text(subtitle)
                 .font(.du(15, weight: .medium))
-                .foregroundColor(DUTheme.inkSecondary)
+                .foregroundColor(theme.colors.text.secondary)
                 .multilineTextAlignment(.center)
 
             if let actionTitle, let action {

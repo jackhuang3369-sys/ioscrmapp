@@ -1,10 +1,12 @@
 import SwiftUI
 
 struct DUIconButton<Icon: View>: View {
+    @Environment(\.duTheme) private var theme
+
     let title: String?
     var circleSize: CGFloat = 64
-    var backgroundColor: Color = DUTheme.backgroundSecondary
-    var titleColor: Color = DUTheme.inkTertiary
+    var backgroundColor: Color?
+    var titleColor: Color?
     var titleFontSize: CGFloat = 11
     var shadowColor: Color = .clear
     var shadowRadius: CGFloat = 0
@@ -16,7 +18,7 @@ struct DUIconButton<Icon: View>: View {
         Button(action: action) {
             VStack(spacing: title == nil ? 0 : DUSpacing.sm) {
                 Circle()
-                    .fill(backgroundColor)
+                    .fill(backgroundColor ?? theme.colors.background.secondary)
                     .frame(width: circleSize, height: circleSize)
                     .shadow(color: shadowColor, radius: shadowRadius, x: 0, y: shadowY)
                     .overlay(icon())
@@ -24,7 +26,7 @@ struct DUIconButton<Icon: View>: View {
                 if let title {
                     Text(title)
                         .font(.du(titleFontSize, weight: .medium))
-                        .foregroundColor(titleColor)
+                        .foregroundColor(titleColor ?? theme.colors.text.tertiary)
                 }
             }
         }

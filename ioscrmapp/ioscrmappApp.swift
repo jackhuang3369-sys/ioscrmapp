@@ -12,11 +12,13 @@ import AVFoundation
 struct ioscrmappApp: App {
     @StateObject private var sessionStore: SessionStore
     @StateObject private var languageStore: AppLanguageStore
+    @StateObject private var themeStore: AppThemeStore
     private let services = AppServices()
 
     init() {
         _sessionStore = StateObject(wrappedValue: SessionStore())
         _languageStore = StateObject(wrappedValue: AppLanguageStore())
+        _themeStore = StateObject(wrappedValue: AppThemeStore())
         
         do {
             // 保留 .mixWithOthers 避免中断其他音频
@@ -32,8 +34,10 @@ struct ioscrmappApp: App {
         WindowGroup {
             rootContent
             .environmentObject(languageStore)
+            .environmentObject(themeStore)
             .environment(\.locale, languageStore.locale)
             .environment(\.layoutDirection, languageStore.layoutDirection)
+            .duTheme(mode: themeStore.currentMode)
         }
     }
 
