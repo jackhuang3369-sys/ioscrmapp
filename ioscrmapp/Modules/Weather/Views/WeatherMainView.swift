@@ -69,7 +69,7 @@ struct WeatherMainView: View {
             }
             .ignoresSafeArea()
         }
-        .preferredColorScheme(.light)
+        .preferredColorScheme(usesDarkHomeTheme ? .dark : .light)
         .onAppear {
             if hourlyPoints.isEmpty {
                 hourlyPoints = MockWeatherData.hourlyDemoPoints
@@ -170,7 +170,8 @@ struct WeatherMainView: View {
 
             WeatherHourlyStrip(
                 points: hourlyPoints,
-                selectedID: selectedTimelineID
+                selectedID: selectedTimelineID,
+                usesDarkTheme: usesDarkHomeTheme
             ) { entry, isDragSelection in
                 guard entry.id != selectedTimelineID else { return }
                 let previousTemperature = selectedEntry.temperature
@@ -238,6 +239,10 @@ struct WeatherMainView: View {
         .zIndex(5)
     }
 
+    private var usesDarkHomeTheme: Bool {
+        selectedEntry.scenePreset.usesDarkBackground
+    }
+
     private func applyHomeScene(
         for entry: WeatherHourlyStripPoint,
         animated: Bool,
@@ -274,47 +279,50 @@ struct WeatherMainView: View {
     @ViewBuilder
     private func clearSkyTitleText(isLifted: Bool) -> some View {
         let outlineWidth = WeatherHourlyStripCore.clearSkyOutlineWidth(isLifted: isLifted)
+        let foregroundColor = usesDarkHomeTheme ? Color.white.opacity(0.94) : Color.black.opacity(0.92)
+        let outlineColor = usesDarkHomeTheme ? Color.black.opacity(0.42) : Color.white
         ZStack {
             if outlineWidth > 0 {
                 Text(weather.title)
                     .font(.du(26, weight: .heavy))
-                    .foregroundColor(.white)
+                    .foregroundColor(outlineColor)
                     .offset(x: outlineWidth, y: 0)
                 Text(weather.title)
                     .font(.du(26, weight: .heavy))
-                    .foregroundColor(.white)
+                    .foregroundColor(outlineColor)
                     .offset(x: -outlineWidth, y: 0)
                 Text(weather.title)
                     .font(.du(26, weight: .heavy))
-                    .foregroundColor(.white)
+                    .foregroundColor(outlineColor)
                     .offset(x: 0, y: outlineWidth)
                 Text(weather.title)
                     .font(.du(26, weight: .heavy))
-                    .foregroundColor(.white)
+                    .foregroundColor(outlineColor)
                     .offset(x: 0, y: -outlineWidth)
                 Text(weather.title)
                     .font(.du(26, weight: .heavy))
-                    .foregroundColor(.white)
+                    .foregroundColor(outlineColor)
                     .offset(x: outlineWidth, y: outlineWidth)
                 Text(weather.title)
                     .font(.du(26, weight: .heavy))
-                    .foregroundColor(.white)
+                    .foregroundColor(outlineColor)
                     .offset(x: outlineWidth, y: -outlineWidth)
                 Text(weather.title)
                     .font(.du(26, weight: .heavy))
-                    .foregroundColor(.white)
+                    .foregroundColor(outlineColor)
                     .offset(x: -outlineWidth, y: outlineWidth)
                 Text(weather.title)
                     .font(.du(26, weight: .heavy))
-                    .foregroundColor(.white)
+                    .foregroundColor(outlineColor)
                     .offset(x: -outlineWidth, y: -outlineWidth)
             }
 
             Text(weather.title)
                 .font(.du(26, weight: .heavy))
-                .foregroundColor(Color.black.opacity(0.92))
+                .foregroundColor(foregroundColor)
         }
         .compositingGroup()
+        .animation(.easeInOut(duration: 0.24), value: usesDarkHomeTheme)
     }
     
     private var headerBar: some View {
@@ -336,12 +344,13 @@ struct WeatherMainView: View {
         } label: {
             Image(systemName: "chevron.left")
                 .font(.system(size: 17, weight: .semibold))
-                .foregroundColor(Color.black.opacity(0.9))
+                .foregroundColor(usesDarkHomeTheme ? Color.white.opacity(0.94) : Color.black.opacity(0.9))
                 .frame(width: 38, height: 38)
-                .background(Color.white.opacity(0.9))
+                .background(usesDarkHomeTheme ? Color.white.opacity(0.14) : Color.white.opacity(0.9))
                 .clipShape(Circle())
-                .shadow(color: .black.opacity(0.08), radius: 14, x: 0, y: 8)
+                .shadow(color: .black.opacity(usesDarkHomeTheme ? 0.24 : 0.08), radius: 14, x: 0, y: 8)
         }
+        .animation(.easeInOut(duration: 0.24), value: usesDarkHomeTheme)
     }
     
     private var cityHeader: some View {
@@ -349,9 +358,10 @@ struct WeatherMainView: View {
             Text(weather.city.uppercased())
                 .font(.du(13, weight: .bold))
                 .kerning(2.8)
-                .foregroundColor(Color.black.opacity(0.44))
+                .foregroundColor(usesDarkHomeTheme ? Color.white.opacity(0.62) : Color.black.opacity(0.44))
         }
         .frame(maxWidth: .infinity)
+        .animation(.easeInOut(duration: 0.24), value: usesDarkHomeTheme)
     }
 
     private func mainSceneHeight(for proxy: GeometryProxy) -> CGFloat {

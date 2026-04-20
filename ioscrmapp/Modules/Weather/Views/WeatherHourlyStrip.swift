@@ -4,6 +4,7 @@ import UIKit
 struct WeatherHourlyStrip: View {
     let points: [WeatherHourlyStripPoint]
     let selectedID: String
+    let usesDarkTheme: Bool
     let onSelect: (WeatherHourlyStripPoint, Bool) -> Void
     let onBubbleStateChange: (WeatherHourlyBubbleState) -> Void
 
@@ -17,11 +18,13 @@ struct WeatherHourlyStrip: View {
     init(
         points: [WeatherHourlyStripPoint],
         selectedID: String,
+        usesDarkTheme: Bool = false,
         onSelect: @escaping (WeatherHourlyStripPoint, Bool) -> Void,
         onBubbleStateChange: @escaping (WeatherHourlyBubbleState) -> Void = { _ in }
     ) {
         self.points = points
         self.selectedID = selectedID
+        self.usesDarkTheme = usesDarkTheme
         self.onSelect = onSelect
         self.onBubbleStateChange = onBubbleStateChange
     }
@@ -68,10 +71,10 @@ struct WeatherHourlyStrip: View {
             )
             let leftEndCapColor = points.first.map {
                 barColor(for: $0, range: range, isFocused: focusedIndex == 0)
-            } ?? Color.black.opacity(0.12)
+            } ?? fallbackBarColor
             let rightEndCapColor = points.last.map {
                 barColor(for: $0, range: range, isFocused: focusedIndex == points.count - 1)
-            } ?? Color.black.opacity(0.12)
+            } ?? fallbackBarColor
 
             let highIndex = points.indices.max(by: { points[$0].temperature < points[$1].temperature }) ?? 0
             let lowIndex = points.indices.min(by: { points[$0].temperature < points[$1].temperature }) ?? 0
@@ -224,7 +227,7 @@ struct WeatherHourlyStrip: View {
                     ForEach(tickIndices(), id: \.self) { index in
                         Text(tickLabel(for: index))
                             .font(.du(9, weight: .medium))
-                            .foregroundColor(Color.black.opacity(0.52))
+                            .foregroundColor(tickLabelColor)
                             .frame(width: contentWidth / 8)
                     }
                 }
@@ -262,6 +265,14 @@ struct WeatherHourlyStrip: View {
     private func tickLabel(for index: Int) -> String {
         guard points.indices.contains(index) else { return "" }
         return index == 0 ? "NOW" : "\(points[index].hour24)"
+    }
+
+    private var fallbackBarColor: Color {
+        usesDarkTheme ? Color.white.opacity(0.18) : Color.black.opacity(0.12)
+    }
+
+    private var tickLabelColor: Color {
+        usesDarkTheme ? Color.white.opacity(0.64) : Color.black.opacity(0.52)
     }
 
     private func barColor(for point: WeatherHourlyStripPoint, range: WeatherHourlyTemperatureRange, isFocused: Bool) -> Color {
@@ -341,16 +352,17 @@ struct WeatherHourlyStrip: View {
 
     private func timeBubble(text: String, x: CGFloat, y: CGFloat, diameter: CGFloat) -> some View {
         Circle()
-            .fill(Color.black.opacity(0.16))
+            .fill(timeBubbleFill)
             .frame(width: diameter, height: diameter)
             .overlay {
                 Text(text)
                     .font(neumaticCompressedWideBoldFont(size: 27))
                     .minimumScaleFactor(0.8)
                     .lineLimit(1)
-                    .foregroundColor(.black)
+                    .foregroundColor(timeBubbleTextColor)
                     .padding(.horizontal, 5)
             }
+            .shadow(color: timeBubbleShadowColor, radius: 10, x: 0, y: 4)
             .position(x: x, y: y)
     }
 
@@ -362,9 +374,25 @@ struct WeatherHourlyStrip: View {
             .allowsTightening(false)
             .scaleEffect(x: 1.2, y: 1.0, anchor: .center)
             .foregroundColor(Color.black.opacity(0.78))
-            .shadow(color: .white.opacity(0.24), radius: 1, x: 0, y: 0)
+            .shadow(color: temperatureLabelShadowColor, radius: 1, x: 0, y: 0)
             .position(x: x, y: y)
             .animation(.spring(response: 0.22, dampingFraction: 0.84), value: selectedID)
+    }
+
+    private var timeBubbleFill: Color {
+        usesDarkTheme ? Color.white.opacity(0.18) : Color.black.opacity(0.16)
+    }
+
+    private var timeBubbleTextColor: Color {
+        usesDarkTheme ? Color.white.opacity(0.96) : Color.black
+    }
+
+    private var timeBubbleShadowColor: Color {
+        usesDarkTheme ? Color.black.opacity(0.26) : Color.clear
+    }
+
+    private var temperatureLabelShadowColor: Color {
+        usesDarkTheme ? Color.white.opacity(0.34) : Color.white.opacity(0.24)
     }
 
     private func condensedNumberFont(size: CGFloat, weight: UIFont.Weight) -> Font {
