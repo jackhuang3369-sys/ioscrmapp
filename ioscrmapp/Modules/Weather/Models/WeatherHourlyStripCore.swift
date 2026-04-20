@@ -18,6 +18,15 @@ enum WeatherHomeScenePreset: Equatable {
             return false
         }
     }
+
+    var usesDarkBackground: Bool {
+        switch self {
+        case .moon, .moonCloudy, .moonCloudy2:
+            return true
+        case .sunny, .sunCloudy, .sunCloudy2, .cloud:
+            return false
+        }
+    }
 }
 
 struct WeatherHourlyStripPoint: Identifiable, Equatable {

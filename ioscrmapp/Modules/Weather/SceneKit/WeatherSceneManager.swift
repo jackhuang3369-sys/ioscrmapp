@@ -1004,7 +1004,7 @@ final class WeatherSceneManager: ObservableObject {
             return nil
         }
         cloud.name = "weather_home_attached_\(name)"
-        cloud.position = SCNVector3(1.02, mainSunPositionY - 0.78, 0.42)
+        cloud.position = SCNVector3(1.22, mainSunPositionY - 0.70, 0.54)
         cloud.eulerAngles = SCNVector3(-0.03, -0.18, 0.02)
         return cloud
     }
@@ -1024,7 +1024,7 @@ final class WeatherSceneManager: ObservableObject {
     }
 
     private var homeAttachedCloudHeight: Float {
-        2.72
+        3.08
     }
 
     private var homeStandaloneCloudHeight: Float {

@@ -118,11 +118,35 @@ struct WeatherMainView: View {
     
     private var background: some View {
         ZStack {
-            Color.white
-            
-            WeatherWindBackgroundView()
-                .opacity(0.95)
+            if selectedEntry.scenePreset.usesDarkBackground {
+                LinearGradient(
+                    colors: [
+                        Color(red: 0.08, green: 0.09, blue: 0.15),
+                        Color(red: 0.13, green: 0.14, blue: 0.22),
+                        Color(red: 0.20, green: 0.21, blue: 0.30)
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+
+                RadialGradient(
+                    colors: [
+                        Color.white.opacity(0.10),
+                        Color.clear
+                    ],
+                    center: .topTrailing,
+                    startRadius: 18,
+                    endRadius: 260
+                )
+                .blendMode(.screen)
+            } else {
+                Color.white
+
+                WeatherWindBackgroundView()
+                    .opacity(0.95)
+            }
         }
+        .animation(.easeInOut(duration: 0.24), value: selectedEntry.scenePreset.usesDarkBackground)
     }
 
     private func mainForecastSection(width: CGFloat, bottomPadding: CGFloat) -> some View {
@@ -171,7 +195,16 @@ struct WeatherMainView: View {
                     withAnimation(.easeOut(duration: WeatherHourlyStripCore.clearSkyRestoreAnimationDuration)) {
                         hourlyBubbleState = bubbleState
                     }
-                    applyHomeScene(for: selectedEntry, animated: false)
+                    guard let nowPoint = hourlyPoints.first else { return }
+                    let previousTemperature = selectedEntry.temperature
+                    if selectedTimelineID != nowPoint.id {
+                        withAnimation(.easeOut(duration: WeatherHourlyStripCore.clearSkyRestoreAnimationDuration)) {
+                            selectedTimelineID = nowPoint.id
+                        }
+                        applyHomeScene(for: nowPoint, animated: true, previousTemperature: previousTemperature)
+                    } else {
+                        applyHomeScene(for: selectedEntry, animated: false)
+                    }
                 }
             }
             .frame(width: width)
