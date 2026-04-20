@@ -1,7 +1,7 @@
 import Foundation
 
 enum WeatherSunTransitionHapticCore {
-    static let totalDuration: TimeInterval = 0.5
+    static let totalDuration: TimeInterval = 0.38
     static let startIntensity: Float = 0.8
     static let endIntensity: Float = 0.1
     static let sharpness: Float = 0.5

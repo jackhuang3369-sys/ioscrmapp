@@ -362,16 +362,11 @@ struct WeatherMainView: View {
 
         detailOverlayOpacity = 0
         isSunTransitionActive = true
+        // Immediately present the overlay structure, then fade in the opacity
+        isSunDetailPresented = true
 
-        withAnimation(.easeInOut(duration: 0.42)) {
-            isSunDetailPresented = true
-        }
-
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.08) {
-            guard isSunDetailPresented else { return }
-            withAnimation(.easeOut(duration: 0.34)) {
-                detailOverlayOpacity = 1
-            }
+        withAnimation(.easeOut(duration: 0.24)) {
+            detailOverlayOpacity = 1
         }
 
         sceneManager.startSunDetailTransition {
@@ -402,7 +397,7 @@ struct WeatherMainView: View {
         sceneManager.alignDetailSceneToFront()
         sceneInteractionResetVersion += 1
 
-        withAnimation(.easeInOut(duration: 0.24)) {
+        withAnimation(.easeIn(duration: 0.22)) {
             detailOverlayOpacity = 0
         }
 
