@@ -105,6 +105,7 @@ final class WeatherSceneManager: ObservableObject {
     private let detailDimensionRingRadius: Float = 5.1
     private let detailDimensionAngleStep = Float.pi * 2 / Float(WeatherDetailDimension.allCases.count)
     private let detailRainScaleCorrection: Float = 0.44
+    private let moonCrescentModelEulerAngles = SCNVector3(0, 2.36, 0)
     private let transitionRestRotation = SCNVector3(0, 0, 0)
 
     init(temperature: Int = MockWeatherData.today.temperature, mode: WeatherSceneMode = .main) {
@@ -864,7 +865,7 @@ final class WeatherSceneManager: ObservableObject {
         case .air:
             return makeNormalizedWeatherAssetNode(named: "air", targetHeight: targetHeight)
         case .moon:
-            return makeNormalizedWeatherAssetNode(named: "moon", targetHeight: targetHeight)
+            return makeMoonCrescentAssetNode(targetHeight: targetHeight, wrapsModelForSpin: true) ?? makeSunNode()
         case .temperature:
             let node = makeTemperatureNode(text: "\(currentTemperature)")
             scaleNodeToHeight(node, targetHeight: targetHeight)
@@ -963,12 +964,11 @@ final class WeatherSceneManager: ObservableObject {
         let container = SCNNode()
         container.name = "weather_home_moon_scene"
 
-        guard let moon = makeWeatherAssetNode(named: "moon", fileExtension: "usdz", targetHeight: homePrimaryModelHeight) else {
+        guard let moon = makeMoonCrescentAssetNode(targetHeight: homePrimaryModelHeight, wrapsModelForSpin: false) else {
             return nil
         }
         moon.name = "weather_home_moon"
         moon.position = SCNVector3(0, mainSunPositionY, -0.1)
-        moon.eulerAngles = SCNVector3(0.0, 0.08, 0.0)
         container.addChildNode(moon)
 
         if let cloudName,
@@ -976,6 +976,24 @@ final class WeatherSceneManager: ObservableObject {
             container.addChildNode(cloud)
         }
 
+        return container
+    }
+
+    private func makeMoonCrescentAssetNode(targetHeight: Float, wrapsModelForSpin: Bool) -> SCNNode? {
+        guard let moon = makeWeatherAssetNode(named: "moon", fileExtension: "usdz", targetHeight: targetHeight) else {
+            return nil
+        }
+
+        // The USDZ faces forward as a half-lit moon; yaw it so the front reads as a crescent.
+        moon.eulerAngles = moonCrescentModelEulerAngles
+
+        guard wrapsModelForSpin else {
+            return moon
+        }
+
+        let container = SCNNode()
+        container.name = "weather_detail_moon"
+        container.addChildNode(moon)
         return container
     }
 
@@ -1133,17 +1151,9 @@ final class WeatherSceneManager: ObservableObject {
     }
 
     private func makeSingleSunDetailTitleNode(text: String) -> SCNNode {
-        let attributedTitle = NSAttributedString(
-            string: text,
-            attributes: [
-                .font: UIFont.systemFont(ofSize: 9.2, weight: .black),
-                // Negative stroke width draws fill + stroke; tuned for visibly thicker front glyphs.
-                .strokeWidth: -8.0
-            ]
-        )
-
-        let textGeometry = SCNText(string: attributedTitle, extrusionDepth: 1.8)
+        let textGeometry = SCNText(string: text, extrusionDepth: 1.8)
         textGeometry.flatness = 0.06
+        textGeometry.font = UIFont.systemFont(ofSize: 9.2, weight: .black)
         textGeometry.chamferRadius = 0.10
 
         let front = SCNMaterial()
