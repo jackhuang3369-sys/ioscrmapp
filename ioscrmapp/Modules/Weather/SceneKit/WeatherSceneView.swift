@@ -681,15 +681,15 @@ struct WeatherSceneView: UIViewRepresentable {
         private func easedProgress(for curve: EasingCurve, progress: Float) -> Float {
             switch curve {
             case .easeOutQuad:
-                easeOutQuad(progress)
+                return easeOutQuad(progress)
             case .easeOutCubic:
-                easeOutCubic(progress)
+                return easeOutCubic(progress)
             case .easeOutQuart:
-                easeOutQuart(progress)
+                return easeOutQuart(progress)
             case .easeOutQuint:
-                easeOutQuint(progress)
+                return easeOutQuint(progress)
             case .easeOutDecay:
-                easeOutDecay(progress)
+                return easeOutDecay(progress)
             }
         }
 
@@ -917,15 +917,7 @@ struct WeatherSceneView: UIViewRepresentable {
         }
 
         private func isInteractiveNode(_ node: SCNNode?) -> Bool {
-            guard let group = manager?.conditionGroup else { return false }
-            var current = node
-            while let value = current {
-                if value === group {
-                    return true
-                }
-                current = value.parent
-            }
-            return false
+            manager?.isInteractiveWeatherNode(node) ?? false
         }
 
         private func isTemperatureNode(_ node: SCNNode?) -> Bool {

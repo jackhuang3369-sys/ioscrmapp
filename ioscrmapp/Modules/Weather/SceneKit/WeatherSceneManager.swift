@@ -65,6 +65,9 @@ final class WeatherSceneManager: ObservableObject {
     private var cameraNode: SCNNode?
     private var sceneRootNode: SCNNode?
     private var detailTitleNode: SCNNode?
+    private var detailDimensionRingNode: SCNNode?
+    private var detailDimensionSpinNodes: [WeatherDetailDimension: SCNNode] = [:]
+    private var detailDimensionTitleNodes: [WeatherDetailDimension: SCNNode] = [:]
     private var sunBurstNode: SCNNode?
     private var sunTapBurstOverlayNode: SCNNode?
     private var temperatureNode: SCNNode?
@@ -83,6 +86,7 @@ final class WeatherSceneManager: ObservableObject {
     private let sunSpinAnimationKey = "sun_spin"
     private let sunTitleSpinAnimationKey = "sun_title_spin"
     private let detailAutoSpinSpeed = -Float.pi * 2 / 30
+    private let detailDimensionSpinAnimationKey = "detail_dimension_spin"
     private let mainTemperatureScale: Float = 1.5
     private let mainSunScale: CGFloat = 1.12
     private let mainSunPositionY: Float = 4.40
@@ -95,6 +99,8 @@ final class WeatherSceneManager: ObservableObject {
     private let detailSunPosition = SCNVector3(0, 0.39, -0.1) //太阳离SUN的距离
     private let detailSunScale: Float = 0.84
     private let detailTitlePosition = SCNVector3(0, 3.37, -0.1)
+    private let detailDimensionRingRadius: Float = 5.1
+    private let detailDimensionAngleStep = Float.pi * 2 / Float(WeatherDetailDimension.allCases.count)
     private let transitionRestRotation = SCNVector3(0, 0, 0)
 
     init(temperature: Int = MockWeatherData.today.temperature, mode: WeatherSceneMode = .main) {
@@ -110,6 +116,58 @@ final class WeatherSceneManager: ObservableObject {
         }
         currentTemperature = temperature
         updateTemperature(animated: animated)
+    }
+
+    func setDetailDimensionTitle(_ title: String) {
+        guard mode == .sunDetail || mode == .sunTransition else { return }
+        guard let detailTitleNode else { return }
+
+        detailTitleNode.childNodes.forEach { $0.removeFromParentNode() }
+        let frontTitle = makeSingleSunDetailTitleNode(text: title)
+        frontTitle.position.z = 0
+        detailTitleNode.addChildNode(frontTitle)
+    }
+
+    func setDetailDimensionProgress(
+        selectedDimension: WeatherDetailDimension,
+        dragProgress: CGFloat,
+        animated: Bool
+    ) {
+        guard mode == .sunDetail || mode == .sunTransition else { return }
+        guard let detailDimensionRingNode else { return }
+
+        let offset = Float(selectedDimension.rawValue) + Float(dragProgress)
+        let targetYaw = -offset * detailDimensionAngleStep
+        let visibleYaw = detailDimensionRingNode.presentation.eulerAngles.y
+
+        detailDimensionRingNode.removeAllAnimations()
+        detailDimensionRingNode.eulerAngles = SCNVector3(0, visibleYaw, 0)
+
+        SCNTransaction.begin()
+        SCNTransaction.animationDuration = animated ? 0.32 : 0
+        SCNTransaction.animationTimingFunction = animated
+            ? CAMediaTimingFunction(name: .easeOut)
+            : nil
+        detailDimensionRingNode.eulerAngles = SCNVector3(0, targetYaw, 0)
+        SCNTransaction.commit()
+
+        if abs(dragProgress) < 0.001 {
+            updateDetailDimensionSelfSpin(selectedDimension: selectedDimension)
+        }
+    }
+
+    func isInteractiveWeatherNode(_ node: SCNNode?) -> Bool {
+        var current = node
+        while let value = current {
+            if let conditionGroup, value === conditionGroup {
+                return true
+            }
+            if let detailDimensionRingNode, value === detailDimensionRingNode {
+                return true
+            }
+            current = value.parent
+        }
+        return false
     }
 
     func setTemperatureVisibility(isHidden: Bool, animated: Bool) {
@@ -241,6 +299,7 @@ final class WeatherSceneManager: ObservableObject {
         sunNode.removeAllActions()
         detailTitleNode.removeAllActions()
         resetSunBurstState()
+        hideDetailDimensionRingForReturn()
 
         if let digits = prepareTemperatureNodeForReturn() {
             runTemperatureReturnAnimation(on: digits)
@@ -312,6 +371,7 @@ final class WeatherSceneManager: ObservableObject {
             self?.sunModelNode?.eulerAngles = SCNVector3(0, 0, 0)
             self?.detailTitleNode?.eulerAngles = SCNVector3(0, 0, 0)
             self?.pauseSunSpinAnimations()
+            self?.showDetailDimensionRingIfNeeded()
             self?.scheduleEntrySpinAnimation()
             completion()
         }
@@ -464,6 +524,57 @@ final class WeatherSceneManager: ObservableObject {
         return normalized
     }
 
+    private func showDetailDimensionRingIfNeeded() {
+        guard let detailDimensionRingNode else { return }
+
+        setDetailDimensionTitle(WeatherDetailDimension.sun.title)
+        setDetailDimensionProgress(selectedDimension: .sun, dragProgress: 0, animated: false)
+
+        detailDimensionRingNode.removeAllActions()
+        detailDimensionRingNode.isHidden = false
+        detailDimensionRingNode.opacity = 0
+
+        SCNTransaction.begin()
+        SCNTransaction.animationDuration = 0.18
+        detailDimensionRingNode.opacity = 1
+        sunNode?.opacity = 0
+        detailTitleNode?.opacity = 0
+        SCNTransaction.commit()
+    }
+
+    private func hideDetailDimensionRingForReturn() {
+        setDetailDimensionTitle(WeatherDetailDimension.sun.title)
+        setDetailDimensionProgress(selectedDimension: .sun, dragProgress: 0, animated: false)
+        detailDimensionSpinNodes.values.forEach { resetDetailDimensionSpinNode($0) }
+        detailDimensionTitleNodes.values.forEach { resetDetailDimensionSpinNode($0) }
+        detailDimensionRingNode?.removeAllActions()
+        detailDimensionRingNode?.opacity = 0
+        detailDimensionRingNode?.isHidden = true
+        sunNode?.opacity = 1
+        detailTitleNode?.opacity = 1
+    }
+
+    private func updateDetailDimensionSelfSpin(selectedDimension: WeatherDetailDimension) {
+        for dimension in WeatherDetailDimension.allCases {
+            let nodes = [
+                detailDimensionSpinNodes[dimension],
+                detailDimensionTitleNodes[dimension]
+            ].compactMap { $0 }
+
+            nodes.forEach { resetDetailDimensionSpinNode($0) }
+
+            guard dimension == selectedDimension else { continue }
+            nodes.forEach {
+                attachSunSpin(to: $0, animationKey: detailDimensionSpinAnimationKey)
+            }
+        }
+    }
+
+    private func resetDetailDimensionSpinNode(_ node: SCNNode) {
+        node.removeAnimation(forKey: detailDimensionSpinAnimationKey)
+        node.eulerAngles.y = 0
+    }
+
     private func buildScene() {
         cancelPendingTransitionWork()
         scene.background.contents = UIColor.clear
@@ -471,6 +582,9 @@ final class WeatherSceneManager: ObservableObject {
         cameraNode = nil
         sceneRootNode = nil
         detailTitleNode = nil
+        detailDimensionRingNode = nil
+        detailDimensionSpinNodes = [:]
+        detailDimensionTitleNodes = [:]
         sunBurstNode = nil
         sunTapBurstOverlayNode?.removeFromParentNode()
         sunTapBurstOverlayNode = nil
@@ -600,6 +714,19 @@ final class WeatherSceneManager: ObservableObject {
             sunModelNode = sun
         }
 
+        if isDetailMode || isTransitionMode {
+            let dimensionRing = makeDetailDimensionRingNode()
+            dimensionRing.opacity = isDetailMode ? 1 : 0
+            dimensionRing.isHidden = !isDetailMode
+            root.addChildNode(dimensionRing)
+            detailDimensionRingNode = dimensionRing
+
+            if isDetailMode {
+                sunNode?.opacity = 0
+                detailTitleNode?.opacity = 0
+            }
+        }
+
         if mode == .main || mode == .sunTransition {
             let digits = makeTemperatureNode(text: "\(currentTemperature)")
             // ── 数字位置：Y 值越小越靠下（如需微调往下移，减小 Y 值）──
@@ -685,6 +812,46 @@ final class WeatherSceneManager: ObservableObject {
         container.eulerAngles = SCNVector3(0, 0, 0)
         container.castsShadow = false
         return container
+    }
+
+    private func makeDetailDimensionRingNode() -> SCNNode {
+        let ring = SCNNode()
+        ring.name = "weather_detail_dimension_ring"
+        ring.position = SCNVector3(0, 0, detailSunPosition.z - detailDimensionRingRadius)
+
+        let sunTemplate = makeSunNode()
+        let sunScale = mode == .sunDetail ? Float(1) : detailSunScale
+
+        for dimension in WeatherDetailDimension.allCases {
+            let angle = Float(dimension.rawValue) * detailDimensionAngleStep
+            let item = SCNNode()
+            item.name = "weather_detail_dimension_\(dimension.title.lowercased())"
+            item.position = SCNVector3(
+                sin(angle) * detailDimensionRingRadius,
+                0,
+                cos(angle) * detailDimensionRingRadius
+            )
+            item.eulerAngles = SCNVector3(0, angle, 0)
+
+            let sun = sunTemplate.clone()
+            sun.position = SCNVector3(0, 0, 0)
+            sun.scale = SCNVector3(sunScale, sunScale, sunScale)
+            detailDimensionSpinNodes[dimension] = sun
+
+            let sunContainer = SCNNode()
+            sunContainer.position = SCNVector3(0, detailSunPosition.y, 0)
+            sunContainer.addChildNode(sun)
+            item.addChildNode(sunContainer)
+
+            let title = makeSunDetailTitleNode(text: dimension.title)
+            title.position = SCNVector3(0, detailTitlePosition.y, 0)
+            detailDimensionTitleNodes[dimension] = title
+            item.addChildNode(title)
+
+            ring.addChildNode(item)
+        }
+
+        return ring
     }
 
     private func makeSunBurstNode() -> SCNNode {
