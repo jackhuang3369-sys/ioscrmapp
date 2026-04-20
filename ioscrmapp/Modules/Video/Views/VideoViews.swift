@@ -2,6 +2,7 @@ import AVKit
 import SwiftUI
 
 struct VideoHomeView: View {
+    @Environment(\.duTheme) private var theme
     @EnvironmentObject private var languageStore: AppLanguageStore
 
     @ObservedObject var viewModel: VideoViewModel
@@ -34,7 +35,7 @@ struct VideoHomeView: View {
                 contentView
             }
         }
-        .background(DUTheme.background.ignoresSafeArea())
+        .background(VideoPalette(theme: theme).canvasBackground.ignoresSafeArea())
         .navigationBarHidden(true)
         .task {
             await viewModel.loadIfNeeded()
@@ -74,7 +75,7 @@ struct VideoHomeView: View {
         .overlay(alignment: .top) {
             if let toastMessage = viewModel.toastMessage {
                 VideoToastBanner(message: localized(toastMessage))
-                    .padding(.top, 16)
+                    .padding(.top, DUSpacing.lg)
                     .padding(.horizontal, DUSpacing.lg)
                     .transition(.move(edge: .top).combined(with: .opacity))
             }
@@ -121,13 +122,15 @@ struct VideoHomeView: View {
     }
 
     private var loadingView: some View {
-        VStack(spacing: DUSpacing.lg) {
+        let palette = VideoPalette(theme: theme)
+
+        return VStack(spacing: DUSpacing.lg) {
             ProgressView()
-                .tint(DUTheme.cyan)
+                .tint(theme.colors.brand.primary)
 
             Text(localized("video.state.loading.title"))
-                .font(.du(15, weight: .semibold))
-                .foregroundColor(DUTheme.inkSecondary)
+                .font(.du(.bodyLargeSemibold))
+                .foregroundColor(palette.secondaryText)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
@@ -135,7 +138,7 @@ struct VideoHomeView: View {
     private func errorView(_ message: LocalizedTextValue) -> some View {
         DUStateView(
             systemImage: "wifi.exclamationmark",
-            iconColor: DUTheme.warning,
+            iconColor: theme.colors.status.warning,
             title: localized("video.state.error.title"),
             subtitle: localized(message),
             actionTitle: localized("common.retry"),
@@ -164,13 +167,15 @@ struct VideoHomeView: View {
                     await viewModel.refresh()
                 }
             }
-            .background(DUTheme.background.ignoresSafeArea())
+            .background(VideoPalette(theme: theme).canvasBackground.ignoresSafeArea())
             .ignoresSafeArea(edges: .top)
         }
     }
 
     private func header(topInset: CGFloat) -> some View {
-        VStack(alignment: .leading, spacing: DUSpacing.sm) {
+        let palette = VideoPalette(theme: theme)
+
+        return VStack(alignment: .leading, spacing: DUSpacing.sm) {
             Color.clear
                 .frame(height: max(topInset, DUSpacing.sm))
 
@@ -179,21 +184,21 @@ struct VideoHomeView: View {
             } label: {
                 HStack(spacing: DUSpacing.sm) {
                     Image(systemName: "magnifyingglass")
-                        .font(.du(15, weight: .semibold))
-                        .foregroundColor(DUTheme.inkTertiary)
+                        .font(.du(.bodyStrong))
+                        .foregroundColor(palette.tertiaryText)
 
                     Text(localized("video.search.placeholder"))
-                        .font(.du(12, weight: .medium))
-                        .foregroundColor(DUTheme.inkSecondary)
+                        .font(.du(.meta))
+                        .foregroundColor(palette.secondaryText)
                         .lineLimit(1)
 
                     Spacer(minLength: 0)
                 }
                 .padding(.horizontal, DUSpacing.md)
                 .frame(height: 46)
-                .background(Color.white.opacity(0.96))
-                .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-                .shadow(color: Color.black.opacity(0.1), radius: 16, x: 0, y: 8)
+                .background(palette.panelBackground.opacity(theme.resolvedColorScheme == .dark ? 0.92 : 0.96))
+                .clipShape(RoundedRectangle(cornerRadius: DURadius.control, style: .continuous))
+                .shadow(color: palette.liftedElevation.color, radius: palette.liftedElevation.radius, x: palette.liftedElevation.x, y: palette.liftedElevation.y)
             }
             .buttonStyle(.plain)
 
@@ -213,17 +218,19 @@ struct VideoHomeView: View {
                         .buttonStyle(.plain)
                     }
                 }
-                .padding(.horizontal, 4)
+                .padding(.horizontal, DUSpacing.xs)
             }
         }
         .padding(.horizontal, DUSpacing.md)
         .padding(.bottom, DUSpacing.sm)
-        .background(VideoTheme.headerGradient)
+        .background(palette.headerGradient)
     }
 
     @ViewBuilder
     private func carouselSection(containerWidth: CGFloat) -> some View {
         if !viewModel.carouselItems.isEmpty {
+            let palette = VideoPalette(theme: theme)
+
             VStack(spacing: 0) {
                 TabView(selection: $selectedCarouselIndex) {
                     ForEach(viewModel.carouselItems.indices, id: \.self) { index in
@@ -238,16 +245,16 @@ struct VideoHomeView: View {
 
                                 VStack(alignment: .leading, spacing: 6) {
                                     Text(item.content.title.value(for: languageStore.currentLanguage))
-                                        .font(.du(24, weight: .bold))
-                                        .foregroundColor(.white)
+                                        .font(.du(.headline))
+                                        .foregroundColor(palette.inverseText)
                                         .lineLimit(2)
-                                        .shadow(color: .black.opacity(0.35), radius: 8, x: 0, y: 4)
+                                        .shadow(color: DUColorPrimitives.Neutral.black.opacity(0.35), radius: 8, x: 0, y: 4)
 
                                     Text(item.content.summary.value(for: languageStore.currentLanguage))
-                                        .font(.du(13, weight: .medium))
-                                        .foregroundColor(.white.opacity(0.92))
+                                        .font(.du(.label))
+                                        .foregroundColor(palette.inverseText.opacity(0.92))
                                         .lineLimit(1)
-                                        .shadow(color: .black.opacity(0.28), radius: 6, x: 0, y: 3)
+                                        .shadow(color: DUColorPrimitives.Neutral.black.opacity(0.28), radius: 6, x: 0, y: 3)
                                 }
 
                                 HStack(spacing: 6) {
@@ -255,8 +262,8 @@ struct VideoHomeView: View {
                                         Capsule()
                                             .fill(
                                                 indicatorIndex == selectedCarouselIndex
-                                                    ? Color.white
-                                                    : Color.white.opacity(0.35)
+                                                    ? palette.inverseText
+                                                    : palette.inverseText.opacity(0.35)
                                             )
                                             .frame(
                                                 width: indicatorIndex == selectedCarouselIndex ? 22 : 8,
@@ -282,9 +289,9 @@ struct VideoHomeView: View {
 
                                     LinearGradient(
                                         colors: [
-                                            Color.black.opacity(0.02),
-                                            Color.black.opacity(0.16),
-                                            Color.black.opacity(0.82),
+                                            DUColorPrimitives.Neutral.black.opacity(0.02),
+                                            DUColorPrimitives.Neutral.black.opacity(0.16),
+                                            DUColorPrimitives.Neutral.black.opacity(0.82),
                                         ],
                                         startPoint: .top,
                                         endPoint: .bottom
@@ -292,7 +299,7 @@ struct VideoHomeView: View {
                                 }
                             }
                             .frame(height: 236)
-                            .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
+                            .clipShape(RoundedRectangle(cornerRadius: DURadius.hero, style: .continuous))
                         }
                         .buttonStyle(.plain)
                         .tag(index)
@@ -341,21 +348,23 @@ struct VideoHomeView: View {
 
     @ViewBuilder
     private var loadMoreFooter: some View {
+        let palette = VideoPalette(theme: theme)
+
         if viewModel.isLoadingMore {
             HStack(spacing: DUSpacing.sm) {
                 ProgressView()
-                    .tint(DUTheme.cyan)
+                    .tint(theme.colors.brand.primary)
 
                 Text(localized("video.list.loadingMore"))
-                    .font(.du(13, weight: .semibold))
-                    .foregroundColor(DUTheme.inkSecondary)
+                    .font(.du(.labelStrong))
+                    .foregroundColor(palette.secondaryText)
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, DUSpacing.md)
         } else if let loadMoreError = viewModel.loadMoreError {
             DUStateView(
                 systemImage: "exclamationmark.arrow.trianglehead.2.clockwise.rotate.90",
-                iconColor: DUTheme.warning,
+                iconColor: theme.colors.status.warning,
                 title: localized("video.list.error.title"),
                 subtitle: localized(loadMoreError)
             )
@@ -456,6 +465,7 @@ struct VideoHomeView: View {
 }
 
 struct VideoSearchOverlayView: View {
+    @Environment(\.duTheme) private var theme
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var languageStore: AppLanguageStore
 
@@ -471,7 +481,7 @@ struct VideoSearchOverlayView: View {
             header
             content
         }
-        .background(Color.white.ignoresSafeArea())
+        .background(VideoPalette(theme: theme).canvasBackground.ignoresSafeArea())
         .navigationBarHidden(true)
         .task {
             await viewModel.prepareSearchPanel()
@@ -479,7 +489,9 @@ struct VideoSearchOverlayView: View {
     }
 
     private var header: some View {
-        VStack(spacing: DUSpacing.sm) {
+        let palette = VideoPalette(theme: theme)
+
+        return VStack(spacing: DUSpacing.sm) {
             Color.clear.frame(height: 6)
 
             HStack(spacing: DUSpacing.md) {
@@ -487,18 +499,18 @@ struct VideoSearchOverlayView: View {
                     dismiss()
                 } label: {
                     Image(systemName: "chevron.backward")
-                        .font(.du(18, weight: .bold))
-                        .foregroundColor(.white)
+                        .font(.du(.titleSmallStrong))
+                        .foregroundColor(palette.inverseText)
                 }
                 .buttonStyle(.plain)
 
                 HStack(spacing: DUSpacing.sm) {
                     Image(systemName: "magnifyingglass")
-                        .font(.du(14, weight: .semibold))
-                        .foregroundColor(DUTheme.inkTertiary)
+                        .font(.du(.bodyStrong))
+                        .foregroundColor(palette.tertiaryText)
 
                     TextField(localized("video.search.placeholder"), text: $query)
-                        .font(.du(13, weight: .medium))
+                        .font(.du(.label))
                         .textInputAutocapitalization(.never)
                         .disableAutocorrection(true)
 
@@ -509,37 +521,37 @@ struct VideoSearchOverlayView: View {
                             validationMessage = nil
                         } label: {
                             Image(systemName: "xmark.circle.fill")
-                                .font(.du(14, weight: .semibold))
-                                .foregroundColor(DUTheme.inkDisabled)
+                                .font(.du(.bodyStrong))
+                                .foregroundColor(palette.disabledText)
                         }
                         .buttonStyle(.plain)
                     }
                 }
                 .padding(.horizontal, DUSpacing.md)
                 .frame(height: 46)
-                .background(Color.white.opacity(0.96))
-                .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+                .background(palette.panelBackground.opacity(theme.resolvedColorScheme == .dark ? 0.92 : 0.96))
+                .clipShape(RoundedRectangle(cornerRadius: DURadius.control, style: .continuous))
 
                 Button(localized("video.search.submit")) {
                     Task {
                         await submitSearch()
                     }
                 }
-                .font(.du(14, weight: .bold))
-                .foregroundColor(.white)
+                .font(.du(.bodyEmphasized))
+                .foregroundColor(palette.inverseText)
                 .buttonStyle(.plain)
             }
 
             if let validationMessage {
                 Text(validationMessage)
-                    .font(.du(12, weight: .semibold))
-                    .foregroundColor(Color(hex: 0xFF4B5F))
+                    .font(.du(.metaStrong))
+                    .foregroundColor(theme.colors.status.error)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
         .padding(.horizontal, DUSpacing.md)
         .padding(.bottom, DUSpacing.md)
-        .background(VideoTheme.headerGradient)
+        .background(palette.headerGradient)
     }
 
     private var content: some View {
@@ -548,7 +560,7 @@ struct VideoSearchOverlayView: View {
                 if let noResultKeyword {
                     DUStateView(
                         systemImage: "magnifyingglass",
-                        iconColor: DUTheme.cyan,
+                        iconColor: theme.colors.brand.primary,
                         title: localized("video.search.empty.title"),
                         subtitle: localized(
                             "video.search.empty.subtitle",
@@ -568,11 +580,13 @@ struct VideoSearchOverlayView: View {
     }
 
     private var historySection: some View {
-        VStack(alignment: .leading, spacing: DUSpacing.md) {
+        let palette = VideoPalette(theme: theme)
+
+        return VStack(alignment: .leading, spacing: DUSpacing.md) {
             HStack {
                 Text(localized("video.search.history"))
-                    .font(.du(16, weight: .bold))
-                    .foregroundColor(DUTheme.ink)
+                    .font(.du(.bodyLargeStrong))
+                    .foregroundColor(palette.primaryText)
 
                 Spacer()
 
@@ -582,8 +596,8 @@ struct VideoSearchOverlayView: View {
                         noResultKeyword = nil
                     }
                 }
-                .font(.du(12, weight: .semibold))
-                .foregroundColor(DUTheme.inkTertiary)
+                .font(.du(.metaStrong))
+                .foregroundColor(palette.tertiaryText)
                 .buttonStyle(.plain)
             }
 
@@ -600,8 +614,8 @@ struct VideoSearchOverlayView: View {
                             }
                         } label: {
                             Text(keyword)
-                                .font(.du(12, weight: .medium))
-                                .foregroundColor(DUTheme.inkSecondary)
+                                .font(.du(.meta))
+                                .foregroundColor(palette.secondaryText)
                                 .lineLimit(1)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 .contentShape(Rectangle())
@@ -614,22 +628,22 @@ struct VideoSearchOverlayView: View {
                             }
                         } label: {
                             Image(systemName: "xmark.circle.fill")
-                                .font(.du(14, weight: .semibold))
-                                .foregroundColor(DUTheme.inkDisabled)
+                                .font(.du(.bodyStrong))
+                                .foregroundColor(palette.disabledText)
                         }
                         .buttonStyle(.plain)
                     }
                     .padding(.horizontal, DUSpacing.md)
                     .frame(height: 40)
-                    .background(Color(hex: 0xF2F4F8))
+                    .background(palette.secondaryBackground)
                     .clipShape(Capsule())
                 }
             }
         }
         .padding(DUSpacing.lg)
-        .background(Color.white)
-        .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
-        .shadow(color: Color.black.opacity(0.05), radius: 12, x: 0, y: 8)
+        .background(palette.panelBackground)
+        .clipShape(RoundedRectangle(cornerRadius: DURadius.cardLarge, style: .continuous))
+        .shadow(color: palette.cardElevation.color, radius: palette.cardElevation.radius, x: palette.cardElevation.x, y: palette.cardElevation.y)
         .padding(.horizontal, DUSpacing.md)
     }
 
@@ -667,6 +681,7 @@ struct VideoSearchOverlayView: View {
 }
 
 private struct VideoUnavailableSheet: View {
+    @Environment(\.duTheme) private var theme
     @EnvironmentObject private var languageStore: AppLanguageStore
 
     let presentation: VideoUnavailablePresentation
@@ -674,34 +689,36 @@ private struct VideoUnavailableSheet: View {
     let onDismiss: () -> Void
 
     var body: some View {
+        let palette = VideoPalette(theme: theme)
+
         VStack(alignment: .leading, spacing: DUSpacing.lg) {
             HStack {
                 VStack(alignment: .leading, spacing: DUSpacing.xs) {
                     Text(localized(presentation.title))
-                        .font(.du(20, weight: .bold))
-                        .foregroundColor(DUTheme.ink)
+                        .font(.du(.headline))
+                        .foregroundColor(palette.primaryText)
 
                     Text(presentation.message.value(for: languageStore.currentLanguage))
-                        .font(.du(13, weight: .medium))
-                        .foregroundColor(DUTheme.inkSecondary)
+                        .font(.du(.label))
+                        .foregroundColor(palette.secondaryText)
                 }
 
                 Spacer()
 
                 Button(action: onDismiss) {
                     Image(systemName: "xmark")
-                        .font(.du(14, weight: .bold))
-                        .foregroundColor(DUTheme.inkSecondary)
+                        .font(.du(.bodyEmphasized))
+                        .foregroundColor(palette.secondaryText)
                         .frame(width: 32, height: 32)
-                        .background(DUTheme.backgroundSecondary)
+                        .background(palette.secondaryBackground)
                         .clipShape(Circle())
                 }
                 .buttonStyle(.plain)
             }
 
             Text(localized("video.unavailable.recommendations"))
-                .font(.du(14, weight: .bold))
-                .foregroundColor(DUTheme.ink)
+                .font(.du(.bodyEmphasized))
+                .foregroundColor(palette.primaryText)
 
             VStack(spacing: DUSpacing.sm) {
                 ForEach(presentation.recommendations) { item in
@@ -711,40 +728,40 @@ private struct VideoUnavailableSheet: View {
                         HStack(spacing: DUSpacing.md) {
                             VideoImageView(
                                 image: item.posterImage,
-                                cornerRadius: 16,
+                                cornerRadius: DURadius.lg,
                                 contentMode: .fill
                             )
                             .frame(width: 64, height: 80)
-                            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                            .clipShape(RoundedRectangle(cornerRadius: DURadius.lg, style: .continuous))
 
                             VStack(alignment: .leading, spacing: 6) {
                                 Text(item.title.value(for: languageStore.currentLanguage))
-                                    .font(.du(14, weight: .bold))
-                                    .foregroundColor(DUTheme.ink)
+                                    .font(.du(.bodyEmphasized))
+                                    .foregroundColor(palette.primaryText)
                                     .frame(maxWidth: .infinity, alignment: .leading)
                                     .lineLimit(2)
 
                                 Text(item.subtitle.value(for: languageStore.currentLanguage))
-                                    .font(.du(12, weight: .medium))
-                                    .foregroundColor(DUTheme.inkSecondary)
+                                    .font(.du(.meta))
+                                    .foregroundColor(palette.secondaryText)
                                     .frame(maxWidth: .infinity, alignment: .leading)
                                     .lineLimit(2)
                             }
 
                             Image(systemName: "chevron.forward")
-                                .font(.du(13, weight: .bold))
-                                .foregroundColor(DUTheme.inkDisabled)
+                                .font(.du(.labelEmphasized))
+                                .foregroundColor(palette.disabledText)
                         }
                         .padding(DUSpacing.md)
-                        .background(Color(hex: 0xF7FAFD))
-                        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+                        .background(palette.secondaryBackground)
+                        .clipShape(RoundedRectangle(cornerRadius: DURadius.control, style: .continuous))
                     }
                     .buttonStyle(.plain)
                 }
             }
         }
         .padding(DUSpacing.lg)
-        .background(Color.white)
+        .background(palette.panelBackground)
     }
 
     private func localized(_ value: LocalizedTextValue) -> String {
@@ -757,6 +774,7 @@ private struct VideoUnavailableSheet: View {
 }
 
 struct VideoDetailView: View {
+    @Environment(\.duTheme) private var theme
     @EnvironmentObject private var languageStore: AppLanguageStore
 
     @StateObject private var viewModel: VideoDetailViewModel
@@ -790,7 +808,7 @@ struct VideoDetailView: View {
                 detailContent
             }
         }
-        .background(DUTheme.background.ignoresSafeArea())
+        .background(VideoPalette(theme: theme).canvasBackground.ignoresSafeArea())
         .navigationBarTitleDisplayMode(.inline)
         .task {
             await viewModel.loadIfNeeded()
@@ -822,20 +840,22 @@ struct VideoDetailView: View {
         .overlay(alignment: .top) {
             if let bannerMessage = viewModel.bannerMessage {
                 VideoToastBanner(message: localized(bannerMessage))
-                    .padding(.top, 12)
+                    .padding(.top, DUSpacing.md)
                     .padding(.horizontal, DUSpacing.lg)
             }
         }
     }
 
     private var loadingView: some View {
-        VStack(spacing: DUSpacing.lg) {
+        let palette = VideoPalette(theme: theme)
+
+        return VStack(spacing: DUSpacing.lg) {
             ProgressView()
-                .tint(DUTheme.cyan)
+                .tint(theme.colors.brand.primary)
 
             Text(localized("video.detail.loading"))
-                .font(.du(15, weight: .semibold))
-                .foregroundColor(DUTheme.inkSecondary)
+                .font(.du(.bodyLargeSemibold))
+                .foregroundColor(palette.secondaryText)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
@@ -843,7 +863,7 @@ struct VideoDetailView: View {
     private func errorView(_ message: LocalizedTextValue) -> some View {
         DUStateView(
             systemImage: "exclamationmark.triangle.fill",
-            iconColor: DUTheme.warning,
+            iconColor: theme.colors.status.warning,
             title: localized("video.detail.error.title"),
             subtitle: localized(message),
             actionTitle: localized("common.retry"),
@@ -887,7 +907,9 @@ struct VideoDetailView: View {
     }
 
     private func heroSection(_ detail: VideoDetailSnapshot) -> some View {
-        ZStack(alignment: .bottomLeading) {
+        let palette = VideoPalette(theme: theme)
+
+        return ZStack(alignment: .bottomLeading) {
             VideoImageView(
                 image: detail.heroImage,
                 cornerRadius: 0,
@@ -897,8 +919,8 @@ struct VideoDetailView: View {
             .overlay(
                 LinearGradient(
                     colors: [
-                        Color.black.opacity(0.08),
-                        Color.black.opacity(0.82),
+                        DUColorPrimitives.Neutral.black.opacity(0.08),
+                        DUColorPrimitives.Neutral.black.opacity(0.82),
                     ],
                     startPoint: .top,
                     endPoint: .bottom
@@ -908,38 +930,38 @@ struct VideoDetailView: View {
             HStack(alignment: .bottom, spacing: DUSpacing.md) {
                 VideoImageView(
                     image: detail.content.posterImage,
-                    cornerRadius: 18,
+                    cornerRadius: DURadius.control,
                     contentMode: .fill
                 )
                 .frame(width: 112, height: 152)
-                .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+                .clipShape(RoundedRectangle(cornerRadius: DURadius.control, style: .continuous))
 
                 VStack(alignment: .leading, spacing: DUSpacing.sm) {
                     Text(detail.content.title.value(for: languageStore.currentLanguage))
-                        .font(.du(24, weight: .bold))
-                        .foregroundColor(.white)
+                        .font(.du(.headline))
+                        .foregroundColor(palette.inverseText)
                         .lineLimit(2)
 
                     Text(detail.content.subtitle.value(for: languageStore.currentLanguage))
-                        .font(.du(13, weight: .medium))
-                        .foregroundColor(.white.opacity(0.84))
+                        .font(.du(.label))
+                        .foregroundColor(palette.inverseText.opacity(0.84))
                         .lineLimit(2)
 
                     HStack(spacing: DUSpacing.sm) {
                         if let ratingText = detail.content.ratingText {
                             HStack(spacing: 4) {
                                 Image(systemName: "star.fill")
-                                    .font(.du(11, weight: .bold))
+                                    .font(.du(.captionEmphasized))
                                 Text(ratingText)
-                                    .font(.du(11, weight: .bold))
+                                    .font(.du(.captionEmphasized))
                             }
-                            .foregroundColor(Color(hex: 0xFBBF24))
+                            .foregroundColor(palette.warningText)
                             .environment(\.layoutDirection, .leftToRight)
                         }
 
                         Text(detail.content.metaLine.value(for: languageStore.currentLanguage))
-                            .font(.du(11, weight: .semibold))
-                            .foregroundColor(.white.opacity(0.8))
+                            .font(.du(.captionStrong))
+                            .foregroundColor(palette.inverseText.opacity(0.8))
                             .lineLimit(1)
                     }
 
@@ -961,11 +983,11 @@ struct VideoDetailView: View {
         .overlay(alignment: .topTrailing) {
             if !detail.isPlayable {
                 Text(detail.content.availabilityMessage?.value(for: languageStore.currentLanguage) ?? localized("video.unavailable.removed.title"))
-                    .font(.du(11, weight: .bold))
-                    .foregroundColor(.white)
-                    .padding(.horizontal, 10)
+                    .font(.du(.captionEmphasized))
+                    .foregroundColor(palette.inverseText)
+                    .padding(.horizontal, DUSpacing.base)
                     .frame(height: 28)
-                    .background(Color.black.opacity(0.7))
+                    .background(DUColorPrimitives.Neutral.black.opacity(0.7))
                     .clipShape(Capsule())
                     .padding(.top, DUSpacing.md)
                     .padding(.horizontal, DUSpacing.md)
@@ -974,7 +996,9 @@ struct VideoDetailView: View {
     }
 
     private func statSection(_ detail: VideoDetailSnapshot) -> some View {
-        LazyVGrid(
+        let palette = VideoPalette(theme: theme)
+
+        return LazyVGrid(
             columns: [
                 GridItem(.flexible(), spacing: DUSpacing.md),
                 GridItem(.flexible(), spacing: DUSpacing.md),
@@ -985,47 +1009,51 @@ struct VideoDetailView: View {
                 VStack(alignment: .leading, spacing: DUSpacing.sm) {
                     HStack(spacing: DUSpacing.sm) {
                         Image(systemName: stat.systemImage)
-                            .font(.du(15, weight: .bold))
-                            .foregroundColor(DUTheme.blue)
+                            .font(.du(.bodyEmphasized))
+                            .foregroundColor(palette.accentText)
 
                         Text(localized(stat.titleKey))
-                            .font(.du(12, weight: .bold))
-                            .foregroundColor(DUTheme.inkSecondary)
+                            .font(.du(.metaEmphasized))
+                            .foregroundColor(palette.secondaryText)
                     }
 
                     Text(stat.value)
-                        .font(.du(18, weight: .bold))
-                        .foregroundColor(DUTheme.ink)
+                        .font(.du(.titleSmallStrong))
+                        .foregroundColor(palette.primaryText)
                         .environment(\.layoutDirection, .leftToRight)
                 }
                 .padding(DUSpacing.lg)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .background(Color.white)
-                .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
-                .shadow(color: Color.black.opacity(0.05), radius: 14, x: 0, y: 8)
+                .background(palette.panelBackground)
+                .clipShape(RoundedRectangle(cornerRadius: DURadius.cardLarge, style: .continuous))
+                .shadow(color: palette.cardElevation.color, radius: palette.cardElevation.radius, x: palette.cardElevation.x, y: palette.cardElevation.y)
             }
         }
         .padding(.horizontal, DUSpacing.md)
     }
 
     private func synopsisSection(_ detail: VideoDetailSnapshot) -> some View {
-        DUSectionCard(title: localized("video.detail.synopsis")) {
+        let palette = VideoPalette(theme: theme)
+
+        return DUSectionCard(title: localized("video.detail.synopsis")) {
             Text(detail.synopsis.value(for: languageStore.currentLanguage))
-                .font(.du(14, weight: .medium))
-                .foregroundColor(DUTheme.inkSecondary)
+                .font(.du(.body))
+                .foregroundColor(palette.secondaryText)
                 .lineSpacing(5)
         }
         .padding(.horizontal, DUSpacing.md)
     }
 
     private func episodeSection(_ detail: VideoDetailSnapshot) -> some View {
-        DUSectionCard(title: localized("video.detail.episodes")) {
+        let palette = VideoPalette(theme: theme)
+
+        return DUSectionCard(title: localized("video.detail.episodes")) {
             VStack(alignment: .leading, spacing: DUSpacing.md) {
                 ForEach(detail.episodeGroups) { group in
                     VStack(alignment: .leading, spacing: DUSpacing.sm) {
                         Text(group.title.value(for: languageStore.currentLanguage))
-                            .font(.du(13, weight: .bold))
-                            .foregroundColor(DUTheme.ink)
+                            .font(.du(.labelEmphasized))
+                            .foregroundColor(palette.primaryText)
 
                         ScrollView(.horizontal, showsIndicators: false) {
                             HStack(spacing: DUSpacing.sm) {
@@ -1035,20 +1063,20 @@ struct VideoDetailView: View {
                                     } label: {
                                         VStack(alignment: .leading, spacing: 6) {
                                             Text(episode.title.value(for: languageStore.currentLanguage))
-                                                .font(.du(12, weight: .bold))
+                                                .font(.du(.metaEmphasized))
                                                 .foregroundColor(
                                                     selectedEpisodeID == episode.id
-                                                        ? .white
-                                                        : DUTheme.ink
+                                                        ? palette.inverseText
+                                                        : palette.primaryText
                                                 )
 
                                             if let subtitle = episode.subtitle?.value(for: languageStore.currentLanguage) {
                                                 Text(subtitle)
-                                                    .font(.du(11, weight: .medium))
+                                                    .font(.du(.caption))
                                                     .foregroundColor(
                                                         selectedEpisodeID == episode.id
-                                                            ? Color.white.opacity(0.82)
-                                                            : DUTheme.inkSecondary
+                                                            ? palette.inverseText.opacity(0.82)
+                                                            : palette.secondaryText
                                                     )
                                                     .lineLimit(1)
                                             }
@@ -1058,14 +1086,14 @@ struct VideoDetailView: View {
                                         .frame(width: 148, alignment: .leading)
                                         .background(
                                             selectedEpisodeID == episode.id
-                                                ? DUTheme.brandGradient
+                                                ? palette.headerGradient
                                                 : LinearGradient(
-                                                    colors: [Color(hex: 0xF7FAFD), Color.white],
+                                                    colors: [palette.secondaryBackground, palette.panelBackground],
                                                     startPoint: .topLeading,
                                                     endPoint: .bottomTrailing
                                                 )
                                         )
-                                        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+                                        .clipShape(RoundedRectangle(cornerRadius: DURadius.control, style: .continuous))
                                     }
                                     .buttonStyle(.plain)
                                 }
@@ -1079,7 +1107,9 @@ struct VideoDetailView: View {
     }
 
     private func castSection(_ detail: VideoDetailSnapshot) -> some View {
-        DUSectionCard(title: localized("video.detail.cast")) {
+        let palette = VideoPalette(theme: theme)
+
+        return DUSectionCard(title: localized("video.detail.cast")) {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: DUSpacing.md) {
                     ForEach(detail.cast) { member in
@@ -1087,21 +1117,21 @@ struct VideoDetailView: View {
                             if let avatarImage = member.avatarImage {
                                 VideoImageView(
                                     image: avatarImage,
-                                    cornerRadius: 20,
+                                    cornerRadius: DURadius.card,
                                     contentMode: .fill
                                 )
                                 .frame(width: 116, height: 130)
-                                .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+                                .clipShape(RoundedRectangle(cornerRadius: DURadius.card, style: .continuous))
                             }
 
                             Text(member.name)
-                                .font(.du(14, weight: .bold))
-                                .foregroundColor(DUTheme.ink)
+                                .font(.du(.bodyEmphasized))
+                                .foregroundColor(palette.primaryText)
                                 .lineLimit(1)
 
                             Text(member.role?.value(for: languageStore.currentLanguage) ?? "")
-                                .font(.du(12, weight: .medium))
-                                .foregroundColor(DUTheme.inkSecondary)
+                                .font(.du(.meta))
+                                .foregroundColor(palette.secondaryText)
                                 .lineLimit(1)
                         }
                         .frame(width: 116, alignment: .leading)
@@ -1113,7 +1143,9 @@ struct VideoDetailView: View {
     }
 
     private func relatedSection(_ detail: VideoDetailSnapshot) -> some View {
-        DUSectionCard(title: localized("video.detail.related")) {
+        let palette = VideoPalette(theme: theme)
+
+        return DUSectionCard(title: localized("video.detail.related")) {
             VStack(spacing: DUSpacing.sm) {
                 ForEach(detail.related) { item in
                     Button {
@@ -1122,33 +1154,33 @@ struct VideoDetailView: View {
                         HStack(spacing: DUSpacing.md) {
                             VideoImageView(
                                 image: item.posterImage,
-                                cornerRadius: 18,
+                                cornerRadius: DURadius.control,
                                 contentMode: .fill
                             )
                             .frame(width: 74, height: 92)
-                            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+                            .clipShape(RoundedRectangle(cornerRadius: DURadius.control, style: .continuous))
 
                             VStack(alignment: .leading, spacing: 6) {
                                 Text(item.title.value(for: languageStore.currentLanguage))
-                                    .font(.du(14, weight: .bold))
-                                    .foregroundColor(DUTheme.ink)
+                                    .font(.du(.bodyEmphasized))
+                                    .foregroundColor(palette.primaryText)
                                     .frame(maxWidth: .infinity, alignment: .leading)
                                     .lineLimit(2)
 
                                 Text(item.summary.value(for: languageStore.currentLanguage))
-                                    .font(.du(12, weight: .medium))
-                                    .foregroundColor(DUTheme.inkSecondary)
+                                    .font(.du(.meta))
+                                    .foregroundColor(palette.secondaryText)
                                     .frame(maxWidth: .infinity, alignment: .leading)
                                     .lineLimit(2)
                             }
 
                             Image(systemName: "chevron.forward")
-                                .font(.du(13, weight: .bold))
-                                .foregroundColor(DUTheme.inkDisabled)
+                                .font(.du(.labelEmphasized))
+                                .foregroundColor(palette.disabledText)
                         }
                         .padding(DUSpacing.md)
-                        .background(Color(hex: 0xF7FAFD))
-                        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+                        .background(palette.secondaryBackground)
+                        .clipShape(RoundedRectangle(cornerRadius: DURadius.control, style: .continuous))
                     }
                     .buttonStyle(.plain)
                 }
@@ -1158,11 +1190,13 @@ struct VideoDetailView: View {
     }
 
     private func playBar(for detail: VideoDetailSnapshot) -> some View {
-        VStack(spacing: DUSpacing.sm) {
+        let palette = VideoPalette(theme: theme)
+
+        return VStack(spacing: DUSpacing.sm) {
             if !detail.isPlayable {
                 Text(detail.content.availabilityMessage?.value(for: languageStore.currentLanguage) ?? localized("video.unavailable.removed.title"))
-                    .font(.du(12, weight: .semibold))
-                    .foregroundColor(DUTheme.warning)
+                    .font(.du(.metaStrong))
+                    .foregroundColor(theme.colors.status.warning)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
 
@@ -1185,7 +1219,10 @@ struct VideoDetailView: View {
         .padding(.horizontal, DUSpacing.md)
         .padding(.top, DUSpacing.md)
         .padding(.bottom, DUSpacing.md)
-        .background(Color.white.shadow(color: Color.black.opacity(0.05), radius: 12, x: 0, y: -2))
+        .background(
+            palette.panelBackground
+                .shadow(color: palette.cardElevation.color, radius: palette.cardElevation.radius, x: palette.cardElevation.x, y: -2)
+        )
     }
 
     @ViewBuilder

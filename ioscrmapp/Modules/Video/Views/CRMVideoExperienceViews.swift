@@ -6,6 +6,7 @@ import UIKit
 #endif
 
 struct CRMVideoDetailContent: View {
+    @Environment(\.duTheme) private var theme
     @EnvironmentObject private var languageStore: AppLanguageStore
 
     let detail: VideoDetailSnapshot
@@ -26,6 +27,8 @@ struct CRMVideoDetailContent: View {
     }
 
     var body: some View {
+        let palette = VideoPalette(theme: theme)
+
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 20) {
                 headerSection
@@ -48,14 +51,16 @@ struct CRMVideoDetailContent: View {
 
                 relatedSection
             }
-            .padding(.bottom, 40)
+            .padding(.bottom, DUSpacing.xxxxl)
         }
-        .background(Color(.systemBackground))
+        .background(palette.canvasBackground)
         .crmApplyInlineNavigationTitleDisplayMode()
     }
 
     private var headerSection: some View {
-        ZStack(alignment: .bottomLeading) {
+        let palette = VideoPalette(theme: theme)
+
+        return ZStack(alignment: .bottomLeading) {
             VideoImageView(
                 image: detail.heroImage,
                 cornerRadius: 0,
@@ -64,35 +69,34 @@ struct CRMVideoDetailContent: View {
             .frame(height: 250)
             .clipped()
             .blur(radius: 20)
-            .overlay(Color.black.opacity(0.32))
+            .overlay(DUColorPrimitives.Neutral.black.opacity(0.32))
 
             HStack(alignment: .bottom, spacing: 16) {
                 VideoImageView(
                     image: detail.content.posterImage,
-                    cornerRadius: 10,
+                    cornerRadius: DURadius.sm,
                     contentMode: .fill
                 )
                 .frame(width: 120, height: 170)
-                .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-                .shadow(color: .black.opacity(0.22), radius: 10, x: 0, y: 8)
+                .clipShape(RoundedRectangle(cornerRadius: DURadius.sm, style: .continuous))
+                .shadow(color: palette.liftedElevation.color, radius: palette.liftedElevation.radius, x: palette.liftedElevation.x, y: palette.liftedElevation.y)
 
                 VStack(alignment: .leading, spacing: 8) {
                     Text(detail.content.title.value(for: languageStore.currentLanguage))
-                        .font(.title2)
-                        .fontWeight(.bold)
-                        .foregroundColor(.white)
+                        .font(.du(.titleStrong))
+                        .foregroundColor(palette.inverseText)
                         .lineLimit(2)
 
                     if let ratingText = detail.content.ratingText {
                         HStack(spacing: 4) {
                             Image(systemName: "star.fill")
-                                .foregroundColor(.yellow)
+                                .foregroundColor(palette.warningText)
 
                             Text(ratingText)
-                                .fontWeight(.semibold)
-                                .foregroundColor(.white)
+                                .font(.du(.bodyStrong))
+                                .foregroundColor(palette.inverseText)
                         }
-                        .font(.subheadline)
+                        .font(.du(.body))
                         .environment(\.layoutDirection, .leftToRight)
                     }
 
@@ -101,12 +105,12 @@ struct CRMVideoDetailContent: View {
                             HStack(spacing: 6) {
                                 ForEach(detail.tags.prefix(3)) { tag in
                                     Text(tag.title.value(for: languageStore.currentLanguage))
-                                        .font(.caption)
-                                        .foregroundColor(.white.opacity(0.92))
-                                        .padding(.horizontal, 8)
-                                        .padding(.vertical, 4)
-                                        .background(Color.white.opacity(0.2))
-                                        .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
+                                        .font(.du(.caption))
+                                        .foregroundColor(palette.inverseText.opacity(0.92))
+                                        .padding(.horizontal, DUSpacing.sm)
+                                        .padding(.vertical, DUSpacing.xs)
+                                        .background(palette.inverseText.opacity(0.2))
+                                        .clipShape(RoundedRectangle(cornerRadius: DURadius.xs, style: .continuous))
                                 }
                             }
                         }
@@ -114,8 +118,8 @@ struct CRMVideoDetailContent: View {
 
                     if let selectedEpisode {
                         Text(selectedEpisode.title.value(for: languageStore.currentLanguage))
-                            .font(.caption)
-                            .foregroundColor(.white.opacity(0.82))
+                            .font(.du(.caption))
+                            .foregroundColor(palette.inverseText.opacity(0.82))
                             .lineLimit(1)
                     }
 
@@ -123,19 +127,18 @@ struct CRMVideoDetailContent: View {
                         HStack(spacing: 8) {
                             if isRequestingPlayback {
                                 ProgressView()
-                                    .tint(.white)
+                                    .tint(palette.inverseText)
                             } else {
                                 Image(systemName: "play.fill")
                             }
 
                             Text(localized("video.detail.playNow"))
-                                .fontWeight(.semibold)
+                                .font(.du(.bodyStrong))
                         }
-                        .font(.subheadline)
-                        .foregroundColor(.white)
-                        .padding(.horizontal, 20)
-                        .padding(.vertical, 10)
-                        .background(detail.isPlayable ? Color.blue : Color.gray.opacity(0.45))
+                        .foregroundColor(palette.inverseText)
+                        .padding(.horizontal, DUSpacing.xl)
+                        .padding(.vertical, DUSpacing.base)
+                        .background(detail.isPlayable ? theme.colors.brand.secondary : palette.disabledText.opacity(0.45))
                         .clipShape(Capsule())
                     }
                     .disabled(!detail.isPlayable || selectedEpisode == nil || isRequestingPlayback)
@@ -145,8 +148,8 @@ struct CRMVideoDetailContent: View {
                             detail.content.availabilityMessage?.value(for: languageStore.currentLanguage)
                                 ?? localized("video.unavailable.noSource.title")
                         )
-                        .font(.caption)
-                        .foregroundColor(.white.opacity(0.88))
+                        .font(.du(.caption))
+                        .foregroundColor(palette.inverseText.opacity(0.88))
                         .lineLimit(2)
                     }
                 }
@@ -158,96 +161,103 @@ struct CRMVideoDetailContent: View {
     }
 
     private var infoSection: some View {
-        HStack(spacing: 16) {
+        let palette = VideoPalette(theme: theme)
+
+        return HStack(spacing: DUSpacing.lg) {
             ForEach(detail.stats) { stat in
                 VStack(spacing: 6) {
                     Image(systemName: stat.systemImage)
-                        .font(.title3)
+                        .font(.du(.titleSmall))
                         .foregroundColor(color(for: stat.id))
 
                     Text(stat.value)
-                        .font(.subheadline)
-                        .fontWeight(.medium)
+                        .font(.du(.bodyStrong))
                         .lineLimit(1)
                         .minimumScaleFactor(0.8)
                         .environment(\.layoutDirection, .leftToRight)
 
                     Text(localized(stat.titleKey))
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                        .font(.du(.caption))
+                        .foregroundColor(palette.secondaryText)
                         .lineLimit(1)
                 }
                 .frame(maxWidth: .infinity)
             }
         }
         .padding(.horizontal)
-        .padding(.vertical, 8)
+        .padding(.vertical, DUSpacing.sm)
     }
 
     private var descriptionSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        let palette = VideoPalette(theme: theme)
+
+        return VStack(alignment: .leading, spacing: DUSpacing.sm) {
             Text(localized("video.detail.synopsis"))
-                .font(.headline)
+                .font(.du(.bodyLargeStrong))
+                .foregroundColor(palette.primaryText)
 
             Text(detail.synopsis.value(for: languageStore.currentLanguage))
-                .font(.subheadline)
-                .foregroundColor(.secondary)
+                .font(.du(.body))
+                .foregroundColor(palette.secondaryText)
                 .lineLimit(isDescriptionExpanded ? nil : 3)
 
             Button(action: toggleDescription) {
                 Text(expandActionTitle)
-                    .font(.caption)
-                    .foregroundColor(.blue)
+                    .font(.du(.captionStrong))
+                    .foregroundColor(palette.accentText)
             }
         }
         .padding(.horizontal)
     }
 
     private var episodeSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        let palette = VideoPalette(theme: theme)
+
+        return VStack(alignment: .leading, spacing: DUSpacing.md) {
             Text("\(localized("video.detail.episodes")) (\(episodes.count))")
-                .font(.headline)
+                .font(.du(.headline))
+                .foregroundColor(palette.primaryText)
                 .padding(.horizontal)
 
             ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 12) {
+                HStack(spacing: DUSpacing.md) {
                     ForEach(episodes) { episode in
                         Button {
                             onSelectEpisode(episode)
                         } label: {
-                            VStack(spacing: 6) {
+                            VStack(spacing: DUSpacing.sm) {
                                 ZStack {
                                     VideoImageView(
                                         image: episode.thumbnailImage,
-                                        cornerRadius: 8,
+                                        cornerRadius: DURadius.sm,
                                         contentMode: .fill
                                     )
                                     .frame(width: 96, height: 64)
-                                    .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                                    .clipShape(RoundedRectangle(cornerRadius: DURadius.sm, style: .continuous))
 
-                                    Color.black.opacity(0.22)
-                                        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                                    palette.mediaOverlay.opacity(0.72)
+                                        .clipShape(RoundedRectangle(cornerRadius: DURadius.sm, style: .continuous))
 
                                     Image(systemName: "play.circle.fill")
-                                        .font(.title2)
-                                        .foregroundColor(.white)
+                                        .font(.du(.title))
+                                        .foregroundColor(palette.inverseText)
                                 }
                                 .overlay(
-                                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                                    RoundedRectangle(cornerRadius: DURadius.sm, style: .continuous)
                                         .stroke(
-                                            selectedEpisodeID == episode.id ? Color.blue : Color.clear,
+                                            selectedEpisodeID == episode.id ? palette.accentText : .clear,
                                             lineWidth: 2
                                         )
                                 )
 
                                 Text(episode.title.value(for: languageStore.currentLanguage))
-                                    .font(.caption)
-                                    .foregroundColor(.primary)
+                                    .font(.du(.captionStrong))
+                                    .foregroundColor(palette.primaryText)
                                     .lineLimit(1)
 
                                 Text(formattedDuration(episode.durationSeconds))
-                                    .font(.caption2)
-                                    .foregroundColor(.secondary)
+                                    .font(.du(.tiny))
+                                    .foregroundColor(palette.secondaryText)
                             }
                             .frame(width: 96)
                         }
@@ -260,42 +270,45 @@ struct CRMVideoDetailContent: View {
     }
 
     private var castSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        let palette = VideoPalette(theme: theme)
+
+        return VStack(alignment: .leading, spacing: DUSpacing.md) {
             Text(localized("video.detail.cast"))
-                .font(.headline)
+                .font(.du(.headline))
+                .foregroundColor(palette.primaryText)
                 .padding(.horizontal)
 
             ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 16) {
+                HStack(spacing: DUSpacing.lg) {
                     ForEach(detail.cast) { member in
-                        VStack(spacing: 8) {
+                        VStack(spacing: DUSpacing.sm) {
                             if let avatarImage = member.avatarImage {
                                 VideoImageView(
                                     image: avatarImage,
-                                    cornerRadius: 30,
+                                    cornerRadius: DURadius.pill,
                                     contentMode: .fill
                                 )
                                 .frame(width: 60, height: 60)
                                 .clipShape(Circle())
                             } else {
                                 Circle()
-                                    .fill(Color.gray.opacity(0.24))
+                                    .fill(palette.tertiaryBackground)
                                     .frame(width: 60, height: 60)
                                     .overlay {
                                         Image(systemName: "person.fill")
-                                            .foregroundColor(.gray)
+                                            .foregroundColor(palette.tertiaryText)
                                     }
                             }
 
                             Text(member.name)
-                                .font(.caption)
-                                .fontWeight(.medium)
+                                .font(.du(.captionStrong))
+                                .foregroundColor(palette.primaryText)
                                 .lineLimit(1)
 
                             if let role = member.role {
                                 Text(role.value(for: languageStore.currentLanguage))
-                                    .font(.caption2)
-                                    .foregroundColor(.secondary)
+                                    .font(.du(.tiny))
+                                    .foregroundColor(palette.secondaryText)
                                     .lineLimit(1)
                             }
                         }
@@ -308,18 +321,21 @@ struct CRMVideoDetailContent: View {
     }
 
     private var relatedSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        let palette = VideoPalette(theme: theme)
+
+        return VStack(alignment: .leading, spacing: DUSpacing.md) {
             Text(localized("video.detail.related"))
-                .font(.headline)
+                .font(.du(.headline))
+                .foregroundColor(palette.primaryText)
                 .padding(.horizontal)
 
             if detail.related.isEmpty {
                 Text(localized("video.state.error.subtitle"))
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
+                    .font(.du(.body))
+                    .foregroundColor(palette.secondaryText)
                     .padding(.horizontal)
             } else {
-                VStack(spacing: 12) {
+                VStack(spacing: DUSpacing.md) {
                     ForEach(detail.related) { related in
                         Button {
                             onSelectRelated(related.id)
@@ -371,17 +387,19 @@ struct CRMVideoDetailContent: View {
     }
 
     private func color(for statID: String) -> Color {
+        let palette = VideoPalette(theme: theme)
+
         switch statID {
         case "views":
-            return .blue
+            return theme.colors.brand.primary
         case "released":
-            return .green
+            return theme.colors.status.success
         case "episodes":
-            return .orange
+            return palette.warningText
         case "duration":
-            return .purple
+            return theme.colors.brand.indigo
         default:
-            return .blue
+            return palette.accentText
         }
     }
 
@@ -404,53 +422,57 @@ struct CRMVideoDetailContent: View {
 }
 
 private struct CRMRelatedVideoRow: View {
+    @Environment(\.duTheme) private var theme
+
     let content: VideoContentSummary
     let typeTitle: String
     let language: AppLanguage
 
     var body: some View {
-        HStack(spacing: 12) {
+        let palette = VideoPalette(theme: theme)
+
+        return HStack(spacing: DUSpacing.md) {
             VideoImageView(
                 image: content.posterImage,
-                cornerRadius: 6,
+                cornerRadius: DURadius.xs,
                 contentMode: .fill
             )
             .frame(width: 100, height: 70)
-            .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+            .clipShape(RoundedRectangle(cornerRadius: DURadius.xs, style: .continuous))
 
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: DUSpacing.xs) {
                 Text(content.title.value(for: language))
-                    .font(.subheadline)
-                    .fontWeight(.medium)
-                    .foregroundColor(.primary)
+                    .font(.du(.bodyStrong))
+                    .foregroundColor(palette.primaryText)
                     .lineLimit(2)
 
                 HStack {
                     if let ratingText = content.ratingText {
                         Label(ratingText, systemImage: "star.fill")
-                            .font(.caption)
-                            .foregroundColor(.orange)
+                            .font(.du(.caption))
+                            .foregroundColor(palette.warningText)
                             .environment(\.layoutDirection, .leftToRight)
                     }
 
                     Text(typeTitle)
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                        .font(.du(.caption))
+                        .foregroundColor(palette.secondaryText)
                 }
             }
 
             Spacer(minLength: 0)
 
             Image(systemName: "chevron.right")
-                .font(.caption)
-                .foregroundColor(.gray)
+                .font(.du(.caption))
+                .foregroundColor(palette.disabledText)
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, DUSpacing.xs)
     }
 }
 
 struct CRMVideoPlayExperience: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.duTheme) private var theme
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @EnvironmentObject private var languageStore: AppLanguageStore
 
@@ -516,9 +538,11 @@ struct CRMVideoPlayExperience: View {
     }
 
     var body: some View {
+        let palette = VideoPalette(theme: theme)
+
         GeometryReader { _ in
             ZStack {
-                Color.black
+                palette.mediaBackdrop
                     .ignoresSafeArea()
 
                 if let player {
@@ -530,7 +554,7 @@ struct CRMVideoPlayExperience: View {
                 } else {
                     ProgressView()
                         .scaleEffect(1.5)
-                        .tint(.white)
+                        .tint(palette.inverseText)
                 }
 
                 if !subtitleText.isEmpty {
@@ -538,12 +562,12 @@ struct CRMVideoPlayExperience: View {
                         Spacer()
 
                         Text(subtitleText)
-                            .font(.system(size: 16, weight: .medium))
-                            .foregroundColor(.white)
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 8)
-                            .background(Color.black.opacity(0.7))
-                            .cornerRadius(4)
+                            .font(.du(.bodyStrong))
+                            .foregroundColor(palette.inverseText)
+                            .padding(.horizontal, DUSpacing.lg)
+                            .padding(.vertical, DUSpacing.sm)
+                            .background(palette.mediaCaptionBackground)
+                            .clipShape(RoundedRectangle(cornerRadius: DURadius.xs, style: .continuous))
                             .padding(.bottom, showControls ? 120 : 50)
                     }
                 }
@@ -591,7 +615,9 @@ struct CRMVideoPlayExperience: View {
     }
 
     private var controlOverlay: some View {
-        VStack {
+        let palette = VideoPalette(theme: theme)
+
+        return VStack {
             topBar
                 .padding(.horizontal)
                 .padding(.top)
@@ -622,25 +648,27 @@ struct CRMVideoPlayExperience: View {
                 .padding(.horizontal)
                 .padding(.bottom)
         }
-        .background(Color.black.opacity(0.4).ignoresSafeArea())
+        .background(palette.mediaOverlay.ignoresSafeArea())
         .transition(.opacity)
     }
 
     private var topBar: some View {
-        HStack {
+        let palette = VideoPalette(theme: theme)
+
+        return HStack {
             CRMBackButton()
 
             Spacer()
 
             VStack(spacing: 2) {
                 Text(playbackSession.mediaTitle.value(for: languageStore.currentLanguage))
-                    .font(.headline)
-                    .foregroundColor(.white)
+                    .font(.du(.headline))
+                    .foregroundColor(palette.inverseText)
                     .lineLimit(1)
 
                 Text(playbackSession.episode.title.value(for: languageStore.currentLanguage))
-                    .font(.subheadline)
-                    .foregroundColor(.white.opacity(0.8))
+                    .font(.du(.body))
+                    .foregroundColor(palette.mediaSecondaryText)
                     .lineLimit(1)
             }
 
@@ -664,8 +692,8 @@ struct CRMVideoPlayExperience: View {
                     }
                 } label: {
                     Image(systemName: "list.bullet.rectangle")
-                        .font(.title3)
-                        .foregroundColor(.white)
+                        .font(.du(.titleSmall))
+                        .foregroundColor(palette.inverseText)
                         .frame(width: 44, height: 44)
                         .contentShape(Rectangle())
                 }
@@ -673,8 +701,8 @@ struct CRMVideoPlayExperience: View {
             } else {
                 Button(action: {}) {
                     Image(systemName: "ellipsis")
-                        .font(.title2)
-                        .foregroundColor(.white)
+                        .font(.du(.title))
+                        .foregroundColor(palette.inverseText)
                         .frame(width: 44, height: 44)
                 }
                 .buttonStyle(.plain)
@@ -683,13 +711,15 @@ struct CRMVideoPlayExperience: View {
     }
 
     private var centerControls: some View {
-        HStack(spacing: 60) {
+        let palette = VideoPalette(theme: theme)
+
+        return HStack(spacing: 60) {
             Button {
                 seek(by: -10)
             } label: {
                 Image(systemName: "gobackward.10")
-                    .font(.title)
-                    .foregroundColor(.white)
+                    .font(.du(.title))
+                    .foregroundColor(palette.inverseText)
                     .frame(width: 60, height: 60)
                     .contentShape(Rectangle())
             }
@@ -699,8 +729,8 @@ struct CRMVideoPlayExperience: View {
                 togglePlayPause()
             } label: {
                 Image(systemName: isPlaying ? "pause.circle.fill" : "play.circle.fill")
-                    .font(.system(size: 70))
-                    .foregroundColor(.white)
+                    .font(.du(.display))
+                    .foregroundColor(palette.inverseText)
                     .frame(width: 80, height: 80)
                     .contentShape(Rectangle())
             }
@@ -710,8 +740,8 @@ struct CRMVideoPlayExperience: View {
                 seek(by: 10)
             } label: {
                 Image(systemName: "goforward.10")
-                    .font(.title)
-                    .foregroundColor(.white)
+                    .font(.du(.title))
+                    .foregroundColor(palette.inverseText)
                     .frame(width: 60, height: 60)
                     .contentShape(Rectangle())
             }
@@ -720,11 +750,13 @@ struct CRMVideoPlayExperience: View {
     }
 
     private var bottomBar: some View {
-        VStack(spacing: 12) {
+        let palette = VideoPalette(theme: theme)
+
+        return VStack(spacing: 12) {
             HStack(spacing: 10) {
                 Text(formatTime(currentTime))
-                    .font(.caption)
-                    .foregroundColor(.white)
+                    .font(.du(.caption))
+                    .foregroundColor(palette.inverseText)
                     .monospacedDigit()
 
                 Slider(
@@ -737,11 +769,11 @@ struct CRMVideoPlayExperience: View {
                         }
                     }
                 )
-                .tint(.white)
+                .tint(palette.inverseText)
 
                 Text(formatTime(duration))
-                    .font(.caption)
-                    .foregroundColor(.white)
+                    .font(.du(.caption))
+                    .foregroundColor(palette.inverseText)
                     .monospacedDigit()
             }
 
@@ -755,11 +787,11 @@ struct CRMVideoPlayExperience: View {
             if isSwitchingEpisode {
                 HStack(spacing: 8) {
                     ProgressView()
-                        .tint(.white)
+                        .tint(palette.inverseText)
 
                     Text(languageStore.string("video.player.loading"))
-                        .font(.caption)
-                        .foregroundColor(.white.opacity(0.86))
+                        .font(.du(.caption))
+                        .foregroundColor(palette.mediaSecondaryText)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
@@ -773,7 +805,7 @@ struct CRMVideoPlayExperience: View {
                 subtitleControl
                 audioTrackControl
             }
-            .padding(.trailing, 4)
+            .padding(.trailing, DUSpacing.xs)
         }
     }
 
@@ -854,12 +886,14 @@ struct CRMVideoPlayExperience: View {
     }
 
     private var pictureInPictureButton: some View {
-        Button {
+        let palette = VideoPalette(theme: theme)
+
+        return Button {
             togglePiP()
         } label: {
             Image(systemName: isPictureInPictureActive || isPictureInPictureStarting ? "pip.exit" : "pip.enter")
-                .font(.title3)
-                .foregroundColor(.white)
+                .font(.du(.titleSmall))
+                .foregroundColor(palette.inverseText)
                 .frame(width: 44, height: 44)
                 .contentShape(Rectangle())
         }
@@ -869,12 +903,14 @@ struct CRMVideoPlayExperience: View {
     }
 
     private var fullscreenButton: some View {
-        Button {
+        let palette = VideoPalette(theme: theme)
+
+        return Button {
             toggleFullscreen()
         } label: {
             Image(systemName: "arrow.up.left.and.arrow.down.right")
-                .font(.title3)
-                .foregroundColor(.white)
+                .font(.du(.titleSmall))
+                .foregroundColor(palette.inverseText)
                 .frame(width: 44, height: 44)
                 .contentShape(Rectangle())
         }
@@ -882,21 +918,27 @@ struct CRMVideoPlayExperience: View {
     }
 
     private func controlPill(icon: String, text: String) -> some View {
-        HStack(spacing: 4) {
+        let palette = VideoPalette(theme: theme)
+
+        return HStack(spacing: DUSpacing.xs) {
             Image(systemName: icon)
-                .font(.body)
+                .font(.du(.body))
 
             if horizontalSizeClass != .compact {
                 Text(text)
+                    .font(.du(.body))
                     .lineLimit(1)
             }
         }
-        .font(.subheadline)
-        .foregroundColor(.white)
-        .padding(.horizontal, 14)
-        .padding(.vertical, 10)
-        .background(Color.white.opacity(0.2))
-        .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+        .foregroundColor(palette.inverseText)
+        .padding(.horizontal, DUSpacing.compact)
+        .padding(.vertical, DUSpacing.base)
+        .background(palette.mediaControlBackground)
+        .overlay {
+            RoundedRectangle(cornerRadius: DURadius.xs, style: .continuous)
+                .stroke(palette.mediaControlBorder, lineWidth: 1)
+        }
+        .clipShape(RoundedRectangle(cornerRadius: DURadius.xs, style: .continuous))
     }
 
     private func configurePictureInPictureCallbacks() {
