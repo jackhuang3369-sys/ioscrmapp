@@ -127,8 +127,13 @@ final class WeatherSceneManager: ObservableObject {
         }
     }
 
+    /// 同步显示组的旋转角度到 @Published 属性
+    /// 使用 DispatchQueue.main.async 避免在 CADisplayLink 回调中直接修改 @Published 属性
+    /// 从而消除 "Publishing changes from within view updates" 警告
     func syncDisplayGroupRotation(to angles: SCNVector3) {
-        displayGroupRotation = angles
+        DispatchQueue.main.async { [weak self] in
+            self?.displayGroupRotation = angles
+        }
     }
 
     func applyDisplayGroupRotation(_ angles: SCNVector3) {
@@ -1382,12 +1387,32 @@ final class WeatherSceneManager: ObservableObject {
         sunBurstNode.isHidden = false
         sunBurstNode.opacity = 1
 
-        // 与点击太阳效果相同：前端 easeOut 飞出，后端延迟追赶，两端相遇后线段消失
-        // 射线从高进度位置开始，第一眼看到时已在太阳外围较远处，速度感更强
-        let burstDelay: TimeInterval = 0.02
-        let burstFlyDuration: TimeInterval = 0.25  // 缩短飞出时长，加快整体节奏
-        let tailFrac: Float = 0.35   // 内端更早开始追赶，线段更快消失
-        let startProgress: Float = 0.70  // 起始位置更靠外（70% 进度），视觉上"已在远方"
+        // ====================================================================
+        // SunBurst 射线爆发动画参数配置
+        // ====================================================================
+        // 目标：让射线看起来"瞬间从太阳表面爆发向外飞出"，而非"从内部慢慢长出"
+        //
+        // 关键参数说明：
+        // - burstDelay: 射线出现前的延迟，与音效峰值对齐（0.02s）
+        // - burstFlyDuration: 射线飞出的总时长，影响整体节奏感
+        // - startProgress: 射线起始进度位置（0~1），值越大射线起始位置越远
+        // - tailFrac: 内端开始追赶的时间点（0~1），值越小射线消失越快
+        //
+        // 动画原理：
+        // 1. 外端(head)从 startProgress 位置开始，easeOut 向外飞出到 100%
+        // 2. 内端(tail)固定在太阳表面(innerOffset)，延迟 tailFrac 后开始追赶
+        // 3. 两端相遇时线段长度为 0，射线消失
+        //
+        // 视觉效果调整历史：
+        // - 原始：burstFlyDuration=0.38s, startProgress=0.50, tailFrac=0.50
+        //   问题：射线看起来"从太阳内部长出"，速度感不足
+        // - 优化：burstFlyDuration=0.25s, startProgress=0.70, tailFrac=0.35
+        //   效果：射线起始位置更远（70%），总时长更短，给人"瞬间爆发"的感觉
+        // ====================================================================
+        let burstDelay: TimeInterval = 0.02       // 首帧延迟，与 sun-detail-enter.wav 峰值对齐
+        let burstFlyDuration: TimeInterval = 0.25 // 飞出总时长，从 0.38s 缩短以加快节奏
+        let tailFrac: Float = 0.35                // 内端在 35% 进度时开始追赶，射线更快消失
+        let startProgress: Float = 0.70           // 射线起始位置（70% 进度），视觉上"已在远方爆发"
 
         for rayNode in sunBurstNode.childNodes {
             // 初始状态：折叠不可见，80% 黑色 / 20% 灰色
@@ -1438,16 +1463,22 @@ final class WeatherSceneManager: ObservableObject {
                     let t = Float(elapsed) / Float(burstFlyDuration)
 
                     // 前端（外端）：三次方 easeOut 向外飞出，从 startProgress 位置开始
-                    // t=0 时：eased = startProgress（50% 进度位置，已在太阳外围）
+                    // t=0 时：eased = startProgress（当前为 70%，射线已在远处）
                     // t=1 时：eased = 1.0（到达原始目标位置）
+                    // easeOut 曲线让射线"快速起步，平稳减速"，模拟爆发感
                     let eased: Float = capturedStartProgress + (1 - capturedStartProgress) * (1 - pow(1 - min(t, 1), 3))
                     let headDist = capturedInnerOffset + eased * capturedFlyDist
 
                     // 后端（内端）：固定在太阳表面（innerOffset），延迟后追赶
-                    // 这样射线中心会随外端向外移动，给人"整体向外飞"的感觉
-                    // t=0 时：tailDist = innerOffset（太阳表面），headDist 已在外围
-                    // 线段长度 = startProgress * flyDist（射线已展开）
-                    // t >= tailFrac 时：内端向外追赶，线段缩短消失
+                    // 设计原理：内端固定让射线中心随外端向外移动，给人"整体向外飞"的感觉
+                    // 若内端也从远处开始，射线中心会静止，给人"反向错觉"
+                    //
+                    // 时间线：
+                    // - t=0 时：tailDist = innerOffset（太阳表面），headDist = 70% 位置
+                    //   线段长度 = 0.70 * flyDist（射线已展开，在远处可见）
+                    // - 0 < t < tailFrac(35%) 时：tailDist 固定，headDist 向外移动
+                    //   线段中心向外移动，射线继续飞出
+                    // - t >= tailFrac 时：内端开始向外追赶，线段缩短直至消失
                     let tailT: Float = t < capturedTailFrac ? 0 : (t - capturedTailFrac) / (1 - capturedTailFrac)
                     let tailDist = capturedInnerOffset + tailT * capturedFlyDist
 
