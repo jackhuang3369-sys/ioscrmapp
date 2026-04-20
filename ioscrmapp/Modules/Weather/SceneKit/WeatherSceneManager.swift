@@ -46,7 +46,7 @@ final class WeatherSceneManager: ObservableObject {
         }
     }
 
-    static let sunDetailTransitionDuration: TimeInterval = 0.38 //入场动画，第一屏到第二屏的时间。
+    static let sunDetailTransitionDuration: TimeInterval = 0.25 //入场动画，第一屏到第二屏的时间（原0.38s缩短为2/3）。
     static let sunDetailCrossfadeDuration: TimeInterval = 0.20
     static let sunReturnTransitionDuration: TimeInterval = 0.22 //回场动画，第二屏回到第一屏的时间。
 
@@ -1341,8 +1341,10 @@ final class WeatherSceneManager: ObservableObject {
     }
 
     private func runDetailTitleReveal(on node: SCNNode) {
-        let revealDelay = Self.sunDetailTransitionDuration * 0.17  // ~15~20% into transition
-        let revealDuration = Self.sunDetailTransitionDuration * 0.20
+        // 标题显示使用固定时长，而非按比例计算
+        // 入场速度缩短后（0.25s），保持标题出场时机不变，避免太快看不清
+        let revealDelay: TimeInterval = 0.06   // 固定 60ms 延迟（原 0.38×0.17≈64ms）
+        let revealDuration: TimeInterval = 0.08 // 固定 80ms 时长（原 0.38×0.20≈76ms）
 
         let scaleAction = makeScaleAction(
             from: node.scale,

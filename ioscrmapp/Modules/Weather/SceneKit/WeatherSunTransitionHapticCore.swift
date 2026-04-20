@@ -1,7 +1,7 @@
 import Foundation
 
 enum WeatherSunTransitionHapticCore {
-    static let totalDuration: TimeInterval = 0.38
+    static let totalDuration: TimeInterval = 0.25  // 与 sunDetailTransitionDuration 同步（原0.38s缩短为2/3）
     static let startIntensity: Float = 0.8
     static let endIntensity: Float = 0.1
     static let sharpness: Float = 0.5
