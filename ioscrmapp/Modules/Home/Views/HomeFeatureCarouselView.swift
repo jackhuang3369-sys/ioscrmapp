@@ -144,14 +144,12 @@ struct HomeFeatureCarouselView: View {
         layout: HomeFeatureCarouselCardLayout,
         metrics: HomeFeatureCarouselMetrics
     ) -> some View {
+        let palette = HomePalette(theme: theme)
         let distance = min(abs(layout.position), 1)
         let cardSize = metrics.cardSize(for: distance)
         let opacityValue = opacity(for: layout.position)
         let cardEffect = cardEffect(for: layout.position)
         let imageMotion = imageMotion(for: layout.position, cardSize: cardSize)
-        let borderColor = theme.resolvedColorScheme == .dark
-            ? theme.colors.border.default.opacity(0.88)
-            : Color.white.opacity(0.72)
 
         // 卡片整体沿轨道移动；图片层再叠加“横向掠过 + 轻微透视”效果。
         return HomeFeatureCarouselCardView(
@@ -170,10 +168,10 @@ struct HomeFeatureCarouselView: View {
                     cornerRadius: metrics.cornerRadius,
                     style: .continuous
                 )
-                .stroke(borderColor, lineWidth: 1)
+                .stroke(palette.featureCarouselBorder, lineWidth: 1)
             )
             .shadow(
-                color: Color.black.opacity(cardEffect.shadowOpacity),
+                color: palette.featureCarouselShadow.opacity(cardEffect.shadowOpacity),
                 radius: cardEffect.shadowRadius,
                 x: 0,
                 y: cardEffect.shadowYOffset

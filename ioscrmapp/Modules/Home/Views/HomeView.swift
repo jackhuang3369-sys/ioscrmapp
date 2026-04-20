@@ -435,7 +435,7 @@ struct HomeView: View {
 
                         Text(localized("home.greeting.morning"))
                             .font(.du(.label))
-                            .foregroundColor(.white.opacity(0.86))
+                            .foregroundColor(homePalette.heroSecondaryText)
                     }
 
                     Spacer()
@@ -462,7 +462,7 @@ struct HomeView: View {
                         VStack(alignment: .leading, spacing: 0) {
                             Text(dashboard.profile.displayName)
                                 .font(.du(.bodyStrong))
-                                .foregroundColor(.white)
+                                .foregroundColor(homePalette.heroPrimaryText)
                                 .lineLimit(1)
 
                             HStack(spacing: DUSpacing.smd) {
@@ -483,24 +483,24 @@ struct HomeView: View {
                                 }
                             }
                             .font(.du(.caption))
-                            .foregroundColor(.white.opacity(0.84))
+                            .foregroundColor(homePalette.heroSecondaryText)
                             .padding(.top, DUSpacing.xs + 1)
 
                             HStack(spacing: DUSpacing.sm) {
                                 Text(dashboard.profile.serviceNumber)
                                     .font(.du(.tiny))
-                                    .foregroundColor(.white.opacity(0.92))
+                                    .foregroundColor(homePalette.heroPrimaryText)
                                     .padding(.horizontal, DUSpacing.sm - 1)
                                     .padding(.vertical, DUSpacing.xxs)
                                     .background(
                                         Capsule()
-                                            .fill(.white.opacity(0.14))
+                                            .fill(homePalette.heroCapsuleFill)
                                     )
 
                                 if let networkStatus = dashboard.profile.networkStatus {
                                     Text(localized(networkStatus.textValue))
                                         .font(.du(.tiny))
-                                        .foregroundColor(.white.opacity(0.72))
+                                        .foregroundColor(homePalette.heroTertiaryText)
                                         .lineLimit(1)
                                 }
                             }
@@ -522,13 +522,13 @@ struct HomeView: View {
 
                             Text(localized("home.profile.advanced"))
                                 .font(.du(.micro))
-                                .foregroundColor(.white.opacity(0.82))
+                                .foregroundColor(homePalette.heroSecondaryText)
                         }
                         .padding(.horizontal, DUSpacing.sm)
                         .padding(.vertical, DUSpacing.xs + 1)
                         .background(
                             Capsule()
-                                .fill(.white.opacity(0.12))
+                                .fill(homePalette.heroBadgeFill)
                         )
                     }
                     .buttonStyle(.plain)
@@ -1367,9 +1367,9 @@ private struct HomePageBackground: View {
                     .overlay {
                         LinearGradient(
                             colors: [
-                                Color.white.opacity(0.16),
+                                palette.pageSheenHighlightPrimary,
                                 Color.clear,
-                                Color.white.opacity(0.08)
+                                palette.pageSheenHighlightSecondary
                             ],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
@@ -1408,14 +1408,22 @@ private struct HomePageBackground: View {
 }
 
 private struct HomeHeaderActionButton: View {
+    @Environment(\.duTheme) private var theme
+
     let assetName: String
     let action: () -> Void
 
     var body: some View {
+        let palette = HomePalette(theme: theme)
+
         Button(action: action) {
             Circle()
-                .fill(.white.opacity(0.18))
+                .fill(palette.headerActionFill)
                 .frame(width: 34, height: 34)
+                .overlay(
+                    Circle()
+                        .stroke(palette.headerActionBorder, lineWidth: 1)
+                )
                 .overlay(
                     Image(assetName)
                         .renderingMode(.original)
@@ -1499,11 +1507,11 @@ private struct HomeBottomTabBarButton: View {
                         .overlay {
                             ZStack {
                                 Capsule()
-                                    .stroke(Color.white.opacity(innerRippleOpacity), lineWidth: 1.6)
+                                    .stroke(palette.activeTabRipple.opacity(innerRippleOpacity), lineWidth: 1.6)
                                     .scaleEffect(innerRippleScale)
 
                                 Capsule()
-                                    .stroke(Color.white.opacity(outerRippleOpacity), lineWidth: 1.2)
+                                    .stroke(palette.activeTabRipple.opacity(outerRippleOpacity), lineWidth: 1.2)
                                     .scaleEffect(outerRippleScale)
                             }
                             .clipShape(RoundedRectangle(cornerRadius: DURadius.card, style: .continuous))
@@ -1637,7 +1645,7 @@ private struct HomePrimaryPillButtonStyle: ButtonStyle {
 
         configuration.label
             .font(.du(.labelStrong))
-            .foregroundColor(.white)
+            .foregroundColor(palette.pillForeground)
             .padding(.horizontal, DUSpacing.section)
             .frame(height: 40)
             .background(
@@ -1845,12 +1853,16 @@ private struct HomeBottomTabBarOutline {
 }
 
 private struct HomeOrbitingBorderEffect: View {
+    @Environment(\.duTheme) private var theme
+
     let sideRadius: CGFloat
     let bumpRadius: CGFloat
     let bumpProtrusionHeight: CGFloat
     let baseHeight: CGFloat
 
     var body: some View {
+        let palette = HomePalette(theme: theme)
+
         GeometryReader { proxy in
             TimelineView(.animation(minimumInterval: 1.0 / 30.0)) { context in
                 let time = context.date.timeIntervalSinceReferenceDate
@@ -1880,7 +1892,7 @@ private struct HomeOrbitingBorderEffect: View {
 
                         graphicsContext.stroke(
                             segment,
-                            with: .color(DUColorPrimitives.Neutral.white.opacity(opacity)),
+                            with: .color(palette.orbitingTrail.opacity(opacity)),
                             style: StrokeStyle(lineWidth: lineWidth, lineCap: .round)
                         )
                     }
@@ -1891,11 +1903,11 @@ private struct HomeOrbitingBorderEffect: View {
 
                     graphicsContext.fill(
                         Path(ellipseIn: glowRect),
-                        with: .color(DUColorPrimitives.Neutral.white.opacity(0.26))
+                        with: .color(palette.orbitingGlow)
                     )
                     graphicsContext.fill(
                         Path(ellipseIn: dotRect),
-                        with: .color(DUColorPrimitives.Neutral.white)
+                        with: .color(palette.orbitingHead)
                     )
                 }
             }
@@ -1909,7 +1921,7 @@ private struct HomeUsageMetricDesign {
     let tintColor: Color
 }
 
-private struct HomePalette {
+struct HomePalette {
     let theme: DUTheme
 
     private var isDark: Bool {
@@ -1950,6 +1962,14 @@ private struct HomePalette {
 
     var pageFadeEnd: Color {
         pageBase
+    }
+
+    var pageSheenHighlightPrimary: Color {
+        DUColorPrimitives.Neutral.white.opacity(isDark ? 0.12 : 0.16)
+    }
+
+    var pageSheenHighlightSecondary: Color {
+        DUColorPrimitives.Neutral.white.opacity(isDark ? 0.06 : 0.08)
     }
 
     var errorAccent: Color {
@@ -2076,6 +2096,10 @@ private struct HomePalette {
         DUColorPrimitives.Neutral.white
     }
 
+    var activeTabRipple: Color {
+        DUColorPrimitives.Neutral.white
+    }
+
     var activeTabStart: Color {
         theme.colors.brand.primary
     }
@@ -2112,6 +2136,10 @@ private struct HomePalette {
         theme.colors.brand.secondary
     }
 
+    var pillForeground: Color {
+        theme.colors.text.inverse
+    }
+
     var heroChromeFill: Color {
         DUColorPrimitives.Neutral.white.opacity(isDark ? 0.16 : 0.18)
     }
@@ -2124,12 +2152,82 @@ private struct HomePalette {
         DUColorPrimitives.Neutral.white.opacity(0.92)
     }
 
+    var heroPrimaryText: Color {
+        theme.colors.text.inverse
+    }
+
+    var heroSecondaryText: Color {
+        theme.colors.text.inverse.opacity(0.84)
+    }
+
+    var heroTertiaryText: Color {
+        theme.colors.text.inverse.opacity(0.72)
+    }
+
+    var heroCapsuleFill: Color {
+        DUColorPrimitives.Neutral.white.opacity(isDark ? 0.12 : 0.14)
+    }
+
+    var heroBadgeFill: Color {
+        DUColorPrimitives.Neutral.white.opacity(isDark ? 0.10 : 0.12)
+    }
+
+    var headerActionFill: Color {
+        DUColorPrimitives.Neutral.white.opacity(isDark ? 0.14 : 0.18)
+    }
+
+    var headerActionBorder: Color {
+        DUColorPrimitives.Neutral.white.opacity(isDark ? 0.22 : 0.28)
+    }
+
     var heroSunAccent: Color {
         theme.colors.status.warning
     }
 
     var heroSunShadow: Color {
         heroSunAccent.opacity(isDark ? 0.26 : 0.34)
+    }
+
+    var orbitingTrail: Color {
+        theme.colors.text.inverse
+    }
+
+    var orbitingGlow: Color {
+        theme.colors.text.inverse.opacity(0.26)
+    }
+
+    var orbitingHead: Color {
+        theme.colors.text.inverse
+    }
+
+    var featureCarouselBorder: Color {
+        isDark
+            ? theme.colors.border.default.opacity(0.88)
+            : DUColorPrimitives.Neutral.white.opacity(0.72)
+    }
+
+    var featureCarouselShadow: Color {
+        DUElevation.spotlight.color
+    }
+
+    var parallaxCardBaseFill: Color {
+        isDark
+            ? theme.colors.surface.raised.opacity(0.66)
+            : theme.colors.background.tertiary.opacity(0.72)
+    }
+
+    var parallaxCardBorder: Color {
+        isDark
+            ? theme.colors.border.default.opacity(0.86)
+            : DUColorPrimitives.Neutral.white.opacity(0.68)
+    }
+
+    var parallaxCardOverlayHighlight: Color {
+        DUColorPrimitives.Neutral.white.opacity(isDark ? 0.06 : 0.08)
+    }
+
+    var parallaxCardOverlayShade: Color {
+        DUColorPrimitives.Neutral.black.opacity(isDark ? 0.26 : 0.22)
     }
 }
 

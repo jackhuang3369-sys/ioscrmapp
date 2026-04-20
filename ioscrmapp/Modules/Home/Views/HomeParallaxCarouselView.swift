@@ -5,6 +5,7 @@ import UIKit
 
 struct HomeParallaxCarouselView: View {
     @EnvironmentObject private var languageStore: AppLanguageStore
+    @Environment(\.duTheme) private var theme
     @Environment(\.layoutDirection) private var layoutDirection
     @Environment(\.accessibilityReduceMotion) private var accessibilityReduceMotion
 
@@ -496,16 +497,11 @@ private struct HomeParallaxCarouselCardView: View {
     let effect: HomeParallaxCarouselCardEffect
 
     var body: some View {
-        let baseFill = theme.resolvedColorScheme == .dark
-            ? theme.colors.surface.raised.opacity(0.66)
-            : theme.colors.background.tertiary.opacity(0.72)
-        let borderColor = theme.resolvedColorScheme == .dark
-            ? theme.colors.border.default.opacity(0.86)
-            : DUColorPrimitives.Neutral.white.opacity(0.68)
+        let palette = HomePalette(theme: theme)
 
         ZStack {
             RoundedRectangle(cornerRadius: effect.cornerRadius, style: .continuous)
-                .fill(baseFill)
+                .fill(palette.parallaxCardBaseFill)
 
             // Card and image move in the same screen-space direction. The local counter-shift
             // inside the viewport makes the background feel slower than the foreground card.
@@ -523,9 +519,9 @@ private struct HomeParallaxCarouselCardView: View {
                 .overlay(
                     LinearGradient(
                         colors: [
-                            DUColorPrimitives.Neutral.white.opacity(0.08),
+                            palette.parallaxCardOverlayHighlight,
                             DUColorPrimitives.Chrome.transparent,
-                            DUColorPrimitives.Neutral.black.opacity(0.22)
+                            palette.parallaxCardOverlayShade
                         ],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
@@ -537,7 +533,7 @@ private struct HomeParallaxCarouselCardView: View {
         .clipShape(RoundedRectangle(cornerRadius: effect.cornerRadius, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: effect.cornerRadius, style: .continuous)
-                .stroke(borderColor, lineWidth: 1)
+                .stroke(palette.parallaxCardBorder, lineWidth: 1)
         )
         .shadow(
             color: theme.components.card.elevation.color.opacity(Double(effect.shadowOpacity)),

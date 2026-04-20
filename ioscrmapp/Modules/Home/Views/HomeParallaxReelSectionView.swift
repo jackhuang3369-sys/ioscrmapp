@@ -211,9 +211,7 @@ private struct HomeParallaxReelCardUnitView: View {
     let shadowRadius: CGFloat
 
     var body: some View {
-        let borderColor = theme.resolvedColorScheme == .dark
-            ? theme.colors.border.default.opacity(0.72)
-            : DUColorPrimitives.Neutral.white.opacity(0.28)
+        let palette = HomePalette(theme: theme)
 
         VStack(spacing: titleSpacing) {
             HomeParallaxReelCardContentView(
@@ -227,7 +225,7 @@ private struct HomeParallaxReelCardUnitView: View {
             .overlay {
                 if showsBorder {
                     RoundedRectangle(cornerRadius: DURadius.sheetLarge, style: .continuous)
-                        .stroke(borderColor, lineWidth: 1)
+                        .stroke(palette.parallaxCardBorder.opacity(0.52), lineWidth: 1)
                 }
             }
             .shadow(
@@ -264,12 +262,16 @@ private struct HomeParallaxReelCaptionView: View {
 }
 
 private struct HomeParallaxReelCardContentView: View {
+    @Environment(\.duTheme) private var theme
+
     let item: HomeFeatureCarouselItem
     let imageWidth: CGFloat
     let imageOffsetX: CGFloat
     let cardHeight: CGFloat
 
     var body: some View {
+        let palette = HomePalette(theme: theme)
+
         ZStack {
             Image(item.assetName)
                 .renderingMode(.original)
@@ -283,8 +285,8 @@ private struct HomeParallaxReelCardContentView: View {
             LinearGradient(
                 colors: [
                     DUColorPrimitives.Chrome.transparent,
-                    DUColorPrimitives.Neutral.black.opacity(0.14),
-                    DUColorPrimitives.Neutral.black.opacity(0.64)
+                    palette.parallaxCardOverlayShade.opacity(0.64),
+                    palette.parallaxCardOverlayShade.opacity(1)
                 ],
                 startPoint: .top,
                 endPoint: .bottom
