@@ -10,9 +10,6 @@ enum WeatherSpinSettleMode: Equatable {
 
 struct WeatherSpinTuning {
     let fullScreenTurnDegrees: CGFloat
-    /// 第二屏（Sun Detail）专用：滑动屏幕高度对应的旋转角度
-    /// 设为 180 度表示滑到屏幕底部时旋转半圈，比第一屏更慢、更可控
-    let sunDetailFullScreenTurnDegrees: CGFloat
     let slowSwipeMaxDuration: TimeInterval
     let fastSwipeMinVelocity: CGFloat
     let fastSwipeMinDistanceRatio: CGFloat
@@ -34,7 +31,6 @@ struct WeatherSpinTuning {
 
     static let `default` = WeatherSpinTuning(
         fullScreenTurnDegrees: 360,
-        sunDetailFullScreenTurnDegrees: 180,  // 第二屏灵敏度减半，滑动更慢、更可控
         slowSwipeMaxDuration: 0.48,
         fastSwipeMinVelocity: 900,
         fastSwipeMinDistanceRatio: 0.04,
@@ -140,12 +136,6 @@ struct WeatherSpinController {
 
     func liveYawDegrees(for translationRatio: CGFloat) -> CGFloat {
         translationRatio * tuning.fullScreenTurnDegrees
-    }
-
-    /// 第二屏专用：使用更低的灵敏度（sunDetailFullScreenTurnDegrees）
-    /// 滑动屏幕高度 = 180 度（半圈），比第一屏更慢、更可控
-    func sunDetailLiveYawDegrees(for translationRatio: CGFloat) -> CGFloat {
-        translationRatio * tuning.sunDetailFullScreenTurnDegrees
     }
 
     func settleDecision(currentYawDegrees: CGFloat, sample: WeatherSpinGestureSample) -> WeatherSpinSettleDecision {

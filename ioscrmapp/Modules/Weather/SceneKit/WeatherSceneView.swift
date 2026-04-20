@@ -13,9 +13,6 @@ enum WeatherSpinSettleMode: Equatable {
 
 struct WeatherSpinTuning {
     let fullScreenTurnDegrees: CGFloat
-    /// 第二屏（Sun Detail）专用：滑动屏幕高度对应的旋转角度
-    /// 设为 180 度表示滑到屏幕底部时旋转半圈，比第一屏更慢、更可控
-    let sunDetailFullScreenTurnDegrees: CGFloat
     let slowSwipeMaxDuration: TimeInterval
     let fastSwipeMinVelocity: CGFloat
     let fastSwipeMinDistanceRatio: CGFloat
@@ -32,7 +29,6 @@ struct WeatherSpinTuning {
 
     static let `default` = WeatherSpinTuning(
         fullScreenTurnDegrees: 360,
-        sunDetailFullScreenTurnDegrees: 180,  // 第二屏灵敏度减半，滑动更慢、更可控
         slowSwipeMaxDuration: 0.48,
         fastSwipeMinVelocity: 900,
         fastSwipeMinDistanceRatio: 0.04,
@@ -132,12 +128,6 @@ struct WeatherSpinController {
 
     func liveYawDegrees(for translationRatio: CGFloat) -> CGFloat {
         translationRatio * tuning.fullScreenTurnDegrees
-    }
-
-    /// 第二屏专用：使用更低的灵敏度（sunDetailFullScreenTurnDegrees）
-    /// 滑动屏幕高度 = 180 度（半圈），比第一屏更慢、更可控
-    func sunDetailLiveYawDegrees(for translationRatio: CGFloat) -> CGFloat {
-        translationRatio * tuning.sunDetailFullScreenTurnDegrees
     }
 
     func settleDecision(currentYawDegrees: CGFloat, sample: WeatherSpinGestureSample) -> WeatherSpinSettleDecision {
@@ -373,10 +363,7 @@ struct WeatherSceneView: UIViewRepresentable {
 
         // Tuning constants
         private let minimumPanReferenceWidth: Float = 280
-        // Pitch 灵敏度：滑动屏幕高度对应 180 度（π radians）pitch 倾斜
-        // 计算公式：pitchSensitivity = π / 屏幕高度 ≈ 3.14 / 800 ≈ 0.0039
-        // 原值 0.0125 导致滑动屏幕高度 ≈ 573 度，太快
-        private let pitchSensitivity: Float = 0.0039
+        private let pitchSensitivity: Float = 0.0125
         private let rollSensitivity:  Float = 0.0038
         private let horizontalPanActivationDistance: CGFloat = 10
         private let horizontalPanLockAngle: CGFloat = .pi / 10
@@ -778,31 +765,19 @@ struct WeatherSceneView: UIViewRepresentable {
                 let referenceWidth = max(Float(gesture.view?.bounds.width ?? 0), minimumPanReferenceWidth)
                 panReferenceWidth = referenceWidth
                 let translationRatio = CGFloat(liveTranslationX) / CGFloat(referenceWidth)
-                // 第二屏使用更低的灵敏度（滑动屏幕宽度 = 180 度），第一屏保持原灵敏度（360 度）
-                let liveYawDegrees: CGFloat
-                if manager?.isSunDetailMode == true {
-                    liveYawDegrees = spinController.sunDetailLiveYawDegrees(for: translationRatio)
-                } else {
-                    liveYawDegrees = spinController.liveYawDegrees(for: translationRatio)
-                }
+                let liveYawDegrees = spinController.liveYawDegrees(for: translationRatio)
                 let liveYawRadians = Float(liveYawDegrees) * .pi / 180
                 let yawTarget = (panSession?.startYaw ?? currentYaw) + liveYawRadians
                 let interactionMode = panInteractionMode(for: gesture)
-
-                // Yaw 只在水平拖动模式下生效，斜向拖动时不应该有 yaw 变化
-                // 这样斜向拖动只产生 pitch + roll 组合，实现"向左下/右下低头"效果
-                if interactionMode == .horizontalYawOnly {
-                    targetYaw = yawTarget
-                    currentYaw = yawTarget
-                }
-
                 let pitchDelta = interactionMode == .horizontalYawOnly ? 0 : Float(deltaY) * pitchSensitivity
                 let rollDelta = interactionMode == .horizontalYawOnly ? 0 : Float(deltaX) * -rollSensitivity
 
+                targetYaw = yawTarget
                 targetPitch += pitchDelta
                 targetRoll += rollDelta
 
-                // Direct tracking: finger ↔ model 1:1, zero perceptible lag
+                // Direct yaw tracking: finger ↔ model 1:1, zero perceptible lag
+                currentYaw = yawTarget
                 if interactionMode == .horizontalYawOnly {
                     settleHorizontalTilt(restPitch: restPitch)
                 } else {
