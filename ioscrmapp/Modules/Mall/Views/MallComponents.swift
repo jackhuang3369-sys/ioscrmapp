@@ -1,9 +1,5 @@
 import SwiftUI
 
-enum MallTheme {
-    static let headerGradient = DUTheme.brandGradient
-}
-
 struct MallPalette {
     let theme: DUTheme
 
@@ -29,6 +25,23 @@ struct MallPalette {
     var cardElevation: DUElevationStyle { theme.components.card.elevation }
     var liftedElevation: DUElevationStyle { DUElevation.lifted }
     var spotlightElevation: DUElevationStyle { DUElevation.spotlight }
+    var callToActionGradient: LinearGradient {
+        LinearGradient(
+            colors: [theme.colors.brand.magenta, theme.colors.status.error],
+            startPoint: .leading,
+            endPoint: .trailing
+        )
+    }
+    var heroMediaOverlay: LinearGradient {
+        LinearGradient(
+            colors: [
+                DUColorPrimitives.Neutral.black.opacity(0.03),
+                DUColorPrimitives.Neutral.black.opacity(0.14)
+            ],
+            startPoint: .top,
+            endPoint: .bottom
+        )
+    }
 
     func badgeGradient(for style: MallProductBadgeStyle) -> LinearGradient {
         switch style {
@@ -117,7 +130,7 @@ struct MallImageView: View {
                 .fill(Color(hex: backgroundHex))
                 .overlay(
                     Image(systemName: name)
-                        .font(.du(28, weight: .semibold))
+                        .font(.du(.titleStrong))
                         .foregroundColor(Color(hex: tintHex))
                 )
         case let .remote(url):

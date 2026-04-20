@@ -5,6 +5,7 @@ private let mallProductDetailScrollCoordinateSpaceName = "MallProductDetailScrol
 private let mallProductDetailBottomTabBarKey = "mall-product-detail"
 
 struct MallProductDetailView: View {
+    @Environment(\.duTheme) private var theme
     @EnvironmentObject private var languageStore: AppLanguageStore
     @EnvironmentObject private var homeChromeState: HomeChromeState
     @Environment(\.dismiss) private var dismiss
@@ -32,7 +33,7 @@ struct MallProductDetailView: View {
 
     var body: some View {
         ZStack {
-            Color(hex: 0xEFF7FF)
+            MallPalette(theme: theme).canvasBackground
                 .ignoresSafeArea()
 
             content
@@ -535,6 +536,8 @@ private struct MallProductDetailFloatingChrome: View {
 }
 
 private struct MallProductDetailCollapsedChrome: View {
+    @Environment(\.duTheme) private var theme
+
     let topInset: CGFloat
     let searchPlaceholder: String
     let cartBadgeCount: Int
@@ -546,6 +549,8 @@ private struct MallProductDetailCollapsedChrome: View {
     let onSelectSection: (MallProductDetailSection) -> Void
 
     var body: some View {
+        let palette = MallPalette(theme: theme)
+
         VStack(spacing: 0) {
             HStack(spacing: DUSpacing.md) {
                 MallProductDetailChromeIconButton(
@@ -556,24 +561,24 @@ private struct MallProductDetailCollapsedChrome: View {
                 Button(action: onSearch) {
                     HStack(spacing: DUSpacing.sm) {
                         Image(systemName: "magnifyingglass")
-                            .font(.du(13, weight: .semibold))
-                            .foregroundColor(Color.white.opacity(0.94))
+                            .font(.du(.labelStrong))
+                            .foregroundColor(palette.inverseText.opacity(0.94))
 
                         Text(searchPlaceholder)
-                            .font(.du(12, weight: .semibold))
-                            .foregroundColor(Color.white.opacity(0.84))
+                            .font(.du(.metaStrong))
+                            .foregroundColor(palette.inverseText.opacity(0.84))
                             .lineLimit(1)
 
                         Spacer(minLength: 0)
                     }
                     .padding(.horizontal, DUSpacing.md)
                     .frame(height: 36)
-                    .background(Color.black.opacity(0.16))
+                    .background(DUColorPrimitives.Neutral.black.opacity(0.16))
                     .overlay(
-                        RoundedRectangle(cornerRadius: 12, style: .continuous)
-                            .stroke(Color.white.opacity(0.18), lineWidth: 1)
+                        RoundedRectangle(cornerRadius: DURadius.sm + 2, style: .continuous)
+                            .stroke(palette.inverseText.opacity(0.18), lineWidth: 1)
                     )
-                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                    .clipShape(RoundedRectangle(cornerRadius: DURadius.sm + 2, style: .continuous))
                 }
                 .buttonStyle(.plain)
 
@@ -587,8 +592,8 @@ private struct MallProductDetailCollapsedChrome: View {
             .padding(.top, MallProductDetailLayout.chromeToolbarTopOffset(topInset: topInset))
             .padding(.bottom, MallProductDetailLayout.collapsedChromeBottomPadding)
             .background(
-                MallTheme.headerGradient
-                    .overlay(Color.black.opacity(0.04))
+                theme.colors.gradient.brand
+                    .overlay(DUColorPrimitives.Neutral.black.opacity(0.04))
                     .ignoresSafeArea(edges: .top)
             )
 
@@ -598,16 +603,20 @@ private struct MallProductDetailCollapsedChrome: View {
                 onSelectSection: onSelectSection
             )
         }
-        .shadow(color: Color.black.opacity(0.08), radius: 12, x: 0, y: 4)
+        .shadow(color: DUElevation.control.color, radius: DUElevation.control.radius, x: DUElevation.control.x, y: 4)
     }
 }
 
 private struct MallProductDetailChromeBadgeButton: View {
+    @Environment(\.duTheme) private var theme
+
     let systemName: String
     let badgeCount: Int
     let action: () -> Void
 
     var body: some View {
+        let palette = MallPalette(theme: theme)
+
         ZStack(alignment: .topTrailing) {
             MallProductDetailChromeIconButton(
                 systemName: systemName,
@@ -616,11 +625,11 @@ private struct MallProductDetailChromeBadgeButton: View {
 
             if badgeCount > 0 {
                 Text("\(badgeCount)")
-                    .font(.du(9, weight: .bold))
-                    .foregroundColor(.white)
-                    .padding(.horizontal, 4)
+                    .font(.du(.microStrong))
+                    .foregroundColor(palette.inverseText)
+                    .padding(.horizontal, DUSpacing.xs)
                     .frame(height: 16)
-                    .background(Color(hex: 0xFF385B))
+                    .background(palette.badgeGradient(for: .sale))
                     .clipShape(Capsule())
                     .offset(x: 4, y: -3)
             }
@@ -629,24 +638,28 @@ private struct MallProductDetailChromeBadgeButton: View {
 }
 
 private struct MallProductDetailChromeIconButton: View {
+    @Environment(\.duTheme) private var theme
+
     let systemName: String
     let action: () -> Void
 
     var body: some View {
+        let palette = MallPalette(theme: theme)
+
         Button(action: action) {
             Image(systemName: systemName)
-                .font(.du(MallProductDetailLayout.chromeButtonIconSize, weight: .bold))
-                .foregroundColor(.white)
+                .font(.du(.bodyEmphasized))
+                .foregroundColor(palette.inverseText)
                 .frame(
                     width: MallProductDetailLayout.chromeButtonSize,
                     height: MallProductDetailLayout.chromeButtonSize
                 )
                 .background(
-                    RoundedRectangle(cornerRadius: 12, style: .continuous)
-                        .fill(Color.black.opacity(0.16))
+                    RoundedRectangle(cornerRadius: DURadius.sm + 2, style: .continuous)
+                        .fill(DUColorPrimitives.Neutral.black.opacity(0.16))
                         .overlay(
-                            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                .stroke(Color.white.opacity(0.18), lineWidth: 1)
+                            RoundedRectangle(cornerRadius: DURadius.sm + 2, style: .continuous)
+                                .stroke(palette.inverseText.opacity(0.18), lineWidth: 1)
                         )
                 )
         }
@@ -655,21 +668,25 @@ private struct MallProductDetailChromeIconButton: View {
 }
 
 private struct MallProductDetailStickyTabs: View {
+    @Environment(\.duTheme) private var theme
+
     let activeSection: MallProductDetailSection
     let language: AppLanguage
     let onSelectSection: (MallProductDetailSection) -> Void
 
     var body: some View {
+        let palette = MallPalette(theme: theme)
+
         HStack(spacing: 0) {
             tabButton(for: .product)
             tabButton(for: .details)
         }
         .frame(maxWidth: .infinity)
         .padding(.horizontal, DUSpacing.xxl)
-        .background(Color.white)
+        .background(palette.panelBackground)
         .overlay(alignment: .bottom) {
             Rectangle()
-                .fill(Color(hex: 0xE7EDF5))
+                .fill(palette.subtleBorder)
                 .frame(height: 1)
         }
     }
@@ -682,11 +699,11 @@ private struct MallProductDetailStickyTabs: View {
         } label: {
             VStack(spacing: 10) {
                 Text(title(for: section))
-                    .font(.du(16, weight: isActive ? .bold : .semibold))
-                    .foregroundColor(isActive ? DUTheme.ink : DUTheme.inkDisabled)
+                    .font(.du(isActive ? .bodyLargeStrong : .bodyLargeSemibold))
+                    .foregroundColor(isActive ? MallPalette(theme: theme).primaryText : MallPalette(theme: theme).disabledText)
 
                 Capsule()
-                    .fill(isActive ? Color(hex: 0x1F2D3D) : Color.clear)
+                    .fill(isActive ? MallPalette(theme: theme).primaryText : Color.clear)
                     .frame(width: 34, height: 3)
             }
             .frame(maxWidth: .infinity)
@@ -714,6 +731,8 @@ private struct MallProductDetailStickyTabs: View {
 }
 
 private struct MallProductHeroStage: View {
+    @Environment(\.duTheme) private var theme
+
     let snapshot: MallProductDetailSnapshot
     let currentSKU: MallProductDetailSKU
     @Binding var selectedHeroIndex: Int
@@ -736,7 +755,7 @@ private struct MallProductHeroStage: View {
             }
             .frame(height: Self.heroHeight(topInset: topInset))
             .tabViewStyle(.page(indexDisplayMode: .never))
-            .background(Color.white)
+            .background(MallPalette(theme: theme).panelBackground)
             .contentShape(Rectangle())
             .onTapGesture(perform: onPreviewImage)
 
@@ -752,7 +771,7 @@ private struct MallProductHeroStage: View {
                 )
                 .padding(.horizontal, DUSpacing.sm)
                 .padding(.vertical, DUSpacing.sm)
-                .background(Color.white)
+                .background(MallPalette(theme: theme).panelBackground)
             }
         }
     }
@@ -788,6 +807,8 @@ private struct MallProductHeroStage: View {
 }
 
 private struct MallProductHeroPage: View {
+    @Environment(\.duTheme) private var theme
+
     let media: MallProductDetailHeroMedia
     let displayImage: MallImageSource
 
@@ -801,29 +822,27 @@ private struct MallProductHeroPage: View {
             )
             .frame(maxWidth: .infinity, maxHeight: .infinity)
 
-            LinearGradient(
-                colors: [Color.black.opacity(0.03), Color.black.opacity(0.14)],
-                startPoint: .top,
-                endPoint: .bottom
-            )
+            MallPalette(theme: theme).heroMediaOverlay
 
             if media.type == .video {
                 Circle()
-                    .fill(Color.black.opacity(0.28))
+                    .fill(DUColorPrimitives.Neutral.black.opacity(0.28))
                     .frame(width: 64, height: 64)
                     .overlay(
                         Image(systemName: "play.fill")
-                            .font(.du(22, weight: .bold))
-                            .foregroundColor(.white)
+                            .font(.du(.titleStrong))
+                            .foregroundColor(MallPalette(theme: theme).inverseText)
                             .offset(x: 2)
                     )
             }
         }
-        .background(Color.white)
+        .background(MallPalette(theme: theme).panelBackground)
     }
 }
 
 private struct MallProductPrimaryThumbnailStrip: View {
+    @Environment(\.duTheme) private var theme
+
     let group: MallProductDetailSpecificationGroup
     let selectedValueID: String?
     let availableValueIDs: Set<String>
@@ -848,8 +867,8 @@ private struct MallProductPrimaryThumbnailStrip: View {
             }
 
             Text(typesSummary)
-                .font(.du(12, weight: .semibold))
-                .foregroundColor(Color(hex: 0x8B95A9))
+                .font(.du(.metaStrong))
+                .foregroundColor(MallPalette(theme: theme).tertiaryText)
                 .fixedSize(horizontal: true, vertical: false)
         }
     }
@@ -860,6 +879,8 @@ private struct MallProductPrimaryThumbnailStrip: View {
 }
 
 private struct MallProductPrimaryThumbnailButton: View {
+    @Environment(\.duTheme) private var theme
+
     let image: MallImageSource?
     let isSelected: Bool
     let isEnabled: Bool
@@ -867,13 +888,13 @@ private struct MallProductPrimaryThumbnailButton: View {
 
     var body: some View {
         Button(action: action) {
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .fill(Color.white)
+            RoundedRectangle(cornerRadius: DURadius.md, style: .continuous)
+                .fill(MallPalette(theme: theme).panelBackground)
                 .frame(width: 40, height: 40)
                 .overlay(
-                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    RoundedRectangle(cornerRadius: DURadius.md, style: .continuous)
                         .stroke(
-                            isSelected ? Color(hex: 0x7161FF) : Color(hex: 0xE0E6EE),
+                            isSelected ? MallPalette(theme: theme).accent : MallPalette(theme: theme).defaultBorder,
                             lineWidth: isSelected ? 2 : 1
                         )
                 )
@@ -896,6 +917,8 @@ private struct MallProductPrimaryThumbnailButton: View {
 }
 
 private struct MallProductSummaryCard: View {
+    @Environment(\.duTheme) private var theme
+
     let saleLabel: String
     let priceText: String
     let countdownLabel: String
@@ -904,20 +927,22 @@ private struct MallProductSummaryCard: View {
     let subtitle: String
 
     var body: some View {
+        let palette = MallPalette(theme: theme)
+
         VStack(alignment: .leading, spacing: 0) {
             HStack(spacing: DUSpacing.md) {
                 HStack(alignment: .firstTextBaseline, spacing: 6) {
                     Text(saleLabel)
-                        .font(.du(13, weight: .bold))
-                        .foregroundColor(.white.opacity(0.92))
+                        .font(.du(.labelEmphasized))
+                        .foregroundColor(palette.inverseText.opacity(0.92))
 
                     Text(priceText)
-                        .font(.du(30, weight: .bold))
-                        .foregroundColor(.white)
+                        .font(.du(.heroStrong))
+                        .foregroundColor(palette.inverseText)
 
                     Text("AED")
-                        .font(.du(11, weight: .bold))
-                        .foregroundColor(.white.opacity(0.92))
+                        .font(.du(.captionEmphasized))
+                        .foregroundColor(palette.inverseText.opacity(0.92))
                 }
                 .environment(\.layoutDirection, .leftToRight)
 
@@ -925,54 +950,50 @@ private struct MallProductSummaryCard: View {
 
                 VStack(alignment: .trailing, spacing: 4) {
                     Text(countdownLabel)
-                        .font(.du(10, weight: .medium))
-                        .foregroundColor(.white.opacity(0.82))
+                        .font(.du(.tiny))
+                        .foregroundColor(palette.inverseText.opacity(0.82))
 
                     Text(saleEndsText)
-                        .font(.du(12, weight: .bold))
-                        .foregroundColor(.white)
+                        .font(.du(.metaEmphasized))
+                        .foregroundColor(palette.inverseText)
                         .multilineTextAlignment(.trailing)
                 }
             }
             .padding(.horizontal, DUSpacing.lg)
             .padding(.vertical, DUSpacing.md)
-            .background(
-                LinearGradient(
-                    colors: [Color(hex: 0xFF546F), Color(hex: 0xFF285B)],
-                    startPoint: .leading,
-                    endPoint: .trailing
-                )
-            )
-            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+            .background(palette.badgeGradient(for: .sale))
+            .clipShape(RoundedRectangle(cornerRadius: DURadius.control, style: .continuous))
             .padding(.horizontal, DUSpacing.md)
             .padding(.top, DUSpacing.md)
 
             VStack(alignment: .leading, spacing: 8) {
                 Text(title)
-                    .font(.du(22, weight: .bold))
-                    .foregroundColor(Color(hex: 0x242939))
+                    .font(.du(.titleStrong))
+                    .foregroundColor(palette.primaryText)
                     .fixedSize(horizontal: false, vertical: true)
 
                 Text(subtitle)
-                    .font(.du(15, weight: .medium))
-                    .foregroundColor(Color(hex: 0x536399))
+                    .font(.du(.body))
+                    .foregroundColor(palette.accent)
                     .fixedSize(horizontal: false, vertical: true)
             }
             .padding(.horizontal, DUSpacing.lg)
             .padding(.top, DUSpacing.lg)
             .padding(.bottom, DUSpacing.lg)
         }
-        .background(Color.white)
+        .background(palette.panelBackground)
         .overlay(alignment: .bottom) {
             // 价格卡只保留下边分隔线，顶部与缩略图条直接衔接。
             Rectangle()
-                .fill(Color(hex: 0xE8EDF4))
+                .fill(palette.subtleBorder)
                 .frame(height: 1)
         }
     }
 }
 
 private struct MallProductInfoPanel: View {
+    @Environment(\.duTheme) private var theme
+
     let selectedLabel: String
     let selectedValue: String
     let shipmentLabel: String
@@ -1003,15 +1024,17 @@ private struct MallProductInfoPanel: View {
                 action: onDeliveredTo
             )
         }
-        .background(Color.white)
+        .background(MallPalette(theme: theme).panelBackground)
         .overlay(
             Rectangle()
-                .stroke(Color(hex: 0xE6ECF4), lineWidth: 1)
+                .stroke(MallPalette(theme: theme).defaultBorder, lineWidth: 1)
         )
     }
 }
 
 private struct MallProductInfoRow: View {
+    @Environment(\.duTheme) private var theme
+
     let label: String
     let value: String
     let action: () -> Void
@@ -1021,23 +1044,23 @@ private struct MallProductInfoRow: View {
             HStack(alignment: .top, spacing: DUSpacing.md) {
                 VStack(alignment: .leading, spacing: 6) {
                     Text(label)
-                        .font(.du(12, weight: .semibold))
-                        .foregroundColor(Color(hex: 0x8A97AF))
+                        .font(.du(.metaStrong))
+                        .foregroundColor(MallPalette(theme: theme).tertiaryText)
 
                     Text(value)
-                        .font(.du(14, weight: .medium))
-                        .foregroundColor(Color(hex: 0x242939))
+                        .font(.du(.body))
+                        .foregroundColor(MallPalette(theme: theme).primaryText)
                         .fixedSize(horizontal: false, vertical: true)
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
 
                 Image(systemName: "chevron.right")
-                    .font(.du(13, weight: .bold))
-                    .foregroundColor(Color(hex: 0xC0CAD8))
-                    .padding(.top, 8)
+                    .font(.du(.labelEmphasized))
+                    .foregroundColor(MallPalette(theme: theme).disabledText)
+                    .padding(.top, DUSpacing.sm)
             }
             .padding(.horizontal, DUSpacing.lg)
-            .padding(.vertical, 14)
+            .padding(.vertical, DUSpacing.compact)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
@@ -1045,6 +1068,8 @@ private struct MallProductInfoRow: View {
 }
 
 private struct MallProductBottomActionBar: View {
+    @Environment(\.duTheme) private var theme
+
     let cartBadgeCount: Int
     let homeTitle: String
     let cartTitle: String
@@ -1058,6 +1083,7 @@ private struct MallProductBottomActionBar: View {
     let onBuyNow: () -> Void
 
     var body: some View {
+        let palette = MallPalette(theme: theme)
         let bottomActionBarMetrics = MallBottomActionBarLayout.metrics(
             buttonHeight: MallProductDetailLayout.bottomActionBarButtonHeight,
             bottomSafeInset: bottomSafeInset
@@ -1083,11 +1109,11 @@ private struct MallProductBottomActionBar: View {
             HStack(spacing: 8) {
                 Button(action: onAddToCart) {
                     Text(addToCartTitle)
-                        .font(.du(13, weight: .bold))
-                        .foregroundColor(.white)
+                        .font(.du(.labelEmphasized))
+                        .foregroundColor(palette.inverseText)
                         .frame(maxWidth: .infinity)
                         .frame(height: 38)
-                        .background(Color(hex: 0xFF6A72))
+                        .background(palette.badgeGradient(for: .sale))
                         .clipShape(Capsule())
                 }
                 .buttonStyle(.plain)
@@ -1095,22 +1121,16 @@ private struct MallProductBottomActionBar: View {
                 Button(action: onBuyNow) {
                     VStack(spacing: 1) {
                         Text(buyNowTitle)
-                            .font(.du(8, weight: .semibold))
-                            .foregroundColor(.white.opacity(0.94))
+                            .font(.du(.microStrong))
+                            .foregroundColor(palette.inverseText.opacity(0.94))
 
                         Text("\(buyNowPriceText) AED")
-                            .font(.du(10, weight: .bold))
-                            .foregroundColor(.white)
+                            .font(.du(.tinyEmphasized))
+                            .foregroundColor(palette.inverseText)
                     }
                     .frame(maxWidth: .infinity)
                     .frame(height: 38)
-                    .background(
-                        LinearGradient(
-                            colors: [Color(hex: 0xFF374F), Color(hex: 0xFF1A64)],
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        )
-                    )
+                    .background(palette.badgeGradient(for: .brand))
                     .clipShape(Capsule())
                 }
                 .buttonStyle(.plain)
@@ -1119,12 +1139,14 @@ private struct MallProductBottomActionBar: View {
         .padding(.horizontal, DUSpacing.md)
         .padding(.top, bottomActionBarMetrics.topPadding)
         .padding(.bottom, bottomActionBarMetrics.bottomPadding)
-        .background(Color.white)
+        .background(palette.panelBackground)
         .offset(y: bottomActionBarMetrics.verticalOffset)
     }
 }
 
 private struct MallProductBottomIconAction: View {
+    @Environment(\.duTheme) private var theme
+
     let systemName: String
     let title: String
     let badgeCount: Int?
@@ -1135,24 +1157,24 @@ private struct MallProductBottomIconAction: View {
             VStack(spacing: 4) {
                 ZStack(alignment: .topTrailing) {
                     Image(systemName: systemName)
-                        .font(.du(15, weight: .semibold))
-                        .foregroundColor(Color(hex: 0x223043))
+                        .font(.du(.bodyLargeSemibold))
+                        .foregroundColor(MallPalette(theme: theme).primaryText)
 
                     if let badgeCount, badgeCount > 0 {
                         Text("\(badgeCount)")
-                            .font(.du(9, weight: .bold))
-                            .foregroundColor(.white)
-                            .padding(.horizontal, 4)
+                            .font(.du(.microStrong))
+                            .foregroundColor(MallPalette(theme: theme).inverseText)
+                            .padding(.horizontal, DUSpacing.xs)
                             .frame(height: 16)
-                            .background(Color(hex: 0xFF395D))
+                            .background(MallPalette(theme: theme).badgeGradient(for: .sale))
                             .clipShape(Capsule())
                             .offset(x: 10, y: -6)
                     }
                 }
 
                 Text(title)
-                    .font(.du(8, weight: .medium))
-                    .foregroundColor(Color(hex: 0x536399))
+                    .font(.du(.micro))
+                    .foregroundColor(MallPalette(theme: theme).accent)
                     .lineLimit(1)
             }
             .frame(width: 50, height: 34)
@@ -1162,6 +1184,7 @@ private struct MallProductBottomIconAction: View {
 }
 
 private struct MallProductHTMLSection: View {
+    @Environment(\.duTheme) private var theme
     @EnvironmentObject private var languageStore: AppLanguageStore
 
     let title: String
@@ -1174,10 +1197,12 @@ private struct MallProductHTMLSection: View {
     @State private var reloadToken = UUID()
 
     var body: some View {
+        let palette = MallPalette(theme: theme)
+
         VStack(alignment: .leading, spacing: DUSpacing.md) {
             Text(title)
-                .font(.du(20, weight: .bold))
-                .foregroundColor(DUTheme.ink)
+                .font(.du(.headline))
+                .foregroundColor(palette.primaryText)
                 .padding(.horizontal, DUSpacing.lg)
                 .padding(.top, DUSpacing.lg)
 
@@ -1198,8 +1223,8 @@ private struct MallProductHTMLSection: View {
                         ProgressView()
 
                         Text(languageStore.string("mall.detail.html.loading"))
-                            .font(.du(13, weight: .medium))
-                            .foregroundColor(DUTheme.inkSecondary)
+                            .font(.du(.label))
+                            .foregroundColor(palette.secondaryText)
                     }
                     .frame(maxWidth: .infinity)
                     .padding(.horizontal, DUSpacing.lg)
@@ -1207,12 +1232,12 @@ private struct MallProductHTMLSection: View {
                 } else if loadState == .failed {
                     VStack(spacing: DUSpacing.sm) {
                         Image(systemName: "exclamationmark.triangle")
-                            .font(.du(20, weight: .semibold))
-                            .foregroundColor(DUTheme.warning)
+                            .font(.du(.headline))
+                            .foregroundColor(theme.colors.status.warning)
 
                         Text(languageStore.string("mall.detail.html.error"))
-                            .font(.du(13, weight: .medium))
-                            .foregroundColor(DUTheme.inkSecondary)
+                            .font(.du(.label))
+                            .foregroundColor(palette.secondaryText)
                             .multilineTextAlignment(.center)
 
                         Button {
@@ -1220,11 +1245,11 @@ private struct MallProductHTMLSection: View {
                             reloadToken = UUID()
                         } label: {
                             Text(languageStore.string("common.retry"))
-                                .font(.du(13, weight: .bold))
-                                .foregroundColor(.white)
+                                .font(.du(.labelEmphasized))
+                                .foregroundColor(palette.inverseText)
                                 .padding(.horizontal, DUSpacing.lg)
                                 .frame(height: 36)
-                                .background(Color(hex: 0xF3204E))
+                                .background(palette.badgeGradient(for: .sale))
                                 .clipShape(Capsule())
                         }
                         .buttonStyle(.plain)
@@ -1235,9 +1260,9 @@ private struct MallProductHTMLSection: View {
                 }
             }
             .padding(.bottom, DUSpacing.lg)
-            .background(Color.white)
+            .background(palette.panelBackground)
         }
-        .background(Color.white)
+        .background(palette.panelBackground)
     }
 }
 
@@ -1469,6 +1494,7 @@ private struct MallProductHTMLWebView: UIViewRepresentable {
 }
 
 private struct MallProductDetailLoadingView: View {
+    @Environment(\.duTheme) private var theme
     @EnvironmentObject private var languageStore: AppLanguageStore
 
     var body: some View {
@@ -1476,14 +1502,15 @@ private struct MallProductDetailLoadingView: View {
             ProgressView()
 
             Text(languageStore.string("mall.detail.state.loading"))
-                .font(.du(15, weight: .semibold))
-                .foregroundColor(DUTheme.inkSecondary)
+                .font(.du(.bodyLargeSemibold))
+                .foregroundColor(MallPalette(theme: theme).secondaryText)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
 
 private struct MallProductDetailFailureView: View {
+    @Environment(\.duTheme) private var theme
     @EnvironmentObject private var languageStore: AppLanguageStore
 
     let onRetry: () -> Void
@@ -1491,7 +1518,7 @@ private struct MallProductDetailFailureView: View {
     var body: some View {
         DUStateView(
             systemImage: "exclamationmark.triangle",
-            iconColor: DUTheme.warning,
+            iconColor: theme.colors.status.warning,
             title: languageStore.string("mall.detail.state.error.title"),
             subtitle: languageStore.string("mall.detail.state.error.subtitle"),
             actionTitle: languageStore.string("common.retry")

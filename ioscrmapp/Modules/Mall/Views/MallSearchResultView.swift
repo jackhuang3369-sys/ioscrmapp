@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct MallSearchResultView: View {
+    @Environment(\.duTheme) private var theme
     @EnvironmentObject private var languageStore: AppLanguageStore
     @Environment(\.presentationMode) private var presentationMode
 
@@ -43,7 +44,7 @@ struct MallSearchResultView: View {
             sortBar
             resultContent
         }
-        .background(Color.white.ignoresSafeArea())
+        .background(MallPalette(theme: theme).panelBackground.ignoresSafeArea())
         .navigationBarHidden(true)
         .task {
             if resultSnapshot == nil {
@@ -54,7 +55,7 @@ struct MallSearchResultView: View {
     }
 
     private var header: some View {
-        VStack(spacing: DUSpacing.sm) {
+        return VStack(spacing: DUSpacing.sm) {
             Color.clear.frame(height: 4)
 
             MallSearchBarView(
@@ -73,18 +74,20 @@ struct MallSearchResultView: View {
 
             if let validationMessage {
                 Text(validationMessage)
-                    .font(.du(12, weight: .semibold))
-                    .foregroundColor(Color(hex: 0xFF4B5F))
+                    .font(.du(.metaStrong))
+                    .foregroundColor(theme.colors.status.error)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
         .padding(.horizontal, DUSpacing.md)
         .padding(.bottom, DUSpacing.md)
-        .background(MallTheme.headerGradient)
+        .background(theme.colors.gradient.brand)
     }
 
     private var sortBar: some View {
-        HStack(spacing: 0) {
+        let palette = MallPalette(theme: theme)
+
+        return HStack(spacing: 0) {
             ForEach(
                 [MallSearchSortMode.best, .sales, .price],
                 id: \.self
@@ -96,26 +99,27 @@ struct MallSearchResultView: View {
                     HStack(spacing: 4) {
                         Text(languageStore.string(sort.localizationKey))
                             .lineLimit(1)
-                            .font(.du(14, weight: activeSort == sort ? .bold : .medium))
+                            .font(.du(activeSort == sort ? .bodyEmphasized : .body))
 
                         if sort == .sales || sort == .price {
                             MallSearchSortIndicatorView(
                                 isActive: activeSort == sort,
                                 order: sort == .sales ? salesOrder : priceOrder
                             )
+                            .environment(\.duTheme, theme)
                         }
                     }
-                    .foregroundColor(activeSort == sort ? Color(hex: 0xFF445D) : DUTheme.inkSecondary)
+                    .foregroundColor(activeSort == sort ? palette.priceAccent : palette.secondaryText)
                     .frame(maxWidth: .infinity)
                     .frame(height: 48)
                 }
                 .buttonStyle(.plain)
             }
         }
-        .background(Color.white)
+        .background(palette.panelBackground)
         .overlay(alignment: .bottom) {
             Rectangle()
-                .fill(DUTheme.lineLight)
+                .fill(palette.subtleBorder)
                 .frame(height: 1)
         }
     }
@@ -127,14 +131,14 @@ struct MallSearchResultView: View {
             VStack(spacing: DUSpacing.lg) {
                 ProgressView()
                 Text(languageStore.string("mall.state.loading.title"))
-                    .font(.du(15, weight: .semibold))
-                    .foregroundColor(DUTheme.inkSecondary)
+                    .font(.du(.bodyLargeSemibold))
+                    .foregroundColor(MallPalette(theme: theme).secondaryText)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         case let .failed(message):
             DUStateView(
                 systemImage: "wifi.exclamationmark",
-                iconColor: DUTheme.magenta,
+                iconColor: theme.colors.brand.magenta,
                 title: languageStore.string("mall.search.error.title"),
                 subtitle: languageStore.string(message),
                 actionTitle: languageStore.string("common.retry")
@@ -192,7 +196,7 @@ struct MallSearchResultView: View {
             } else {
                 DUStateView(
                     systemImage: "shippingbox",
-                    iconColor: DUTheme.cyan,
+                    iconColor: theme.colors.brand.primary,
                     title: languageStore.string("mall.search.empty.title"),
                     subtitle: languageStore.string("mall.search.empty.subtitle"),
                     actionTitle: languageStore.string("common.retry")
@@ -360,7 +364,7 @@ struct MallSearchResultView: View {
         MallProductFeedLoadMoreFooter(
             isLoading: isLoadingMore,
             errorMessage: loadMoreErrorMessage,
-            retryTint: Color(hex: 0xFF445D)
+            retryTint: MallPalette(theme: theme).priceAccent
         ) {
             Task {
                 if let lastProduct = resultSnapshot?.products.last {
@@ -413,33 +417,37 @@ private extension MallSearchResultView {
 }
 
 private struct MallSearchSortIndicatorView: View {
+    @Environment(\.duTheme) private var theme
+
     let isActive: Bool
     let order: MallSortOrder
 
     var body: some View {
         VStack(spacing: 1) {
             Image(systemName: "arrowtriangle.up.fill")
-                .font(.system(size: 7, weight: .bold))
+                .font(.du(.microStrong))
                 .foregroundColor(upColor)
 
             Image(systemName: "arrowtriangle.down.fill")
-                .font(.system(size: 7, weight: .bold))
+                .font(.du(.microStrong))
                 .foregroundColor(downColor)
         }
         .offset(y: 1)
     }
 
     private var upColor: Color {
+        let palette = MallPalette(theme: theme)
         guard isActive else {
-            return DUTheme.inkDisabled.opacity(0.75)
+            return palette.disabledText.opacity(0.75)
         }
-        return order == .ascending ? Color(hex: 0xFF445D) : DUTheme.inkDisabled.opacity(0.75)
+        return order == .ascending ? palette.priceAccent : palette.disabledText.opacity(0.75)
     }
 
     private var downColor: Color {
+        let palette = MallPalette(theme: theme)
         guard isActive else {
-            return DUTheme.inkDisabled.opacity(0.75)
+            return palette.disabledText.opacity(0.75)
         }
-        return order == .descending ? Color(hex: 0xFF445D) : DUTheme.inkDisabled.opacity(0.75)
+        return order == .descending ? palette.priceAccent : palette.disabledText.opacity(0.75)
     }
 }

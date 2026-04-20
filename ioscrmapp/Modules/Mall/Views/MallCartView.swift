@@ -949,6 +949,8 @@ private struct MallCartEmptyView: View {
 }
 
 private struct MallCartErrorView: View {
+    @Environment(\.duTheme) private var theme
+
     let title: String
     let message: String
     let retryTitle: String
@@ -957,7 +959,7 @@ private struct MallCartErrorView: View {
     var body: some View {
         DUStateView(
             systemImage: "wifi.exclamationmark",
-            iconColor: DUTheme.magenta,
+            iconColor: theme.colors.brand.magenta,
             title: title,
             subtitle: message,
             actionTitle: retryTitle,

@@ -1,11 +1,7 @@
 import SwiftUI
 
-private enum MallProductSelectionSheetStyle {
-    // 禁用态需要保留“不可选”语义，但文字不能淡到难以识别。
-    static let disabledTextColor = Color(hex: 0xBEC7D5)
-}
-
 struct MallProductSelectionSheet: View {
+    @Environment(\.duTheme) private var theme
     @EnvironmentObject private var languageStore: AppLanguageStore
 
     let snapshot: MallProductDetailSnapshot
@@ -19,6 +15,8 @@ struct MallProductSelectionSheet: View {
     @State private var activeImagePreview: MallImagePreviewContext?
 
     var body: some View {
+        let palette = MallPalette(theme: theme)
+
         VStack(spacing: 0) {
             header
 
@@ -40,18 +38,18 @@ struct MallProductSelectionSheet: View {
 
             Button(action: onConfirm) {
                 Text(languageStore.string("mall.detail.confirm"))
-                    .font(.du(15, weight: .bold))
-                    .foregroundColor(.white)
+                    .font(.du(.bodyLargeStrong))
+                    .foregroundColor(palette.inverseText)
                     .frame(maxWidth: .infinity)
                     .frame(height: 48)
-                    .background(Color(hex: 0xF3204E))
+                    .background(palette.callToActionGradient)
                     .clipShape(Capsule())
             }
             .buttonStyle(.plain)
             .padding(.horizontal, DUSpacing.lg)
             .padding(.vertical, DUSpacing.md)
         }
-        .background(Color.white)
+        .background(palette.panelBackground)
         .fullScreenCover(item: $activeImagePreview) { preview in
             MallImagePreviewScreen(
                 images: preview.images,
@@ -62,6 +60,8 @@ struct MallProductSelectionSheet: View {
 
     @ViewBuilder
     private var header: some View {
+        let palette = MallPalette(theme: theme)
+
         VStack(spacing: DUSpacing.md) {
             HStack(alignment: .top, spacing: DUSpacing.md) {
                 if let currentSKU = snapshot.currentSKU(for: selectedValueIDs) {
@@ -79,30 +79,30 @@ struct MallProductSelectionSheet: View {
                     VStack(alignment: .leading, spacing: 6) {
                         HStack(alignment: .firstTextBaseline, spacing: 6) {
                             Text(snapshot.saleLabel.value(for: language))
-                                .font(.du(11, weight: .bold))
-                                .foregroundColor(.white)
+                                .font(.du(.captionEmphasized))
+                                .foregroundColor(palette.inverseText)
                                 .padding(.horizontal, 8)
                                 .frame(height: 24)
-                                .background(Color(hex: 0xFF3958))
+                                .background(palette.badgeGradient(for: .sale))
                                 .clipShape(Capsule())
 
                             Text(currentSKU.formattedPrice(for: locale))
-                                .font(.du(28, weight: .bold))
-                                .foregroundColor(Color(hex: 0xFF244E))
+                                .font(.du(.hero))
+                                .foregroundColor(palette.priceAccent)
 
                             Text("AED")
-                                .font(.du(11, weight: .bold))
-                                .foregroundColor(Color(hex: 0xFF244E))
+                                .font(.du(.captionEmphasized))
+                                .foregroundColor(palette.priceAccent)
                         }
                         .environment(\.layoutDirection, .leftToRight)
 
                         Text(currentSKU.saleEndsText.value(for: language))
-                            .font(.du(12, weight: .medium))
-                            .foregroundColor(Color(hex: 0x6E7B92))
+                            .font(.du(.meta))
+                            .foregroundColor(palette.tertiaryText)
 
                         Text(snapshot.selectedSummary(for: currentSKU, language: language))
-                            .font(.du(13, weight: .semibold))
-                            .foregroundColor(DUTheme.inkSecondary)
+                            .font(.du(.labelStrong))
+                            .foregroundColor(palette.secondaryText)
                             .fixedSize(horizontal: false, vertical: true)
                     }
                 }
@@ -111,8 +111,8 @@ struct MallProductSelectionSheet: View {
 
                 Button(action: onClose) {
                     Image(systemName: "xmark")
-                        .font(.du(15, weight: .bold))
-                        .foregroundColor(DUTheme.inkDisabled)
+                        .font(.du(.bodyEmphasized))
+                        .foregroundColor(palette.disabledText)
                         .frame(width: 28, height: 28)
                 }
                 .buttonStyle(.plain)
@@ -124,6 +124,8 @@ struct MallProductSelectionSheet: View {
 }
 
 private struct MallProductSelectionSection: View {
+    @Environment(\.duTheme) private var theme
+
     let snapshot: MallProductDetailSnapshot
     let group: MallProductDetailSpecificationGroup
     @Binding var selectedValueIDs: Set<String>
@@ -137,10 +139,12 @@ private struct MallProductSelectionSection: View {
     }
 
     var body: some View {
+        let palette = MallPalette(theme: theme)
+
         VStack(alignment: .leading, spacing: DUSpacing.md) {
             Text(group.title.value(for: language))
-                .font(.du(15, weight: .bold))
-                .foregroundColor(DUTheme.ink)
+                .font(.du(.bodyLargeStrong))
+                .foregroundColor(palette.primaryText)
 
             switch group.displayMode {
             case .chip:
@@ -190,24 +194,28 @@ private struct MallProductSelectionSection: View {
 }
 
 private struct MallProductSelectionChip: View {
+    @Environment(\.duTheme) private var theme
+
     let title: String
     let isSelected: Bool
     let isEnabled: Bool
     let action: () -> Void
 
     var body: some View {
+        let controlRadius = DURadius.sm
+
         Button(action: action) {
             Text(title)
-                .font(.du(14, weight: .semibold))
+                .font(.du(.bodyStrong))
                 .foregroundColor(foregroundColor)
                 .padding(.horizontal, DUSpacing.md)
                 .frame(height: 40)
                 .background(backgroundColor)
                 .overlay(
-                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    RoundedRectangle(cornerRadius: controlRadius, style: .continuous)
                         .stroke(borderColor, lineWidth: isSelected ? 1.5 : 1)
                 )
-                .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                .clipShape(RoundedRectangle(cornerRadius: controlRadius, style: .continuous))
         }
         .buttonStyle(.plain)
         .disabled(!isEnabled)
@@ -215,30 +223,32 @@ private struct MallProductSelectionChip: View {
 
     private var foregroundColor: Color {
         if isSelected {
-            return Color(hex: 0xF3204E)
+            return theme.colors.status.error
         }
 
-        return isEnabled ? DUTheme.inkSecondary : MallProductSelectionSheetStyle.disabledTextColor
+        return isEnabled ? MallPalette(theme: theme).secondaryText : MallPalette(theme: theme).disabledText
     }
 
     private var backgroundColor: Color {
         if isSelected {
-            return Color(hex: 0xFFF1F4)
+            return MallPalette(theme: theme).chipSelectedBackground
         }
 
-        return isEnabled ? Color.white : Color(hex: 0xFBFCFE)
+        return isEnabled ? MallPalette(theme: theme).panelBackground : MallPalette(theme: theme).canvasBackground
     }
 
     private var borderColor: Color {
         if isSelected {
-            return Color(hex: 0xFF6A82)
+            return theme.colors.status.error.opacity(0.45)
         }
 
-        return isEnabled ? Color(hex: 0xE0E6EE) : Color(hex: 0xEEF2F7)
+        return isEnabled ? MallPalette(theme: theme).defaultBorder : MallPalette(theme: theme).subtleBorder
     }
 }
 
 private struct MallProductSelectionImageTile: View {
+    @Environment(\.duTheme) private var theme
+
     let image: MallImageSource?
     let title: String
     let swatchHex: UInt32?
@@ -247,14 +257,16 @@ private struct MallProductSelectionImageTile: View {
     let action: () -> Void
 
     var body: some View {
+        let tileRadius = DURadius.md - 2
+
         Button(action: action) {
             VStack(alignment: .leading, spacing: DUSpacing.sm) {
                 ZStack {
-                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    RoundedRectangle(cornerRadius: tileRadius, style: .continuous)
                         .fill(imageBackgroundColor)
                         .frame(height: 88)
                         .overlay(
-                            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                            RoundedRectangle(cornerRadius: tileRadius, style: .continuous)
                                 .stroke(imageBorderColor, lineWidth: imageBorderWidth)
                         )
 
@@ -269,27 +281,27 @@ private struct MallProductSelectionImageTile: View {
                     }
 
                     if !isEnabled {
-                        RoundedRectangle(cornerRadius: 12, style: .continuous)
-                            .fill(Color.white.opacity(0.28))
+                        RoundedRectangle(cornerRadius: tileRadius, style: .continuous)
+                            .fill(MallPalette(theme: theme).inverseText.opacity(0.28))
                             .padding(1)
                     }
                 }
 
                 Text(title)
-                    .font(.du(13, weight: .semibold))
+                    .font(.du(.labelStrong))
                     .foregroundColor(titleColor)
                     .lineLimit(1)
             }
             .padding(8)
             .background(containerBackgroundColor)
             .overlay(
-                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                RoundedRectangle(cornerRadius: DURadius.md, style: .continuous)
                     .stroke(
                         containerBorderColor,
                         lineWidth: isSelected ? 1.5 : 1
                     )
             )
-            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+            .clipShape(RoundedRectangle(cornerRadius: DURadius.md, style: .continuous))
         }
         .buttonStyle(.plain)
         .disabled(!isEnabled)
@@ -297,22 +309,22 @@ private struct MallProductSelectionImageTile: View {
 
     private var titleColor: Color {
         if isSelected {
-            return Color(hex: 0x536399)
+            return MallPalette(theme: theme).accent
         }
 
-        return isEnabled ? DUTheme.inkSecondary : MallProductSelectionSheetStyle.disabledTextColor
+        return isEnabled ? MallPalette(theme: theme).secondaryText : MallPalette(theme: theme).disabledText
     }
 
     private var containerBackgroundColor: Color {
-        isEnabled ? Color.white : Color(hex: 0xFCFDFE)
+        isEnabled ? MallPalette(theme: theme).panelBackground : MallPalette(theme: theme).canvasBackground
     }
 
     private var containerBorderColor: Color {
         if isSelected {
-            return Color(hex: 0xFF6A82)
+            return theme.colors.status.error.opacity(0.45)
         }
 
-        return isEnabled ? Color(hex: 0xE0E6EE) : Color(hex: 0xEEF2F7)
+        return isEnabled ? MallPalette(theme: theme).defaultBorder : MallPalette(theme: theme).subtleBorder
     }
 
     private var imageBackgroundColor: Color {
@@ -325,10 +337,10 @@ private struct MallProductSelectionImageTile: View {
 
     private var imageBorderColor: Color {
         if isSelected {
-            return Color(hex: 0x5972C9)
+            return MallPalette(theme: theme).accent
         }
 
-        return isEnabled ? Color.clear : Color(hex: 0xEFF3F8)
+        return isEnabled ? Color.clear : MallPalette(theme: theme).chipBackground
     }
 
     private var imageBorderWidth: CGFloat {

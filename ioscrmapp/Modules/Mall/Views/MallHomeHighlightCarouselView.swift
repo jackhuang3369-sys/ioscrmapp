@@ -229,6 +229,7 @@ struct MallHomeHighlightCarouselView: View {
 }
 
 private struct MallHomeHighlightCardView: View {
+    @Environment(\.duTheme) private var theme
     @EnvironmentObject private var languageStore: AppLanguageStore
 
     let card: MallHomeHighlightCard
@@ -237,14 +238,17 @@ private struct MallHomeHighlightCardView: View {
     let cardHeight: CGFloat
     let action: () -> Void
 
-    private let cornerRadius: CGFloat = 28
+    private let cornerRadius: CGFloat = DURadius.hero
 
     var body: some View {
+        let palette = MallPalette(theme: theme)
         let absoluteProgress = abs(progress)
         let clampedProgress = max(-1.2, min(1.2, progress))
         let parallaxOffset = -clampedProgress * 40
         let imageScale = 1.14 - min(absoluteProgress * 0.08, 0.08)
-        let shadowOpacity = max(0.12, 0.24 - (Double(absoluteProgress) * 0.08))
+        let shadowStyle = palette.spotlightElevation.withColor(
+            palette.spotlightElevation.color.opacity(max(0.78, 1 - (Double(absoluteProgress) * 0.18)))
+        )
 
         ZStack(alignment: .bottomLeading) {
             RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
@@ -272,10 +276,10 @@ private struct MallHomeHighlightCardView: View {
 
                 LinearGradient(
                     colors: [
-                        Color.white.opacity(0.08),
+                        palette.inverseText.opacity(0.08),
                         Color.clear,
-                        Color.black.opacity(0.20),
-                        Color.black.opacity(0.66)
+                        DUColorPrimitives.Neutral.black.opacity(0.20),
+                        DUColorPrimitives.Neutral.black.opacity(0.66)
                     ],
                     startPoint: .top,
                     endPoint: .bottom
@@ -286,16 +290,16 @@ private struct MallHomeHighlightCardView: View {
             VStack(alignment: .leading, spacing: DUSpacing.xs) {
                 if !resolvedTitle.isEmpty {
                     Text(card.title.value(for: languageStore.currentLanguage))
-                        .font(.du(24, weight: .bold))
-                        .foregroundColor(.white)
+                        .font(.du(.headline))
+                        .foregroundColor(palette.inverseText)
                         .lineLimit(2)
-                        .shadow(color: Color.black.opacity(0.25), radius: 10, x: 0, y: 4)
+                        .shadow(color: DUColorPrimitives.Neutral.black.opacity(0.25), radius: 10, x: 0, y: 4)
                 }
 
                 if !resolvedSubtitle.isEmpty {
                     Text(card.subtitle.value(for: languageStore.currentLanguage))
-                        .font(.du(13, weight: .semibold))
-                        .foregroundColor(Color.white.opacity(0.84))
+                        .font(.du(.labelStrong))
+                        .foregroundColor(palette.inverseText.opacity(0.84))
                         .lineLimit(2)
                 }
             }
@@ -303,13 +307,13 @@ private struct MallHomeHighlightCardView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
 
             RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                .strokeBorder(Color.white.opacity(0.14), lineWidth: 1)
+                .strokeBorder(palette.inverseText.opacity(0.14), lineWidth: 1)
 
             RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
                 .fill(
                     LinearGradient(
                         colors: [
-                            Color.white.opacity(0.14),
+                            palette.inverseText.opacity(0.14),
                             Color.clear
                         ],
                         startPoint: .topLeading,
@@ -323,10 +327,10 @@ private struct MallHomeHighlightCardView: View {
         .frame(width: cardWidth, height: cardHeight)
         .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
         .shadow(
-            color: Color.black.opacity(shadowOpacity),
-            radius: 14,
-            x: 0,
-            y: 8
+            color: shadowStyle.color,
+            radius: shadowStyle.radius,
+            x: shadowStyle.x,
+            y: shadowStyle.y
         )
         .contentShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
         .onTapGesture {
@@ -344,9 +348,13 @@ private struct MallHomeHighlightCardView: View {
 }
 
 private struct MallHomeHighlightArtworkView: View {
+    @Environment(\.duTheme) private var theme
+
     let image: MallImageSource
 
     var body: some View {
+        let palette = MallPalette(theme: theme)
+
         Group {
             switch image {
             case let .asset(name):
@@ -365,9 +373,9 @@ private struct MallHomeHighlightArtworkView: View {
                 )
                 .overlay(
                     Image(systemName: name)
-                        .font(.du(88, weight: .semibold))
-                        .foregroundColor(Color.white.opacity(0.9))
-                        .shadow(color: Color.black.opacity(0.14), radius: 12, x: 0, y: 8)
+                        .font(.du(.resultDisplay))
+                        .foregroundColor(palette.inverseText.opacity(0.9))
+                        .shadow(color: DUColorPrimitives.Neutral.black.opacity(0.14), radius: 12, x: 0, y: 8)
                 )
             case let .remote(url):
                 AsyncImage(url: url) { phase in
@@ -378,11 +386,11 @@ private struct MallHomeHighlightArtworkView: View {
                             .scaledToFill()
                     default:
                         ZStack {
-                            Color(hex: 0xEEF4FA)
+                            palette.imageChromeFill
 
                             Image(systemName: "photo")
-                                .font(.du(28, weight: .semibold))
-                                .foregroundColor(Color(hex: 0x7B8CA8))
+                                .font(.du(.hero))
+                                .foregroundColor(palette.tertiaryText)
                         }
                     }
                 }
@@ -392,6 +400,8 @@ private struct MallHomeHighlightArtworkView: View {
 }
 
 struct MallPromotionalIllustration: View {
+    @Environment(\.duTheme) private var theme
+
     enum ContentMode {
         case fit
         case fill
@@ -404,6 +414,8 @@ struct MallPromotionalIllustration: View {
     var contentScale: CGFloat = 1
 
     var body: some View {
+        let palette = MallPalette(theme: theme)
+
         Group {
             switch image {
             case let .asset(name):
@@ -416,7 +428,7 @@ struct MallPromotionalIllustration: View {
                     .fill(Color(hex: backgroundHex))
                     .overlay(
                         Image(systemName: name)
-                            .font(.du(30, weight: .semibold))
+                            .font(.du(.heroStrong))
                             .foregroundColor(Color(hex: tintHex))
                     )
             case let .remote(url):
@@ -426,11 +438,11 @@ struct MallPromotionalIllustration: View {
                         bitmapView(image)
                     default:
                         RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                            .fill(Color(hex: 0xEEF4FA))
+                            .fill(palette.imageChromeFill)
                             .overlay(
                                 Image(systemName: "photo")
-                                    .font(.du(24, weight: .semibold))
-                                    .foregroundColor(Color(hex: 0x7B8CA8))
+                                    .font(.du(.headline))
+                                    .foregroundColor(palette.tertiaryText)
                             )
                     }
                 }

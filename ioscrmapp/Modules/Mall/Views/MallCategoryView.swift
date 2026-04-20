@@ -316,6 +316,8 @@ private struct MallCategoryGridItem: Identifiable {
 }
 
 private struct MallCategorySectionCard: View {
+    @Environment(\.duTheme) private var theme
+
     let title: String
     let items: [MallCategoryGridItem]
     let action: (String) -> Void
@@ -323,8 +325,8 @@ private struct MallCategorySectionCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: DUSpacing.md) {
             Text(title)
-                .font(.du(15, weight: .bold))
-                .foregroundColor(DUTheme.ink)
+                .font(.du(.bodyLargeStrong))
+                .foregroundColor(MallPalette(theme: theme).primaryText)
 
             LazyVGrid(
                 columns: Array(repeating: GridItem(.flexible(), spacing: DUSpacing.sm), count: 3),
@@ -342,11 +344,11 @@ private struct MallCategorySectionCard: View {
                             )
                                 .frame(maxWidth: .infinity)
                                 .frame(height: 72)
-                                .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+                                .clipShape(RoundedRectangle(cornerRadius: DURadius.card, style: .continuous))
 
                             Text(item.title)
-                                .font(.du(12, weight: .medium))
-                                .foregroundColor(DUTheme.inkSecondary)
+                                .font(.du(.caption))
+                                .foregroundColor(MallPalette(theme: theme).secondaryText)
                                 .multilineTextAlignment(.center)
                                 .lineLimit(2)
                         }

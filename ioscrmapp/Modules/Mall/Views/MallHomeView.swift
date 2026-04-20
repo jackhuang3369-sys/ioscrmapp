@@ -534,7 +534,7 @@ struct MallHomeView: View {
     private func errorView(_ message: LocalizedTextValue) -> some View {
         DUStateView(
             systemImage: "wifi.exclamationmark",
-            iconColor: DUTheme.magenta,
+            iconColor: theme.colors.brand.magenta,
             title: languageStore.string("mall.state.error.title"),
             subtitle: languageStore.string(message),
             actionTitle: languageStore.string("common.retry")

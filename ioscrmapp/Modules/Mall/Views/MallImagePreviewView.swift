@@ -17,6 +17,7 @@ struct MallImagePreviewContext: Identifiable {
 }
 
 struct MallImagePreviewScreen: View {
+    @Environment(\.duTheme) private var theme
     @Environment(\.dismiss) private var dismiss
 
     let images: [MallImageSource]
@@ -32,7 +33,7 @@ struct MallImagePreviewScreen: View {
 
     var body: some View {
         ZStack(alignment: .topTrailing) {
-            Color.black
+            DUColorPrimitives.Neutral.black
                 .ignoresSafeArea()
 
             TabView(selection: $selectedIndex) {
@@ -46,15 +47,15 @@ struct MallImagePreviewScreen: View {
 
             previewToolbar
         }
-        .background(Color.black)
+        .background(DUColorPrimitives.Neutral.black)
     }
 
     private var previewToolbar: some View {
         HStack(spacing: DUSpacing.md) {
             if images.count > 1 {
                 Text("\(selectedIndex + 1) / \(images.count)")
-                    .font(.du(14, weight: .semibold))
-                    .foregroundColor(.white.opacity(0.92))
+                    .font(.du(.bodyStrong))
+                    .foregroundColor(MallPalette(theme: theme).inverseText.opacity(0.92))
             }
 
             Spacer(minLength: 0)
@@ -63,10 +64,10 @@ struct MallImagePreviewScreen: View {
                 dismiss()
             } label: {
                 Image(systemName: "xmark")
-                    .font(.du(16, weight: .bold))
-                    .foregroundColor(.white)
+                    .font(.du(.bodyLargeStrong))
+                    .foregroundColor(MallPalette(theme: theme).inverseText)
                     .frame(width: 34, height: 34)
-                    .background(Color.white.opacity(0.14))
+                    .background(MallPalette(theme: theme).inverseText.opacity(0.14))
                     .clipShape(Circle())
             }
             .buttonStyle(.plain)
@@ -88,9 +89,13 @@ private struct MallZoomableImagePage: View {
 }
 
 private struct MallImagePreviewContent: View {
+    @Environment(\.duTheme) private var theme
+
     let image: MallImageSource
 
     var body: some View {
+        let palette = MallPalette(theme: theme)
+
         Group {
             switch image {
             case let .asset(name):
@@ -105,7 +110,7 @@ private struct MallImagePreviewContent: View {
                     case .empty:
                         ProgressView()
                             .progressViewStyle(.circular)
-                            .tint(.white)
+                            .tint(palette.inverseText)
 
                     case let .success(image):
                         image
@@ -122,14 +127,14 @@ private struct MallImagePreviewContent: View {
                     .fill(Color(hex: backgroundHex))
                     .overlay(
                         Image(systemName: name)
-                            .font(.du(72, weight: .bold))
+                            .font(.du(.display))
                             .foregroundColor(Color(hex: tintHex))
                     )
                     .padding(DUSpacing.xxxl)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color.black)
+        .background(DUColorPrimitives.Neutral.black)
     }
 }
 
@@ -137,8 +142,8 @@ private struct MallImagePreviewFallbackView: View {
     var body: some View {
         VStack(spacing: DUSpacing.md) {
             Image(systemName: "photo")
-                .font(.du(40, weight: .semibold))
-                .foregroundColor(.white.opacity(0.88))
+                .font(.du(.display))
+                .foregroundColor(DUColorPrimitives.Neutral.white.opacity(0.88))
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
