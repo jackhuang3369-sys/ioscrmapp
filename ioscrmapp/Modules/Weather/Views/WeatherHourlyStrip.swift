@@ -4,6 +4,7 @@ import UIKit
 struct WeatherHourlyStrip: View {
     let points: [WeatherHourlyStripPoint]
     let selectedID: String
+    let usesDarkTheme: Bool
     let onSelect: (WeatherHourlyStripPoint, Bool) -> Void
     let onBubbleStateChange: (WeatherHourlyBubbleState) -> Void
 
@@ -17,11 +18,13 @@ struct WeatherHourlyStrip: View {
     init(
         points: [WeatherHourlyStripPoint],
         selectedID: String,
+        usesDarkTheme: Bool = false,
         onSelect: @escaping (WeatherHourlyStripPoint, Bool) -> Void,
         onBubbleStateChange: @escaping (WeatherHourlyBubbleState) -> Void = { _ in }
     ) {
         self.points = points
         self.selectedID = selectedID
+        self.usesDarkTheme = usesDarkTheme
         self.onSelect = onSelect
         self.onBubbleStateChange = onBubbleStateChange
     }
@@ -68,16 +71,26 @@ struct WeatherHourlyStrip: View {
             )
             let leftEndCapColor = points.first.map {
                 barColor(for: $0, range: range, isFocused: focusedIndex == 0)
-            } ?? Color.black.opacity(0.12)
+            } ?? fallbackBarColor
             let rightEndCapColor = points.last.map {
                 barColor(for: $0, range: range, isFocused: focusedIndex == points.count - 1)
-            } ?? Color.black.opacity(0.12)
+            } ?? fallbackBarColor
 
             let highIndex = points.indices.max(by: { points[$0].temperature < points[$1].temperature }) ?? 0
             let lowIndex = points.indices.min(by: { points[$0].temperature < points[$1].temperature }) ?? 0
             let idleBubbleY = topOverlayHeight + railHeight / 2
-            let sunriseIndex = points.firstIndex(where: { $0.hour24 == 6 })
-            let sunsetIndex = points.firstIndex(where: { $0.hour24 == 18 })
+            let sunriseX = solarMarkerX(
+                marker: .sunrise,
+                itemWidth: itemWidth,
+                sidePadding: sidePadding,
+                endCapWidth: endCapWidth
+            )
+            let sunsetX = solarMarkerX(
+                marker: .sunset,
+                itemWidth: itemWidth,
+                sidePadding: sidePadding,
+                endCapWidth: endCapWidth
+            )
 
             VStack(spacing: 6) {
                 ZStack(alignment: .topLeading) {
@@ -126,18 +139,18 @@ struct WeatherHourlyStrip: View {
                     .frame(width: contentWidth, height: railHeight + maxBarTopExtension, alignment: .bottom)
                     .offset(x: sidePadding, y: topOverlayHeight - maxBarTopExtension)
 
-                    if let sunriseIndex {
+                    if let sunriseX {
                         solarSplitLegend(
                             marker: .sunrise,
-                            x: xBoundaryPosition(for: sunriseIndex, itemWidth: itemWidth, sidePadding: sidePadding, endCapWidth: endCapWidth),
+                            x: sunriseX,
                             y: idleBubbleY
                         )
                     }
 
-                    if let sunsetIndex {
+                    if let sunsetX {
                         solarSplitLegend(
                             marker: .sunset,
-                            x: xBoundaryPosition(for: sunsetIndex, itemWidth: itemWidth, sidePadding: sidePadding, endCapWidth: endCapWidth),
+                            x: sunsetX,
                             y: idleBubbleY
                         )
                     }
@@ -214,7 +227,7 @@ struct WeatherHourlyStrip: View {
                     ForEach(tickIndices(), id: \.self) { index in
                         Text(tickLabel(for: index))
                             .font(.du(9, weight: .medium))
-                            .foregroundColor(Color.black.opacity(0.52))
+                            .foregroundColor(tickLabelColor)
                             .frame(width: contentWidth / 8)
                     }
                 }
@@ -254,15 +267,23 @@ struct WeatherHourlyStrip: View {
         return index == 0 ? "NOW" : "\(points[index].hour24)"
     }
 
+    private var fallbackBarColor: Color {
+        usesDarkTheme ? Color.white.opacity(0.18) : Color.black.opacity(0.12)
+    }
+
+    private var tickLabelColor: Color {
+        usesDarkTheme ? Color.white.opacity(0.64) : Color.black.opacity(0.52)
+    }
+
     private func barColor(for point: WeatherHourlyStripPoint, range: WeatherHourlyTemperatureRange, isFocused: Bool) -> Color {
-        let gray = WeatherHourlyStripCore.grayscaleValue(
+        let palette: [UInt32] = [0xF6F6F6, 0xE9E9E9, 0xDEDEDE, 0xD2D2D2, 0xC7C7C7]
+        let normalized = WeatherHourlyStripCore.normalizedTemperatureValue(
             temperature: point.temperature,
             minTemperature: range.low,
             maxTemperature: range.high
         )
-        // Halve darkness so overall bars look lighter while preserving relative differences.
-        let lighterGray = 1 - (1 - gray) * 0.5
-        return Color(white: isFocused && isDragging ? min(lighterGray + 0.03, 0.96) : lighterGray)
+        let liftedNormalized = isFocused && isDragging ? min(normalized + 0.08, 1) : normalized
+        return interpolatedPaletteColor(hexStops: palette, normalized: liftedNormalized)
     }
 
     private func xPosition(for index: Int, itemWidth: CGFloat, sidePadding: CGFloat, endCapWidth: CGFloat) -> CGFloat {
@@ -273,18 +294,75 @@ struct WeatherHourlyStrip: View {
         sidePadding + endCapWidth + itemWidth * CGFloat(index)
     }
 
+    private func solarMarkerX(
+        marker: WeatherSolarMarker,
+        itemWidth: CGFloat,
+        sidePadding: CGFloat,
+        endCapWidth: CGFloat
+    ) -> CGFloat? {
+        let time = WeatherHourlyStripCore.solarMarkerTime(marker)
+        guard let index = points.firstIndex(where: { $0.hour24 == time.hour24 }) else {
+            return nil
+        }
+
+        let hourProgress = min(max(CGFloat(time.minute) / 60, 0), 1)
+        return xBoundaryPosition(
+            for: index,
+            itemWidth: itemWidth,
+            sidePadding: sidePadding,
+            endCapWidth: endCapWidth
+        ) + itemWidth * hourProgress
+    }
+
+    private func interpolatedPaletteColor(hexStops: [UInt32], normalized: Double) -> Color {
+        guard let first = hexStops.first else {
+            return Color.white
+        }
+        guard hexStops.count > 1 else {
+            return Color(hex: first)
+        }
+
+        let clamped = min(max(normalized, 0), 1)
+        let scaled = clamped * Double(hexStops.count - 1)
+        let lowerIndex = min(max(Int(floor(scaled)), 0), hexStops.count - 1)
+        let upperIndex = min(lowerIndex + 1, hexStops.count - 1)
+        let progress = scaled - Double(lowerIndex)
+        return interpolatedColor(from: hexStops[lowerIndex], to: hexStops[upperIndex], progress: progress)
+    }
+
+    private func interpolatedColor(from startHex: UInt32, to endHex: UInt32, progress: Double) -> Color {
+        let start = rgbComponents(from: startHex)
+        let end = rgbComponents(from: endHex)
+        let clamped = min(max(progress, 0), 1)
+
+        return Color(
+            red: start.red + (end.red - start.red) * clamped,
+            green: start.green + (end.green - start.green) * clamped,
+            blue: start.blue + (end.blue - start.blue) * clamped
+        )
+    }
+
+    private func rgbComponents(from hex: UInt32) -> (red: Double, green: Double, blue: Double) {
+        (
+            red: Double((hex >> 16) & 0xFF) / 255,
+            green: Double((hex >> 8) & 0xFF) / 255,
+            blue: Double(hex & 0xFF) / 255
+        )
+    }
+
     private func timeBubble(text: String, x: CGFloat, y: CGFloat, diameter: CGFloat) -> some View {
         Circle()
-            .fill(Color.black.opacity(0.16))
+            .fill(timeBubbleFill)
             .frame(width: diameter, height: diameter)
             .overlay {
                 Text(text)
                     .font(neumaticCompressedWideBoldFont(size: 27))
                     .minimumScaleFactor(0.8)
                     .lineLimit(1)
-                    .foregroundColor(.black)
+                    .foregroundColor(timeBubbleTextColor)
                     .padding(.horizontal, 5)
             }
+            .shadow(color: timeBubbleShadowColor, radius: 10, x: 0, y: 4)
             .position(x: x, y: y)
     }
 
@@ -296,9 +374,25 @@ struct WeatherHourlyStrip: View {
             .allowsTightening(false)
             .scaleEffect(x: 1.2, y: 1.0, anchor: .center)
             .foregroundColor(Color.black.opacity(0.78))
-            .shadow(color: .white.opacity(0.24), radius: 1, x: 0, y: 0)
+            .shadow(color: temperatureLabelShadowColor, radius: 1, x: 0, y: 0)
             .position(x: x, y: y)
             .animation(.spring(response: 0.22, dampingFraction: 0.84), value: selectedID)
+    }
+
+    private var timeBubbleFill: Color {
+        usesDarkTheme ? Color.white.opacity(0.18) : Color.black.opacity(0.16)
+    }
+
+    private var timeBubbleTextColor: Color {
+        usesDarkTheme ? Color.white.opacity(0.96) : Color.black
+    }
+
+    private var timeBubbleShadowColor: Color {
+        usesDarkTheme ? Color.black.opacity(0.26) : Color.clear
+    }
+
+    private var temperatureLabelShadowColor: Color {
+        usesDarkTheme ? Color.white.opacity(0.34) : Color.white.opacity(0.24)
     }
 
     private func condensedNumberFont(size: CGFloat, weight: UIFont.Weight) -> Font {

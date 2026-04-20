@@ -48,6 +48,11 @@ enum WeatherSolarMarker: Equatable {
     case sunset
 }
 
+struct WeatherSolarMarkerTime: Equatable {
+    let hour24: Int
+    let minute: Int
+}
+
 struct WeatherHourlyBubbleState: Equatable {
     let isVisible: Bool
     let bubbleTopY: CGFloat
@@ -97,6 +102,14 @@ enum WeatherHourlyStripCore {
         let normalized = Double(temperature - lower) / Double(span)
         let clamped = min(max(normalized, 0), 1)
         return 0.54 + clamped * 0.16
+    }
+
+    static func normalizedTemperatureValue(temperature: Int, minTemperature: Int, maxTemperature: Int) -> Double {
+        let lower = min(minTemperature, maxTemperature)
+        let upper = max(minTemperature, maxTemperature)
+        let span = max(upper - lower, 1)
+        let normalized = Double(temperature - lower) / Double(span)
+        return min(max(normalized, 0), 1)
     }
 
     static func emphasisScale(index: Int, focusedIndex: Int) -> CGFloat {
@@ -245,6 +258,15 @@ enum WeatherHourlyStripCore {
         }
     }
 
+    static func solarMarkerTime(_ marker: WeatherSolarMarker) -> WeatherSolarMarkerTime {
+        switch marker {
+        case .sunrise:
+            return WeatherSolarMarkerTime(hour24: 6, minute: 6)
+        case .sunset:
+            return WeatherSolarMarkerTime(hour24: 18, minute: 36)
+        }
+    }
+
     private static func normalizeHour(_ value: Int) -> Int {
         let mod = value % 24
         return mod < 0 ? mod + 24 : mod
@@ -277,9 +299,9 @@ enum WeatherHourlyStripCore {
             return .sunCloudy
         case 10..<16:
             return .sunny
-        case 16..<18:
+        case 16..<19:
             return .sunCloudy2
-        case 18..<22:
+        case 19..<22:
             return .moonCloudy
         default:
             return .moonCloudy2
