@@ -107,7 +107,7 @@ final class WeatherSceneManager: ObservableObject {
     private let detailDimensionRingRadius: Float = 5.1
     private let detailDimensionAngleStep = Float.pi * 2 / Float(WeatherDetailDimension.allCases.count)
     private let detailRainScaleCorrection: Float = 0.44
-    private let moonCrescentModelEulerAngles = SCNVector3(0, 2.36, 0)
+    private let moonCrescentModelEulerAngles = SCNVector3(0, -2.36, 0)
     private let homeNightGlowIntensity: CGFloat = 700
     private let transitionRestRotation = SCNVector3(0, 0, 0)
 
