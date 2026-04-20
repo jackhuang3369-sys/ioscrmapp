@@ -127,9 +127,9 @@ enum WeatherSunTapAudioCore {
 enum WeatherSunDetailTapBurstCore {
     static let rayCount: Int = WeatherSunBurstCore.rayCount
     /// Total duration from start to when head and tail converge
-    static let totalDuration: TimeInterval = 0.50
+    static let totalDuration: TimeInterval = 1.0
     /// Fraction of totalDuration after which tail starts moving (0.0–1.0)
-    static let tailStartFraction: Double = 0.20
+    static let tailStartFraction: Double = 0.30
     static let staggerStep: TimeInterval = 0.012
     static let tapRayMinLength: Float = 0.09
     static let tapRayMaxLength: Float = 0.36

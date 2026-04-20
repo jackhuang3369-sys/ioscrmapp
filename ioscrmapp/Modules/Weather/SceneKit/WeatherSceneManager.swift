@@ -48,7 +48,7 @@ final class WeatherSceneManager: ObservableObject {
 
     static let sunDetailTransitionDuration: TimeInterval = 0.25 //入场动画，第一屏到第二屏的时间（原0.38s缩短为2/3）。
     static let sunDetailCrossfadeDuration: TimeInterval = 0.20
-    static let sunReturnTransitionDuration: TimeInterval = 0.22 //回场动画，第二屏回到第一屏的时间。
+    static let sunReturnTransitionDuration: TimeInterval = 0.2 //回场动画，第二屏回到第一屏的时间。
 
     @Published private(set) var displayGroupRotation: SCNVector3 = SCNVector3(0, 0, 0)
     private(set) var scene: SCNScene
@@ -225,14 +225,14 @@ final class WeatherSceneManager: ObservableObject {
         applyDisplayGroupRotation(transitionRestRotation)
     }
 
-    func isDisplayGroupFrontFacing(toleranceDegrees: CGFloat = 15) -> Bool {
+    func isDisplayGroupFrontFacing(toleranceDegrees: CGFloat = 8) -> Bool {
         let yawDegrees = CGFloat(displayGroupRotation.y) * 180 / .pi
         let normalized = normalizeDegrees(yawDegrees)
         return abs(normalized) <= toleranceDegrees
     }
 
     func alignDisplayGroupToFrontForDetail(
-        duration: TimeInterval = 0.12,
+        duration: TimeInterval = 0.24,
         completion: @escaping () -> Void
     ) {
         guard mode == .sunTransition, let rotatingGroup = conditionGroup else {
@@ -243,25 +243,10 @@ final class WeatherSceneManager: ObservableObject {
         autoSpinSpeed = 0
         rotatingGroup.removeAllActions()
         let nearestFrontYaw = nearestFrontFacingYaw(from: rotatingGroup.eulerAngles.y)
-
-        // Safety net: ensure completion is called even if SCNTransaction block fires late
-        let safetyNetDelay = duration * 1.25 // ~0.15s for 0.12s duration
-        var hasCompleted = false
-        let safetyWorkItem = DispatchWorkItem {
-            guard !hasCompleted else { return }
-            hasCompleted = true
-            self.syncDisplayGroupRotation(to: rotatingGroup.eulerAngles)
-            completion()
-        }
-        DispatchQueue.main.asyncAfter(deadline: .now() + safetyNetDelay, execute: safetyWorkItem)
-
         SCNTransaction.begin()
         SCNTransaction.animationDuration = duration
         SCNTransaction.animationTimingFunction = CAMediaTimingFunction(name: .easeOut)
         SCNTransaction.completionBlock = { [weak self] in
-            guard !hasCompleted else { return }
-            hasCompleted = true
-            safetyWorkItem.cancel()
             self?.syncDisplayGroupRotation(to: rotatingGroup.eulerAngles)
             completion()
         }
@@ -1714,13 +1699,13 @@ final class WeatherSceneManager: ObservableObject {
 
     private func runSunExpansionAnimation(on node: SCNNode) {
         let moveToDest = SCNAction.move(to: detailSunPosition, duration: Self.sunDetailTransitionDuration)
-        moveToDest.timingMode = .easeOut
+        moveToDest.timingMode = .easeInEaseOut
 
         let scaleToDest = makeScaleAction(
             from: node.scale,
             to: SCNVector3(detailSunScale, detailSunScale, detailSunScale),
             duration: Self.sunDetailTransitionDuration,
-            easing: easeOutCubic
+            easing: easeInOutCubic
         )
 
         node.runAction(.group([moveToDest, scaleToDest]))
@@ -1745,11 +1730,11 @@ final class WeatherSceneManager: ObservableObject {
 
     private func runSceneShiftAnimation(root: SCNNode, cameraNode: SCNNode, rotatingGroup: SCNNode) {
         let rootMove = SCNAction.move(to: detailRootPosition, duration: Self.sunDetailTransitionDuration)
-        rootMove.timingMode = .easeOut
+        rootMove.timingMode = .easeInEaseOut
         root.runAction(rootMove)
 
         let cameraMove = SCNAction.move(to: detailCameraPosition, duration: Self.sunDetailTransitionDuration)
-        cameraMove.timingMode = .easeOut
+        cameraMove.timingMode = .easeInEaseOut
         let fieldOfViewAction = makeFieldOfViewAction(
             from: cameraNode.camera?.fieldOfView ?? 31,
             to: 24,
@@ -1762,7 +1747,7 @@ final class WeatherSceneManager: ObservableObject {
                 from: rotatingGroup.eulerAngles,
                 to: transitionRestRotation,
                 duration: Self.sunDetailTransitionDuration,
-                easing: easeOutCubic
+                easing: easeInOutCubic
             )
         )
     }
@@ -1850,11 +1835,9 @@ final class WeatherSceneManager: ObservableObject {
         sunBurstNode.opacity = 1
 
         // 与点击太阳效果相同：前端 easeOut 飞出，后端延迟追赶，两端相遇后线段消失
-        // 射线从高进度位置开始，第一眼看到时已在太阳外围较远处，速度感更强
         let burstDelay: TimeInterval = 0.02
-        let burstFlyDuration: TimeInterval = 0.25  // 缩短飞出时长，加快整体节奏
-        let tailFrac: Float = 0.35   // 内端更早开始追赶，线段更快消失
-        let startProgress: Float = 0.70  // 起始位置更靠外（70% 进度），视觉上"已在远方"
+        let burstFlyDuration: TimeInterval = 0.38
+        let tailFrac: Float = 0.50   // 后端在 50% 进度后开始追赶（比前端快，线段更长）
 
         for rayNode in sunBurstNode.childNodes {
             // 初始状态：折叠不可见，80% 黑色 / 20% 灰色
@@ -1888,8 +1871,7 @@ final class WeatherSceneManager: ObservableObject {
             let sphereSurfaceDist: Float = (-oz) * dir3D.z + sqrt(max(0, discriminant))
             let rawInnerOffset = simd_length(startPosSIMD) - rayLength / 2
             let innerOffset = max(rawInnerOffset, sphereSurfaceDist + 0.05)
-            // 调整 flyDist 使动画开始时就处于 startProgress 位置，到 t=1 时到达原始目标
-            let flyDist = SunBurstTuning.outwardDistance(forLength: rayLength) * 7 / (1 - startProgress)
+            let flyDist = SunBurstTuning.outwardDistance(forLength: rayLength) * 7
             let rayDelay = burstDelay + SunBurstTuning.delayOffset(forZ: direction.z * 2 + 1)
 
             let capturedDir = dir3D
@@ -1897,24 +1879,17 @@ final class WeatherSceneManager: ObservableObject {
             let capturedFlyDist = flyDist
             let capturedOrigLength = rayLength
             let capturedTailFrac = tailFrac
-            let capturedStartProgress = startProgress
 
             rayNode.runAction(.sequence([
                 .wait(duration: rayDelay),
                 SCNAction.customAction(duration: burstFlyDuration) { node, elapsed in
                     let t = Float(elapsed) / Float(burstFlyDuration)
 
-                    // 前端（外端）：三次方 easeOut 向外飞出，从 startProgress 位置开始
-                    // t=0 时：eased = startProgress（50% 进度位置，已在太阳外围）
-                    // t=1 时：eased = 1.0（到达原始目标位置）
-                    let eased: Float = capturedStartProgress + (1 - capturedStartProgress) * (1 - pow(1 - min(t, 1), 3))
+                    // 前端（外端）：三次方 easeOut 向外飞出
+                    let eased: Float = 1 - pow(1 - min(t, 1), 3)
                     let headDist = capturedInnerOffset + eased * capturedFlyDist
 
-                    // 后端（内端）：固定在太阳表面（innerOffset），延迟后追赶
-                    // 这样射线中心会随外端向外移动，给人"整体向外飞"的感觉
-                    // t=0 时：tailDist = innerOffset（太阳表面），headDist 已在外围
-                    // 线段长度 = startProgress * flyDist（射线已展开）
-                    // t >= tailFrac 时：内端向外追赶，线段缩短消失
+                    // 后端（内端）：延迟到 tailFrac 后匀速追赶，追上后线段消失
                     let tailT: Float = t < capturedTailFrac ? 0 : (t - capturedTailFrac) / (1 - capturedTailFrac)
                     let tailDist = capturedInnerOffset + tailT * capturedFlyDist
 

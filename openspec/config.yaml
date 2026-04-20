@@ -3,7 +3,7 @@ schema: spec-driven
 context: |
   Product: iOS app for UAE operator du.
   Stack: Swift, SwiftUI, Xcode.
-  Artifacts: Chinese (Simplified).
+  Artifacts: English only.
   User communication: Chinese.
   Style: concise, direct, low-token.
   Reuse existing patterns first.
@@ -12,25 +12,25 @@ context: |
 
 rules:
   proposal:
-    - Chinese (Simplified) only.
-    - Max 500 Chinese characters.
-    - "Sections: 问题, 目标, 范围, 非目标, 风险."
+    - English only.
+    - Max 200 words.
+    - "Sections: Problem, Goal, Scope, Non-goals, Risks."
 
   specs:
-    - Chinese (Simplified) only.
+    - English only.
     - One capability per spec.
-    - Use short MUST/SHALL-style statements in Chinese (e.g., “必须/应当”).
+    - Use short SHALL statements.
     - Include acceptance criteria.
     - No design or code detail.
 
   design:
-    - Chinese (Simplified) only.
-    - Max 800 Chinese characters.
+    - English only.
+    - Max 300 words.
     - Cover architecture, data flow, errors, tests, rollout.
     - Note localization or performance when relevant.
 
   tasks:
-    - Chinese (Simplified) only.
+    - English only.
     - Short checklist items.
     - One deliverable per item.
-    - "Order: 测试或验证性实验, 实现, 验证, 评审, 归档."
+    - "Order: tests or spike, implementation, verification, review, archive."
