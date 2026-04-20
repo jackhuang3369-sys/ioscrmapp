@@ -430,7 +430,7 @@ struct WeatherMainView: View {
     }
     
     
-    private struct WeatherSunDetailOverlay: View {
+    private struct LegacyWeatherSunDetailOverlay: View {
         let manager: WeatherSceneManager
         let size: CGSize
         let safeAreaInsets: EdgeInsets
