@@ -72,12 +72,15 @@ final class WeatherSceneManager: ObservableObject {
     private var sunTapBurstOverlayNode: SCNNode?
     private var temperatureNode: SCNNode?
     private var temperatureNodePrototypeCache: [String: SCNNode] = [:]
+    private var weatherAssetPrototypeCache: [String: SCNNode] = [:]
+    private var homeSceneAccessoryNode: SCNNode?
     private var sunModelNode: SCNNode?
     private var sunBurstRayDirections: [ObjectIdentifier: SCNVector3] = [:]
     private var sunBurstRayStartPositions: [ObjectIdentifier: SCNVector3] = [:]
     private var sunBurstRayBaseOpacities: [ObjectIdentifier: CGFloat] = [:]
     private var transitionSourceRotation = SCNVector3(0, 0, 0)
     private var isTemperatureHidden: Bool = false
+    private var currentHomeScenePreset: WeatherHomeScenePreset = .sunny
     private var transitionCompletionWorkItem: DispatchWorkItem?
     private var burstAnimationWorkItem: DispatchWorkItem?
     private var entrySpinWorkItem: DispatchWorkItem?
@@ -101,6 +104,7 @@ final class WeatherSceneManager: ObservableObject {
     private let detailTitlePosition = SCNVector3(0, 3.37, -0.1)
     private let detailDimensionRingRadius: Float = 5.1
     private let detailDimensionAngleStep = Float.pi * 2 / Float(WeatherDetailDimension.allCases.count)
+    private let detailRainScaleCorrection: Float = 0.44
     private let transitionRestRotation = SCNVector3(0, 0, 0)
 
     init(temperature: Int = MockWeatherData.today.temperature, mode: WeatherSceneMode = .main) {
@@ -116,6 +120,13 @@ final class WeatherSceneManager: ObservableObject {
         }
         currentTemperature = temperature
         updateTemperature(animated: animated)
+    }
+
+    func setHomeScenePreset(_ preset: WeatherHomeScenePreset, animated: Bool) {
+        guard mode == .main || mode == .sunTransition else { return }
+        let shouldAnimate = animated && preset != currentHomeScenePreset
+        currentHomeScenePreset = preset
+        applyHomeScenePreset(animated: shouldAnimate)
     }
 
     func setDetailDimensionTitle(_ title: String) {
@@ -208,6 +219,8 @@ final class WeatherSceneManager: ObservableObject {
         transitionSourceRotation = sourceRotation
         applyDisplayGroupRotation(sourceRotation)
         resetSunBurstState()
+        setHomeSceneAccessoryVisibility(isHidden: true, animated: false)
+        sunNode?.opacity = 1
     }
 
     func alignDetailSceneToFront() {
@@ -319,6 +332,7 @@ final class WeatherSceneManager: ObservableObject {
             if let root = self.sceneRootNode {
                 self.attachFloatAnimation(to: root)
             }
+            self.applyHomeScenePreset(animated: false)
             completion()
         }
         transitionCompletionWorkItem = completionWorkItem
@@ -354,7 +368,7 @@ final class WeatherSceneManager: ObservableObject {
         runTemperatureDepartureAnimation(on: temperatureNode)
         runSunExpansionAnimation(on: sunNode)
         runSceneShiftAnimation(root: root, cameraNode: cameraNode, rotatingGroup: rotatingGroup)
-        runDetailTitleReveal(on: detailTitleNode)
+        detailTitleNode.opacity = 0
 
         // Burst 提前触发，与 sun-detail-enter.wav 峰值（t=100ms）对齐
         // 80ms 延迟 + 20ms burstDelay = 100ms 首帧可见
@@ -527,8 +541,11 @@ final class WeatherSceneManager: ObservableObject {
     private func showDetailDimensionRingIfNeeded() {
         guard let detailDimensionRingNode else { return }
 
-        setDetailDimensionTitle(WeatherDetailDimension.sun.title)
         setDetailDimensionProgress(selectedDimension: .sun, dragProgress: 0, animated: false)
+
+        detailTitleNode?.removeAllActions()
+        detailTitleNode?.opacity = 0
+        detailTitleNode?.isHidden = true
 
         detailDimensionRingNode.removeAllActions()
         detailDimensionRingNode.isHidden = false
@@ -538,7 +555,6 @@ final class WeatherSceneManager: ObservableObject {
         SCNTransaction.animationDuration = 0.18
         detailDimensionRingNode.opacity = 1
         sunNode?.opacity = 0
-        detailTitleNode?.opacity = 0
         SCNTransaction.commit()
     }
 
@@ -551,6 +567,7 @@ final class WeatherSceneManager: ObservableObject {
         detailDimensionRingNode?.opacity = 0
         detailDimensionRingNode?.isHidden = true
         sunNode?.opacity = 1
+        detailTitleNode?.isHidden = false
         detailTitleNode?.opacity = 1
     }
 
@@ -589,6 +606,7 @@ final class WeatherSceneManager: ObservableObject {
         sunTapBurstOverlayNode?.removeFromParentNode()
         sunTapBurstOverlayNode = nil
         temperatureNode = nil
+        homeSceneAccessoryNode = nil
         sunNode = nil
         sunModelNode = nil
         sunBurstRayDirections.removeAll()
@@ -733,6 +751,7 @@ final class WeatherSceneManager: ObservableObject {
             digits.position = SCNVector3(0, mainTemperaturePositionY, 0.12)
             rotatingGroup.addChildNode(digits)
             temperatureNode = digits
+            applyHomeScenePreset(animated: false)
         }
 
         if mode != .sunDetail {
@@ -819,9 +838,6 @@ final class WeatherSceneManager: ObservableObject {
         ring.name = "weather_detail_dimension_ring"
         ring.position = SCNVector3(0, 0, detailSunPosition.z - detailDimensionRingRadius)
 
-        let sunTemplate = makeSunNode()
-        let sunScale = mode == .sunDetail ? Float(1) : detailSunScale
-
         for dimension in WeatherDetailDimension.allCases {
             let angle = Float(dimension.rawValue) * detailDimensionAngleStep
             let item = SCNNode()
@@ -833,15 +849,14 @@ final class WeatherSceneManager: ObservableObject {
             )
             item.eulerAngles = SCNVector3(0, angle, 0)
 
-            let sun = sunTemplate.clone()
-            sun.position = SCNVector3(0, 0, 0)
-            sun.scale = SCNVector3(sunScale, sunScale, sunScale)
-            detailDimensionSpinNodes[dimension] = sun
+            let model = makeDetailDimensionModelNode(for: dimension)
+            model.position = SCNVector3(0, 0, 0)
+            detailDimensionSpinNodes[dimension] = model
 
-            let sunContainer = SCNNode()
-            sunContainer.position = SCNVector3(0, detailSunPosition.y, 0)
-            sunContainer.addChildNode(sun)
-            item.addChildNode(sunContainer)
+            let modelContainer = SCNNode()
+            modelContainer.position = SCNVector3(0, detailSunPosition.y, 0)
+            modelContainer.addChildNode(model)
+            item.addChildNode(modelContainer)
 
             let title = makeSunDetailTitleNode(text: dimension.title)
             title.position = SCNVector3(0, detailTitlePosition.y, 0)
@@ -852,6 +867,201 @@ final class WeatherSceneManager: ObservableObject {
         }
 
         return ring
+    }
+
+    private func makeDetailDimensionModelNode(for dimension: WeatherDetailDimension) -> SCNNode {
+        let targetHeight = detailDimensionModelTargetHeight()
+
+        switch dimension {
+        case .sun:
+            let node = makeSunNode()
+            if mode != .sunDetail {
+                multiplyScale(of: node, by: detailSunScale)
+            }
+            return node
+        case .cloud:
+            return makeNormalizedWeatherAssetNode(named: "cloud", targetHeight: targetHeight)
+        case .air:
+            return makeNormalizedWeatherAssetNode(named: "air", targetHeight: targetHeight)
+        case .moon:
+            return makeNormalizedWeatherAssetNode(named: "moon", targetHeight: targetHeight)
+        case .temperature:
+            let node = makeTemperatureNode(text: "\(currentTemperature)")
+            scaleNodeToHeight(node, targetHeight: targetHeight)
+            return node
+        case .precipitation:
+            let node = makeNormalizedWeatherAssetNode(named: "rain", targetHeight: targetHeight)
+            multiplyScale(of: node, by: detailRainScaleCorrection)
+            return node
+        }
+    }
+
+    private func detailDimensionModelTargetHeight() -> Float {
+        if mode == .sunDetail {
+            return 6.192
+        }
+        return 4.02 * Float(mainSunScale) * detailSunScale
+    }
+
+    private func makeNormalizedWeatherAssetNode(named name: String, targetHeight: Float) -> SCNNode {
+        guard let node = makeWeatherAssetNode(
+            named: name,
+            fileExtension: "usdz",
+            targetHeight: targetHeight
+        ) else {
+            return makeSunNode()
+        }
+
+        node.name = "weather_detail_\(name)"
+        return node
+    }
+
+    private func applyHomeScenePreset(animated: Bool) {
+        guard mode == .main || mode == .sunTransition else { return }
+        guard let rotatingGroup = conditionGroup else { return }
+
+        let accessory = makeHomeSceneAccessoryNode(for: currentHomeScenePreset)
+        accessory?.opacity = animated ? 0 : 1
+
+        let previousAccessory = homeSceneAccessoryNode
+        homeSceneAccessoryNode = accessory
+        if let accessory {
+            rotatingGroup.addChildNode(accessory)
+        }
+
+        let sunOpacity: CGFloat = currentHomeScenePreset.showsSunPrimary ? 1 : 0
+        if animated {
+            SCNTransaction.begin()
+            SCNTransaction.animationDuration = 0.22
+            previousAccessory?.opacity = 0
+            accessory?.opacity = 1
+            sunNode?.opacity = sunOpacity
+            SCNTransaction.completionBlock = {
+                previousAccessory?.removeFromParentNode()
+            }
+            SCNTransaction.commit()
+        } else {
+            previousAccessory?.removeFromParentNode()
+            sunNode?.opacity = sunOpacity
+        }
+    }
+
+    private func setHomeSceneAccessoryVisibility(isHidden: Bool, animated: Bool) {
+        guard let homeSceneAccessoryNode else { return }
+        let targetOpacity: CGFloat = isHidden ? 0 : 1
+        if animated {
+            SCNTransaction.begin()
+            SCNTransaction.animationDuration = 0.18
+            homeSceneAccessoryNode.opacity = targetOpacity
+            SCNTransaction.commit()
+        } else {
+            homeSceneAccessoryNode.opacity = targetOpacity
+        }
+        homeSceneAccessoryNode.isHidden = isHidden
+    }
+
+    private func makeHomeSceneAccessoryNode(for preset: WeatherHomeScenePreset) -> SCNNode? {
+        switch preset {
+        case .sunny:
+            return nil
+        case .sunCloudy:
+            return makeHomeAttachedCloudNode(named: "cloudy")
+        case .sunCloudy2:
+            return makeHomeAttachedCloudNode(named: "cloudy2")
+        case .moon:
+            return makeHomeMoonSceneNode(cloudName: nil)
+        case .moonCloudy:
+            return makeHomeMoonSceneNode(cloudName: "cloudy")
+        case .moonCloudy2:
+            return makeHomeMoonSceneNode(cloudName: "cloudy2")
+        case .cloud:
+            return makeHomeStandaloneCloudNode()
+        }
+    }
+
+    private func makeHomeMoonSceneNode(cloudName: String?) -> SCNNode? {
+        let container = SCNNode()
+        container.name = "weather_home_moon_scene"
+
+        guard let moon = makeWeatherAssetNode(named: "moon", fileExtension: "usdz", targetHeight: homePrimaryModelHeight) else {
+            return nil
+        }
+        moon.name = "weather_home_moon"
+        moon.position = SCNVector3(0, mainSunPositionY, -0.1)
+        moon.eulerAngles = SCNVector3(0.0, 0.08, 0.0)
+        container.addChildNode(moon)
+
+        if let cloudName,
+           let cloud = makeHomeAttachedCloudNode(named: cloudName) {
+            container.addChildNode(cloud)
+        }
+
+        return container
+    }
+
+    private func makeHomeAttachedCloudNode(named name: String) -> SCNNode? {
+        guard let cloud = makeWeatherAssetNode(named: name, fileExtension: "usdz", targetHeight: homeAttachedCloudHeight) else {
+            return nil
+        }
+        cloud.name = "weather_home_attached_\(name)"
+        cloud.position = SCNVector3(1.02, mainSunPositionY - 0.78, 0.42)
+        cloud.eulerAngles = SCNVector3(-0.03, -0.18, 0.02)
+        return cloud
+    }
+
+    private func makeHomeStandaloneCloudNode() -> SCNNode? {
+        guard let cloud = makeWeatherAssetNode(named: "cloud", fileExtension: "usdz", targetHeight: homeStandaloneCloudHeight) else {
+            return nil
+        }
+        cloud.name = "weather_home_cloud"
+        cloud.position = SCNVector3(0, mainSunPositionY - 0.28, -0.06)
+        cloud.eulerAngles = SCNVector3(-0.02, 0.12, 0.01)
+        return cloud
+    }
+
+    private var homePrimaryModelHeight: Float {
+        4.02 * Float(mainSunScale)
+    }
+
+    private var homeAttachedCloudHeight: Float {
+        2.72
+    }
+
+    private var homeStandaloneCloudHeight: Float {
+        4.2
+    }
+
+    private func makeWeatherAssetNode(named name: String, fileExtension: String, targetHeight: Float) -> SCNNode? {
+        let cacheKey = "\(name).\(fileExtension).\(targetHeight)"
+        if let prototype = weatherAssetPrototypeCache[cacheKey] {
+            return prototype.clone()
+        }
+
+        guard let payload = loadNormalizedModelNode(
+            named: name,
+            fileExtension: fileExtension,
+            targetHeight: targetHeight
+        ) else {
+            return nil
+        }
+
+        weatherAssetPrototypeCache[cacheKey] = payload.node
+        return payload.node.clone()
+    }
+
+    private func multiplyScale(of node: SCNNode, by multiplier: Float) {
+        node.scale = SCNVector3(
+            node.scale.x * multiplier,
+            node.scale.y * multiplier,
+            node.scale.z * multiplier
+        )
+    }
+
+    private func scaleNodeToHeight(_ node: SCNNode, targetHeight: Float) {
+        let (minBounds, maxBounds) = node.boundingBox
+        let height = maxBounds.y - minBounds.y
+        guard height > 0.0001 else { return }
+        multiplyScale(of: node, by: targetHeight / height)
     }
 
     private func makeSunBurstNode() -> SCNNode {

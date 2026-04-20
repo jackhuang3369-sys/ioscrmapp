@@ -1,12 +1,32 @@
 import Foundation
 import CoreGraphics
 
+enum WeatherHomeScenePreset: Equatable {
+    case sunny
+    case sunCloudy
+    case sunCloudy2
+    case moon
+    case moonCloudy
+    case moonCloudy2
+    case cloud
+
+    var showsSunPrimary: Bool {
+        switch self {
+        case .sunny, .sunCloudy, .sunCloudy2:
+            return true
+        case .moon, .moonCloudy, .moonCloudy2, .cloud:
+            return false
+        }
+    }
+}
+
 struct WeatherHourlyStripPoint: Identifiable, Equatable {
     let id: String
     let hour24: Int
     let label: String
     let temperature: Int
     let isCurrent: Bool
+    let scenePreset: WeatherHomeScenePreset
 }
 
 struct WeatherHourlyTemperatureRange: Equatable {
@@ -40,7 +60,8 @@ enum WeatherHourlyStripCore {
                 hour24: hour,
                 label: offset == 0 ? "NOW" : String(format: "%02d", hour),
                 temperature: temperature,
-                isCurrent: offset == 0
+                isCurrent: offset == 0,
+                scenePreset: synthesizedScenePreset(hour24: hour)
             )
         }
     }
@@ -237,5 +258,22 @@ enum WeatherHourlyStripCore {
         }
 
         return 33
+    }
+
+    private static func synthesizedScenePreset(hour24: Int) -> WeatherHomeScenePreset {
+        switch normalizeHour(hour24) {
+        case 0..<6:
+            return .moon
+        case 6..<10:
+            return .sunCloudy
+        case 10..<16:
+            return .sunny
+        case 16..<18:
+            return .sunCloudy2
+        case 18..<22:
+            return .moonCloudy
+        default:
+            return .moonCloudy2
+        }
     }
 }

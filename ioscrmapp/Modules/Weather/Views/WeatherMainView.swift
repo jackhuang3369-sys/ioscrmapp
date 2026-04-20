@@ -43,7 +43,8 @@ struct WeatherMainView: View {
             hour24: 0,
             label: "NOW",
             temperature: weather.temperature,
-            isCurrent: true
+            isCurrent: true,
+            scenePreset: .sunny
         )
     }
     
@@ -71,17 +72,13 @@ struct WeatherMainView: View {
         .preferredColorScheme(.light)
         .onAppear {
             if hourlyPoints.isEmpty {
-                hourlyPoints = WeatherHourlyStripCore.build24HourStrip(
-                    referenceDate: Date(),
-                    calendar: .current,
-                    currentTemperature: weather.temperature
-                )
+                hourlyPoints = MockWeatherData.hourlyDemoPoints
             }
             if selectedTimelineID.isEmpty {
                 selectedTimelineID = hourlyPoints.first?.id ?? ""
             }
             WeatherAudioPlayer.shared.playDetailedEnter()
-            sceneManager.setTemperature(selectedEntry.temperature, animated: false)
+            applyHomeScene(for: selectedEntry, animated: false)
         }
     }
     
@@ -155,16 +152,14 @@ struct WeatherMainView: View {
                 let previousTemperature = selectedEntry.temperature
                 if isDragSelection {
                     selectedTimelineID = entry.id
-                    if entry.temperature != previousTemperature {
-                        sceneManager.setTemperature(entry.temperature, animated: false)
-                    }
+                    applyHomeScene(for: entry, animated: false, previousTemperature: previousTemperature)
                     return
                 }
 
                 withAnimation(.spring(response: 0.28, dampingFraction: 0.82)) {
                     selectedTimelineID = entry.id
                 }
-                sceneManager.setTemperature(entry.temperature, animated: true)
+                applyHomeScene(for: entry, animated: true, previousTemperature: previousTemperature)
             } onBubbleStateChange: { bubbleState in
                 if bubbleState.isVisible {
                     if hourlyBubbleState.isVisible,
@@ -176,7 +171,7 @@ struct WeatherMainView: View {
                     withAnimation(.easeOut(duration: WeatherHourlyStripCore.clearSkyRestoreAnimationDuration)) {
                         hourlyBubbleState = bubbleState
                     }
-                    sceneManager.setTemperature(selectedEntry.temperature, animated: false)
+                    applyHomeScene(for: selectedEntry, animated: false)
                 }
             }
             .frame(width: width)
@@ -208,6 +203,18 @@ struct WeatherMainView: View {
         .animation(.easeInOut(duration: 0.24), value: isSunDetailPresented)
         .padding(.bottom, bottomPadding)
         .zIndex(5)
+    }
+
+    private func applyHomeScene(
+        for entry: WeatherHourlyStripPoint,
+        animated: Bool,
+        previousTemperature: Int? = nil
+    ) {
+        let temperatureChanged = previousTemperature.map { $0 != entry.temperature } ?? true
+        if temperatureChanged {
+            sceneManager.setTemperature(entry.temperature, animated: animated)
+        }
+        sceneManager.setHomeScenePreset(entry.scenePreset, animated: animated)
     }
 
     private func clearSkyTitleLiftOffset(for bubbleState: WeatherHourlyBubbleState? = nil) -> CGFloat {
