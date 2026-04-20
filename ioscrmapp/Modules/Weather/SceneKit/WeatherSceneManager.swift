@@ -73,6 +73,7 @@ final class WeatherSceneManager: ObservableObject {
     private var temperatureNode: SCNNode?
     private var temperatureNodePrototypeCache: [String: SCNNode] = [:]
     private var weatherAssetPrototypeCache: [String: SCNNode] = [:]
+    private var sunNodePrototypeCache: [String: SCNNode] = [:]
     private var homeSceneAccessoryNode: SCNNode?
     private var homeNightGlowNode: SCNNode?
     private var sunModelNode: SCNNode?
@@ -114,7 +115,35 @@ final class WeatherSceneManager: ObservableObject {
         self.scene = SCNScene()
         self.currentTemperature = temperature
         self.mode = mode
+        preloadWeatherModelCaches()
         buildScene()
+    }
+
+    private func preloadWeatherModelCaches() {
+        _ = ensureSunNodePrototype()
+
+        let homeAssets: [(name: String, fileExtension: String, targetHeight: Float)] = [
+            ("moon", "usdz", homePrimaryModelHeight),
+            ("cloudy", "usdz", homeAttachedCloudHeight),
+            ("cloudy2", "usdz", homeAttachedCloudHeight),
+            ("cloud", "usdz", homeStandaloneCloudHeight)
+        ]
+
+        let detailTargetHeight = detailDimensionModelTargetHeight()
+        let detailAssets: [(name: String, fileExtension: String, targetHeight: Float)] = [
+            ("cloud", "usdz", detailTargetHeight),
+            ("air", "usdz", detailTargetHeight),
+            ("moon", "usdz", detailTargetHeight),
+            ("rain", "usdz", detailTargetHeight)
+        ]
+
+        (homeAssets + detailAssets).forEach { asset in
+            _ = ensureWeatherAssetPrototype(
+                named: asset.name,
+                fileExtension: asset.fileExtension,
+                targetHeight: asset.targetHeight
+            )
+        }
     }
 
     func setTemperature(_ temperature: Int, animated: Bool) {
@@ -760,11 +789,18 @@ final class WeatherSceneManager: ObservableObject {
     }
 
     private func makeSunNode() -> SCNNode {
-        if let loadedSun = makeSunModelNode() {
-            return loadedSun
+        ensureSunNodePrototype().clone()
+    }
+
+    private func ensureSunNodePrototype() -> SCNNode {
+        let cacheKey = "\(mode == .sunDetail ? "detail" : "main").\(sunModelTargetHeight)"
+        if let prototype = sunNodePrototypeCache[cacheKey] {
+            return prototype
         }
 
-        return makeFallbackSunNode()
+        let prototype = makeSunModelNode() ?? makeFallbackSunNode()
+        sunNodePrototypeCache[cacheKey] = prototype
+        return prototype
     }
 
     private func makeFallbackSunNode() -> SCNNode {
@@ -1096,9 +1132,13 @@ final class WeatherSceneManager: ObservableObject {
     }
 
     private func makeWeatherAssetNode(named name: String, fileExtension: String, targetHeight: Float) -> SCNNode? {
+        ensureWeatherAssetPrototype(named: name, fileExtension: fileExtension, targetHeight: targetHeight)?.clone()
+    }
+
+    private func ensureWeatherAssetPrototype(named name: String, fileExtension: String, targetHeight: Float) -> SCNNode? {
         let cacheKey = "\(name).\(fileExtension).\(targetHeight)"
         if let prototype = weatherAssetPrototypeCache[cacheKey] {
-            return prototype.clone()
+            return prototype
         }
 
         guard let payload = loadNormalizedModelNode(
@@ -1112,7 +1152,7 @@ final class WeatherSceneManager: ObservableObject {
         applyWeatherAssetMaterialCorrection(named: name, to: payload.node)
 
         weatherAssetPrototypeCache[cacheKey] = payload.node
-        return payload.node.clone()
+        return payload.node
     }
 
     private func multiplyScale(of node: SCNNode, by multiplier: Float) {
@@ -1281,8 +1321,7 @@ final class WeatherSceneManager: ObservableObject {
     }
 
     private func makeSunModelNode() -> SCNNode? {
-        let targetHeight: Float = mode == .sunDetail ? 6.192 : 4.02 * Float(mainSunScale)
-        guard let payload = loadNormalizedModelNode(named: "sun", fileExtension: "obj", targetHeight: targetHeight) else {
+        guard let payload = loadNormalizedModelNode(named: "sun", fileExtension: "obj", targetHeight: sunModelTargetHeight) else {
             return nil
         }
 
@@ -1316,6 +1355,10 @@ final class WeatherSceneManager: ObservableObject {
         root.addChildNode(glowNode)
 
         return root
+    }
+
+    private var sunModelTargetHeight: Float {
+        mode == .sunDetail ? 6.192 : 4.02 * Float(mainSunScale)
     }
 
     /// 加载鸟群节点（birds2.usdz）。
