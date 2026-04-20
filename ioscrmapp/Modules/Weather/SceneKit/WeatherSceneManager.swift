@@ -1045,6 +1045,15 @@ final class WeatherSceneManager: ObservableObject {
             return nil
         }
 
+        switch name {
+        case "cloud", "cloudy", "cloudy2":
+            applyCloudMaterial(to: payload.node)
+        case "moon":
+            applyMoonMaterial(to: payload.node)
+        default:
+            break
+        }
+
         weatherAssetPrototypeCache[cacheKey] = payload.node
         return payload.node.clone()
     }
@@ -1481,6 +1490,32 @@ final class WeatherSceneManager: ObservableObject {
         wrapper.addChildNode(contentRoot)
         let normalizedSize = SCNVector3(rawSize.x * scale, rawSize.y * scale, rawSize.z * scale)
         return (wrapper, normalizedSize)
+    }
+
+    private func applyCloudMaterial(to node: SCNNode) {
+        node.enumerateChildNodes { child, _ in
+            guard let geometry = child.geometry else { return }
+            let mat = SCNMaterial()
+            mat.lightingModel      = .physicallyBased
+            mat.diffuse.contents   = UIColor(red: 0.92, green: 0.94, blue: 0.97, alpha: 1)
+            mat.metalness.contents = Float(0.0)
+            mat.roughness.contents = Float(0.72)
+            mat.isDoubleSided      = true
+            geometry.materials = Array(repeating: mat, count: max(geometry.materials.count, 1))
+        }
+    }
+
+    private func applyMoonMaterial(to node: SCNNode) {
+        node.enumerateChildNodes { child, _ in
+            guard let geometry = child.geometry else { return }
+            let mat = SCNMaterial()
+            mat.lightingModel      = .physicallyBased
+            mat.diffuse.contents   = UIColor(red: 0.80, green: 0.82, blue: 0.86, alpha: 1)
+            mat.metalness.contents = Float(0.05)
+            mat.roughness.contents = Float(0.65)
+            mat.isDoubleSided      = true
+            geometry.materials = Array(repeating: mat, count: max(geometry.materials.count, 1))
+        }
     }
 
     private func applySunMaterial(to node: SCNNode) {
