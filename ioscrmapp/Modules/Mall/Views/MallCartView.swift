@@ -3,6 +3,7 @@ import SwiftUI
 private let mallCartBottomTabBarKey = "mall-cart"
 
 struct MallCartView: View {
+    @Environment(\.duTheme) private var theme
     @EnvironmentObject private var languageStore: AppLanguageStore
     // 复用首页根容器的底部导航开关，购物车页需要以沉浸式子页形态独占屏幕。
     @EnvironmentObject private var homeChromeState: HomeChromeState
@@ -34,7 +35,7 @@ struct MallCartView: View {
                     .frame(maxHeight: .infinity, alignment: .top)
                     .zIndex(1)
             }
-            .background(Color(hex: 0xF9FAFD).ignoresSafeArea())
+            .background(MallPalette(theme: theme).canvasBackground.ignoresSafeArea())
         }
         .navigationBarHidden(true)
         .overlay(navigationLinks)
@@ -97,28 +98,30 @@ struct MallCartView: View {
     }
 
     private func header() -> some View {
-        ZStack {
+        let palette = MallPalette(theme: theme)
+
+        return ZStack {
             Text(languageStore.string("mall.cart.title"))
-                .font(.du(18, weight: .bold))
-                .foregroundColor(Color(hex: 0x242939))
+                .font(.du(.titleSmallStrong))
+                .foregroundColor(palette.primaryText)
 
             HStack(spacing: DUSpacing.md) {
                 Button {
                     dismiss()
                 } label: {
                     Image(systemName: "chevron.left")
-                        .font(.du(MallCartLayout.chromeButtonIconSize, weight: .bold))
-                        .foregroundColor(Color(hex: 0x44526D))
+                        .font(.du(.bodyEmphasized))
+                        .foregroundColor(palette.secondaryText)
                         .frame(
                             width: MallCartLayout.chromeButtonSize,
                             height: MallCartLayout.chromeButtonSize
                         )
                         .background(
-                            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                .fill(Color.white.opacity(0.92))
+                            RoundedRectangle(cornerRadius: DURadius.sm + 2, style: .continuous)
+                                .fill(palette.panelBackground.opacity(theme.resolvedColorScheme == .dark ? 0.92 : 0.92))
                                 .overlay(
-                                    RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                        .stroke(Color(hex: 0xE3E8F1), lineWidth: 1)
+                                    RoundedRectangle(cornerRadius: DURadius.sm + 2, style: .continuous)
+                                        .stroke(palette.subtleBorder, lineWidth: 1)
                                 )
                         )
                 }
@@ -132,16 +135,16 @@ struct MallCartView: View {
                         managedSelectionIDs.removeAll()
                     } label: {
                         Text(languageStore.string(isManaging ? "mall.cart.close" : "mall.cart.manage"))
-                            .font(.du(14, weight: .semibold))
-                            .foregroundColor(Color(hex: 0x0B63F6))
+                            .font(.du(.bodyStrong))
+                            .foregroundColor(palette.accent)
                             .padding(.horizontal, 12)
                             .frame(height: MallCartLayout.chromeButtonSize)
                             .background(
                                 Capsule()
-                                    .fill(Color.white.opacity(0.94))
+                                    .fill(palette.panelBackground.opacity(theme.resolvedColorScheme == .dark ? 0.94 : 0.94))
                                     .overlay(
                                         Capsule()
-                                            .stroke(Color(hex: 0xE3E8F1), lineWidth: 1)
+                                            .stroke(palette.subtleBorder, lineWidth: 1)
                                     )
                             )
                     }
@@ -156,7 +159,7 @@ struct MallCartView: View {
         // 购物车页使用常规导航栏节奏，只保留紧凑的顶部留白。
         .padding(.top, MallCartLayout.headerTopSpacing)
         .padding(.bottom, DUSpacing.xs)
-        .background(Color.white)
+        .background(palette.panelBackground)
     }
 
     @ViewBuilder
@@ -272,8 +275,8 @@ struct MallCartView: View {
                         MallCartSelectionIndicator(isSelected: isSelectAllSelected(snapshot: snapshot))
 
                         Text(languageStore.string("mall.cart.selectAll"))
-                            .font(.du(13, weight: .medium))
-                            .foregroundColor(Color(hex: 0xADB2C8))
+                            .font(.du(.label))
+                            .foregroundColor(MallPalette(theme: theme).disabledText)
                     }
                 }
                 .buttonStyle(.plain)
@@ -285,8 +288,8 @@ struct MallCartView: View {
                         deleteManagedSelection()
                     } label: {
                         Text("\(languageStore.string("mall.cart.delete")) (\(managedSelectionIDs.count))")
-                            .font(.du(16, weight: .bold))
-                            .foregroundColor(.white)
+                            .font(.du(.bodyLargeStrong))
+                            .foregroundColor(MallPalette(theme: theme).inverseText)
                             .frame(width: 146, height: 48)
                             .background(deleteButtonBackground)
                             .clipShape(Capsule())
@@ -296,17 +299,17 @@ struct MallCartView: View {
                 } else {
                     VStack(alignment: .trailing, spacing: 4) {
                         Text(languageStore.string("mall.cart.subtotal"))
-                            .font(.du(11, weight: .medium))
-                            .foregroundColor(Color(hex: 0x8A96AE))
+                            .font(.du(.caption))
+                            .foregroundColor(MallPalette(theme: theme).tertiaryText)
 
                         HStack(alignment: .firstTextBaseline, spacing: 4) {
                             Text(snapshot.formattedSubtotal(for: languageStore.locale))
-                                .font(.du(22, weight: .bold))
-                                .foregroundColor(Color(hex: 0xEB1745))
+                                .font(.du(.titleStrong))
+                                .foregroundColor(MallPalette(theme: theme).priceAccent)
 
                             Text("AED")
-                                .font(.du(11, weight: .bold))
-                                .foregroundColor(Color(hex: 0xEB1745))
+                                .font(.du(.captionEmphasized))
+                                .foregroundColor(MallPalette(theme: theme).priceAccent)
                         }
                         .environment(\.layoutDirection, .leftToRight)
                     }
@@ -315,8 +318,8 @@ struct MallCartView: View {
                         checkout(snapshot: snapshot)
                     } label: {
                         Text(languageStore.string("mall.cart.checkout.button"))
-                            .font(.du(16, weight: .bold))
-                            .foregroundColor(.white)
+                            .font(.du(.bodyLargeStrong))
+                            .foregroundColor(MallPalette(theme: theme).inverseText)
                             .frame(width: 146, height: 48)
                             .background(checkoutButtonBackground(snapshot: snapshot))
                             .clipShape(Capsule())
@@ -329,8 +332,8 @@ struct MallCartView: View {
             .padding(.top, bottomActionBarMetrics.topPadding)
             .padding(.bottom, bottomActionBarMetrics.bottomPadding)
         }
-        .background(Color.white)
-        .shadow(color: Color.black.opacity(0.08), radius: 14, x: 0, y: -4)
+        .background(MallPalette(theme: theme).panelBackground)
+        .shadow(color: DUElevation.lifted.color, radius: DUElevation.lifted.radius, x: DUElevation.lifted.x, y: -4)
         .offset(y: bottomActionBarMetrics.verticalOffset)
         .ignoresSafeArea(edges: .bottom)
     }
@@ -537,14 +540,17 @@ struct MallCartView: View {
     private var deleteButtonBackground: LinearGradient {
         if managedSelectionIDs.isEmpty {
             return LinearGradient(
-                colors: [Color(hex: 0xEB1745, opacity: 0.38), Color(hex: 0xF698B0, opacity: 0.55)],
+                colors: [
+                    theme.colors.status.error.opacity(0.38),
+                    theme.colors.brand.magenta.opacity(0.55)
+                ],
                 startPoint: .leading,
                 endPoint: .trailing
             )
         }
 
         return LinearGradient(
-            colors: [Color(hex: 0xFF2A54), Color(hex: 0xEB1745)],
+            colors: [theme.colors.brand.magenta, theme.colors.status.error],
             startPoint: .leading,
             endPoint: .trailing
         )
@@ -553,14 +559,17 @@ struct MallCartView: View {
     private func checkoutButtonBackground(snapshot: MallCartSnapshot) -> LinearGradient {
         if snapshot.selectedItems.isEmpty {
             return LinearGradient(
-                colors: [Color(hex: 0xFFB7C8), Color(hex: 0xF09AB0)],
+                colors: [
+                    theme.colors.brand.magenta.opacity(0.30),
+                    theme.colors.status.error.opacity(0.40)
+                ],
                 startPoint: .leading,
                 endPoint: .trailing
             )
         }
 
         return LinearGradient(
-            colors: [Color(hex: 0xFF6A86), Color(hex: 0xEB1745)],
+            colors: [theme.colors.brand.magenta, theme.colors.status.error],
             startPoint: .leading,
             endPoint: .trailing
         )
@@ -608,6 +617,8 @@ private enum MallCartLayout {
 }
 
 private struct MallCartItemRow: View {
+    @Environment(\.duTheme) private var theme
+
     let item: MallCartItem
     let language: AppLanguage
     let locale: Locale
@@ -622,6 +633,8 @@ private struct MallCartItemRow: View {
     let onIncrease: () -> Void
 
     var body: some View {
+        let palette = MallPalette(theme: theme)
+
         HStack(alignment: .top, spacing: DUSpacing.md) {
             Button(action: onToggleSelection) {
                 MallCartSelectionIndicator(
@@ -636,13 +649,13 @@ private struct MallCartItemRow: View {
             Button(action: onOpenProduct) {
                 MallImageView(
                     image: item.image,
-                    cornerRadius: 16,
+                    cornerRadius: DURadius.lg,
                     cropsBitmapToFill: true,
                     bitmapFillScale: 0.92
                 )
                 .frame(width: 96, height: 96)
-                .background(Color(hex: 0xF7F9F8))
-                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                .background(palette.chipBackground)
+                .clipShape(RoundedRectangle(cornerRadius: DURadius.lg, style: .continuous))
             }
             .buttonStyle(.plain)
             .disabled(isManaging)
@@ -650,8 +663,8 @@ private struct MallCartItemRow: View {
             VStack(alignment: .leading, spacing: 10) {
                 Button(action: onOpenProduct) {
                     Text(item.title.value(for: language))
-                        .font(.du(16, weight: .semibold))
-                        .foregroundColor(Color(hex: 0x242939))
+                        .font(.du(.bodyLargeSemibold))
+                        .foregroundColor(palette.primaryText)
                         .lineLimit(2)
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
@@ -661,17 +674,17 @@ private struct MallCartItemRow: View {
                 Button(action: onOpenSelection) {
                     HStack(spacing: 4) {
                         Text(selectionLabel)
-                            .font(.du(12, weight: .medium))
-                            .foregroundColor(Color(hex: 0x6674BD))
+                            .font(.du(.meta))
+                            .foregroundColor(palette.accent)
 
                         Text(item.selectedSummary.value(for: language))
-                            .font(.du(13, weight: .medium))
-                            .foregroundColor(Color(hex: 0x242939))
+                            .font(.du(.label))
+                            .foregroundColor(palette.primaryText)
                             .lineLimit(1)
 
                         Image(systemName: "chevron.right")
-                            .font(.du(10, weight: .bold))
-                            .foregroundColor(Color(hex: 0xB2B9C9))
+                            .font(.du(.tinyEmphasized))
+                            .foregroundColor(palette.disabledText)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                 }
@@ -681,11 +694,11 @@ private struct MallCartItemRow: View {
                 if item.isInvalid {
                     Button(action: onOpenProduct) {
                         Text(item.invalidReason?.value(for: language) ?? invalidLabel)
-                            .font(.du(11, weight: .semibold))
-                            .foregroundColor(Color(hex: 0xD2484C))
-                            .padding(.horizontal, 10)
+                            .font(.du(.captionStrong))
+                            .foregroundColor(theme.colors.status.error)
+                            .padding(.horizontal, DUSpacing.base)
                             .frame(height: 24)
-                            .background(Color(hex: 0xFFF0F1))
+                            .background(palette.chipSelectedBackground)
                             .clipShape(Capsule())
                     }
                     .buttonStyle(.plain)
@@ -694,20 +707,20 @@ private struct MallCartItemRow: View {
                     Button(action: onOpenProduct) {
                         HStack(alignment: .center, spacing: 8) {
                             Text(saleLabel)
-                                .font(.du(11, weight: .medium))
-                                .foregroundColor(Color(hex: 0xEB1745))
+                                .font(.du(.caption))
+                                .foregroundColor(palette.priceAccent)
                                 .padding(.horizontal, 6)
                                 .frame(height: 20)
-                                .background(Color(hex: 0xFFE8EE))
-                                .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
+                                .background(theme.colors.status.errorBackground)
+                                .clipShape(RoundedRectangle(cornerRadius: DURadius.xs - 2, style: .continuous))
 
                             Text(item.formattedPrice(for: locale))
-                                .font(.du(18, weight: .bold))
-                                .foregroundColor(Color(hex: 0xEB1745))
+                                .font(.du(.titleSmallStrong))
+                                .foregroundColor(palette.priceAccent)
 
                             Text("AED")
-                                .font(.du(11, weight: .medium))
-                                .foregroundColor(Color(hex: 0xEB1745))
+                                .font(.du(.caption))
+                                .foregroundColor(palette.priceAccent)
                         }
                         .environment(\.layoutDirection, .leftToRight)
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -721,13 +734,13 @@ private struct MallCartItemRow: View {
                         Group {
                             if let saleEndsText = item.saleEndsText?.value(for: language), !saleEndsText.isEmpty {
                                 Text(saleEndsText)
-                                    .font(.du(11, weight: .medium))
-                                    .foregroundColor(Color(hex: 0x98A0BA))
+                                    .font(.du(.caption))
+                                    .foregroundColor(palette.tertiaryText)
                                     .lineLimit(1)
                             } else {
                                 Text(item.formattedPrice(for: locale))
-                                    .font(.du(18, weight: .bold))
-                                    .foregroundColor(Color(hex: 0xEB1745))
+                                    .font(.du(.titleSmallStrong))
+                                    .foregroundColor(palette.priceAccent)
                                     .environment(\.layoutDirection, .leftToRight)
                             }
                         }
@@ -749,12 +762,14 @@ private struct MallCartItemRow: View {
         }
         .padding(.horizontal, DUSpacing.lg)
         .padding(.vertical, DUSpacing.lg)
-        .background(Color.white)
+        .background(palette.panelBackground)
         .opacity(item.isInvalid ? 0.7 : 1)
     }
 }
 
 private struct MallCartQuantityStepper: View {
+    @Environment(\.duTheme) private var theme
+
     let quantity: Int
     let isEnabled: Bool
     let onDecrease: () -> Void
@@ -769,8 +784,8 @@ private struct MallCartQuantityStepper: View {
             )
 
             Text("\(quantity)")
-                .font(.du(15, weight: .medium))
-                .foregroundColor(Color(hex: 0x242939))
+                .font(.du(.body))
+                .foregroundColor(MallPalette(theme: theme).primaryText)
                 .frame(minWidth: 12)
 
             stepperButton(
@@ -789,10 +804,10 @@ private struct MallCartQuantityStepper: View {
     ) -> some View {
         Button(action: action) {
             Image(systemName: systemName)
-                .font(.du(13, weight: .bold))
-                .foregroundColor(isDisabled ? Color(hex: 0xCDD3DF) : Color(hex: 0x44526D))
+                .font(.du(.labelEmphasized))
+                .foregroundColor(isDisabled ? MallPalette(theme: theme).disabledText : MallPalette(theme: theme).secondaryText)
                 .frame(width: 30, height: 30)
-                .background(Color(hex: 0xF2F4F8))
+                .background(MallPalette(theme: theme).chipBackground)
                 .clipShape(Circle())
         }
         .buttonStyle(.plain)
@@ -801,6 +816,8 @@ private struct MallCartQuantityStepper: View {
 }
 
 private struct MallCartSelectionIndicator: View {
+    @Environment(\.duTheme) private var theme
+
     let isSelected: Bool
     var isEnabled = true
 
@@ -811,104 +828,112 @@ private struct MallCartSelectionIndicator: View {
             .overlay {
                 if isSelected {
                     Image(systemName: "checkmark")
-                        .font(.du(12, weight: .bold))
-                        .foregroundColor(.white)
+                        .font(.du(.metaEmphasized))
+                        .foregroundColor(MallPalette(theme: theme).inverseText)
                 }
             }
     }
 
     private var circleFill: Color {
         guard isEnabled else {
-            return Color(hex: 0xE6EBF2)
+            return MallPalette(theme: theme).defaultBorder
         }
-        return isSelected ? Color(hex: 0xF31D4B) : Color(hex: 0xE1E7EF)
+        return isSelected ? theme.colors.status.error : MallPalette(theme: theme).subtleBorder
     }
 }
 
 private struct MallCartLoadingView: View {
+    @Environment(\.duTheme) private var theme
+
     var body: some View {
+        let palette = MallPalette(theme: theme)
+
         ScrollView(showsIndicators: false) {
             VStack(spacing: 12) {
                 ForEach(0..<4, id: \.self) { _ in
                     HStack(alignment: .top, spacing: DUSpacing.md) {
                         Circle()
-                            .fill(Color(hex: 0xE8EDF4))
+                            .fill(palette.defaultBorder)
                             .frame(width: 24, height: 24)
                             .padding(.top, 34)
 
-                        RoundedRectangle(cornerRadius: 16, style: .continuous)
-                            .fill(Color(hex: 0xEEF2F7))
+                        RoundedRectangle(cornerRadius: DURadius.lg, style: .continuous)
+                            .fill(palette.chipBackground)
                             .frame(width: 96, height: 96)
 
                         VStack(alignment: .leading, spacing: 10) {
-                            RoundedRectangle(cornerRadius: 6, style: .continuous)
-                                .fill(Color(hex: 0xEEF2F7))
+                            RoundedRectangle(cornerRadius: DURadius.xs, style: .continuous)
+                                .fill(palette.chipBackground)
                                 .frame(height: 18)
 
-                            RoundedRectangle(cornerRadius: 6, style: .continuous)
-                                .fill(Color(hex: 0xF2F5F9))
+                            RoundedRectangle(cornerRadius: DURadius.xs, style: .continuous)
+                                .fill(palette.canvasBackground)
                                 .frame(width: 140, height: 14)
 
-                            RoundedRectangle(cornerRadius: 6, style: .continuous)
-                                .fill(Color(hex: 0xF4F6FA))
+                            RoundedRectangle(cornerRadius: DURadius.xs, style: .continuous)
+                                .fill(palette.canvasBackground.opacity(0.92))
                                 .frame(width: 112, height: 18)
 
                             HStack {
-                                RoundedRectangle(cornerRadius: 6, style: .continuous)
-                                    .fill(Color(hex: 0xF2F5F9))
+                                RoundedRectangle(cornerRadius: DURadius.xs, style: .continuous)
+                                    .fill(palette.canvasBackground)
                                     .frame(width: 160, height: 12)
                                 Spacer()
-                                RoundedRectangle(cornerRadius: 20, style: .continuous)
-                                    .fill(Color(hex: 0xF2F5F9))
+                                RoundedRectangle(cornerRadius: DURadius.card, style: .continuous)
+                                    .fill(palette.canvasBackground)
                                     .frame(width: 92, height: 30)
                             }
                         }
                     }
                     .padding(.horizontal, DUSpacing.lg)
                     .padding(.vertical, DUSpacing.lg)
-                    .background(Color.white)
+                    .background(palette.panelBackground)
                 }
             }
             .padding(.top, DUSpacing.md)
         }
-        .background(Color(hex: 0xF9FAFD))
+        .background(palette.canvasBackground)
     }
 }
 
 private struct MallCartEmptyView: View {
+    @Environment(\.duTheme) private var theme
+
     let title: String
     let subtitle: String
     let buttonTitle: String
     let action: () -> Void
 
     var body: some View {
+        let palette = MallPalette(theme: theme)
+
         VStack(spacing: DUSpacing.lg) {
             Spacer(minLength: 0)
 
             Image(systemName: "cart")
-                .font(.du(34, weight: .semibold))
-                .foregroundColor(Color(hex: 0xCAD3DE))
+                .font(.du(.featureHero))
+                .foregroundColor(palette.disabledText)
 
             VStack(spacing: DUSpacing.sm) {
                 Text(title)
-                    .font(.du(18, weight: .bold))
-                    .foregroundColor(Color(hex: 0x242939))
+                    .font(.du(.titleSmallStrong))
+                    .foregroundColor(palette.primaryText)
 
                 Text(subtitle)
-                    .font(.du(13, weight: .medium))
-                    .foregroundColor(Color(hex: 0x8592A8))
+                    .font(.du(.label))
+                    .foregroundColor(palette.tertiaryText)
                     .multilineTextAlignment(.center)
             }
 
             Button(action: action) {
                 Text(buttonTitle)
-                    .font(.du(14, weight: .bold))
-                    .foregroundColor(.white)
+                    .font(.du(.bodyEmphasized))
+                    .foregroundColor(palette.inverseText)
                     .padding(.horizontal, 28)
                     .frame(height: 44)
                     .background(
                         LinearGradient(
-                            colors: [Color(hex: 0xFF6A86), Color(hex: 0xEB1745)],
+                            colors: [theme.colors.brand.magenta, theme.colors.status.error],
                             startPoint: .leading,
                             endPoint: .trailing
                         )

@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct MallSearchView: View {
+    @Environment(\.duTheme) private var theme
     @EnvironmentObject private var languageStore: AppLanguageStore
     @Environment(\.presentationMode) private var presentationMode
 
@@ -16,7 +17,7 @@ struct MallSearchView: View {
             header
             content
         }
-        .background(Color.white.ignoresSafeArea())
+        .background(MallPalette(theme: theme).panelBackground.ignoresSafeArea())
         .navigationBarHidden(true)
         .overlay(resultLink)
         .task {
@@ -25,7 +26,7 @@ struct MallSearchView: View {
     }
 
     private var header: some View {
-        VStack(spacing: DUSpacing.sm) {
+        return VStack(spacing: DUSpacing.sm) {
             Color.clear.frame(height: 4)
 
             MallSearchBarView(
@@ -42,14 +43,14 @@ struct MallSearchView: View {
 
             if let validationMessage {
                 Text(validationMessage)
-                    .font(.du(12, weight: .semibold))
-                    .foregroundColor(Color(hex: 0xFF4B5F))
+                    .font(.du(.metaStrong))
+                    .foregroundColor(theme.colors.status.error)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
         .padding(.horizontal, DUSpacing.md)
         .padding(.bottom, DUSpacing.md)
-        .background(MallTheme.headerGradient)
+        .background(theme.colors.gradient.brand)
     }
 
     private var content: some View {
@@ -66,11 +67,13 @@ struct MallSearchView: View {
     }
 
     private var historySection: some View {
-        VStack(alignment: .leading, spacing: DUSpacing.md) {
+        let palette = MallPalette(theme: theme)
+
+        return VStack(alignment: .leading, spacing: DUSpacing.md) {
             HStack {
                 Text(languageStore.string("mall.search.history"))
-                    .font(.du(16, weight: .bold))
-                    .foregroundColor(DUTheme.ink)
+                    .font(.du(.bodyLargeStrong))
+                    .foregroundColor(palette.primaryText)
 
                 Spacer()
 
@@ -79,8 +82,8 @@ struct MallSearchView: View {
                         await viewModel.clearHistory()
                     }
                 }
-                .font(.du(12, weight: .semibold))
-                .foregroundColor(DUTheme.inkTertiary)
+                .font(.du(.metaStrong))
+                .foregroundColor(palette.tertiaryText)
                 .buttonStyle(.plain)
             }
 
@@ -95,8 +98,8 @@ struct MallSearchView: View {
                         } label: {
                             HStack(spacing: 0) {
                                 Text(keyword)
-                                    .font(.du(12, weight: .medium))
-                                    .foregroundColor(DUTheme.inkSecondary)
+                                    .font(.du(.meta))
+                                    .foregroundColor(palette.secondaryText)
                                     .lineLimit(1)
 
                                 Spacer(minLength: 0)
@@ -113,30 +116,32 @@ struct MallSearchView: View {
                             }
                         } label: {
                             Image(systemName: "xmark.circle.fill")
-                                .font(.du(14, weight: .semibold))
-                                .foregroundColor(DUTheme.inkDisabled)
+                                .font(.du(.bodyStrong))
+                                .foregroundColor(palette.disabledText)
                         }
                         .buttonStyle(.plain)
                     }
                     .padding(.horizontal, DUSpacing.md)
                     .frame(height: 40)
-                    .background(Color(hex: 0xF2F4F8))
+                    .background(palette.chipBackground)
                     .clipShape(Capsule())
                 }
             }
         }
         .padding(DUSpacing.lg)
-        .background(Color.white)
-        .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
-        .shadow(color: Color.black.opacity(0.05), radius: 12, x: 0, y: 8)
+        .background(palette.panelBackground)
+        .clipShape(RoundedRectangle(cornerRadius: DURadius.cardLarge, style: .continuous))
+        .shadow(color: palette.cardElevation.color, radius: palette.cardElevation.radius, x: palette.cardElevation.x, y: palette.cardElevation.y)
         .padding(.horizontal, DUSpacing.md)
     }
 
     private var hotKeywordSection: some View {
-        VStack(alignment: .leading, spacing: DUSpacing.md) {
+        let palette = MallPalette(theme: theme)
+
+        return VStack(alignment: .leading, spacing: DUSpacing.md) {
             Text(languageStore.string("mall.search.hot"))
-                .font(.du(16, weight: .bold))
-                .foregroundColor(DUTheme.ink)
+                .font(.du(.bodyLargeStrong))
+                .foregroundColor(palette.primaryText)
 
             VStack(spacing: DUSpacing.sm) {
                 let hotKeywords = viewModel.searchBootstrap?.hotKeywords ?? []
@@ -149,33 +154,33 @@ struct MallSearchView: View {
                     } label: {
                         HStack(spacing: DUSpacing.md) {
                             Text("\(index + 1)")
-                                .font(.du(14, weight: .bold))
-                                .foregroundColor(index < 3 ? Color(hex: 0xFF4B5F) : DUTheme.inkDisabled)
+                                .font(.du(.bodyEmphasized))
+                                .foregroundColor(index < 3 ? theme.colors.status.error : palette.disabledText)
                                 .frame(width: 18)
 
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(item.title.value(for: languageStore.currentLanguage))
-                                    .font(.du(13, weight: .semibold))
-                                    .foregroundColor(DUTheme.ink)
+                                    .font(.du(.labelStrong))
+                                    .foregroundColor(palette.primaryText)
                                     .frame(maxWidth: .infinity, alignment: .leading)
 
                                 Text(item.meta.value(for: languageStore.currentLanguage))
-                                    .font(.du(11, weight: .medium))
-                                    .foregroundColor(DUTheme.inkDisabled)
+                                    .font(.du(.caption))
+                                    .foregroundColor(palette.disabledText)
                             }
                         }
                         .padding(DUSpacing.md)
-                        .background(Color(hex: 0xF6FAFF))
-                        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+                        .background(palette.raisedBackground)
+                        .clipShape(RoundedRectangle(cornerRadius: DURadius.control, style: .continuous))
                     }
                     .buttonStyle(.plain)
                 }
             }
         }
         .padding(DUSpacing.lg)
-        .background(Color.white)
-        .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
-        .shadow(color: Color.black.opacity(0.05), radius: 12, x: 0, y: 8)
+        .background(palette.panelBackground)
+        .clipShape(RoundedRectangle(cornerRadius: DURadius.cardLarge, style: .continuous))
+        .shadow(color: palette.cardElevation.color, radius: palette.cardElevation.radius, x: palette.cardElevation.x, y: palette.cardElevation.y)
         .padding(.horizontal, DUSpacing.md)
     }
 

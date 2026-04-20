@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct MallCategoryView: View {
+    @Environment(\.duTheme) private var theme
     @EnvironmentObject private var languageStore: AppLanguageStore
     @Environment(\.presentationMode) private var presentationMode
 
@@ -27,13 +28,13 @@ struct MallCategoryView: View {
                 VStack(spacing: DUSpacing.lg) {
                     ProgressView()
                     Text(languageStore.string("mall.state.loading.title"))
-                        .font(.du(15, weight: .semibold))
-                        .foregroundColor(DUTheme.inkSecondary)
+                        .font(.du(.bodyLargeSemibold))
+                        .foregroundColor(MallPalette(theme: theme).secondaryText)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
-        .background(Color.white.ignoresSafeArea())
+        .background(MallPalette(theme: theme).panelBackground.ignoresSafeArea())
         .navigationBarHidden(true)
         .overlay(searchNavigationLink)
         .task {
@@ -43,7 +44,9 @@ struct MallCategoryView: View {
     }
 
     private var header: some View {
-        VStack(spacing: 0) {
+        let palette = MallPalette(theme: theme)
+
+        return VStack(spacing: 0) {
             Color.clear.frame(height: 4)
 
             HStack {
@@ -51,16 +54,16 @@ struct MallCategoryView: View {
                     presentationMode.wrappedValue.dismiss()
                 } label: {
                     Image(systemName: "chevron.left")
-                        .font(.du(18, weight: .bold))
-                        .foregroundColor(.white)
+                        .font(.du(.titleSmallStrong))
+                        .foregroundColor(palette.inverseText)
                 }
                 .buttonStyle(.plain)
 
                 Spacer()
 
                 Text(languageStore.string("mall.category.title"))
-                    .font(.du(17, weight: .bold))
-                    .foregroundColor(.white)
+                    .font(.du(.titleSmall))
+                    .foregroundColor(palette.inverseText)
 
                 Spacer()
 
@@ -69,11 +72,13 @@ struct MallCategoryView: View {
             .padding(.horizontal, DUSpacing.lg)
             .padding(.vertical, DUSpacing.md)
         }
-        .background(MallTheme.headerGradient)
+        .background(theme.colors.gradient.brand)
     }
 
     private var sidebar: some View {
-        ScrollView(showsIndicators: false) {
+        let palette = MallPalette(theme: theme)
+
+        return ScrollView(showsIndicators: false) {
             VStack(spacing: 0) {
                 ForEach(viewModel.homeSnapshot?.primaryCategories ?? []) { category in
                     Button {
@@ -83,26 +88,20 @@ struct MallCategoryView: View {
                         HStack(spacing: 0) {
                             if category.id == selectedCategoryID {
                                 RoundedRectangle(cornerRadius: 999, style: .continuous)
-                                    .fill(
-                                        LinearGradient(
-                                            colors: [Color(hex: 0xFF6674), Color(hex: 0xFF8E68)],
-                                            startPoint: .top,
-                                            endPoint: .bottom
-                                        )
-                                    )
+                                    .fill(palette.badgeGradient(for: .sale))
                                     .frame(width: 3, height: 36)
                             } else {
                                 Color.clear.frame(width: 3, height: 36)
                             }
 
                             Text(category.title.value(for: languageStore.currentLanguage))
-                                .font(.du(12, weight: category.id == selectedCategoryID ? .bold : .medium))
+                                .font(.du(category.id == selectedCategoryID ? .metaEmphasized : .meta))
                                 .foregroundColor(
-                                    category.id == selectedCategoryID ? Color(hex: 0xFF4B5F) : DUTheme.inkSecondary
+                                    category.id == selectedCategoryID ? theme.colors.status.error : palette.secondaryText
                                 )
                                 .frame(maxWidth: .infinity)
                                 .padding(.vertical, DUSpacing.lg)
-                                .background(category.id == selectedCategoryID ? Color.white : Color.clear)
+                                .background(category.id == selectedCategoryID ? palette.panelBackground : Color.clear)
                         }
                     }
                     .buttonStyle(.plain)
@@ -110,10 +109,10 @@ struct MallCategoryView: View {
             }
         }
         .frame(width: 88)
-        .background(Color(hex: 0xF8FAFD))
+        .background(palette.canvasBackground)
         .overlay(alignment: .trailing) {
             Rectangle()
-                .fill(DUTheme.lineLight)
+                .fill(palette.subtleBorder)
                 .frame(width: 1)
         }
     }
@@ -187,16 +186,18 @@ struct MallCategoryView: View {
         title: String,
         isSelected: Bool
     ) -> some View {
-        Text(title)
-            .font(.du(12, weight: isSelected ? .bold : .medium))
-            .foregroundColor(isSelected ? Color(hex: 0xFF4D61) : DUTheme.inkSecondary)
+        let palette = MallPalette(theme: theme)
+
+        return Text(title)
+            .font(.du(isSelected ? .metaEmphasized : .meta))
+            .foregroundColor(isSelected ? theme.colors.status.error : palette.secondaryText)
             .padding(.horizontal, DUSpacing.md)
             .frame(height: 34)
-            .background(isSelected ? Color(hex: 0xFFF2F3) : Color.white)
+            .background(isSelected ? palette.chipSelectedBackground : palette.panelBackground)
             .overlay(
-                RoundedRectangle(cornerRadius: 17, style: .continuous)
+                RoundedRectangle(cornerRadius: DURadius.control - 1, style: .continuous)
                     .stroke(
-                        isSelected ? Color(hex: 0xFFB8C2) : DUTheme.lineLight,
+                        isSelected ? theme.colors.status.error.opacity(0.28) : palette.subtleBorder,
                         lineWidth: 1
                     )
             )
