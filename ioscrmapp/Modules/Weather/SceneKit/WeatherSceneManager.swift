@@ -1045,14 +1045,7 @@ final class WeatherSceneManager: ObservableObject {
             return nil
         }
 
-        switch name {
-        case "cloud", "cloudy", "cloudy2":
-            applyCloudMaterial(to: payload.node)
-        case "moon":
-            applyMoonMaterial(to: payload.node)
-        default:
-            break
-        }
+        applyWeatherAssetMaterialCorrection(named: name, to: payload.node)
 
         weatherAssetPrototypeCache[cacheKey] = payload.node
         return payload.node.clone()
@@ -1492,29 +1485,89 @@ final class WeatherSceneManager: ObservableObject {
         return (wrapper, normalizedSize)
     }
 
-    private func applyCloudMaterial(to node: SCNNode) {
+    private struct WeatherAssetMaterialCorrection {
+        let diffuseContents: Any
+        let normalTextureName: String?
+        let metalness: Float
+        let roughness: Float
+    }
+
+    private func applyWeatherAssetMaterialCorrection(named name: String, to node: SCNNode) {
+        guard let correction = weatherAssetMaterialCorrection(named: name) else {
+            return
+        }
+
+        let normalTextureURL = correction.normalTextureName.flatMap {
+            Bundle.main.url(forResource: $0, withExtension: "png", subdirectory: weatherDataSubdirectory)
+        }
+
         node.enumerateChildNodes { child, _ in
             guard let geometry = child.geometry else { return }
-            let mat = SCNMaterial()
-            mat.lightingModel      = .physicallyBased
-            mat.diffuse.contents   = UIColor(red: 0.92, green: 0.94, blue: 0.97, alpha: 1)
-            mat.metalness.contents = Float(0.0)
-            mat.roughness.contents = Float(0.72)
-            mat.isDoubleSided      = true
-            geometry.materials = Array(repeating: mat, count: max(geometry.materials.count, 1))
+            let material = SCNMaterial()
+            material.lightingModel = .physicallyBased
+            material.diffuse.contents = correction.diffuseContents
+            material.normal.contents = normalTextureURL
+            material.metalness.contents = correction.metalness
+            material.roughness.contents = correction.roughness
+            material.emission.contents = UIColor(white: 0, alpha: 0)
+            material.isDoubleSided = true
+            geometry.materials = Array(repeating: material, count: max(geometry.materials.count, 1))
         }
     }
 
-    private func applyMoonMaterial(to node: SCNNode) {
-        node.enumerateChildNodes { child, _ in
-            guard let geometry = child.geometry else { return }
-            let mat = SCNMaterial()
-            mat.lightingModel      = .physicallyBased
-            mat.diffuse.contents   = UIColor(red: 0.80, green: 0.82, blue: 0.86, alpha: 1)
-            mat.metalness.contents = Float(0.05)
-            mat.roughness.contents = Float(0.65)
-            mat.isDoubleSided      = true
-            geometry.materials = Array(repeating: mat, count: max(geometry.materials.count, 1))
+    private func weatherAssetMaterialCorrection(named name: String) -> WeatherAssetMaterialCorrection? {
+        switch name {
+        case "moon":
+            guard let baseColorURL = Bundle.main.url(
+                forResource: "moon_baseColor",
+                withExtension: "png",
+                subdirectory: weatherDataSubdirectory
+            ) else {
+                return nil
+            }
+            return WeatherAssetMaterialCorrection(
+                diffuseContents: baseColorURL,
+                normalTextureName: "moon_normal",
+                metalness: 0,
+                roughness: 0.94
+            )
+        case "cloud":
+            return WeatherAssetMaterialCorrection(
+                diffuseContents: UIColor(red: 0.13, green: 0.13, blue: 0.14, alpha: 1),
+                normalTextureName: "cloud_normal",
+                metalness: 0,
+                roughness: 0.98
+            )
+        case "cloudy":
+            return WeatherAssetMaterialCorrection(
+                diffuseContents: UIColor(red: 0.13, green: 0.13, blue: 0.14, alpha: 1),
+                normalTextureName: "cloudy_normal",
+                metalness: 0,
+                roughness: 0.98
+            )
+        case "cloudy2":
+            return WeatherAssetMaterialCorrection(
+                diffuseContents: UIColor(red: 0.13, green: 0.13, blue: 0.14, alpha: 1),
+                normalTextureName: "cloudy2_normal",
+                metalness: 0,
+                roughness: 0.98
+            )
+        case "air":
+            return WeatherAssetMaterialCorrection(
+                diffuseContents: UIColor(red: 0.12, green: 0.12, blue: 0.13, alpha: 1),
+                normalTextureName: "air_normal",
+                metalness: 0,
+                roughness: 0.99
+            )
+        case "rain":
+            return WeatherAssetMaterialCorrection(
+                diffuseContents: UIColor(red: 0.15, green: 0.15, blue: 0.16, alpha: 1),
+                normalTextureName: "rain_normal",
+                metalness: 0,
+                roughness: 0.99
+            )
+        default:
+            return nil
         }
     }
 
