@@ -74,6 +74,7 @@ final class WeatherSceneManager: ObservableObject {
     private var temperatureNodePrototypeCache: [String: SCNNode] = [:]
     private var weatherAssetPrototypeCache: [String: SCNNode] = [:]
     private var homeSceneAccessoryNode: SCNNode?
+    private var homeNightGlowNode: SCNNode?
     private var sunModelNode: SCNNode?
     private var sunBurstRayDirections: [ObjectIdentifier: SCNVector3] = [:]
     private var sunBurstRayStartPositions: [ObjectIdentifier: SCNVector3] = [:]
@@ -106,6 +107,7 @@ final class WeatherSceneManager: ObservableObject {
     private let detailDimensionAngleStep = Float.pi * 2 / Float(WeatherDetailDimension.allCases.count)
     private let detailRainScaleCorrection: Float = 0.44
     private let moonCrescentModelEulerAngles = SCNVector3(0, 2.36, 0)
+    private let homeNightGlowIntensity: CGFloat = 700
     private let transitionRestRotation = SCNVector3(0, 0, 0)
 
     init(temperature: Int = MockWeatherData.today.temperature, mode: WeatherSceneMode = .main) {
@@ -216,7 +218,9 @@ final class WeatherSceneManager: ObservableObject {
         applyDisplayGroupRotation(sourceRotation)
         resetSunBurstState()
         setHomeSceneAccessoryVisibility(isHidden: true, animated: false)
+        setHomeNightGlowVisible(false, animated: false)
         sunNode?.opacity = 1
+        setSunEmbeddedLightsHidden(false)
     }
 
     func alignDetailSceneToFront() {
@@ -536,6 +540,7 @@ final class WeatherSceneManager: ObservableObject {
         SCNTransaction.animationDuration = 0.18
         detailDimensionRingNode.opacity = 1
         sunNode?.opacity = 0
+        setSunEmbeddedLightsHidden(true)
         SCNTransaction.commit()
     }
 
@@ -548,6 +553,7 @@ final class WeatherSceneManager: ObservableObject {
         detailDimensionRingNode?.opacity = 0
         detailDimensionRingNode?.isHidden = true
         sunNode?.opacity = 1
+        setSunEmbeddedLightsHidden(false)
         detailTitleNode?.isHidden = false
         detailTitleNode?.opacity = 1
     }
@@ -588,6 +594,7 @@ final class WeatherSceneManager: ObservableObject {
         sunTapBurstOverlayNode = nil
         temperatureNode = nil
         homeSceneAccessoryNode = nil
+        homeNightGlowNode = nil
         sunNode = nil
         sunModelNode = nil
         sunBurstRayDirections.removeAll()
@@ -713,6 +720,13 @@ final class WeatherSceneManager: ObservableObject {
             sunModelNode = sun
         }
 
+        if mode == .main || mode == .sunTransition {
+            let nightGlow = makeHomeNightGlowNode()
+            rotatingGroup.addChildNode(nightGlow)
+            homeNightGlowNode = nightGlow
+            setHomeNightGlowVisible(false, animated: false)
+        }
+
         if isDetailMode || isTransitionMode {
             let dimensionRing = makeDetailDimensionRingNode()
             dimensionRing.opacity = isDetailMode ? 1 : 0
@@ -722,6 +736,7 @@ final class WeatherSceneManager: ObservableObject {
 
             if isDetailMode {
                 sunNode?.opacity = 0
+                setSunEmbeddedLightsHidden(true)
                 detailTitleNode?.opacity = 0
             }
         }
@@ -911,6 +926,8 @@ final class WeatherSceneManager: ObservableObject {
         }
 
         let sunOpacity: CGFloat = currentHomeScenePreset.showsSunPrimary ? 1 : 0
+        setSunEmbeddedLightsHidden(!currentHomeScenePreset.showsSunPrimary)
+        setHomeNightGlowVisible(currentHomeScenePreset.usesDarkBackground, animated: animated)
         if animated {
             SCNTransaction.begin()
             SCNTransaction.animationDuration = 0.22
@@ -924,6 +941,55 @@ final class WeatherSceneManager: ObservableObject {
         } else {
             previousAccessory?.removeFromParentNode()
             sunNode?.opacity = sunOpacity
+        }
+    }
+
+    private func makeHomeNightGlowNode() -> SCNNode {
+        let glow = SCNLight()
+        glow.type = .omni
+        glow.intensity = 0
+        glow.color = UIColor(red: 0.86, green: 0.92, blue: 1.0, alpha: 1)
+        glow.attenuationStartDistance = 0
+        glow.attenuationEndDistance = 26
+
+        let node = SCNNode()
+        node.name = "weather_home_night_glow"
+        node.light = glow
+        node.position = SCNVector3(0, mainSunPositionY, -0.1)
+        node.isHidden = true
+        return node
+    }
+
+    private func setHomeNightGlowVisible(_ isVisible: Bool, animated: Bool) {
+        guard let homeNightGlowNode,
+              let light = homeNightGlowNode.light else {
+            return
+        }
+
+        if isVisible {
+            homeNightGlowNode.isHidden = false
+        }
+
+        SCNTransaction.begin()
+        SCNTransaction.animationDuration = animated ? 0.22 : 0
+        light.intensity = isVisible ? homeNightGlowIntensity : 0
+        SCNTransaction.completionBlock = {
+            if !isVisible {
+                homeNightGlowNode.isHidden = true
+            }
+        }
+        SCNTransaction.commit()
+    }
+
+    private func setSunEmbeddedLightsHidden(_ isHidden: Bool) {
+        guard let sunNode else { return }
+        if sunNode.light != nil {
+            sunNode.isHidden = isHidden
+        }
+        sunNode.enumerateChildNodes { node, _ in
+            if node.light != nil {
+                node.isHidden = isHidden
+            }
         }
     }
 
