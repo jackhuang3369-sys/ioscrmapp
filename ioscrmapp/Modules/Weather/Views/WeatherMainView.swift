@@ -4,7 +4,7 @@ import Dispatch
 
 struct WeatherMainView: View {
     @Environment(\.dismiss) private var dismiss
-    @StateObject private var sceneManager = WeatherSceneManager(temperature: MockWeatherData.today.temperature, mode: .sunTransition)
+    @State private var sceneManager: WeatherSceneManager?
     @State private var selectedTimelineID = ""
     @State private var hourlyPoints: [WeatherHourlyStripPoint] = []
     @State private var isSunDetailPresented = false
@@ -15,6 +15,7 @@ struct WeatherMainView: View {
     @State private var forecastStripMinY: CGFloat = 0
     @State private var clearSkyIdleBaselineY: CGFloat?
     @State private var hasPreparedRuntimeAssets = false
+    @State private var isSceneLoading = false
 
     private let clearSkyFallbackLiftOffset: CGFloat = -24
     
@@ -57,6 +58,7 @@ struct WeatherMainView: View {
                     .allowsHitTesting(!isSunTransitionActive)
                 
                 if isSunDetailPresented {
+                    if let sceneManager {
                     WeatherSunDetailOverlay(
                         manager: sceneManager,
                         size: proxy.size,
@@ -66,6 +68,7 @@ struct WeatherMainView: View {
                         onClose: exitSunDetail
                     )
                     .zIndex(8)
+                    }
                 }
             }
             .ignoresSafeArea()
@@ -84,8 +87,7 @@ struct WeatherMainView: View {
                     prepareRuntimeAssets()
                 }
             }
-            WeatherAudioPlayer.shared.playDetailedEnter()
-            applyHomeScene(for: selectedEntry, animated: false)
+            loadSceneIfNeeded()
         }
     }
     
@@ -100,18 +102,24 @@ struct WeatherMainView: View {
                 headerBar
                     .zIndex(2)
                 
-                WeatherSceneView(
-                    scene: sceneManager.scene,
-                    manager: sceneManager,
-                    onSunTap: handleSunTap,
-                    onBackgroundTap: isSunDetailPresented ? exitSunDetail : nil,
-                    allowsInteraction: !isSunTransitionActive,
-                    interactionResetVersion: sceneInteractionResetVersion
-                )
-                .frame(height: mainSceneHeight)
-                .padding(.top, 8)
-                .padding(.horizontal, 0)
-                .zIndex(1)
+                if let sceneManager {
+                    WeatherSceneView(
+                        scene: sceneManager.scene,
+                        manager: sceneManager,
+                        onSunTap: handleSunTap,
+                        onBackgroundTap: isSunDetailPresented ? exitSunDetail : nil,
+                        allowsInteraction: !isSunTransitionActive,
+                        interactionResetVersion: sceneInteractionResetVersion
+                    )
+                    .frame(height: mainSceneHeight)
+                    .padding(.top, 8)
+                    .padding(.horizontal, 0)
+                    .zIndex(1)
+                } else {
+                    sceneLoadingPlaceholder(height: mainSceneHeight)
+                        .padding(.top, 8)
+                        .zIndex(1)
+                }
                 
                 Spacer(minLength: 0)
 
@@ -258,8 +266,10 @@ struct WeatherMainView: View {
     private func applyHomeScene(
         for entry: WeatherHourlyStripPoint,
         animated: Bool,
-        previousTemperature: Int? = nil
+        previousTemperature: Int? = nil,
+        manager overrideManager: WeatherSceneManager? = nil
     ) {
+        guard let sceneManager = overrideManager ?? sceneManager else { return }
         let temperatureChanged = previousTemperature.map { $0 != entry.temperature } ?? true
         if temperatureChanged {
             sceneManager.setTemperature(entry.temperature, animated: animated)
@@ -271,18 +281,49 @@ struct WeatherMainView: View {
         let temperatures = hourlyPoints.isEmpty
             ? MockWeatherData.hourlyDemoPoints.map(\.temperature)
             : hourlyPoints.map(\.temperature)
-        sceneManager.prewarmTemperatureNodes(for: temperatures)
-        WeatherAudioPlayer.shared.prewarm(
-            [
-                "menu-open-1",
-                "sun-detail-enter",
-                "sun-detail-exit",
-                "ui-time-scroll-click-1",
-                "ui-day-select-1"
-            ],
-            maxConcurrentPlayers: 1
+        WeatherEntryPreloader.shared.prepareIfNeeded(
+            temperature: selectedEntry.temperature,
+            temperatures: temperatures
         )
-        WeatherHapticPlayer.shared.prepareSunTransition()
+    }
+
+    private func loadSceneIfNeeded() {
+        guard sceneManager == nil, !isSceneLoading else { return }
+
+        isSceneLoading = true
+        let temperatures = hourlyPoints.isEmpty
+            ? MockWeatherData.hourlyDemoPoints.map(\.temperature)
+            : hourlyPoints.map(\.temperature)
+        let selectedTemperature = selectedEntry.temperature
+
+        WeatherEntryPreloader.shared.makeTransitionManager(
+            temperature: selectedTemperature,
+            temperatures: temperatures
+        ) { manager in
+            sceneManager = manager
+            isSceneLoading = false
+            WeatherAudioPlayer.shared.playDetailedEnter()
+            applyHomeScene(
+                for: selectedEntry,
+                animated: false,
+                manager: manager
+            )
+        }
+    }
+
+    private func sceneLoadingPlaceholder(height: CGFloat) -> some View {
+        VStack(spacing: 14) {
+            RoundedRectangle(cornerRadius: 28, style: .continuous)
+                .fill(usesDarkHomeTheme ? Color.white.opacity(0.08) : Color.black.opacity(0.05))
+                .frame(width: 164, height: 164)
+                .overlay {
+                    ProgressView()
+                        .progressViewStyle(.circular)
+                        .tint(usesDarkHomeTheme ? .white : .black)
+                }
+        }
+        .frame(maxWidth: .infinity)
+        .frame(height: height)
     }
 
     private func clearSkyTitleLiftOffset(for bubbleState: WeatherHourlyBubbleState? = nil) -> CGFloat {
@@ -415,6 +456,7 @@ struct WeatherMainView: View {
     }
     
     private func enterSunDetail() {
+        guard let sceneManager else { return }
         guard !isSunDetailPresented, !isSunTransitionActive else { return }
 
         guard sceneManager.isDisplayGroupFrontFacing() else {
@@ -431,6 +473,7 @@ struct WeatherMainView: View {
     }
 
     private func beginSunDetailPresentation() {
+        guard let sceneManager else { return }
         guard !isSunDetailPresented, !isSunTransitionActive else { return }
 
         sceneManager.prepareSunDetailTransition(
@@ -465,6 +508,7 @@ struct WeatherMainView: View {
     }
 
     private func handleSunTap() {
+        guard let sceneManager else { return }
         if isSunDetailPresented {
             guard !isSunTransitionActive else { return }
             WeatherAudioPlayer.shared.playSunTapBurst()
@@ -476,6 +520,7 @@ struct WeatherMainView: View {
     }
     
     private func exitSunDetail() {
+        guard let sceneManager else { return }
         guard isSunDetailPresented, !isSunTransitionActive else { return }
 
         isSunTransitionActive = true

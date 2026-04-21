@@ -158,6 +158,7 @@ struct HomeView: View {
                 .environmentObject(chromeState)
                 .task {
                     await viewModel.loadIfNeeded()
+                    WeatherEntryPreloader.shared.prepareIfNeeded()
                 }
                 .background(homePageBackground.ignoresSafeArea())
                 .alert(isPresented: placeholderAlertIsPresented) {

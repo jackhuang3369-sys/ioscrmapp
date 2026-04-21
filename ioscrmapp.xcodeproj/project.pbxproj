@@ -100,6 +100,7 @@
 		A10000000000000000000075 /* WeatherDetailDimension.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000075 /* WeatherDetailDimension.swift */; };
 		A10000000000000000000076 /* WeatherDetailCarouselView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000076 /* WeatherDetailCarouselView.swift */; };
 		A10000000000000000000077 /* WeatherSunDetailViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000077 /* WeatherSunDetailViews.swift */; };
+		A10000000000000000000078 /* WeatherEntryPreloader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000078 /* WeatherEntryPreloader.swift */; };
 		A10000000000000000000071 /* Fonts in Resources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000071 /* Fonts */; };
 		B10000000000000000000001 /* BillingAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000001 /* BillingAPI.swift */; };
 		B10000000000000000000002 /* BillingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000002 /* BillingService.swift */; };
@@ -254,6 +255,7 @@
 		A20000000000000000000075 /* WeatherDetailDimension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherDetailDimension.swift; sourceTree = "<group>"; };
 		A20000000000000000000076 /* WeatherDetailCarouselView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherDetailCarouselView.swift; sourceTree = "<group>"; };
 		A20000000000000000000077 /* WeatherSunDetailViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherSunDetailViews.swift; sourceTree = "<group>"; };
+		A20000000000000000000078 /* WeatherEntryPreloader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherEntryPreloader.swift; sourceTree = "<group>"; };
 		A20000000000000000000071 /* Fonts */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Fonts; sourceTree = "<group>"; };
 		B20000000000000000000001 /* BillingAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BillingAPI.swift; sourceTree = "<group>"; };
 		B20000000000000000000002 /* BillingService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BillingService.swift; sourceTree = "<group>"; };
@@ -875,6 +877,7 @@
 				A20000000000000000000072 /* WeatherSunBurstCore.swift */,
 				A20000000000000000000073 /* WeatherSunTransitionHapticCore.swift */,
 				A20000000000000000000074 /* WeatherHapticPlayer.swift */,
+				A20000000000000000000078 /* WeatherEntryPreloader.swift */,
 			);
 			path = SceneKit;
 			sourceTree = "<group>";
@@ -1294,6 +1297,7 @@
 				A10000000000000000000072 /* WeatherSunBurstCore.swift in Sources */,
 				A10000000000000000000073 /* WeatherSunTransitionHapticCore.swift in Sources */,
 				A10000000000000000000074 /* WeatherHapticPlayer.swift in Sources */,
+				A10000000000000000000078 /* WeatherEntryPreloader.swift in Sources */,
 				A10000000000000000000076 /* WeatherDetailCarouselView.swift in Sources */,
 				A10000000000000000000054 /* WeatherHourlyStrip.swift in Sources */,
 				A10000000000000000000055 /* WeatherMainView.swift in Sources */,
