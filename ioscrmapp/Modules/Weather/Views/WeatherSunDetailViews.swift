@@ -15,11 +15,7 @@ struct WeatherSunDetailOverlay: View {
         ZStack {
             WeatherSunDetailBackdrop()
                 .opacity(interfaceOpacity)
-            
-            WeatherSunDismissEdges(onDismiss: onClose)
-                .opacity(interfaceOpacity)
-                .allowsHitTesting(allowsInteraction)
-            
+
             VStack(spacing: 0) {
                 HStack {
                     Button(action: onClose) {
@@ -403,38 +399,6 @@ private struct SeededRandomGenerator: RandomNumberGenerator {
     mutating func next() -> UInt64 {
         state = state &* 6364136223846793005 &+ 1442695040888963407
         return state
-    }
-}
-
-private struct WeatherSunDismissEdges: View {
-    let onDismiss: () -> Void
-    
-    var body: some View {
-        GeometryReader { proxy in
-            ZStack {
-                VStack(spacing: 0) {
-                    Color.clear
-                        .frame(height: min(150, proxy.size.height * 0.18))
-                        .contentShape(Rectangle())
-                        .onTapGesture(perform: onDismiss)
-                    Spacer(minLength: 0)
-                }
-                
-                HStack(spacing: 0) {
-                    Color.clear
-                        .frame(width: 30)
-                        .contentShape(Rectangle())
-                        .onTapGesture(perform: onDismiss)
-                    
-                    Spacer(minLength: 0)
-                    
-                    Color.clear
-                        .frame(width: 30)
-                        .contentShape(Rectangle())
-                        .onTapGesture(perform: onDismiss)
-                }
-            }
-        }
     }
 }
 

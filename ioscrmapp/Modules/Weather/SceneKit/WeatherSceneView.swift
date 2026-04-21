@@ -265,9 +265,11 @@ struct WeatherSceneView: UIViewRepresentable {
         scnView.isOpaque                 = false
         scnView.allowsCameraControl      = false
         scnView.antialiasingMode         = .multisampling4X
-        scnView.rendersContinuously      = true
+        scnView.rendersContinuously      = false
         scnView.autoenablesDefaultLighting = false
 
+        var panGesture: UIPanGestureRecognizer?
+        var tapGesture: UITapGestureRecognizer?
         if allowsInteraction {
             let pan = UIPanGestureRecognizer(
                 target: context.coordinator,
@@ -276,16 +278,23 @@ struct WeatherSceneView: UIViewRepresentable {
             pan.maximumNumberOfTouches = 1
             pan.delegate = context.coordinator
             scnView.addGestureRecognizer(pan)
+            panGesture = pan
 
             let tap = UITapGestureRecognizer(
                 target: context.coordinator,
                 action: #selector(Coordinator.handleTap(_:))
             )
+            tap.delegate = context.coordinator
             tap.require(toFail: pan)
             scnView.addGestureRecognizer(tap)
+            tapGesture = tap
         }
 
-        context.coordinator.startDisplayLink()
+        context.coordinator.attachSceneView(
+            scnView,
+            panGestureRecognizer: panGesture,
+            tapGestureRecognizer: tapGesture
+        )
         return scnView
     }
 
@@ -295,6 +304,7 @@ struct WeatherSceneView: UIViewRepresentable {
             onSunTap: onSunTap,
             onBackgroundTap: onBackgroundTap
         )
+        context.coordinator.updateInteractionAvailability(allowsInteraction)
         context.coordinator.applyInteractionResetIfNeeded(
             interactionResetVersion,
             rotation: manager?.displayGroupRotation ?? SCNVector3(0, 0, 0),
@@ -339,9 +349,12 @@ struct WeatherSceneView: UIViewRepresentable {
         }
 
         private let manager: WeatherSceneManager?
-        private let allowsInteraction: Bool
+        private var allowsInteraction: Bool
         private var onSunTap: (() -> Void)?
         private var onBackgroundTap: (() -> Void)?
+        private weak var sceneView: SCNView?
+        private weak var panGestureRecognizer: UIPanGestureRecognizer?
+        private weak var tapGestureRecognizer: UITapGestureRecognizer?
         private var currentYaw:     Float = 0
         private var currentPitch:   Float = 0
         private var currentRoll:    Float = 0
@@ -393,9 +406,27 @@ struct WeatherSceneView: UIViewRepresentable {
             targetPitch = restPitch
         }
 
+        func attachSceneView(
+            _ sceneView: SCNView,
+            panGestureRecognizer: UIPanGestureRecognizer?,
+            tapGestureRecognizer: UITapGestureRecognizer?
+        ) {
+            self.sceneView = sceneView
+            self.panGestureRecognizer = panGestureRecognizer
+            self.tapGestureRecognizer = tapGestureRecognizer
+            updateInputRouting()
+            updateRenderLoopState()
+        }
+
         func updateInteractionCallbacks(onSunTap: (() -> Void)?, onBackgroundTap: (() -> Void)?) {
             self.onSunTap = onSunTap
             self.onBackgroundTap = onBackgroundTap
+        }
+
+        func updateInteractionAvailability(_ allowsInteraction: Bool) {
+            self.allowsInteraction = allowsInteraction
+            updateInputRouting()
+            updateRenderLoopState()
         }
 
         func applyInteractionResetIfNeeded(_ version: Int, rotation: SCNVector3, restPitch: Float) {
@@ -417,22 +448,67 @@ struct WeatherSceneView: UIViewRepresentable {
                 applyOrientation(to: node)
                 syncManagerRotationIfNeeded(node: node)
             }
+
+            updateInputRouting()
+            updateRenderLoopState()
         }
 
-        deinit { displayLink?.invalidate() }
+        deinit { stopDisplayLink() }
 
         // MARK: Display link
 
-        func startDisplayLink() {
-            guard manager != nil else { return }  // no manager = no gesture/spin needed
+        private func startDisplayLinkIfNeeded() {
+            guard manager != nil, displayLink == nil else { return }
+            let link = CADisplayLink(target: self, selector: #selector(step))
+            link.add(to: .main, forMode: .common)
+            displayLink = link
+        }
+
+        private func stopDisplayLink() {
             displayLink?.invalidate()
-            displayLink = CADisplayLink(target: self, selector: #selector(step))
-            displayLink?.add(to: .main, forMode: .common)
+            displayLink = nil
+        }
+
+        private func updateInputRouting() {
+            let isDetailMode = manager?.isSunDetailMode == true
+            panGestureRecognizer?.isEnabled = allowsInteraction
+            tapGestureRecognizer?.isEnabled = allowsInteraction && !isDetailMode
+        }
+
+        private func updateRenderLoopState() {
+            let shouldRunDisplayLink = requiresDisplayLink()
+            if shouldRunDisplayLink {
+                startDisplayLinkIfNeeded()
+            } else {
+                stopDisplayLink()
+            }
+            sceneView?.rendersContinuously = shouldRunDisplayLink
+        }
+
+        private func requiresDisplayLink() -> Bool {
+            guard manager != nil else { return false }
+
+            if isPanning || orientationAnimation != nil || pendingOrientationAnimation != nil {
+                return true
+            }
+
+            if abs(yawVelocity) > 0.0005 || abs(pitchVelocity) > 0.0005 || abs(rollVelocity) > 0.0005 {
+                return true
+            }
+
+            if abs(targetYaw - currentYaw) > 0.0005
+                || abs(targetPitch - currentPitch) > 0.0005
+                || abs(targetRoll - currentRoll) > 0.0005 {
+                return true
+            }
+
+            guard manager?.isSunDetailMode != true else { return false }
+            return abs(manager?.autoSpinSpeed ?? 0) > 0.0001
         }
 
         func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
             guard manager?.isSunDetailMode == true else { return true }
-            guard gestureRecognizer is UIPanGestureRecognizer else { return true }
+            guard gestureRecognizer is UIPanGestureRecognizer else { return false }
             guard let view = gestureRecognizer.view else { return true }
 
             let location = gestureRecognizer.location(in: view)
@@ -441,7 +517,10 @@ struct WeatherSceneView: UIViewRepresentable {
 
         /// Advances inertial motion and eases the model back toward its resting pose.
         @objc private func step(_ link: CADisplayLink) {
-            guard manager != nil else { return }
+            guard manager != nil else {
+                stopDisplayLink()
+                return
+            }
             let restPitch = interactionRestPitch()
             let autoSpinSpeed = manager?.autoSpinSpeed ?? 0
             let frameDuration = max(link.targetTimestamp - link.timestamp, 1.0 / 60.0)
@@ -484,6 +563,8 @@ struct WeatherSceneView: UIViewRepresentable {
                 applyOrientation(to: node)
                 syncManagerRotationIfNeeded(node: node)
             }
+
+            updateRenderLoopState()
         }
 
         private func applyOrientation(to node: SCNNode) {
@@ -817,6 +898,7 @@ struct WeatherSceneView: UIViewRepresentable {
                     startTimestamp: CACurrentMediaTime()
                 )
                 stopMomentumAnimations()
+                updateRenderLoopState()
             case .changed:
                 let point = gesture.location(in: gesture.view)
                 let previousPoint = lastPanPoint ?? point
@@ -851,6 +933,7 @@ struct WeatherSceneView: UIViewRepresentable {
                     applyOrientation(to: node)
                     syncManagerRotationIfNeeded(node: node)
                 }
+                updateRenderLoopState()
             case .ended, .cancelled:
                 isPanning = false
                 lastPanPoint = nil
@@ -927,14 +1010,17 @@ struct WeatherSceneView: UIViewRepresentable {
                     let fast = hypot(v.x, v.y) > 650
                     WeatherAudioPlayer.shared.playSpinLoop(fast: fast)
                 }
+                updateRenderLoopState()
             default:
                 isPanning = false
                 lastPanPoint = nil
+                updateRenderLoopState()
             }
         }
 
         @objc func handleTap(_ gesture: UITapGestureRecognizer) {
             guard gesture.state == .ended,
+                  manager?.isSunDetailMode != true,
                   let scnView = gesture.view as? SCNView else { return }
 
             let location = gesture.location(in: scnView)
