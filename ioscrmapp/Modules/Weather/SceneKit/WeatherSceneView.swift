@@ -358,6 +358,7 @@ struct WeatherSceneView: UIViewRepresentable {
         private var pendingOrientationAnimation: OrientationAnimation?
         private var hasUserInteracted: Bool = false
         private var lastInteractionResetVersion: Int = 0
+        private weak var detailInteractionNode: SCNNode?
         private let spinController = WeatherSpinController(tuning: .default)
         private var panReferenceWidth: Float = 390
 
@@ -409,16 +410,11 @@ struct WeatherSceneView: UIViewRepresentable {
             yawVelocity = 0
             pitchVelocity = 0
             rollVelocity = 0
-            currentYaw = rotation.y
-            targetYaw = rotation.y
-            currentPitch = abs(rotation.x) < 0.0001 ? restPitch : rotation.x
-            targetPitch = currentPitch
-            currentRoll = rotation.z
-            targetRoll = rotation.z
+            syncInteractionStateFromManager(fallbackRotation: rotation, restPitch: interactionRestPitch())
 
-            if let node = manager?.conditionGroup {
+            if let node = currentInteractionNode() {
                 applyOrientation(to: node)
-                manager?.syncDisplayGroupRotation(to: node.eulerAngles)
+                syncManagerRotationIfNeeded(node: node)
             }
         }
 
@@ -435,15 +431,17 @@ struct WeatherSceneView: UIViewRepresentable {
 
         /// Advances inertial motion and eases the model back toward its resting pose.
         @objc private func step(_ link: CADisplayLink) {
-            guard let node = manager?.conditionGroup else { return }
-            let restPitch = manager?.restTiltX ?? 0
+            guard manager != nil else { return }
+            let restPitch = interactionRestPitch()
             let autoSpinSpeed = manager?.autoSpinSpeed ?? 0
             let frameDuration = max(link.targetTimestamp - link.timestamp, 1.0 / 60.0)
 
             if !isPanning {
                 if advanceOrientationAnimation(by: frameDuration) {
-                    applyOrientation(to: node)
-                    manager?.syncDisplayGroupRotation(to: node.eulerAngles)
+                    if let node = currentInteractionNode() {
+                        applyOrientation(to: node)
+                        syncManagerRotationIfNeeded(node: node)
+                    }
                     return
                 }
 
@@ -472,9 +470,10 @@ struct WeatherSceneView: UIViewRepresentable {
             currentPitch += (targetPitch - currentPitch) * follow
             currentRoll += (targetRoll - currentRoll) * follow
 
-            applyOrientation(to: node)
-
-            manager?.syncDisplayGroupRotation(to: node.eulerAngles)
+            if let node = currentInteractionNode() {
+                applyOrientation(to: node)
+                syncManagerRotationIfNeeded(node: node)
+            }
         }
 
         private func applyOrientation(to node: SCNNode) {
@@ -482,6 +481,41 @@ struct WeatherSceneView: UIViewRepresentable {
             let pitch = simd_quatf(angle: currentPitch, axis: SIMD3<Float>(1, 0, 0))
             let roll = simd_quatf(angle: currentRoll, axis: SIMD3<Float>(0, 0, 1))
             node.simdOrientation = simd_normalize(yaw * pitch * roll)
+        }
+
+        private func syncManagerRotationIfNeeded(node: SCNNode) {
+            guard manager?.isSunDetailMode != true else { return }
+            manager?.syncDisplayGroupRotation(to: node.eulerAngles)
+        }
+
+        private func interactionRestPitch() -> Float {
+            manager?.isSunDetailMode == true ? 0 : (manager?.restTiltX ?? 0)
+        }
+
+        private func currentInteractionNode() -> SCNNode? {
+            if manager?.isSunDetailMode == true {
+                return detailInteractionNode ?? manager?.currentSceneInteractionNode()
+            }
+            return manager?.currentSceneInteractionNode()
+        }
+
+        private func syncInteractionStateFromManager(
+            fallbackRotation: SCNVector3,
+            restPitch: Float
+        ) {
+            if manager?.isSunDetailMode == true {
+                detailInteractionNode = manager?.currentSceneInteractionNode()
+            } else {
+                detailInteractionNode = nil
+            }
+
+            let rotation = manager?.currentSceneInteractionAngles(restPitch: restPitch) ?? fallbackRotation
+            currentYaw = rotation.y
+            targetYaw = rotation.y
+            currentPitch = abs(rotation.x) < 0.0001 ? restPitch : rotation.x
+            targetPitch = currentPitch
+            currentRoll = rotation.z
+            targetRoll = rotation.z
         }
 
         private func yawSensitivity(for view: UIView?) -> Float {
@@ -556,6 +590,7 @@ struct WeatherSceneView: UIViewRepresentable {
                     currentYaw = collapsedYaw
                     targetYaw = collapsedYaw
                     hasUserInteracted = false
+                    detailInteractionNode = nil
                     manager?.resumeAutomaticSpinAfterInteraction()
                 }
             } else {
@@ -740,13 +775,17 @@ struct WeatherSceneView: UIViewRepresentable {
         ///
         /// - Parameter gesture: The pan gesture attached to the SceneKit view.
         @objc func handlePan(_ gesture: UIPanGestureRecognizer) {
-            guard let node = manager?.conditionGroup else { return }
-            let restPitch = manager?.restTiltX ?? 0
+            guard manager != nil else { return }
+            let restPitch = interactionRestPitch()
             switch gesture.state {
             case .began:
                 isPanning = true
                 hasUserInteracted = true
                 manager?.pauseAutomaticSpinForInteraction()
+                syncInteractionStateFromManager(
+                    fallbackRotation: manager?.displayGroupRotation ?? SCNVector3(0, 0, 0),
+                    restPitch: restPitch
+                )
                 lastPanPoint = gesture.location(in: gesture.view)
                 panSession = PanSession(
                     startPoint: gesture.location(in: gesture.view),
@@ -784,9 +823,10 @@ struct WeatherSceneView: UIViewRepresentable {
                     currentPitch += pitchDelta * 0.45
                     currentRoll += rollDelta * 0.45
                 }
-                applyOrientation(to: node)
-
-                manager?.syncDisplayGroupRotation(to: node.eulerAngles)
+                if let node = currentInteractionNode() {
+                    applyOrientation(to: node)
+                    syncManagerRotationIfNeeded(node: node)
+                }
             case .ended, .cancelled:
                 isPanning = false
                 lastPanPoint = nil
@@ -799,8 +839,10 @@ struct WeatherSceneView: UIViewRepresentable {
                 currentYaw = targetYaw
                 currentPitch = targetPitch
                 currentRoll = targetRoll
-                applyOrientation(to: node)
-                manager?.syncDisplayGroupRotation(to: node.eulerAngles)
+                if let node = currentInteractionNode() {
+                    applyOrientation(to: node)
+                    syncManagerRotationIfNeeded(node: node)
+                }
 
                 // 第二屏：保持当前旋转方向，滑行到最近的 0/360 朝向（不反向吐圈）
                 if manager?.isSunDetailMode == true {

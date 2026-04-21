@@ -63,7 +63,9 @@ final class WeatherSceneManager: ObservableObject {
     private(set) var isPlayingEntryAnimation = false
 
     private let mode: WeatherSceneMode
-    var isSunDetailMode: Bool { mode == .sunDetail }
+    var isSunDetailMode: Bool {
+        mode == .sunDetail || (mode == .sunTransition && detailDimensionRingNode?.isHidden == false)
+    }
     private var cameraNode: SCNNode?
     private var sceneRootNode: SCNNode?
     private var detailTitleNode: SCNNode?
@@ -313,6 +315,26 @@ final class WeatherSceneManager: ObservableObject {
     func endDetailSelfSpinInteraction() {
         guard mode == .sunDetail || mode == .sunTransition else { return }
         animateCurrentDetailDimensionBackToStablePitch()
+    }
+
+    func currentSceneInteractionNode() -> SCNNode? {
+        if isSunDetailMode {
+            return detailDimensionItemNodes[currentDetailDimension]
+        }
+        return conditionGroup
+    }
+
+    func currentSceneInteractionAngles(restPitch: Float) -> SCNVector3 {
+        guard let node = currentSceneInteractionNode() else {
+            return SCNVector3(restPitch, 0, 0)
+        }
+
+        let angles = node.presentation.eulerAngles
+        return SCNVector3(
+            abs(angles.x) < 0.0001 ? restPitch : angles.x,
+            angles.y,
+            angles.z
+        )
     }
 
     func isInteractiveWeatherNode(_ node: SCNNode?) -> Bool {

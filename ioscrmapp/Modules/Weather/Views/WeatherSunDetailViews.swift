@@ -41,8 +41,7 @@ struct WeatherSunDetailOverlay: View {
                 WeatherSunInteractionSurface(
                     manager: manager,
                     sceneViewportHeight: sceneViewportHeight,
-                    allowsInteraction: allowsInteraction,
-                    onClose: onClose
+                    allowsInteraction: allowsInteraction
                 )
                 .padding(.top, 2)
                 .padding(.horizontal, 6)
@@ -438,106 +437,111 @@ private struct WeatherSunInteractionSurface: View {
     let manager: WeatherSceneManager
     let sceneViewportHeight: CGFloat
     let allowsInteraction: Bool
-    let onClose: () -> Void
 
-    @State private var activeZone: WeatherSecondScreenInteractionZone = .none
-    @State private var dragStartTime: Date?
+    @State private var isOrbitDragging = false
+    @State private var orbitDragStartTime: Date?
 
     var body: some View {
         GeometryReader { proxy in
-            VStack(spacing: 0) {
-                Color.clear
-                    .frame(height: sceneViewportHeight)
+            let captureRegions = orbitCaptureRegions(in: proxy.size)
+            let referenceWidth = max(proxy.size.width, 1)
 
-                Color.clear
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            ZStack(alignment: .topLeading) {
+                ForEach(Array(captureRegions.enumerated()), id: \.offset) { index, region in
+                    Color.clear
+                        .frame(width: region.width, height: region.height)
+                        .contentShape(Rectangle())
+                        .position(x: region.midX, y: region.midY)
+                        .gesture(orbitGesture(referenceWidth: referenceWidth))
+                        .onTapGesture { }
+                        .accessibilityIdentifier("weather.sunDetail.orbitRegion.\(index)")
+                }
             }
-            .contentShape(Rectangle())
-            .gesture(surfaceGesture(in: proxy.size))
         }
     }
 
-    private func surfaceGesture(in size: CGSize) -> some Gesture {
+    private func orbitGesture(referenceWidth: CGFloat) -> some Gesture {
         DragGesture(minimumDistance: 10, coordinateSpace: .local)
             .onChanged { value in
                 guard allowsInteraction else { return }
 
-                if activeZone == .none {
-                    activeZone = hitZones(in: size).zone(at: value.startLocation)
-                    dragStartTime = Date()
-
-                    switch activeZone {
-                    case .selfSpin:
-                        manager.beginDetailSelfSpinInteraction()
-                    case .orbit:
-                        manager.beginDetailOrbitInteraction()
-                    default:
-                        break
-                    }
+                if !isOrbitDragging {
+                    isOrbitDragging = true
+                    orbitDragStartTime = Date()
+                    manager.beginDetailOrbitInteraction()
                 }
 
-                switch activeZone {
-                case .selfSpin:
-                    manager.updateDetailSelfSpinInteraction(translation: value.translation)
-                case .orbit:
-                    manager.updateDetailOrbitInteraction(
-                        progress: -value.translation.width / max(size.width, 1)
-                    )
-                default:
-                    break
-                }
+                manager.updateDetailOrbitInteraction(
+                    progress: -value.translation.width / referenceWidth
+                )
             }
             .onEnded { value in
                 defer {
-                    activeZone = .none
-                    dragStartTime = nil
+                    isOrbitDragging = false
+                    orbitDragStartTime = nil
                 }
 
-                guard allowsInteraction else { return }
+                guard allowsInteraction, isOrbitDragging else { return }
 
-                switch activeZone {
-                case .selfSpin:
-                    manager.endDetailSelfSpinInteraction()
-                case .orbit:
-                    let translation = value.translation.width
-                    let predicted = value.predictedEndTranslation.width
-                    let duration = max(Date().timeIntervalSince(dragStartTime ?? Date()), 0.01)
-                    let velocity = -(predicted - translation) / 0.12
+                let translation = value.translation.width
+                let predicted = value.predictedEndTranslation.width
+                let duration = max(Date().timeIntervalSince(orbitDragStartTime ?? Date()), 0.01)
+                let velocity = -(predicted - translation) / 0.12
 
-                    manager.settleDetailOrbitInteraction(
-                        sample: WeatherSecondScreenOrbitGestureSample(
-                            translationRatio: -translation / max(size.width, 1),
-                            predictedTranslationRatio: -predicted / max(size.width, 1),
-                            velocityPointsPerSecond: velocity,
-                            duration: duration
-                        )
+                manager.settleDetailOrbitInteraction(
+                    sample: WeatherSecondScreenOrbitGestureSample(
+                        translationRatio: -translation / referenceWidth,
+                        predictedTranslationRatio: -predicted / referenceWidth,
+                        velocityPointsPerSecond: velocity,
+                        duration: duration
                     )
-                case .close:
-                    onClose()
-                default:
-                    break
-                }
+                )
             }
     }
 
-    private func hitZones(in size: CGSize) -> WeatherSecondScreenHitZones {
-        let closeHeight = min(24, size.height * 0.08)
+    private func orbitCaptureRegions(in size: CGSize) -> [CGRect] {
+        let bounds = CGRect(origin: .zero, size: size)
+        let selfSpinZone = detailSelfSpinZone(in: size)
+        let topRegion = CGRect(
+            x: bounds.minX,
+            y: bounds.minY,
+            width: bounds.width,
+            height: max(0, selfSpinZone.minY - bounds.minY)
+        )
+        let leftRegion = CGRect(
+            x: bounds.minX,
+            y: selfSpinZone.minY,
+            width: max(0, selfSpinZone.minX - bounds.minX),
+            height: selfSpinZone.height
+        )
+        let rightRegion = CGRect(
+            x: selfSpinZone.maxX,
+            y: selfSpinZone.minY,
+            width: max(0, bounds.maxX - selfSpinZone.maxX),
+            height: selfSpinZone.height
+        )
+        let bottomRegion = CGRect(
+            x: bounds.minX,
+            y: selfSpinZone.maxY,
+            width: bounds.width,
+            height: max(0, bounds.maxY - selfSpinZone.maxY)
+        )
+
+        return [topRegion, leftRegion, rightRegion, bottomRegion]
+            .filter { $0.width > 0 && $0.height > 0 }
+    }
+
+    private func detailSelfSpinZone(in size: CGSize) -> CGRect {
         let selfSpinWidth = size.width * 0.68
         let selfSpinHeight = sceneViewportHeight * 0.84
         let selfSpinX = (size.width - selfSpinWidth) / 2
         let selfSpinY = max(0, sceneViewportHeight * 0.05)
 
-        return WeatherSecondScreenHitZones(
-            closeZone: CGRect(x: 0, y: 0, width: size.width, height: closeHeight),
-            dayWeekZone: .null,
-            nowTimelineZone: .null,
-            selfSpinZone: CGRect(
-                x: selfSpinX,
-                y: selfSpinY,
-                width: selfSpinWidth,
-                height: selfSpinHeight
-            ),
-            orbitZone: CGRect(x: 0, y: 0, width: size.width, height: size.height)
+        return CGRect(
+            x: selfSpinX,
+            y: selfSpinY,
+            width: selfSpinWidth,
+            height: selfSpinHeight
         )
     }
 }
