@@ -98,6 +98,7 @@ final class WeatherSceneManager: ObservableObject {
     private var detailSpinGestureBaseTitleAngles = SCNVector3Zero
     private var isDetailOrbitFeedbackSessionActive = false
     private var lastOrbitFeedbackDimension: WeatherDetailDimension?
+    private var detailOrbitFeedbackCountInSession = 0
     private var _birdsScene: SCNScene?   // 防止 ARC 过早释放鸟群场景
     private let weatherDataSubdirectory = "WeatherData"
     private let sunSpinAnimationKey = "sun_spin"
@@ -983,6 +984,9 @@ final class WeatherSceneManager: ObservableObject {
             self.setPresentedDetailDimension(settledDimension)
             self.currentDetailOrbitIndex = settledOrbitIndex
             self.updateDetailDimensionPresentation(ringYaw: endYaw)
+            if decision.stepOffset != 0, self.detailOrbitFeedbackCountInSession == 0 {
+                self.playOrbitCheckpointFeedback(for: settledDimension)
+            }
             self.updateDetailDimensionSelfSpin(selectedDimension: settledDimension, autoSpinEnabled: false)
             self.scheduleDetailAutoSpin()
             self.endDetailOrbitFeedbackSession()
@@ -1022,19 +1026,26 @@ final class WeatherSceneManager: ObservableObject {
         guard !isDetailOrbitFeedbackSessionActive else { return }
         isDetailOrbitFeedbackSessionActive = true
         lastOrbitFeedbackDimension = presentedDetailDimension
+        detailOrbitFeedbackCountInSession = 0
         WeatherHapticPlayer.shared.prepareOrbitCheckpoint()
     }
 
     private func endDetailOrbitFeedbackSession() {
         isDetailOrbitFeedbackSessionActive = false
         lastOrbitFeedbackDimension = nil
+        detailOrbitFeedbackCountInSession = 0
     }
 
     private func handleDetailOrbitFeedback(for dimension: WeatherDetailDimension) {
         guard isDetailOrbitFeedbackSessionActive else { return }
         guard lastOrbitFeedbackDimension != dimension else { return }
 
+        playOrbitCheckpointFeedback(for: dimension)
+    }
+
+    private func playOrbitCheckpointFeedback(for dimension: WeatherDetailDimension) {
         lastOrbitFeedbackDimension = dimension
+        detailOrbitFeedbackCountInSession += 1
         WeatherHapticPlayer.shared.playOrbitCheckpoint()
         WeatherAudioPlayer.shared.playOrbitCheckpoint()
     }
