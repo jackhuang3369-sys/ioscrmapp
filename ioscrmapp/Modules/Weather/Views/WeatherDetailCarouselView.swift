@@ -2,9 +2,12 @@ import SwiftUI
 
 struct WeatherDetailCarouselView: View {
     let selectedDimension: WeatherDetailDimension
-    let width: CGFloat
+    let contentWidth: CGFloat
+    let interactionWidth: CGFloat
     let gestureReferenceWidth: CGFloat
     let allowsInteraction: Bool
+    let onDismissTap: () -> Void
+    let onOrbitDragStarted: () -> Void
     let onOrbitDragChanged: (CGFloat) -> Void
     let onOrbitDragEnded: (WeatherSecondScreenOrbitGestureSample) -> Void
 
@@ -24,9 +27,23 @@ struct WeatherDetailCarouselView: View {
                 onDaySelected: { selectedWindow = .day },
                 onWeekSelected: { selectedWindow = .week }
             )
-            .frame(width: width)
+            .frame(width: contentWidth)
+
+            ForEach(Array(sideDismissTapRegions().enumerated()), id: \.offset) { index, region in
+                Color.clear
+                    .frame(width: region.width, height: region.height)
+                    .contentShape(Rectangle())
+                    .position(x: region.midX, y: region.midY)
+                    .simultaneousGesture(
+                        TapGesture().onEnded {
+                            guard allowsInteraction else { return }
+                            onDismissTap()
+                        }
+                    )
+                    .accessibilityIdentifier("weather.detailCarousel.dismissRegion.\(index)")
+            }
         }
-        .frame(width: width, height: panelHeight)
+        .frame(width: interactionWidth, height: panelHeight)
         .contentShape(Rectangle())
         .gesture(panelGesture(referenceWidth: max(gestureReferenceWidth, 1)))
     }
@@ -40,10 +57,16 @@ struct WeatherDetailCarouselView: View {
                 }
 
                 if activeZone == .none {
-                    activeZone = WeatherSecondScreenHitZones.sizeZones(forWidth: width, height: panelHeight)
-                        .zone(at: value.startLocation)
+                    activeZone = WeatherSecondScreenHitZones.sizeZones(
+                        interactionWidth: interactionWidth,
+                        contentWidth: contentWidth,
+                        height: panelHeight
+                    ).zone(at: value.startLocation)
                     dragStartTime = Date()
                     appliedOrbitTranslation = 0
+                    if activeZone == .orbit {
+                        onOrbitDragStarted()
+                    }
                 }
 
                 guard activeZone == .orbit else { return }
@@ -95,7 +118,6 @@ struct WeatherDetailCarouselView: View {
                         duration: duration
                     )
                 )
-                resetDrag(animated: true)
             }
     }
 
@@ -115,6 +137,26 @@ struct WeatherDetailCarouselView: View {
     private func clamped(_ value: CGFloat, lower: CGFloat, upper: CGFloat) -> CGFloat {
         min(max(value, lower), upper)
     }
+
+    private func sideDismissTapRegions() -> [CGRect] {
+        let contentOriginX = (interactionWidth - contentWidth) / 2
+
+        let leftRegion = CGRect(
+            x: 0,
+            y: 0,
+            width: max(contentOriginX, 0),
+            height: panelHeight
+        )
+        let rightRegion = CGRect(
+            x: contentOriginX + contentWidth,
+            y: 0,
+            width: max(interactionWidth - (contentOriginX + contentWidth), 0),
+            height: panelHeight
+        )
+
+        return [leftRegion, rightRegion]
+            .filter { $0.width > 0 && $0.height > 0 }
+    }
 }
 
 private enum WeatherDetailInsightWindow {
@@ -123,16 +165,31 @@ private enum WeatherDetailInsightWindow {
 }
 
 extension WeatherSecondScreenHitZones {
-    static func sizeZones(forWidth width: CGFloat, height: CGFloat) -> WeatherSecondScreenHitZones {
+    static func sizeZones(
+        interactionWidth: CGFloat,
+        contentWidth: CGFloat,
+        height: CGFloat
+    ) -> WeatherSecondScreenHitZones {
         let dayWeekHeight: CGFloat = 42
         let nowZoneTop = max(height * 0.44, 96)
         let nowZoneHeight = max(height - nowZoneTop - dayWeekHeight, 0)
+        let centeredContentX = (interactionWidth - contentWidth) / 2
         return WeatherSecondScreenHitZones(
             closeZone: .null,
-            dayWeekZone: CGRect(x: (width - 180) / 2, y: height - dayWeekHeight, width: 180, height: 36),
-            nowTimelineZone: CGRect(x: 0, y: nowZoneTop, width: width, height: nowZoneHeight),
+            dayWeekZone: CGRect(
+                x: centeredContentX + (contentWidth - 180) / 2,
+                y: height - dayWeekHeight,
+                width: 180,
+                height: 36
+            ),
+            nowTimelineZone: CGRect(
+                x: centeredContentX,
+                y: nowZoneTop,
+                width: contentWidth,
+                height: nowZoneHeight
+            ),
             selfSpinZone: .null,
-            orbitZone: CGRect(x: 0, y: 0, width: width, height: nowZoneTop)
+            orbitZone: CGRect(x: 0, y: 0, width: interactionWidth, height: height)
         )
     }
 }

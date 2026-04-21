@@ -41,7 +41,8 @@ struct WeatherSunDetailOverlay: View {
                 WeatherSunInteractionSurface(
                     manager: manager,
                     sceneViewportHeight: sceneViewportHeight,
-                    allowsInteraction: allowsInteraction
+                    allowsInteraction: allowsInteraction,
+                    onDismissTap: onClose
                 )
                 .padding(.top, 2)
                 .padding(.horizontal, 6)
@@ -49,19 +50,22 @@ struct WeatherSunDetailOverlay: View {
                 
                 WeatherDetailCarouselView(
                     selectedDimension: manager.presentedDetailDimension,
-                    width: size.width * 0.6,
+                    contentWidth: size.width * 0.6,
+                    interactionWidth: size.width,
                     gestureReferenceWidth: size.width,
                     allowsInteraction: allowsInteraction,
-                    onOrbitDragChanged: { progress in
+                    onDismissTap: onClose,
+                    onOrbitDragStarted: {
                         manager.beginDetailOrbitInteraction()
+                    },
+                    onOrbitDragChanged: { progress in
                         manager.updateDetailOrbitInteraction(progress: progress)
                     },
                     onOrbitDragEnded: { sample in
-                        manager.beginDetailOrbitInteraction()
                         manager.settleDetailOrbitInteraction(sample: sample)
                     }
                 )
-                .frame(width: size.width * 0.6)
+                .frame(width: size.width)
                 .padding(.bottom, (max(safeAreaInsets.bottom, 14) + 2) * 2)
                 .offset(y: (1 - interfaceOpacity) * 180)
             }
@@ -438,6 +442,7 @@ private struct WeatherSunInteractionSurface: View {
     let manager: WeatherSceneManager
     let sceneViewportHeight: CGFloat
     let allowsInteraction: Bool
+    let onDismissTap: () -> Void
 
     @State private var isOrbitDragging = false
     @State private var orbitDragStartTime: Date?
@@ -454,7 +459,11 @@ private struct WeatherSunInteractionSurface: View {
                         .contentShape(Rectangle())
                         .position(x: region.midX, y: region.midY)
                         .gesture(orbitGesture(referenceWidth: referenceWidth))
-                        .onTapGesture { }
+                        .onTapGesture {
+                            if dismissTapEnabled(forRegionIndex: index) {
+                                onDismissTap()
+                            }
+                        }
                         .accessibilityIdentifier("weather.sunDetail.orbitRegion.\(index)")
                 }
             }
@@ -544,6 +553,10 @@ private struct WeatherSunInteractionSurface: View {
             width: selfSpinWidth,
             height: selfSpinHeight
         )
+    }
+
+    private func dismissTapEnabled(forRegionIndex index: Int) -> Bool {
+        index != 3
     }
 }
 
