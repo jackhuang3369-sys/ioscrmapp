@@ -3,11 +3,11 @@ import SwiftUI
 struct WeatherDetailCarouselView: View {
     let selectedDimension: WeatherDetailDimension
     let width: CGFloat
+    let gestureReferenceWidth: CGFloat
     let allowsInteraction: Bool
     let onOrbitDragChanged: (CGFloat) -> Void
     let onOrbitDragEnded: (WeatherSecondScreenOrbitGestureSample) -> Void
 
-    @State private var dragTranslation: CGFloat = 0
     @State private var activeZone: WeatherSecondScreenInteractionZone = .none
     @State private var dragStartTime: Date?
     @State private var selectedWindow: WeatherDetailInsightWindow = .day
@@ -23,12 +23,10 @@ struct WeatherDetailCarouselView: View {
                 onWeekSelected: { selectedWindow = .week }
             )
             .frame(width: width)
-            .opacity(panelOpacity)
-            .offset(x: dragTranslation * 0.08)
         }
         .frame(width: width, height: panelHeight)
         .contentShape(Rectangle())
-        .gesture(panelGesture(referenceWidth: max(width, 1)))
+        .gesture(panelGesture(referenceWidth: max(gestureReferenceWidth, 1)))
     }
 
     private func panelGesture(referenceWidth: CGFloat) -> some Gesture {
@@ -52,7 +50,6 @@ struct WeatherDetailCarouselView: View {
                     lower: -referenceWidth,
                     upper: referenceWidth
                 )
-                dragTranslation = clampedTranslation
                 onOrbitDragChanged(-clampedTranslation / referenceWidth)
             }
             .onEnded { value in
@@ -92,25 +89,11 @@ struct WeatherDetailCarouselView: View {
     }
 
     private func resetDrag(animated: Bool) {
-        let changes = {
-            dragTranslation = 0
-        }
-
-        if animated {
-            withAnimation(.spring(response: 0.28, dampingFraction: 0.84)) {
-                changes()
-            }
-        } else {
-            changes()
-        }
+        _ = animated
     }
 
     private func clamped(_ value: CGFloat, lower: CGFloat, upper: CGFloat) -> CGFloat {
         min(max(value, lower), upper)
-    }
-
-    private var panelOpacity: Double {
-        Double(max(0.72, 1 - abs(dragTranslation / max(width, 1)) * 0.26))
     }
 }
 
@@ -119,14 +102,17 @@ private enum WeatherDetailInsightWindow {
     case week
 }
 
-private extension WeatherSecondScreenHitZones {
+extension WeatherSecondScreenHitZones {
     static func sizeZones(forWidth width: CGFloat, height: CGFloat) -> WeatherSecondScreenHitZones {
-        WeatherSecondScreenHitZones(
+        let dayWeekHeight: CGFloat = 42
+        let nowZoneTop = max(height * 0.44, 96)
+        let nowZoneHeight = max(height - nowZoneTop - dayWeekHeight, 0)
+        return WeatherSecondScreenHitZones(
             closeZone: .null,
-            dayWeekZone: CGRect(x: (width - 180) / 2, y: height - 42, width: 180, height: 36),
-            nowTimelineZone: CGRect(x: 0, y: height - 64, width: width, height: 28),
+            dayWeekZone: CGRect(x: (width - 180) / 2, y: height - dayWeekHeight, width: 180, height: 36),
+            nowTimelineZone: CGRect(x: 0, y: nowZoneTop, width: width, height: nowZoneHeight),
             selfSpinZone: .null,
-            orbitZone: CGRect(x: 0, y: 0, width: width, height: height)
+            orbitZone: CGRect(x: 0, y: 0, width: width, height: nowZoneTop)
         )
     }
 }

@@ -274,6 +274,7 @@ struct WeatherSceneView: UIViewRepresentable {
                 action: #selector(Coordinator.handlePan(_:))
             )
             pan.maximumNumberOfTouches = 1
+            pan.delegate = context.coordinator
             scnView.addGestureRecognizer(pan)
 
             let tap = UITapGestureRecognizer(
@@ -303,7 +304,7 @@ struct WeatherSceneView: UIViewRepresentable {
 
     // MARK: – Coordinator (gesture + CADisplayLink spin)
 
-    final class Coordinator: NSObject {
+    final class Coordinator: NSObject, UIGestureRecognizerDelegate {
 
         private enum PanInteractionMode {
             case freeform
@@ -429,6 +430,15 @@ struct WeatherSceneView: UIViewRepresentable {
             displayLink?.add(to: .main, forMode: .common)
         }
 
+        func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
+            guard manager?.isSunDetailMode == true else { return true }
+            guard gestureRecognizer is UIPanGestureRecognizer else { return true }
+            guard let view = gestureRecognizer.view else { return true }
+
+            let location = gestureRecognizer.location(in: view)
+            return detailSelfSpinZone(in: view.bounds).contains(location)
+        }
+
         /// Advances inertial motion and eases the model back toward its resting pose.
         @objc private func step(_ link: CADisplayLink) {
             guard manager != nil else { return }
@@ -521,6 +531,20 @@ struct WeatherSceneView: UIViewRepresentable {
         private func yawSensitivity(for view: UIView?) -> Float {
             let referenceWidth = max(Float(view?.bounds.width ?? 0), minimumPanReferenceWidth)
             return (.pi * 2) / referenceWidth
+        }
+
+        private func detailSelfSpinZone(in bounds: CGRect) -> CGRect {
+            let selfSpinWidth = bounds.width * 0.68
+            let selfSpinHeight = bounds.height * 0.84
+            let selfSpinX = bounds.minX + (bounds.width - selfSpinWidth) / 2
+            let selfSpinY = bounds.minY + max(0, bounds.height * 0.05)
+
+            return CGRect(
+                x: selfSpinX,
+                y: selfSpinY,
+                width: selfSpinWidth,
+                height: selfSpinHeight
+            )
         }
 
         /// Treats nearly horizontal drags as yaw-only interactions so the model does not tilt diagonally.

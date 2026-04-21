@@ -8,6 +8,7 @@ struct WeatherSpinInteractionSmokeTests {
         try testSecondScreenSlowOrbitUnderStayThreshold_returnsCurrentFront()
         try testSecondScreenSlowOrbitOverAdvanceThreshold_advancesSingleStep()
         try testSecondScreenMiddleBandOrbit_doesNotSkipPastNearestNextFront()
+        try testSecondScreenShortFastOrbit_staysOnCurrentFront()
         try testSecondScreenFastOrbit_capsAtTenTurns()
         try testSecondScreenAutoSpinDelay_waitsForTwoSeconds()
         try testSecondScreenHitZones_keepSelfSpinSeparateFromOrbit()
@@ -97,6 +98,21 @@ struct WeatherSpinInteractionSmokeTests {
         try require(decision.stepOffset == 10, "fast orbit drags should cap planned turns at ten")
     }
 
+    private static func testSecondScreenShortFastOrbit_staysOnCurrentFront() throws {
+        let decision = orbitController.settleDecision(
+            sample: WeatherSecondScreenOrbitGestureSample(
+                translationRatio: 0.12,
+                predictedTranslationRatio: 0.84,
+                velocityPointsPerSecond: 1_240,
+                duration: 0.18
+            )
+        )
+        try require(
+            decision.stepOffset == 0,
+            "short fast swipes below the minimum orbit distance should not momentum-skip front items"
+        )
+    }
+
     private static func testSecondScreenAutoSpinDelay_waitsForTwoSeconds() throws {
         try require(
             !orbitController.shouldStartAutoSpin(after: 1.99),
@@ -128,25 +144,19 @@ struct WeatherSpinInteractionSmokeTests {
     }
 
     private static func testSecondScreenHitZones_keepTimelineAndDayWeekOutOfOrbit() throws {
-        let zones = WeatherSecondScreenHitZones(
-            closeZone: .null,
-            dayWeekZone: CGRect(x: 110, y: 196, width: 170, height: 34),
-            nowTimelineZone: CGRect(x: 0, y: 162, width: 390, height: 28),
-            selfSpinZone: .null,
-            orbitZone: CGRect(x: 0, y: 0, width: 390, height: 232)
-        )
+        let zones = WeatherSecondScreenHitZones.sizeZones(forWidth: 390, height: 232)
 
         try require(
             zones.zone(at: CGPoint(x: 150, y: 205)) == .dayWeek,
             "Day/Week control hits should not leak into orbit ownership"
         )
         try require(
-            zones.zone(at: CGPoint(x: 100, y: 172)) == .nowTimeline,
+            zones.zone(at: CGPoint(x: 100, y: 156)) == .nowTimeline,
             "Now timeline hits should remain display-only and not trigger orbit"
         )
         try require(
             zones.zone(at: CGPoint(x: 52, y: 60)) == .orbit,
-            "the UV card region outside Now/DayWeek should still drive orbit"
+            "the UV card region above the Now block should still drive orbit"
         )
     }
 }

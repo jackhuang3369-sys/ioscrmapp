@@ -50,6 +50,7 @@ struct WeatherSunDetailOverlay: View {
                 WeatherDetailCarouselView(
                     selectedDimension: manager.presentedDetailDimension,
                     width: size.width * 0.6,
+                    gestureReferenceWidth: size.width,
                     allowsInteraction: allowsInteraction,
                     onOrbitDragChanged: { progress in
                         manager.beginDetailOrbitInteraction()

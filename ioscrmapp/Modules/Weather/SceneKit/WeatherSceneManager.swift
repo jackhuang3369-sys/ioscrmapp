@@ -96,6 +96,8 @@ final class WeatherSceneManager: ObservableObject {
     private var detailAutoSpinWorkItem: DispatchWorkItem?
     private var detailSpinGestureBaseModelAngles = SCNVector3Zero
     private var detailSpinGestureBaseTitleAngles = SCNVector3Zero
+    private var isDetailOrbitFeedbackSessionActive = false
+    private var lastOrbitFeedbackDimension: WeatherDetailDimension?
     private var _birdsScene: SCNScene?   // 防止 ARC 过早释放鸟群场景
     private let weatherDataSubdirectory = "WeatherData"
     private let sunSpinAnimationKey = "sun_spin"
@@ -254,6 +256,8 @@ final class WeatherSceneManager: ObservableObject {
     func prepareDetailSecondScreen() {
         guard mode == .sunDetail || mode == .sunTransition else { return }
         cancelDetailAutoSpin()
+        endDetailOrbitFeedbackSession()
+        WeatherAudioPlayer.shared.resetOrbitCheckpointSequence()
         currentDetailDimension = .sun
         setPresentedDetailDimension(.sun)
         currentDetailOrbitIndex = 0
@@ -313,6 +317,15 @@ final class WeatherSceneManager: ObservableObject {
             positiveModulo(nextOrbitIndex, WeatherDetailDimension.allCases.count)
         ]
         let targetYaw = -Float(nextOrbitIndex) * detailDimensionAngleStep
+        if decision.stepOffset != 0 {
+            beginDetailOrbitFeedbackSessionIfNeeded()
+        } else {
+            endDetailOrbitFeedbackSession()
+        }
+        if abs(decision.stepOffset) >= secondScreenMotionTuning.orbitWhooshMinimumTurns,
+           secondScreenOrbitController.isFastOrbitGesture(sample) {
+            WeatherAudioPlayer.shared.playOrbitWhoosh()
+        }
         animateDetailOrbit(
             ringNode: detailDimensionRingNode,
             from: visibleYaw,
@@ -972,6 +985,7 @@ final class WeatherSceneManager: ObservableObject {
             self.updateDetailDimensionPresentation(ringYaw: endYaw)
             self.updateDetailDimensionSelfSpin(selectedDimension: settledDimension, autoSpinEnabled: false)
             self.scheduleDetailAutoSpin()
+            self.endDetailOrbitFeedbackSession()
         }
         ringNode.runAction(.sequence([action, settle]), forKey: detailOrbitMotionActionKey)
     }
@@ -991,14 +1005,38 @@ final class WeatherSceneManager: ObservableObject {
 
     private func setPresentedDetailDimension(_ dimension: WeatherDetailDimension) {
         if Thread.isMainThread {
+            guard presentedDetailDimension != dimension else { return }
             presentedDetailDimension = dimension
+            handleDetailOrbitFeedback(for: dimension)
             return
         }
 
         DispatchQueue.main.async { [weak self] in
             guard let self, self.presentedDetailDimension != dimension else { return }
             self.presentedDetailDimension = dimension
+            self.handleDetailOrbitFeedback(for: dimension)
         }
+    }
+
+    private func beginDetailOrbitFeedbackSessionIfNeeded() {
+        guard !isDetailOrbitFeedbackSessionActive else { return }
+        isDetailOrbitFeedbackSessionActive = true
+        lastOrbitFeedbackDimension = presentedDetailDimension
+        WeatherHapticPlayer.shared.prepareOrbitCheckpoint()
+    }
+
+    private func endDetailOrbitFeedbackSession() {
+        isDetailOrbitFeedbackSessionActive = false
+        lastOrbitFeedbackDimension = nil
+    }
+
+    private func handleDetailOrbitFeedback(for dimension: WeatherDetailDimension) {
+        guard isDetailOrbitFeedbackSessionActive else { return }
+        guard lastOrbitFeedbackDimension != dimension else { return }
+
+        lastOrbitFeedbackDimension = dimension
+        WeatherHapticPlayer.shared.playOrbitCheckpoint()
+        WeatherAudioPlayer.shared.playOrbitCheckpoint()
     }
 
     private func normalizedOrbitAngle(_ angle: Float) -> Float {

@@ -10,6 +10,7 @@ final class WeatherAudioPlayer {
     private var sunTapPlayer: AVAudioPlayer?
     private var sunTapClickCount: Int = 0
     private var sunTapLastCallTime: TimeInterval = 0
+    private var orbitCheckpointIndex: Int = 0
 
     private init() {
         try? AVAudioSession.sharedInstance().setCategory(.ambient, options: [.mixWithOthers])
@@ -42,6 +43,37 @@ final class WeatherAudioPlayer {
 
     func playDaySelect() {
         playOneshot("ui-day-select-1", volume: 0.24)
+    }
+
+    func resetOrbitCheckpointSequence() {
+        audioQueue.async { [weak self] in
+            self?.orbitCheckpointIndex = 0
+        }
+    }
+
+    func playOrbitCheckpoint() {
+        audioQueue.async { [weak self] in
+            guard let self else { return }
+            let name = WeatherOrbitAudioRuntimeCore.checkpointName(
+                at: self.orbitCheckpointIndex
+            )
+            self.orbitCheckpointIndex = WeatherOrbitAudioRuntimeCore.nextIndex(
+                after: self.orbitCheckpointIndex
+            )
+            self.playOneshotLocked(
+                name,
+                volume: WeatherOrbitAudioRuntimeCore.checkpointVolume,
+                maxConcurrentPlayers: 4
+            )
+        }
+    }
+
+    func playOrbitWhoosh() {
+        playOneshot(
+            WeatherOrbitAudioRuntimeCore.whooshName,
+            volume: WeatherOrbitAudioRuntimeCore.whooshVolume,
+            maxConcurrentPlayers: 3
+        )
     }
 
     func playSunTapBurst() {
@@ -117,6 +149,34 @@ final class WeatherAudioPlayer {
 
     private func audioURL(_ name: String) -> URL? {
         WeatherSunTapAudioRuntimeCore.audioURL(name: name, bundle: .main, fileManager: .default)
+    }
+}
+
+private enum WeatherOrbitAudioRuntimeCore {
+    static let checkpointNames: [String] = [
+        "remote_1",
+        "remote_2",
+        "remote_3",
+        "remote_4",
+        "remote_5",
+        "remote_6"
+    ]
+    static let checkpointVolume: Float = 0.52
+    static let whooshName = "spin-slow-4"
+    static let whooshVolume: Float = 0.30
+
+    static func checkpointName(at index: Int) -> String {
+        let safeIndex = positiveModulo(index, checkpointNames.count)
+        return checkpointNames[safeIndex]
+    }
+
+    static func nextIndex(after index: Int) -> Int {
+        positiveModulo(index + 1, checkpointNames.count)
+    }
+
+    private static func positiveModulo(_ value: Int, _ divisor: Int) -> Int {
+        let remainder = value % divisor
+        return remainder >= 0 ? remainder : remainder + divisor
     }
 }
 

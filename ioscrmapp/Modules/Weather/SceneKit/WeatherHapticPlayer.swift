@@ -1,4 +1,5 @@
 import CoreHaptics
+import UIKit
 
 final class WeatherHapticPlayer {
 
@@ -6,8 +7,22 @@ final class WeatherHapticPlayer {
 
     private var engine: CHHapticEngine?
     private var currentPlayer: CHHapticPatternPlayer?
+    private let orbitCheckpointGenerator = UIImpactFeedbackGenerator(style: .rigid)
 
     private init() {}
+
+    func prepareOrbitCheckpoint() {
+        DispatchQueue.main.async { [weak self] in
+            self?.orbitCheckpointGenerator.prepare()
+        }
+    }
+
+    func playOrbitCheckpoint() {
+        DispatchQueue.main.async { [weak self] in
+            self?.orbitCheckpointGenerator.impactOccurred(intensity: 0.92)
+            self?.orbitCheckpointGenerator.prepare()
+        }
+    }
 
     func prepareSunTransition() {
         guard CHHapticEngine.capabilitiesForHardware().supportsHaptics else { return }

@@ -101,11 +101,14 @@ struct WeatherSecondScreenMotionTuning {
     let autoSpinSpeedRadPerSec: Float
     let orbitStayThresholdRatio: CGFloat
     let orbitAdvanceThresholdRatio: CGFloat
+    let orbitMomentumActivationThresholdRatio: CGFloat
     let fastSwipeMaxDuration: TimeInterval
     let fastSwipeMinVelocity: CGFloat
+    let fastSwipeMinTranslationRatio: CGFloat
     let velocityPerOrbitTurn: CGFloat
     let predictedTurnMultiplier: CGFloat
     let maxOrbitTurns: Int
+    let orbitWhooshMinimumTurns: Int
     let orbitSettleBaseDuration: TimeInterval
     let orbitSettleTurnDuration: TimeInterval
     let orbitSettleMaxDuration: TimeInterval
@@ -127,11 +130,14 @@ struct WeatherSecondScreenMotionTuning {
         autoSpinSpeedRadPerSec: -Float.pi * 2 / 30,
         orbitStayThresholdRatio: 0.75,
         orbitAdvanceThresholdRatio: 4.0 / 3.0,
+        orbitMomentumActivationThresholdRatio: 0.5,
         fastSwipeMaxDuration: 0.48,
-        fastSwipeMinVelocity: 900,
-        velocityPerOrbitTurn: 520,
-        predictedTurnMultiplier: 1.7,
+        fastSwipeMinVelocity: 1_050,
+        fastSwipeMinTranslationRatio: 0.18,
+        velocityPerOrbitTurn: 850,
+        predictedTurnMultiplier: 1.35,
         maxOrbitTurns: 10,
+        orbitWhooshMinimumTurns: 4,
         orbitSettleBaseDuration: 0.40,
         orbitSettleTurnDuration: 0.15,
         orbitSettleMaxDuration: 2.28,
@@ -162,13 +168,26 @@ struct WeatherSecondScreenOrbitDecision: Equatable {
 struct WeatherSecondScreenOrbitController {
     let tuning: WeatherSecondScreenMotionTuning
 
+    func isFastOrbitGesture(_ sample: WeatherSecondScreenOrbitGestureSample) -> Bool {
+        let absoluteTranslation = abs(sample.translationRatio)
+        return sample.duration <= tuning.fastSwipeMaxDuration
+            && abs(sample.velocityPointsPerSecond) >= tuning.fastSwipeMinVelocity
+            && absoluteTranslation >= tuning.fastSwipeMinTranslationRatio
+    }
+
     func settleDecision(sample: WeatherSecondScreenOrbitGestureSample) -> WeatherSecondScreenOrbitDecision {
         let absoluteTranslation = abs(sample.translationRatio)
         let direction = sample.directionSign
-        let isFast = sample.duration <= tuning.fastSwipeMaxDuration
-            && abs(sample.velocityPointsPerSecond) >= tuning.fastSwipeMinVelocity
+        let isFast = isFastOrbitGesture(sample)
 
         if isFast {
+            if absoluteTranslation <= tuning.orbitMomentumActivationThresholdRatio {
+                return WeatherSecondScreenOrbitDecision(
+                    stepOffset: absoluteTranslation >= tuning.fastSwipeMinTranslationRatio ? direction : 0,
+                    usesMomentum: false
+                )
+            }
+
             let velocityTurns = Int(
                 ceil(abs(sample.velocityPointsPerSecond) / tuning.velocityPerOrbitTurn)
             )
