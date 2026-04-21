@@ -11,8 +11,10 @@ struct WeatherDetailCarouselView: View {
     @State private var activeZone: WeatherSecondScreenInteractionZone = .none
     @State private var dragStartTime: Date?
     @State private var selectedWindow: WeatherDetailInsightWindow = .day
+    @State private var appliedOrbitTranslation: CGFloat = 0
 
     private let panelHeight: CGFloat = 232
+    private let orbitTranslationNoiseTolerance: CGFloat = 0.8
 
     var body: some View {
         ZStack {
@@ -41,21 +43,25 @@ struct WeatherDetailCarouselView: View {
                     activeZone = WeatherSecondScreenHitZones.sizeZones(forWidth: width, height: panelHeight)
                         .zone(at: value.startLocation)
                     dragStartTime = Date()
+                    appliedOrbitTranslation = 0
                 }
 
                 guard activeZone == .orbit else { return }
 
-                let clampedTranslation = clamped(
+                let rawTranslation = clamped(
                     value.translation.width,
                     lower: -referenceWidth,
                     upper: referenceWidth
                 )
-                onOrbitDragChanged(-clampedTranslation / referenceWidth)
+                let stableTranslation = stabilizedOrbitTranslation(rawTranslation)
+                appliedOrbitTranslation = stableTranslation
+                onOrbitDragChanged(-stableTranslation / referenceWidth)
             }
             .onEnded { value in
                 defer {
                     activeZone = .none
                     dragStartTime = nil
+                    appliedOrbitTranslation = 0
                 }
 
                 guard allowsInteraction, activeZone == .orbit else {
@@ -63,16 +69,21 @@ struct WeatherDetailCarouselView: View {
                     return
                 }
 
-                let translation = clamped(
-                    value.translation.width,
-                    lower: -referenceWidth,
-                    upper: referenceWidth
+                let translation = stabilizedOrbitTranslation(
+                    clamped(
+                        value.translation.width,
+                        lower: -referenceWidth,
+                        upper: referenceWidth
+                    )
                 )
-                let predicted = clamped(
+                let rawPredicted = clamped(
                     value.predictedEndTranslation.width,
                     lower: -referenceWidth * CGFloat(WeatherSecondScreenMotionTuning.default.maxOrbitTurns),
                     upper: referenceWidth * CGFloat(WeatherSecondScreenMotionTuning.default.maxOrbitTurns)
                 )
+                let predicted = abs(rawPredicted - translation) < orbitTranslationNoiseTolerance
+                    ? translation
+                    : rawPredicted
                 let duration = max(Date().timeIntervalSince(dragStartTime ?? Date()), 0.01)
                 let velocity = -(predicted - translation) / 0.12
 
@@ -88,8 +99,17 @@ struct WeatherDetailCarouselView: View {
             }
     }
 
+    private func stabilizedOrbitTranslation(_ translation: CGFloat) -> CGFloat {
+        let delta = translation - appliedOrbitTranslation
+        guard abs(delta) < orbitTranslationNoiseTolerance else {
+            return translation
+        }
+        return appliedOrbitTranslation
+    }
+
     private func resetDrag(animated: Bool) {
         _ = animated
+        appliedOrbitTranslation = 0
     }
 
     private func clamped(_ value: CGFloat, lower: CGFloat, upper: CGFloat) -> CGFloat {
