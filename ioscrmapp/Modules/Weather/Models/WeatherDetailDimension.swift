@@ -97,6 +97,8 @@ struct WeatherSecondScreenMotionTuning {
     let adjacentBandRatio: CGFloat
     let rearScale: CGFloat
     let rearOpacity: CGFloat
+    let backFadeBandRatio: CGFloat
+    let backFadeOpacity: CGFloat
     let idleDelay: TimeInterval
     let autoSpinSpeedRadPerSec: Float
     let orbitStayThresholdRatio: CGFloat
@@ -122,10 +124,12 @@ struct WeatherSecondScreenMotionTuning {
         frontOpacity: 1.0,
         frontBandRatio: 0.48,
         adjacentScale: 0.68,
-        adjacentOpacity: 0.28,
+        adjacentOpacity: 1.0,
         adjacentBandRatio: 1.20,
         rearScale: 0.56,
-        rearOpacity: 0.08,
+        rearOpacity: 1.0,
+        backFadeBandRatio: 0.72,
+        backFadeOpacity: 0.24,
         idleDelay: 2.0,
         autoSpinSpeedRadPerSec: -Float.pi * 2 / 30,
         orbitStayThresholdRatio: 0.5,

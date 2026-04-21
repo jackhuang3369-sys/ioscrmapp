@@ -921,7 +921,7 @@ final class WeatherSceneManager: ObservableObject {
             let adjacentBand = stepAngle * secondScreenMotionTuning.adjacentBandRatio
 
             let scale: CGFloat
-            let opacity: CGFloat
+            let baseOpacity: CGFloat
             if absoluteAngle <= frontBand {
                 let progress = absoluteAngle / max(frontBand, 0.001)
                 scale = interpolated(
@@ -929,7 +929,7 @@ final class WeatherSceneManager: ObservableObject {
                     to: secondScreenMotionTuning.adjacentScale,
                     progress: progress
                 )
-                opacity = interpolated(
+                baseOpacity = interpolated(
                     from: secondScreenMotionTuning.frontOpacity,
                     to: secondScreenMotionTuning.adjacentOpacity,
                     progress: progress
@@ -941,21 +941,26 @@ final class WeatherSceneManager: ObservableObject {
                     to: secondScreenMotionTuning.rearScale,
                     progress: progress
                 )
-                opacity = interpolated(
+                baseOpacity = interpolated(
                     from: secondScreenMotionTuning.adjacentOpacity,
                     to: secondScreenMotionTuning.rearOpacity,
                     progress: progress
                 )
             } else {
                 scale = secondScreenMotionTuning.rearScale
-                opacity = secondScreenMotionTuning.rearOpacity
+                baseOpacity = secondScreenMotionTuning.rearOpacity
             }
+
+            let backFadeOpacity = detailDimensionBackFadeOpacity(
+                absoluteAngle: absoluteAngle,
+                stepAngle: stepAngle
+            )
+            let opacity = min(baseOpacity, backFadeOpacity)
 
             itemNode.eulerAngles = SCNVector3(0, baseAngle, 0)
             interactionNode?.eulerAngles = SCNVector3(0, detailDimensionFacingYaw(for: orbitAngle), 0)
             if dimension == .sun, let spinNode {
-                let lightVisibleBand = detailSunEmbeddedLightVisibleBand(stepAngle: stepAngle)
-                setEmbeddedLightsHidden(in: spinNode, isHidden: absoluteAngle > lightVisibleBand)
+                setEmbeddedLightsHidden(in: spinNode, isHidden: true)
             }
             itemNode.opacity = opacity
             itemNode.scale = SCNVector3(Float(scale), Float(scale), Float(scale))
@@ -976,8 +981,22 @@ final class WeatherSceneManager: ObservableObject {
         -orbitAngle
     }
 
-    private func detailSunEmbeddedLightVisibleBand(stepAngle: CGFloat) -> CGFloat {
-        stepAngle * 0.16
+    private func detailDimensionBackFadeOpacity(
+        absoluteAngle: CGFloat,
+        stepAngle: CGFloat
+    ) -> CGFloat {
+        let fadeBand = stepAngle * secondScreenMotionTuning.backFadeBandRatio
+        let distanceToBack = abs(.pi - absoluteAngle)
+        guard distanceToBack < fadeBand else {
+            return 1
+        }
+
+        let progress = 1 - distanceToBack / max(fadeBand, 0.001)
+        return interpolated(
+            from: 1,
+            to: secondScreenMotionTuning.backFadeOpacity,
+            progress: progress
+        )
     }
 
     private func roundedOrbitIndex(for ringYaw: Float) -> Int {
