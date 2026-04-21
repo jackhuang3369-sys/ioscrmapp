@@ -844,16 +844,6 @@ struct WeatherSceneView: UIViewRepresentable {
                     syncManagerRotationIfNeeded(node: node)
                 }
 
-                // 第二屏：保持当前旋转方向，滑行到最近的 0/360 朝向（不反向吐圈）
-                if manager?.isSunDetailMode == true {
-                    let panStartYaw = panSession?.startYaw ?? currentYaw
-                    let yawDelta = targetYaw - (panSession?.startYaw ?? targetYaw)
-                    let settleDirection: Float = yawDelta == 0
-                        ? (v.x >= 0 ? 1 : -1)
-                        : (yawDelta > 0 ? 1 : -1)
-                    snapBackToZero(restPitch: restPitch, direction: settleDirection, panStartYaw: panStartYaw)
-                    break
-                }
                 if interactionMode == .horizontalYawOnly {
                     let referenceWidth = max(Float(gesture.view?.bounds.width ?? 0), minimumPanReferenceWidth)
                     let translation = gesture.translation(in: gesture.view).x
