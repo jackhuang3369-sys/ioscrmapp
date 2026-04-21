@@ -3,12 +3,17 @@ import SwiftUI
 // MARK: - WeatherWindBackgroundView
 
 struct WeatherWindBackgroundView: View {
+    let isPaused: Bool
     private let strands   = WindStrand.makePresetSet()
     private let particles = WindParticle.makePresetSet()
 
+    init(isPaused: Bool = false) {
+        self.isPaused = isPaused
+    }
+
     var body: some View {
         GeometryReader { proxy in
-            TimelineView(.animation(minimumInterval: 1.0 / 60.0, paused: false)) { context in
+            TimelineView(.animation(minimumInterval: 1.0 / 30.0, paused: isPaused)) { context in
                 Canvas { canvas, size in
                     let time = context.date.timeIntervalSinceReferenceDate
                     for strand in strands {

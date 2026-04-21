@@ -50,7 +50,7 @@ final class WeatherSceneManager: ObservableObject {
     static let sunDetailCrossfadeDuration: TimeInterval = 0.20
     static let sunReturnTransitionDuration: TimeInterval = 0.2 //回场动画，第二屏回到第一屏的时间。
 
-    @Published private(set) var displayGroupRotation: SCNVector3 = SCNVector3(0, 0, 0)
+    private(set) var displayGroupRotation: SCNVector3 = SCNVector3(0, 0, 0)
     @Published private(set) var currentDetailDimension: WeatherDetailDimension = .sun
     @Published private(set) var presentedDetailDimension: WeatherDetailDimension = .sun
     private var currentDetailOrbitIndex: Int = 0
@@ -79,6 +79,7 @@ final class WeatherSceneManager: ObservableObject {
     private var sunTapBurstOverlayNode: SCNNode?
     private var temperatureNode: SCNNode?
     private var temperatureNodePrototypeCache: [String: SCNNode] = [:]
+    private var digitGlyphPrototypeCache: [String: (node: SCNNode, width: Float)] = [:]
     private var weatherAssetPrototypeCache: [String: SCNNode] = [:]
     private var sunNodePrototypeCache: [String: SCNNode] = [:]
     private var homeSceneAccessoryNode: SCNNode?
@@ -94,6 +95,7 @@ final class WeatherSceneManager: ObservableObject {
     private var burstAnimationWorkItem: DispatchWorkItem?
     private var entrySpinWorkItem: DispatchWorkItem?
     private var detailAutoSpinWorkItem: DispatchWorkItem?
+    private var isDetailSecondScreenPrepared = false
     private var detailSpinGestureBaseModelAngles = SCNVector3Zero
     private var detailSpinGestureBaseTitleAngles = SCNVector3Zero
     private var isDetailOrbitFeedbackSessionActive = false
@@ -179,6 +181,9 @@ final class WeatherSceneManager: ObservableObject {
 
     func setHomeScenePreset(_ preset: WeatherHomeScenePreset, animated: Bool) {
         guard mode == .main || mode == .sunTransition else { return }
+        guard preset != currentHomeScenePreset || sunNode == nil else {
+            return
+        }
         let shouldAnimate = animated && preset != currentHomeScenePreset
         currentHomeScenePreset = preset
         applyHomeScenePreset(animated: shouldAnimate)
@@ -254,8 +259,10 @@ final class WeatherSceneManager: ObservableObject {
         }
     }
 
-    func prepareDetailSecondScreen() {
+    func prepareDetailSecondScreen(force: Bool = false) {
         guard mode == .sunDetail || mode == .sunTransition else { return }
+        guard force || !isDetailSecondScreenPrepared else { return }
+        isDetailSecondScreenPrepared = true
         cancelDetailAutoSpin()
         endDetailOrbitFeedbackSession()
         WeatherAudioPlayer.shared.resetOrbitCheckpointSequence()
@@ -269,6 +276,13 @@ final class WeatherSceneManager: ObservableObject {
             animated: false
         )
         scheduleDetailAutoSpin()
+    }
+
+    func prewarmTemperatureNodes(for temperatures: [Int]) {
+        let uniqueTemperatures = Array(Set(temperatures)).sorted()
+        for temperature in uniqueTemperatures {
+            _ = makeTemperatureNode(text: "\(temperature)")
+        }
     }
 
     func beginDetailOrbitInteraction() {
@@ -420,6 +434,7 @@ final class WeatherSceneManager: ObservableObject {
     func prepareSunDetailTransition(temperature: Int, sourceRotation: SCNVector3) {
         guard mode == .sunTransition else { return }
 
+        isDetailSecondScreenPrepared = false
         currentTemperature = temperature
         isTemperatureHidden = false
         cancelPendingTransitionWork()
@@ -471,6 +486,7 @@ final class WeatherSceneManager: ObservableObject {
     func resetToMainPresentation(temperature: Int) {
         guard mode == .sunTransition else { return }
 
+        isDetailSecondScreenPrepared = false
         currentTemperature = temperature
         isTemperatureHidden = false
         autoSpinSpeed = 0
@@ -489,6 +505,7 @@ final class WeatherSceneManager: ObservableObject {
             return
         }
 
+        isDetailSecondScreenPrepared = false
         currentTemperature = temperature
         cancelPendingTransitionWork()
         cancelEntryAnimation()
@@ -549,6 +566,7 @@ final class WeatherSceneManager: ObservableObject {
             return
         }
 
+        isDetailSecondScreenPrepared = false
         cancelPendingTransitionWork()
         rotatingGroup.removeAllActions()
         sunNode.removeAllActions()
@@ -2005,6 +2023,9 @@ final class WeatherSceneManager: ObservableObject {
     private func makeDigitGlyph(for character: Character) -> (node: SCNNode, width: Float)? {
         guard character.isNumber else { return nil }
         let digitName = String(character)
+        if let prototype = digitGlyphPrototypeCache[digitName] {
+            return (prototype.node.clone(), prototype.width)
+        }
         // ── 数字大小调整入口：修改 targetHeight 可整体缩放字体（数值越大越大）──
         guard let payload = loadNormalizedModelNode(named: digitName, fileExtension: "obj", targetHeight: 7.5) else {
             return nil
@@ -2013,6 +2034,7 @@ final class WeatherSceneManager: ObservableObject {
         let normalized = normalizeDigitPayload(payload, for: digitName)
         applyTemperatureDigitMaterial(to: normalized.node)
         normalized.node.name = "digit_\(digitName)"
+        digitGlyphPrototypeCache[digitName] = (normalized.node.clone(), normalized.width)
         return normalized
     }
 

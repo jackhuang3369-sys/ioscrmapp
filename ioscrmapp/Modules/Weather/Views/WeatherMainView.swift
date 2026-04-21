@@ -1,5 +1,6 @@
 import SwiftUI
 import SceneKit
+import Dispatch
 
 struct WeatherMainView: View {
     @Environment(\.dismiss) private var dismiss
@@ -13,6 +14,7 @@ struct WeatherMainView: View {
     @State private var hourlyBubbleState = WeatherHourlyBubbleState(isVisible: false, bubbleTopY: 0)
     @State private var forecastStripMinY: CGFloat = 0
     @State private var clearSkyIdleBaselineY: CGFloat?
+    @State private var hasPreparedRuntimeAssets = false
 
     private let clearSkyFallbackLiftOffset: CGFloat = -24
     
@@ -76,6 +78,12 @@ struct WeatherMainView: View {
             }
             if selectedTimelineID.isEmpty {
                 selectedTimelineID = hourlyPoints.first?.id ?? ""
+            }
+            if !hasPreparedRuntimeAssets {
+                hasPreparedRuntimeAssets = true
+                DispatchQueue.main.async {
+                    prepareRuntimeAssets()
+                }
             }
             WeatherAudioPlayer.shared.playDetailedEnter()
             applyHomeScene(for: selectedEntry, animated: false)
@@ -143,11 +151,15 @@ struct WeatherMainView: View {
             } else {
                 Color.white
 
-                WeatherWindBackgroundView()
+                WeatherWindBackgroundView(isPaused: isWindBackgroundPaused)
                     .opacity(0.95)
             }
         }
         .animation(.easeInOut(duration: 0.24), value: selectedEntry.scenePreset.usesDarkBackground)
+    }
+
+    private var isWindBackgroundPaused: Bool {
+        hourlyBubbleState.isVisible || isSunDetailPresented || isSunTransitionActive
     }
 
     private func mainForecastSection(width: CGFloat, bottomPadding: CGFloat) -> some View {
@@ -254,6 +266,24 @@ struct WeatherMainView: View {
             sceneManager.setTemperature(entry.temperature, animated: animated)
         }
         sceneManager.setHomeScenePreset(entry.scenePreset, animated: animated)
+    }
+
+    private func prepareRuntimeAssets() {
+        let temperatures = hourlyPoints.isEmpty
+            ? MockWeatherData.hourlyDemoPoints.map(\.temperature)
+            : hourlyPoints.map(\.temperature)
+        sceneManager.prewarmTemperatureNodes(for: temperatures)
+        WeatherAudioPlayer.shared.prewarm(
+            [
+                "menu-open-1",
+                "sun-detail-enter",
+                "sun-detail-exit",
+                "ui-time-scroll-click-1",
+                "ui-day-select-1"
+            ],
+            maxConcurrentPlayers: 1
+        )
+        WeatherHapticPlayer.shared.prepareSunTransition()
     }
 
     private func clearSkyTitleLiftOffset(for bubbleState: WeatherHourlyBubbleState? = nil) -> CGFloat {

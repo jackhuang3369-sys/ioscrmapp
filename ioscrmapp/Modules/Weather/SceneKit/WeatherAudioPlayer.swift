@@ -45,6 +45,15 @@ final class WeatherAudioPlayer {
         playOneshot("ui-day-select-1", volume: 0.24)
     }
 
+    func prewarm(_ names: [String], maxConcurrentPlayers: Int = 1) {
+        audioQueue.async { [weak self] in
+            guard let self else { return }
+            names.forEach { name in
+                self.prewarmOneshotLocked(name, maxConcurrentPlayers: maxConcurrentPlayers)
+            }
+        }
+    }
+
     func resetOrbitCheckpointSequence() {
         audioQueue.async { [weak self] in
             self?.orbitCheckpointIndex = 0
@@ -122,6 +131,19 @@ final class WeatherAudioPlayer {
 
         player.volume = volume
         player.play()
+    }
+
+    private func prewarmOneshotLocked(_ name: String, maxConcurrentPlayers: Int) {
+        var pool = oneshotPool[name] ?? []
+        if !pool.isEmpty || pool.count >= maxConcurrentPlayers {
+            return
+        }
+
+        guard let url = audioURL(name),
+              let created = try? AVAudioPlayer(contentsOf: url) else { return }
+        created.prepareToPlay()
+        pool.append(created)
+        oneshotPool[name] = pool
     }
 
     private func playSunTapOneshot(_ name: String, volume: Float) {
