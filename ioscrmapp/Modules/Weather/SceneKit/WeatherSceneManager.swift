@@ -894,7 +894,8 @@ final class WeatherSceneManager: ObservableObject {
             let interactionNode = detailDimensionInteractionNodes[dimension]
             let spinNode = detailDimensionSpinNodes[dimension]
             let baseAngle = Float(dimension.rawValue) * detailDimensionAngleStep
-            let normalizedAngle = normalizedOrbitAngle(baseAngle + ringYaw)
+            let orbitAngle = baseAngle + ringYaw
+            let normalizedAngle = normalizedOrbitAngle(orbitAngle)
             let absoluteAngle = CGFloat(abs(normalizedAngle))
             let stepAngle = CGFloat(detailDimensionAngleStep)
             let frontBand = stepAngle * secondScreenMotionTuning.frontBandRatio
@@ -932,9 +933,10 @@ final class WeatherSceneManager: ObservableObject {
             }
 
             itemNode.eulerAngles = SCNVector3(0, baseAngle, 0)
-            interactionNode?.eulerAngles = SCNVector3Zero
+            interactionNode?.eulerAngles = SCNVector3(0, detailDimensionFacingYaw(for: orbitAngle), 0)
             if dimension == .sun, let spinNode {
-                setEmbeddedLightsHidden(in: spinNode, isHidden: absoluteAngle > frontBand)
+                let lightVisibleBand = detailSunEmbeddedLightVisibleBand(stepAngle: stepAngle)
+                setEmbeddedLightsHidden(in: spinNode, isHidden: absoluteAngle > lightVisibleBand)
             }
             itemNode.opacity = opacity
             itemNode.scale = SCNVector3(Float(scale), Float(scale), Float(scale))
@@ -949,6 +951,14 @@ final class WeatherSceneManager: ObservableObject {
         if presentedDetailDimension != nearestDimension {
             setPresentedDetailDimension(nearestDimension)
         }
+    }
+
+    private func detailDimensionFacingYaw(for orbitAngle: Float) -> Float {
+        -orbitAngle
+    }
+
+    private func detailSunEmbeddedLightVisibleBand(stepAngle: CGFloat) -> CGFloat {
+        stepAngle * 0.16
     }
 
     private func roundedOrbitIndex(for ringYaw: Float) -> Int {
@@ -2080,6 +2090,7 @@ final class WeatherSceneManager: ObservableObject {
         let normalTextureName: String?
         let metalness: Float
         let roughness: Float
+        let isDoubleSided: Bool
     }
 
     private func applyWeatherAssetMaterialCorrection(named name: String, to node: SCNNode) {
@@ -2100,7 +2111,7 @@ final class WeatherSceneManager: ObservableObject {
             material.metalness.contents = correction.metalness
             material.roughness.contents = correction.roughness
             material.emission.contents = UIColor(white: 0, alpha: 0)
-            material.isDoubleSided = true
+            material.isDoubleSided = correction.isDoubleSided
             geometry.materials = Array(repeating: material, count: max(geometry.materials.count, 1))
         }
     }
@@ -2119,42 +2130,48 @@ final class WeatherSceneManager: ObservableObject {
                 diffuseContents: baseColorURL,
                 normalTextureName: "moon_normal",
                 metalness: 0,
-                roughness: 0.94
+                roughness: 0.94,
+                isDoubleSided: false
             )
         case "cloud":
             return WeatherAssetMaterialCorrection(
                 diffuseContents: UIColor(red: 0.13, green: 0.13, blue: 0.14, alpha: 1),
                 normalTextureName: "cloud_normal",
                 metalness: 0,
-                roughness: 0.98
+                roughness: 0.98,
+                isDoubleSided: true
             )
         case "cloudy":
             return WeatherAssetMaterialCorrection(
                 diffuseContents: UIColor(red: 0.13, green: 0.13, blue: 0.14, alpha: 1),
                 normalTextureName: "cloudy_normal",
                 metalness: 0,
-                roughness: 0.98
+                roughness: 0.98,
+                isDoubleSided: true
             )
         case "cloudy2":
             return WeatherAssetMaterialCorrection(
                 diffuseContents: UIColor(red: 0.13, green: 0.13, blue: 0.14, alpha: 1),
                 normalTextureName: "cloudy2_normal",
                 metalness: 0,
-                roughness: 0.98
+                roughness: 0.98,
+                isDoubleSided: true
             )
         case "air":
             return WeatherAssetMaterialCorrection(
                 diffuseContents: UIColor(red: 0.12, green: 0.12, blue: 0.13, alpha: 1),
                 normalTextureName: "air_normal",
                 metalness: 0,
-                roughness: 0.99
+                roughness: 0.99,
+                isDoubleSided: true
             )
         case "rain":
             return WeatherAssetMaterialCorrection(
                 diffuseContents: UIColor(red: 0.15, green: 0.15, blue: 0.16, alpha: 1),
                 normalTextureName: "rain_normal",
                 metalness: 0,
-                roughness: 0.99
+                roughness: 0.99,
+                isDoubleSided: true
             )
         default:
             return nil
