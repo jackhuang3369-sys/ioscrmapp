@@ -111,15 +111,16 @@ private enum Catalog {
     }
 
     static func resolvedServiceMode(fallback: AppServiceMode) -> AppServiceMode {
-        if let override = ProcessInfo.processInfo.environment[Keys.serviceMode] {
-            return AppServiceMode(rawValue: override.lowercased()) ?? fallback
-        }
-
-        if isLocalDebugRun {
-            return .mock
-        }
-
-        return fallback
+        return .mock
+//        if let override = ProcessInfo.processInfo.environment[Keys.serviceMode] {
+//            return AppServiceMode(rawValue: override.lowercased()) ?? fallback
+//        }
+//
+//        if isLocalDebugRun {
+//            return .mock
+//        }
+//
+//        return fallback
     }
 
     static func resolvedServerURL(fallback: URL) -> URL {

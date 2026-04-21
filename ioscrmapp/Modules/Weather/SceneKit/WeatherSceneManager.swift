@@ -544,6 +544,7 @@ final class WeatherSceneManager: ObservableObject {
                 self.attachFloatAnimation(to: root)
             }
             self.applyHomeScenePreset(animated: false)
+            self.resumeSunSpinAnimationIfNeeded()
             completion()
         }
         transitionCompletionWorkItem = completionWorkItem
@@ -2263,8 +2264,20 @@ final class WeatherSceneManager: ObservableObject {
     }
 
     private func resumeSunSpinAnimations() {
-        sunModelNode?.animationPlayer(forKey: sunSpinAnimationKey)?.paused = false
+        resumeSunSpinAnimationIfNeeded()
         detailTitleNode?.animationPlayer(forKey: sunTitleSpinAnimationKey)?.paused = false
+    }
+
+    private func resumeSunSpinAnimationIfNeeded() {
+        guard mode == .main || mode == .sunTransition else { return }
+        guard let sunModelNode else { return }
+
+        if !sunModelNode.animationKeys.contains(sunSpinAnimationKey) {
+            attachSunSpin(to: sunModelNode, animationKey: sunSpinAnimationKey)
+            return
+        }
+
+        sunModelNode.animationPlayer(forKey: sunSpinAnimationKey)?.paused = false
     }
 
     private func scheduleEntrySpinAnimation() {

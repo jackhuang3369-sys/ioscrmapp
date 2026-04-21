@@ -65,7 +65,6 @@ struct WeatherMainView: View {
                         allowsInteraction: !isSunTransitionActive,
                         onClose: exitSunDetail
                     )
-                    .transition(.opacity.combined(with: .scale(scale: 0.97)))
                     .zIndex(8)
                 }
             }
