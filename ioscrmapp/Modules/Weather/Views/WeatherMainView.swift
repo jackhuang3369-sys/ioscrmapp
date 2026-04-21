@@ -98,6 +98,7 @@ struct WeatherMainView: View {
                     manager: sceneManager,
                     onSunTap: handleSunTap,
                     onBackgroundTap: isSunDetailPresented ? exitSunDetail : nil,
+                    allowsInteraction: !isSunTransitionActive && !isSunDetailPresented,
                     interactionResetVersion: sceneInteractionResetVersion
                 )
                 .frame(height: mainSceneHeight)

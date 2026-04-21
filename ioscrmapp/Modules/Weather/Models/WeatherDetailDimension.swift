@@ -86,6 +86,144 @@ enum WeatherDetailChartStyle: Equatable {
     case area
 }
 
+struct WeatherSecondScreenMotionTuning {
+    let orbitRadius: Float
+    let orbitAngleStep: Float
+    let frontScale: CGFloat
+    let frontOpacity: CGFloat
+    let frontBandRatio: CGFloat
+    let adjacentScale: CGFloat
+    let adjacentOpacity: CGFloat
+    let adjacentBandRatio: CGFloat
+    let rearScale: CGFloat
+    let rearOpacity: CGFloat
+    let idleDelay: TimeInterval
+    let autoSpinSpeedRadPerSec: Float
+    let orbitStayThresholdRatio: CGFloat
+    let orbitAdvanceThresholdRatio: CGFloat
+    let fastSwipeMaxDuration: TimeInterval
+    let fastSwipeMinVelocity: CGFloat
+    let velocityPerOrbitTurn: CGFloat
+    let maxOrbitTurns: Int
+    let timelineIsDisplayOnly: Bool
+
+    static let `default` = WeatherSecondScreenMotionTuning(
+        orbitRadius: 6.0,
+        orbitAngleStep: Float.pi * 2 / Float(WeatherDetailDimension.allCases.count),
+        frontScale: 1.09,
+        frontOpacity: 1.0,
+        frontBandRatio: 0.48,
+        adjacentScale: 0.68,
+        adjacentOpacity: 0.28,
+        adjacentBandRatio: 1.20,
+        rearScale: 0.56,
+        rearOpacity: 0.08,
+        idleDelay: 2.0,
+        autoSpinSpeedRadPerSec: -Float.pi * 2 / 30,
+        orbitStayThresholdRatio: 0.75,
+        orbitAdvanceThresholdRatio: 4.0 / 3.0,
+        fastSwipeMaxDuration: 0.48,
+        fastSwipeMinVelocity: 900,
+        velocityPerOrbitTurn: 850,
+        maxOrbitTurns: 10,
+        timelineIsDisplayOnly: true
+    )
+}
+
+struct WeatherSecondScreenOrbitGestureSample {
+    let translationRatio: CGFloat
+    let predictedTranslationRatio: CGFloat
+    let velocityPointsPerSecond: CGFloat
+    let duration: TimeInterval
+
+    var directionSign: Int {
+        if abs(translationRatio) > 0.001 {
+            return translationRatio > 0 ? 1 : -1
+        }
+        return velocityPointsPerSecond >= 0 ? 1 : -1
+    }
+}
+
+struct WeatherSecondScreenOrbitDecision: Equatable {
+    let stepOffset: Int
+    let usesMomentum: Bool
+}
+
+struct WeatherSecondScreenOrbitController {
+    let tuning: WeatherSecondScreenMotionTuning
+
+    func settleDecision(sample: WeatherSecondScreenOrbitGestureSample) -> WeatherSecondScreenOrbitDecision {
+        let absoluteTranslation = abs(sample.translationRatio)
+        let direction = sample.directionSign
+        let isFast = sample.duration <= tuning.fastSwipeMaxDuration
+            && abs(sample.velocityPointsPerSecond) >= tuning.fastSwipeMinVelocity
+
+        if isFast {
+            let rawTurns = Int(abs(sample.velocityPointsPerSecond) / tuning.velocityPerOrbitTurn)
+            let clampedTurns = max(1, min(rawTurns, tuning.maxOrbitTurns))
+            return WeatherSecondScreenOrbitDecision(
+                stepOffset: direction * clampedTurns,
+                usesMomentum: clampedTurns > 1
+            )
+        }
+
+        if absoluteTranslation <= tuning.orbitStayThresholdRatio {
+            return WeatherSecondScreenOrbitDecision(stepOffset: 0, usesMomentum: false)
+        }
+
+        if absoluteTranslation >= tuning.orbitAdvanceThresholdRatio {
+            return WeatherSecondScreenOrbitDecision(stepOffset: direction, usesMomentum: false)
+        }
+
+        let projected = abs(sample.predictedTranslationRatio)
+        let shouldAdvance = projected >= 1.0 || absoluteTranslation >= 1.0
+        return WeatherSecondScreenOrbitDecision(
+            stepOffset: shouldAdvance ? direction : 0,
+            usesMomentum: false
+        )
+    }
+
+    func shouldStartAutoSpin(after elapsed: TimeInterval) -> Bool {
+        elapsed >= tuning.idleDelay
+    }
+}
+
+enum WeatherSecondScreenInteractionZone: Equatable {
+    case close
+    case dayWeek
+    case nowTimeline
+    case selfSpin
+    case orbit
+    case none
+}
+
+struct WeatherSecondScreenHitZones {
+    let closeZone: CGRect
+    let dayWeekZone: CGRect
+    let nowTimelineZone: CGRect
+    let selfSpinZone: CGRect
+    let orbitZone: CGRect
+
+    func zone(at point: CGPoint) -> WeatherSecondScreenInteractionZone {
+        if closeZone.contains(point) {
+            return .close
+        }
+        if dayWeekZone.contains(point) {
+            return .dayWeek
+        }
+        if nowTimelineZone.contains(point) {
+            return .nowTimeline
+        }
+        if selfSpinZone.contains(point) {
+            return .selfSpin
+        }
+        if orbitZone.contains(point) {
+            return .orbit
+        }
+        return .none
+    }
+}
+
 extension WeatherDetailSnapshot {
     static func mock(for dimension: WeatherDetailDimension) -> WeatherDetailSnapshot {
         switch dimension {

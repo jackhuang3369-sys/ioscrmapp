@@ -1,49 +1,40 @@
 import SwiftUI
 
 struct WeatherDetailCarouselView: View {
-    @Binding var selectedDimension: WeatherDetailDimension
-
+    let selectedDimension: WeatherDetailDimension
     let width: CGFloat
     let allowsInteraction: Bool
-    let onProgressChange: (WeatherDetailDimension, CGFloat, Bool) -> Void
+    let onOrbitDragChanged: (CGFloat) -> Void
+    let onOrbitDragEnded: (WeatherSecondScreenOrbitGestureSample) -> Void
 
     @State private var dragTranslation: CGFloat = 0
-    @State private var dragDirection: DragDirection?
+    @State private var activeZone: WeatherSecondScreenInteractionZone = .none
+    @State private var dragStartTime: Date?
+    @State private var selectedWindow: WeatherDetailInsightWindow = .day
 
-    private let switchThresholdRatio: CGFloat = 0.18
-    private let flingThresholdRatio: CGFloat = 0.34
-
-    private enum DragDirection: Equatable {
-        case horizontal
-        case vertical
-    }
+    private let panelHeight: CGFloat = 232
 
     var body: some View {
-        let referenceWidth = max(width, 1)
-
         ZStack {
-            WeatherDetailInsightPanel(snapshot: .mock(for: selectedDimension))
-                .frame(width: width)
-                .opacity(panelOpacity)
-                .offset(x: dragTranslation * 0.10)
-                .id(selectedDimension)
-                .transition(
-                    .asymmetric(
-                        insertion: .opacity.combined(with: .offset(x: 18)),
-                        removal: .opacity.combined(with: .offset(x: -18))
-                    )
-                )
+            WeatherDetailInsightPanel(
+                snapshot: .mock(for: selectedDimension),
+                selectedWindow: selectedWindow,
+                onDaySelected: { selectedWindow = .day },
+                onWeekSelected: { selectedWindow = .week }
+            )
+            .frame(width: width)
+            .opacity(panelOpacity)
+            .offset(x: dragTranslation * 0.08)
+            .id(selectedDimension)
+            .transition(.opacity)
         }
-        .frame(width: width, height: 232)
+        .frame(width: width, height: panelHeight)
         .contentShape(Rectangle())
-        .gesture(pagerGesture(referenceWidth: referenceWidth))
-        .animation(.spring(response: 0.32, dampingFraction: 0.86), value: selectedDimension)
-        .onAppear {
-            onProgressChange(selectedDimension, 0, false)
-        }
+        .gesture(panelGesture(referenceWidth: max(width, 1)))
+        .animation(.spring(response: 0.28, dampingFraction: 0.84), value: selectedDimension)
     }
 
-    private func pagerGesture(referenceWidth: CGFloat) -> some Gesture {
+    private func panelGesture(referenceWidth: CGFloat) -> some Gesture {
         DragGesture(minimumDistance: 12, coordinateSpace: .local)
             .onChanged { value in
                 guard allowsInteraction else {
@@ -51,11 +42,13 @@ struct WeatherDetailCarouselView: View {
                     return
                 }
 
-                if dragDirection == nil {
-                    dragDirection = resolvedDragDirection(for: value)
+                if activeZone == .none {
+                    activeZone = WeatherSecondScreenHitZones.sizeZones(forWidth: width, height: panelHeight)
+                        .zone(at: value.startLocation)
+                    dragStartTime = Date()
                 }
 
-                guard dragDirection == .horizontal else { return }
+                guard activeZone == .orbit else { return }
 
                 let clampedTranslation = clamped(
                     value.translation.width,
@@ -63,23 +56,19 @@ struct WeatherDetailCarouselView: View {
                     upper: referenceWidth
                 )
                 dragTranslation = clampedTranslation
-                onProgressChange(
-                    selectedDimension,
-                    -clampedTranslation / referenceWidth,
-                    false
-                )
+                onOrbitDragChanged(-clampedTranslation / referenceWidth)
             }
             .onEnded { value in
-                let resolvedDirection = dragDirection ?? resolvedDragDirection(for: value)
-                defer { dragDirection = nil }
+                defer {
+                    activeZone = .none
+                    dragStartTime = nil
+                }
 
-                guard allowsInteraction, resolvedDirection == .horizontal else {
+                guard allowsInteraction, activeZone == .orbit else {
                     resetDrag(animated: true)
                     return
                 }
 
-                let threshold = referenceWidth * switchThresholdRatio
-                let flingThreshold = referenceWidth * flingThresholdRatio
                 let translation = clamped(
                     value.translation.width,
                     lower: -referenceWidth,
@@ -87,25 +76,21 @@ struct WeatherDetailCarouselView: View {
                 )
                 let predicted = clamped(
                     value.predictedEndTranslation.width,
-                    lower: -referenceWidth,
-                    upper: referenceWidth
+                    lower: -referenceWidth * CGFloat(WeatherSecondScreenMotionTuning.default.maxOrbitTurns),
+                    upper: referenceWidth * CGFloat(WeatherSecondScreenMotionTuning.default.maxOrbitTurns)
                 )
-                let nextOffset: Int
+                let duration = max(Date().timeIntervalSince(dragStartTime ?? Date()), 0.01)
+                let velocity = -(predicted - translation) / 0.12
 
-                if translation <= -threshold || predicted <= -flingThreshold {
-                    nextOffset = 1
-                } else if translation >= threshold || predicted >= flingThreshold {
-                    nextOffset = -1
-                } else {
-                    nextOffset = 0
-                }
-
-                let nextDimension = selectedDimension.advanced(by: nextOffset)
-                withAnimation(.spring(response: 0.32, dampingFraction: 0.86)) {
-                    selectedDimension = nextDimension
-                    dragTranslation = 0
-                }
-                onProgressChange(nextDimension, 0, true)
+                onOrbitDragEnded(
+                    WeatherSecondScreenOrbitGestureSample(
+                        translationRatio: -translation / referenceWidth,
+                        predictedTranslationRatio: -predicted / referenceWidth,
+                        velocityPointsPerSecond: velocity,
+                        duration: duration
+                    )
+                )
+                resetDrag(animated: true)
             }
     }
 
@@ -115,20 +100,12 @@ struct WeatherDetailCarouselView: View {
         }
 
         if animated {
-            withAnimation(.spring(response: 0.32, dampingFraction: 0.86)) {
+            withAnimation(.spring(response: 0.28, dampingFraction: 0.84)) {
                 changes()
             }
         } else {
             changes()
         }
-        onProgressChange(selectedDimension, 0, animated)
-    }
-
-    private func resolvedDragDirection(for value: DragGesture.Value) -> DragDirection? {
-        let horizontalDistance = abs(value.translation.width)
-        let verticalDistance = abs(value.translation.height)
-        guard max(horizontalDistance, verticalDistance) > 4 else { return nil }
-        return horizontalDistance >= verticalDistance * 1.08 ? .horizontal : .vertical
     }
 
     private func clamped(_ value: CGFloat, lower: CGFloat, upper: CGFloat) -> CGFloat {
@@ -136,12 +113,32 @@ struct WeatherDetailCarouselView: View {
     }
 
     private var panelOpacity: Double {
-        Double(max(0.62, 1 - abs(dragTranslation / max(width, 1)) * 0.34))
+        Double(max(0.72, 1 - abs(dragTranslation / max(width, 1)) * 0.26))
+    }
+}
+
+private enum WeatherDetailInsightWindow {
+    case day
+    case week
+}
+
+private extension WeatherSecondScreenHitZones {
+    static func sizeZones(forWidth width: CGFloat, height: CGFloat) -> WeatherSecondScreenHitZones {
+        WeatherSecondScreenHitZones(
+            closeZone: .null,
+            dayWeekZone: CGRect(x: (width - 180) / 2, y: height - 42, width: 180, height: 36),
+            nowTimelineZone: CGRect(x: 0, y: height - 64, width: width, height: 28),
+            selfSpinZone: .null,
+            orbitZone: CGRect(x: 0, y: 0, width: width, height: height)
+        )
     }
 }
 
 private struct WeatherDetailInsightPanel: View {
     let snapshot: WeatherDetailSnapshot
+    let selectedWindow: WeatherDetailInsightWindow
+    let onDaySelected: () -> Void
+    let onWeekSelected: () -> Void
 
     var body: some View {
         VStack(spacing: 8) {
@@ -180,11 +177,14 @@ private struct WeatherDetailInsightPanel: View {
                 Spacer(minLength: 0)
 
                 HStack(spacing: 10) {
-                    Text("Day")
-                        .font(.du(11, weight: .medium))
-                        .foregroundColor(Color.black.opacity(0.90))
+                    Button(action: onDaySelected) {
+                        Text("Day")
+                            .font(.du(11, weight: .medium))
+                            .foregroundColor(dayLabelColor)
+                    }
+                    .buttonStyle(.plain)
 
-                    ZStack(alignment: .leading) {
+                    ZStack(alignment: selectedWindow == .day ? .leading : .trailing) {
                         Capsule()
                             .fill(Color.black.opacity(0.12))
 
@@ -194,14 +194,18 @@ private struct WeatherDetailInsightPanel: View {
                     }
                     .frame(width: 52, height: 26)
 
-                    Text("Week")
-                        .font(.du(11, weight: .medium))
-                        .foregroundColor(Color.black.opacity(0.18))
+                    Button(action: onWeekSelected) {
+                        Text("Week")
+                            .font(.du(11, weight: .medium))
+                            .foregroundColor(weekLabelColor)
+                    }
+                    .buttonStyle(.plain)
                 }
 
                 Spacer(minLength: 0)
             }
             .padding(.top, 1)
+            .animation(.spring(response: 0.24, dampingFraction: 0.9), value: selectedWindow)
         }
         .padding(.horizontal, 2)
     }
@@ -230,6 +234,18 @@ private struct WeatherDetailInsightPanel: View {
         default:
             return "\(snapshot.primaryValue)\(snapshot.primaryUnit)"
         }
+    }
+
+    private var dayLabelColor: Color {
+        selectedWindow == .day
+            ? Color.black.opacity(0.90)
+            : Color.black.opacity(0.28)
+    }
+
+    private var weekLabelColor: Color {
+        selectedWindow == .week
+            ? Color.black.opacity(0.90)
+            : Color.black.opacity(0.28)
     }
 
     private func metricRow(title: String, value: String, highlighted: Bool) -> some View {

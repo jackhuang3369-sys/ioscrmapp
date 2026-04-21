@@ -2,14 +2,12 @@ import SwiftUI
 import UIKit
 
 struct WeatherSunDetailOverlay: View {
-    let manager: WeatherSceneManager
+    @ObservedObject var manager: WeatherSceneManager
     let size: CGSize
     let safeAreaInsets: EdgeInsets
     let interfaceOpacity: Double
     let allowsInteraction: Bool
     let onClose: () -> Void
-
-    @State private var selectedDimension: WeatherDetailDimension = .sun
     
     var body: some View {
         let sceneViewportHeight = min(size.height * 0.56, 470)
@@ -41,22 +39,26 @@ struct WeatherSunDetailOverlay: View {
                 .allowsHitTesting(allowsInteraction)
 
                 WeatherSunInteractionSurface(
-                    sceneViewportHeight: sceneViewportHeight
+                    manager: manager,
+                    sceneViewportHeight: sceneViewportHeight,
+                    allowsInteraction: allowsInteraction,
+                    onClose: onClose
                 )
                 .padding(.top, 2)
                 .padding(.horizontal, 6)
                 .allowsHitTesting(allowsInteraction)
                 
                 WeatherDetailCarouselView(
-                    selectedDimension: $selectedDimension,
+                    selectedDimension: manager.currentDetailDimension,
                     width: size.width * 0.6,
                     allowsInteraction: allowsInteraction,
-                    onProgressChange: { dimension, progress, animated in
-                        manager.setDetailDimensionProgress(
-                            selectedDimension: dimension,
-                            dragProgress: progress,
-                            animated: animated
-                        )
+                    onOrbitDragChanged: { progress in
+                        manager.beginDetailOrbitInteraction()
+                        manager.updateDetailOrbitInteraction(progress: progress)
+                    },
+                    onOrbitDragEnded: { sample in
+                        manager.beginDetailOrbitInteraction()
+                        manager.settleDetailOrbitInteraction(sample: sample)
                     }
                 )
                 .frame(width: size.width * 0.6)
@@ -67,11 +69,7 @@ struct WeatherSunDetailOverlay: View {
         }
         .ignoresSafeArea()
         .onAppear {
-            manager.setDetailDimensionProgress(
-                selectedDimension: selectedDimension,
-                dragProgress: 0,
-                animated: false
-            )
+            manager.prepareDetailSecondScreen()
         }
     }
 }
@@ -437,18 +435,110 @@ private struct WeatherSunDismissEdges: View {
 }
 
 private struct WeatherSunInteractionSurface: View {
+    let manager: WeatherSceneManager
     let sceneViewportHeight: CGFloat
+    let allowsInteraction: Bool
+    let onClose: () -> Void
+
+    @State private var activeZone: WeatherSecondScreenInteractionZone = .none
+    @State private var dragStartTime: Date?
 
     var body: some View {
-        VStack(spacing: 0) {
-            Color.clear
-                .frame(height: sceneViewportHeight)
-                .allowsHitTesting(false)
+        GeometryReader { proxy in
+            VStack(spacing: 0) {
+                Color.clear
+                    .frame(height: sceneViewportHeight)
 
-            Color.clear
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .allowsHitTesting(false)
+                Color.clear
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
+            .contentShape(Rectangle())
+            .gesture(surfaceGesture(in: proxy.size))
         }
+    }
+
+    private func surfaceGesture(in size: CGSize) -> some Gesture {
+        DragGesture(minimumDistance: 10, coordinateSpace: .local)
+            .onChanged { value in
+                guard allowsInteraction else { return }
+
+                if activeZone == .none {
+                    activeZone = hitZones(in: size).zone(at: value.startLocation)
+                    dragStartTime = Date()
+
+                    switch activeZone {
+                    case .selfSpin:
+                        manager.beginDetailSelfSpinInteraction()
+                    case .orbit:
+                        manager.beginDetailOrbitInteraction()
+                    default:
+                        break
+                    }
+                }
+
+                switch activeZone {
+                case .selfSpin:
+                    manager.updateDetailSelfSpinInteraction(translation: value.translation)
+                case .orbit:
+                    manager.updateDetailOrbitInteraction(
+                        progress: -value.translation.width / max(size.width, 1)
+                    )
+                default:
+                    break
+                }
+            }
+            .onEnded { value in
+                defer {
+                    activeZone = .none
+                    dragStartTime = nil
+                }
+
+                guard allowsInteraction else { return }
+
+                switch activeZone {
+                case .selfSpin:
+                    manager.endDetailSelfSpinInteraction()
+                case .orbit:
+                    let translation = value.translation.width
+                    let predicted = value.predictedEndTranslation.width
+                    let duration = max(Date().timeIntervalSince(dragStartTime ?? Date()), 0.01)
+                    let velocity = -(predicted - translation) / 0.12
+
+                    manager.settleDetailOrbitInteraction(
+                        sample: WeatherSecondScreenOrbitGestureSample(
+                            translationRatio: -translation / max(size.width, 1),
+                            predictedTranslationRatio: -predicted / max(size.width, 1),
+                            velocityPointsPerSecond: velocity,
+                            duration: duration
+                        )
+                    )
+                case .close:
+                    onClose()
+                default:
+                    break
+                }
+            }
+    }
+
+    private func hitZones(in size: CGSize) -> WeatherSecondScreenHitZones {
+        let closeHeight = min(24, size.height * 0.08)
+        let selfSpinWidth = size.width * 0.68
+        let selfSpinHeight = sceneViewportHeight * 0.84
+        let selfSpinX = (size.width - selfSpinWidth) / 2
+        let selfSpinY = max(0, sceneViewportHeight * 0.05)
+
+        return WeatherSecondScreenHitZones(
+            closeZone: CGRect(x: 0, y: 0, width: size.width, height: closeHeight),
+            dayWeekZone: .null,
+            nowTimelineZone: .null,
+            selfSpinZone: CGRect(
+                x: selfSpinX,
+                y: selfSpinY,
+                width: selfSpinWidth,
+                height: selfSpinHeight
+            ),
+            orbitZone: CGRect(x: 0, y: 0, width: size.width, height: size.height)
+        )
     }
 }
 

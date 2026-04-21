@@ -4,290 +4,157 @@ import Foundation
 @main
 struct WeatherSpinInteractionSmokeTests {
     static func main() throws {
-        try testSlowDragUnderHalfReturnsBackward()
-        try testSlowDragOverHalfCommitsForward()
-        try testSlowDragOverOneScreenUsesCompletedTurns()
-        try testFastShortDragLowSpeedReturnsBackward()
-        try testFastShortDragHighSpeedCommitsTurns()
-        try testFastDragMediumVelocityCommitsOneTurn()
-        try testFastDragHighVelocityCommitsMultipleTurns()
-        try testFastDragOverHalfCapsAtEightTurns()
-        try testSpinSoundTier_whenReverseReturn_usesSlowSound()
-        try testSpinSoundTier_whenTurnCountIsTwo_usesSlowSound()
-        try testSpinSoundTier_whenTurnCountIsFive_usesMediumSound()
-        try testSpinSoundTier_whenTurnCountIsEight_usesFastSound()
-        try testLiveYawUsesOneScreenOneTurnMapping()
-        try testFrontFacingHelperTreatsFullTurnsAsFrontFacing()
-        try testFrontFacingToleranceBlocksDetailEntryUntilAligned()
-        try testDebugSnapshotReflectsTurnCap()
-        try testAutoSpinResumeUsesPreInteractionSpeed()
-        print("Weather spin smoke tests passed")
+        try testSecondScreenCanCycleAllSixFrontDimensions()
+        try testSecondScreenSlowOrbitUnderStayThreshold_returnsCurrentFront()
+        try testSecondScreenSlowOrbitOverAdvanceThreshold_advancesSingleStep()
+        try testSecondScreenMiddleBandOrbit_doesNotSkipPastNearestNextFront()
+        try testSecondScreenFastOrbit_capsAtTenTurns()
+        try testSecondScreenAutoSpinDelay_waitsForTwoSeconds()
+        try testSecondScreenHitZones_keepSelfSpinSeparateFromOrbit()
+        try testSecondScreenHitZones_keepTimelineAndDayWeekOutOfOrbit()
+        print("Weather second-screen smoke tests passed")
     }
 
-    private static let tuning = WeatherSpinTuning.default
+    private static let tuning = WeatherSecondScreenMotionTuning.default
+    private static let orbitController = WeatherSecondScreenOrbitController(tuning: tuning)
 
-    private static func testSlowDragUnderHalfReturnsBackward() throws {
-        let sample = WeatherSpinGestureSample(
-            translationRatio: 0.24,
-            predictedTranslationRatio: 0.26,
-            velocityPointsPerSecond: 180,
-            duration: 0.44
+    private static func testSecondScreenCanCycleAllSixFrontDimensions() throws {
+        let visited = Set(WeatherDetailDimension.allCases.map { WeatherDetailDimension.sun.advanced(by: $0.rawValue) })
+        try require(
+            visited.count == WeatherDetailDimension.allCases.count,
+            "all six weather dimensions should be reachable as front-facing items"
         )
-        let decision = WeatherSpinController(tuning: tuning).settleDecision(
-            currentYawDegrees: 86,
-            sample: sample
-        )
-        try require(decision.mode == .reverseReturnToFront, "slow drag under half should return backward")
     }
 
-    private static func testSlowDragOverHalfCommitsForward() throws {
-        let sample = WeatherSpinGestureSample(
-            translationRatio: 0.72,
-            predictedTranslationRatio: 0.76,
-            velocityPointsPerSecond: 220,
-            duration: 0.47
-        )
-        let decision = WeatherSpinController(tuning: tuning).settleDecision(
-            currentYawDegrees: 242,
-            sample: sample
-        )
-        try require(decision.mode == .forwardCompleteToFront, "slow drag over half should complete forward")
-    }
-
-    private static func testSlowDragOverOneScreenUsesCompletedTurns() throws {
-        let sample = WeatherSpinGestureSample(
-            translationRatio: 1.36,
-            predictedTranslationRatio: 1.38,
-            velocityPointsPerSecond: 260,
-            duration: 0.52
-        )
-        let decision = WeatherSpinController(tuning: tuning).settleDecision(
-            currentYawDegrees: 492,
-            sample: sample
-        )
-        try require(decision.targetTurnCount == 1, "slow drag over one screen should keep completed forward turn progress")
-    }
-
-    private static func testFastShortDragLowSpeedReturnsBackward() throws {
-        let sample = WeatherSpinGestureSample(
-            translationRatio: 0.08,
-            predictedTranslationRatio: 0.10,
-            velocityPointsPerSecond: 480,
-            duration: 0.20
-        )
-        let decision = WeatherSpinController(tuning: tuning).settleDecision(
-            currentYawDegrees: 40,
-            sample: sample
-        )
-        try require(decision.mode == .reverseReturnToFront, "short low-speed drag should still return backward")
-    }
-
-    private static func testFastShortDragHighSpeedCommitsTurns() throws {
-        // Under quarter-screen distance but high velocity should still commit forward turns.
-        let sample = WeatherSpinGestureSample(
-            translationRatio: 0.12,
-            predictedTranslationRatio: 0.16,
-            velocityPointsPerSecond: 2200,
-            duration: 0.11
-        )
-        let decision = WeatherSpinController(tuning: tuning).settleDecision(
-            currentYawDegrees: 55,
-            sample: sample
-        )
-        try require(decision.mode == .forwardMomentumTurns, "short high-speed drag should use momentum turns")
-        try require(decision.targetTurnCount >= 2, "short high-speed drag should commit multiple turns")
-    }
-
-    private static func testFastDragMediumVelocityCommitsOneTurn() throws {
-        // ~1.4x the min-fast velocity: just one turn
-        let sample = WeatherSpinGestureSample(
-            translationRatio: 0.38,
-            predictedTranslationRatio: 0.46,
-            velocityPointsPerSecond: 1180,
-            duration: 0.14
-        )
-        let decision = WeatherSpinController(tuning: tuning).settleDecision(
-            currentYawDegrees: 128,
-            sample: sample
-        )
-        try require(decision.targetTurnCount == 1, "medium-velocity fast drag should commit exactly one turn")
-        try require(decision.mode == .forwardSingleTurn, "medium-velocity fast drag should use single-turn mode")
-    }
-
-    /// Key behaviour: a fast but short swipe (< half screen) with high velocity spins multiple turns.
-    /// This matches the original app: velocity drives turn count, distance only gates the minimum.
-    private static func testFastDragHighVelocityCommitsMultipleTurns() throws {
-        // 0.30 screen distance — well under half screen — but 1800 px/s
-        // velocityPerTurn=800 → Int(1800/800)=2 turns
-        let sample = WeatherSpinGestureSample(
-            translationRatio: 0.30,
-            predictedTranslationRatio: 0.35,
-            velocityPointsPerSecond: 1800,
-            duration: 0.11
-        )
-        let decision = WeatherSpinController(tuning: tuning).settleDecision(
-            currentYawDegrees: 108,
-            sample: sample
-        )
-        try require(decision.targetTurnCount >= 2, "high-velocity short drag should spin 2+ turns")
-        try require(decision.mode == .forwardMomentumTurns, "high-velocity short drag should use momentum mode")
-    }
-
-    private static func testFastDragOverHalfCapsAtEightTurns() throws {
-        // Very high speed should be capped at eight turns.
-        let sample = WeatherSpinGestureSample(
-            translationRatio: 0.84,
-            predictedTranslationRatio: 2.40,
-            velocityPointsPerSecond: 8400,
-            duration: 0.10
-        )
-        let decision = WeatherSpinController(tuning: tuning).settleDecision(
-            currentYawDegrees: 210,
-            sample: sample
-        )
-        try require(decision.mode == .forwardMomentumTurns, "fast long drag should use momentum turns")
-        try require(decision.targetTurnCount == 8, "fast long drag should cap total turns at eight")
-        try require(decision.usesFinalTurnSlowdown, "momentum settle should slow the final turn")
-    }
-
-    private static func testSpinSoundTier_whenReverseReturn_usesSlowSound() throws {
-        let controller = WeatherSpinController(tuning: tuning)
-        let sample = WeatherSpinGestureSample(
-            translationRatio: 0.24,
-            predictedTranslationRatio: 0.26,
-            velocityPointsPerSecond: 220,
-            duration: 0.44
-        )
-        let decision = controller.settleDecision(
-            currentYawDegrees: 86,
-            sample: sample
+    private static func testSecondScreenSlowOrbitUnderStayThreshold_returnsCurrentFront() throws {
+        let decision = orbitController.settleDecision(
+            sample: WeatherSecondScreenOrbitGestureSample(
+                translationRatio: 0.72,
+                predictedTranslationRatio: 0.82,
+                velocityPointsPerSecond: 220,
+                duration: 0.42
+            )
         )
         try require(
-            controller.spinSoundTier(for: sample, decision: decision) == .slow,
-            "reverse settle should keep the slow spin sound"
+            decision.stepOffset == 0,
+            "slow orbit drag below the 3/4-screen threshold should return to the current front"
         )
     }
 
-    private static func testSpinSoundTier_whenTurnCountIsTwo_usesSlowSound() throws {
-        let controller = WeatherSpinController(tuning: tuning)
-        let sample = WeatherSpinGestureSample(
-            translationRatio: 0.30,
-            predictedTranslationRatio: 0.35,
-            velocityPointsPerSecond: 1800,
-            duration: 0.11
+    private static func testSecondScreenSlowOrbitOverAdvanceThreshold_advancesSingleStep() throws {
+        let decision = orbitController.settleDecision(
+            sample: WeatherSecondScreenOrbitGestureSample(
+                translationRatio: 1.38,
+                predictedTranslationRatio: 1.45,
+                velocityPointsPerSecond: 260,
+                duration: 0.40
+            )
         )
-        let decision = controller.settleDecision(
-            currentYawDegrees: 108,
-            sample: sample
-        )
-        try require(decision.targetTurnCount == 2, "reference sample should stay in the low sound band")
         try require(
-            controller.spinSoundTier(for: sample, decision: decision) == .slow,
-            "two-turn momentum should still use the slow spin sound"
+            decision.stepOffset == 1,
+            "slow orbit drag over the 4/3-screen threshold should advance exactly one front item"
         )
     }
 
-    private static func testSpinSoundTier_whenTurnCountIsFive_usesMediumSound() throws {
-        let controller = WeatherSpinController(tuning: tuning)
-        let sample = WeatherSpinGestureSample(
-            translationRatio: 0.52,
-            predictedTranslationRatio: 0.58,
-            velocityPointsPerSecond: 4_200,
-            duration: 0.11
+    private static func testSecondScreenMiddleBandOrbit_doesNotSkipPastNearestNextFront() throws {
+        let advanceDecision = orbitController.settleDecision(
+            sample: WeatherSecondScreenOrbitGestureSample(
+                translationRatio: 0.96,
+                predictedTranslationRatio: 1.06,
+                velocityPointsPerSecond: 240,
+                duration: 0.44
+            )
         )
-        let decision = controller.settleDecision(
-            currentYawDegrees: 188,
-            sample: sample
-        )
-        try require(decision.targetTurnCount == 5, "reference sample should stay in the medium sound band")
         try require(
-            controller.spinSoundTier(for: sample, decision: decision) == .medium,
-            "three-to-six planned turns should use the medium spin sound"
+            advanceDecision.stepOffset == 1,
+            "middle-band drags may only resolve to the current or nearest next front"
         )
-    }
 
-    private static func testSpinSoundTier_whenTurnCountIsEight_usesFastSound() throws {
-        let controller = WeatherSpinController(tuning: tuning)
-        let sample = WeatherSpinGestureSample(
-            translationRatio: 0.84,
-            predictedTranslationRatio: 2.40,
-            velocityPointsPerSecond: 8_400,
-            duration: 0.10
+        let stayDecision = orbitController.settleDecision(
+            sample: WeatherSecondScreenOrbitGestureSample(
+                translationRatio: 0.94,
+                predictedTranslationRatio: 0.98,
+                velocityPointsPerSecond: 210,
+                duration: 0.46
+            )
         )
-        let decision = controller.settleDecision(
-            currentYawDegrees: 210,
-            sample: sample
-        )
-        try require(decision.targetTurnCount == 8, "reference sample should enter the high sound band")
         try require(
-            controller.spinSoundTier(for: sample, decision: decision) == .fast,
-            "more than six planned turns should use the fastest spin sound"
+            stayDecision.stepOffset == 0,
+            "middle-band drags below the projected next-front threshold should snap back to the current front"
         )
     }
 
-    private static func testLiveYawUsesOneScreenOneTurnMapping() throws {
-        let controller = WeatherSpinController(tuning: tuning)
-        try require(controller.liveYawDegrees(for: 1.0) == 360, "full-screen drag should equal one turn")
-        try require(controller.liveYawDegrees(for: 0.5) == 180, "half-screen drag should equal half turn")
+    private static func testSecondScreenFastOrbit_capsAtTenTurns() throws {
+        let decision = orbitController.settleDecision(
+            sample: WeatherSecondScreenOrbitGestureSample(
+                translationRatio: 0.52,
+                predictedTranslationRatio: 2.8,
+                velocityPointsPerSecond: 12_500,
+                duration: 0.12
+            )
+        )
+        try require(decision.usesMomentum, "fast orbit drags should enter momentum mode")
+        try require(decision.stepOffset == 10, "fast orbit drags should cap planned turns at ten")
     }
 
-    private static func testFrontFacingHelperTreatsFullTurnsAsFrontFacing() throws {
-        let controller = WeatherSpinController(tuning: tuning)
-        try require(controller.isFrontFacing(yawDegrees: 0, toleranceDegrees: 8), "0 degrees should be front-facing")
-        try require(controller.isFrontFacing(yawDegrees: 360, toleranceDegrees: 8), "360 degrees should be front-facing")
-        try require(!controller.isFrontFacing(yawDegrees: 120, toleranceDegrees: 8), "off-axis yaw should not be front-facing")
+    private static func testSecondScreenAutoSpinDelay_waitsForTwoSeconds() throws {
+        try require(
+            !orbitController.shouldStartAutoSpin(after: 1.99),
+            "front-facing self-spin should remain paused before the 2s idle delay"
+        )
+        try require(
+            orbitController.shouldStartAutoSpin(after: 2.0),
+            "front-facing self-spin should resume once the 2s idle delay elapses"
+        )
     }
 
-    private static func testFrontFacingToleranceBlocksDetailEntryUntilAligned() throws {
-        let controller = WeatherSpinController(tuning: tuning)
-        try require(!controller.isFrontFacing(yawDegrees: 24, toleranceDegrees: 8), "24 degrees should still block detail entry")
-        try require(controller.isFrontFacing(yawDegrees: 4, toleranceDegrees: 8), "small yaw should allow detail entry")
+    private static func testSecondScreenHitZones_keepSelfSpinSeparateFromOrbit() throws {
+        let zones = WeatherSecondScreenHitZones(
+            closeZone: .null,
+            dayWeekZone: .null,
+            nowTimelineZone: .null,
+            selfSpinZone: CGRect(x: 80, y: 40, width: 220, height: 320),
+            orbitZone: CGRect(x: 0, y: 0, width: 390, height: 600)
+        )
+
+        try require(
+            zones.zone(at: CGPoint(x: 190, y: 180)) == .selfSpin,
+            "drags starting in the front self-spin area should stay owned by self-spin"
+        )
+        try require(
+            zones.zone(at: CGPoint(x: 28, y: 220)) == .orbit,
+            "blank-space drags outside the self-spin area should route to orbit"
+        )
     }
 
-    private static func testDebugSnapshotReflectsTurnCap() throws {
-        // 8400 px/s should be capped at 8 turns.
-        let sample = WeatherSpinGestureSample(
-            translationRatio: 0.92,
-            predictedTranslationRatio: 2.8,
-            velocityPointsPerSecond: 8400,
-            duration: 0.10
+    private static func testSecondScreenHitZones_keepTimelineAndDayWeekOutOfOrbit() throws {
+        let zones = WeatherSecondScreenHitZones(
+            closeZone: .null,
+            dayWeekZone: CGRect(x: 110, y: 196, width: 170, height: 34),
+            nowTimelineZone: CGRect(x: 0, y: 162, width: 390, height: 28),
+            selfSpinZone: .null,
+            orbitZone: CGRect(x: 0, y: 0, width: 390, height: 232)
         )
-        let decision = WeatherSpinController(tuning: tuning).settleDecision(
-            currentYawDegrees: 220,
-            sample: sample
-        )
-        // 8400 px/s should be capped at 8 turns.
-        let snapshot = WeatherSpinDebugSnapshot(
-            translationRatio: sample.translationRatio,
-            predictedTranslationRatio: sample.predictedTranslationRatio,
-            velocityPointsPerSecond: sample.velocityPointsPerSecond,
-            duration: sample.duration,
-            targetTurnCount: decision.targetTurnCount,
-            mode: decision.mode
-        )
-        try require(snapshot.targetTurnCount == 8, "debug snapshot should report the capped turn count")
-    }
 
-    private static func testAutoSpinResumeUsesPreInteractionSpeed() throws {
-        let resumedMain = WeatherAutoSpinRecovery.resumedSpeed(
-            speedBeforeInteraction: 0,
-            fallbackCurrentSpeed: -Float.pi * 2 / 30
+        try require(
+            zones.zone(at: CGPoint(x: 150, y: 205)) == .dayWeek,
+            "Day/Week control hits should not leak into orbit ownership"
         )
-        try require(resumedMain == 0, "main scene should resume to its pre-interaction speed")
-
-        let detailSpeed = -Float.pi * 2 / 30
-        let resumedDetail = WeatherAutoSpinRecovery.resumedSpeed(
-            speedBeforeInteraction: detailSpeed,
-            fallbackCurrentSpeed: 0
+        try require(
+            zones.zone(at: CGPoint(x: 100, y: 172)) == .nowTimeline,
+            "Now timeline hits should remain display-only and not trigger orbit"
         )
-        try require(resumedDetail == detailSpeed, "detail scene should resume to the pre-interaction auto spin speed")
+        try require(
+            zones.zone(at: CGPoint(x: 52, y: 60)) == .orbit,
+            "the UV card region outside Now/DayWeek should still drive orbit"
+        )
     }
 }
 
 private func require(_ condition: @autoclosure () -> Bool, _ message: String) throws {
     if !condition() {
         throw NSError(
-            domain: "WeatherSpinSmokeTests",
+            domain: "WeatherSecondScreenSmokeTests",
             code: 1,
             userInfo: [NSLocalizedDescriptionKey: message]
         )
