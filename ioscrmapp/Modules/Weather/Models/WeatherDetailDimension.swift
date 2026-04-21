@@ -104,7 +104,12 @@ struct WeatherSecondScreenMotionTuning {
     let fastSwipeMaxDuration: TimeInterval
     let fastSwipeMinVelocity: CGFloat
     let velocityPerOrbitTurn: CGFloat
+    let predictedTurnMultiplier: CGFloat
     let maxOrbitTurns: Int
+    let orbitSettleBaseDuration: TimeInterval
+    let orbitSettleTurnDuration: TimeInterval
+    let orbitSettleMaxDuration: TimeInterval
+    let orbitMomentumDecayFactor: CGFloat
     let timelineIsDisplayOnly: Bool
 
     static let `default` = WeatherSecondScreenMotionTuning(
@@ -124,8 +129,13 @@ struct WeatherSecondScreenMotionTuning {
         orbitAdvanceThresholdRatio: 4.0 / 3.0,
         fastSwipeMaxDuration: 0.48,
         fastSwipeMinVelocity: 900,
-        velocityPerOrbitTurn: 850,
+        velocityPerOrbitTurn: 520,
+        predictedTurnMultiplier: 1.7,
         maxOrbitTurns: 10,
+        orbitSettleBaseDuration: 0.40,
+        orbitSettleTurnDuration: 0.15,
+        orbitSettleMaxDuration: 2.28,
+        orbitMomentumDecayFactor: 3.0,
         timelineIsDisplayOnly: true
     )
 }
@@ -159,7 +169,14 @@ struct WeatherSecondScreenOrbitController {
             && abs(sample.velocityPointsPerSecond) >= tuning.fastSwipeMinVelocity
 
         if isFast {
-            let rawTurns = Int(abs(sample.velocityPointsPerSecond) / tuning.velocityPerOrbitTurn)
+            let velocityTurns = Int(
+                ceil(abs(sample.velocityPointsPerSecond) / tuning.velocityPerOrbitTurn)
+            )
+            let projectedDistance = max(abs(sample.predictedTranslationRatio), absoluteTranslation)
+            let projectedTurns = Int(
+                ceil(projectedDistance * tuning.predictedTurnMultiplier)
+            )
+            let rawTurns = max(velocityTurns, projectedTurns)
             let clampedTurns = max(1, min(rawTurns, tuning.maxOrbitTurns))
             return WeatherSecondScreenOrbitDecision(
                 stepOffset: direction * clampedTurns,

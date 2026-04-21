@@ -25,13 +25,10 @@ struct WeatherDetailCarouselView: View {
             .frame(width: width)
             .opacity(panelOpacity)
             .offset(x: dragTranslation * 0.08)
-            .id(selectedDimension)
-            .transition(.opacity)
         }
         .frame(width: width, height: panelHeight)
         .contentShape(Rectangle())
         .gesture(panelGesture(referenceWidth: max(width, 1)))
-        .animation(.spring(response: 0.28, dampingFraction: 0.84), value: selectedDimension)
     }
 
     private func panelGesture(referenceWidth: CGFloat) -> some Gesture {

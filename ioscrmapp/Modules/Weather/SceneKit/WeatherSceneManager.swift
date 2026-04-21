@@ -52,6 +52,7 @@ final class WeatherSceneManager: ObservableObject {
 
     @Published private(set) var displayGroupRotation: SCNVector3 = SCNVector3(0, 0, 0)
     @Published private(set) var currentDetailDimension: WeatherDetailDimension = .sun
+    @Published private(set) var presentedDetailDimension: WeatherDetailDimension = .sun
     private var currentDetailOrbitIndex: Int = 0
     private(set) var scene: SCNScene
     private(set) var conditionGroup: SCNNode?
@@ -71,6 +72,7 @@ final class WeatherSceneManager: ObservableObject {
     private var detailTitleNode: SCNNode?
     private var detailDimensionRingNode: SCNNode?
     private var detailDimensionItemNodes: [WeatherDetailDimension: SCNNode] = [:]
+    private var detailDimensionInteractionNodes: [WeatherDetailDimension: SCNNode] = [:]
     private var detailDimensionSpinNodes: [WeatherDetailDimension: SCNNode] = [:]
     private var detailDimensionTitleNodes: [WeatherDetailDimension: SCNNode] = [:]
     private var sunBurstNode: SCNNode?
@@ -102,6 +104,7 @@ final class WeatherSceneManager: ObservableObject {
     private lazy var secondScreenOrbitController = WeatherSecondScreenOrbitController(
         tuning: secondScreenMotionTuning
     )
+    private let detailOrbitMotionActionKey = "detail_dimension_orbit_motion"
     private let detailDimensionSpinAnimationKey = "detail_dimension_spin"
     private let mainTemperatureScale: Float = 1.5
     private let mainSunScale: CGFloat = 1.12
@@ -215,36 +218,36 @@ final class WeatherSceneManager: ObservableObject {
         let targetYaw = -offset * detailDimensionAngleStep
         let visibleYaw = detailDimensionRingNode.presentation.eulerAngles.y
 
+        detailDimensionRingNode.removeAction(forKey: detailOrbitMotionActionKey)
         detailDimensionRingNode.removeAllAnimations()
+        detailDimensionRingNode.removeAllActions()
         detailDimensionRingNode.eulerAngles = SCNVector3(0, visibleYaw, 0)
-        updateDetailDimensionPresentation(ringYaw: targetYaw)
+        updateDetailDimensionPresentation(ringYaw: visibleYaw)
 
-        SCNTransaction.begin()
-        SCNTransaction.animationDuration = animated ? 0.32 : 0
-        SCNTransaction.animationTimingFunction = animated
-            ? CAMediaTimingFunction(name: .easeOut)
-            : nil
-        if abs(dragProgress) < 0.001 {
-            let settledDimension = selectedDimension
-            let settledOrbitIndex = orbitIndex
-            SCNTransaction.completionBlock = { [weak self] in
-                self?.currentDetailDimension = settledDimension
-                self?.currentDetailOrbitIndex = settledOrbitIndex
-                self?.updateDetailDimensionPresentation(
-                    ringYaw: self?.detailDimensionRingNode?.presentation.eulerAngles.y ?? targetYaw
+        if animated, abs(dragProgress) < 0.001 {
+            animateDetailOrbit(
+                ringNode: detailDimensionRingNode,
+                from: visibleYaw,
+                to: targetYaw,
+                settledDimension: selectedDimension,
+                settledOrbitIndex: orbitIndex,
+                decision: WeatherSecondScreenOrbitDecision(
+                    stepOffset: orbitIndex - currentDetailOrbitIndex,
+                    usesMomentum: abs(orbitIndex - currentDetailOrbitIndex) > 1
                 )
-                self?.scheduleDetailAutoSpin()
-            }
-        } else {
-            SCNTransaction.completionBlock = nil
+            )
+            return
         }
+
         detailDimensionRingNode.eulerAngles = SCNVector3(0, targetYaw, 0)
-        SCNTransaction.commit()
+        updateDetailDimensionPresentation(ringYaw: targetYaw)
 
         if abs(dragProgress) < 0.001 {
             currentDetailDimension = selectedDimension
+            setPresentedDetailDimension(selectedDimension)
             currentDetailOrbitIndex = orbitIndex
             updateDetailDimensionSelfSpin(selectedDimension: selectedDimension, autoSpinEnabled: false)
+            scheduleDetailAutoSpin()
         }
     }
 
@@ -252,6 +255,7 @@ final class WeatherSceneManager: ObservableObject {
         guard mode == .sunDetail || mode == .sunTransition else { return }
         cancelDetailAutoSpin()
         currentDetailDimension = .sun
+        setPresentedDetailDimension(.sun)
         currentDetailOrbitIndex = 0
         setDetailOrbitPosition(
             orbitIndex: 0,
@@ -265,7 +269,19 @@ final class WeatherSceneManager: ObservableObject {
     func beginDetailOrbitInteraction() {
         guard mode == .sunDetail || mode == .sunTransition else { return }
         cancelDetailAutoSpin()
-        detailDimensionRingNode?.removeAllAnimations()
+        if let detailDimensionRingNode {
+            let visibleYaw = detailDimensionRingNode.presentation.eulerAngles.y
+            detailDimensionRingNode.removeAction(forKey: detailOrbitMotionActionKey)
+            detailDimensionRingNode.removeAllAnimations()
+            detailDimensionRingNode.removeAllActions()
+            detailDimensionRingNode.eulerAngles = SCNVector3(0, visibleYaw, 0)
+            let visibleOrbitIndex = roundedOrbitIndex(for: visibleYaw)
+            currentDetailOrbitIndex = visibleOrbitIndex
+            currentDetailDimension = WeatherDetailDimension.allCases[
+                positiveModulo(visibleOrbitIndex, WeatherDetailDimension.allCases.count)
+            ]
+            updateDetailDimensionPresentation(ringYaw: visibleYaw)
+        }
         updateDetailDimensionSelfSpin(selectedDimension: currentDetailDimension, autoSpinEnabled: false)
     }
 
@@ -283,15 +299,27 @@ final class WeatherSceneManager: ObservableObject {
         sample: WeatherSecondScreenOrbitGestureSample
     ) -> WeatherSecondScreenOrbitDecision {
         let decision = secondScreenOrbitController.settleDecision(sample: sample)
+        guard let detailDimensionRingNode else { return decision }
+
+        let visibleYaw = detailDimensionRingNode.presentation.eulerAngles.y
+        detailDimensionRingNode.removeAction(forKey: detailOrbitMotionActionKey)
+        detailDimensionRingNode.removeAllAnimations()
+        detailDimensionRingNode.removeAllActions()
+        detailDimensionRingNode.eulerAngles = SCNVector3(0, visibleYaw, 0)
+        updateDetailDimensionPresentation(ringYaw: visibleYaw)
+
         let nextOrbitIndex = currentDetailOrbitIndex + decision.stepOffset
         let nextDimension = WeatherDetailDimension.allCases[
             positiveModulo(nextOrbitIndex, WeatherDetailDimension.allCases.count)
         ]
-        setDetailOrbitPosition(
-            orbitIndex: nextOrbitIndex,
-            selectedDimension: nextDimension,
-            dragProgress: 0,
-            animated: true
+        let targetYaw = -Float(nextOrbitIndex) * detailDimensionAngleStep
+        animateDetailOrbit(
+            ringNode: detailDimensionRingNode,
+            from: visibleYaw,
+            to: targetYaw,
+            settledDimension: nextDimension,
+            settledOrbitIndex: nextOrbitIndex,
+            decision: decision
         )
         return decision
     }
@@ -319,7 +347,7 @@ final class WeatherSceneManager: ObservableObject {
 
     func currentSceneInteractionNode() -> SCNNode? {
         if isSunDetailMode {
-            return detailDimensionItemNodes[currentDetailDimension]
+            return detailDimensionInteractionNodes[currentDetailDimension]
         }
         return conditionGroup
     }
@@ -558,7 +586,8 @@ final class WeatherSceneManager: ObservableObject {
 
     func resumeAutomaticSpinAfterInteraction() {
         guard mode == .sunDetail || mode == .sunTransition else { return }
-        // 入场动画完成后不再自动旋转，保持静止
+        guard isSunDetailMode else { return }
+        scheduleDetailAutoSpin()
     }
 
     func triggerDetailSunTapBurst() {
@@ -614,8 +643,6 @@ final class WeatherSceneManager: ObservableObject {
             let origLength = Float.random(in: WeatherSunDetailTapBurstCore.tapRayMinLength ... WeatherSunDetailTapBurstCore.tapRayMaxLength)
             let innerOffset = Float.random(in: WeatherSunDetailTapBurstCore.tapMinStartOffset ... WeatherSunDetailTapBurstCore.tapMaxStartOffset)
             let zVar = Float.random(in: WeatherSunDetailTapBurstCore.minZVariation ... WeatherSunDetailTapBurstCore.maxZVariation)
-            let grayValue = WeatherSunDetailTapBurstCore.grayscale(forZVariation: zVar)
-
             let rayGeometry = SCNBox(
                 width: tapThickness,
                 height: CGFloat(origLength),
@@ -845,8 +872,13 @@ final class WeatherSceneManager: ObservableObject {
     }
 
     private func updateDetailDimensionPresentation(ringYaw: Float) {
+        var nearestDimension = presentedDetailDimension
+        var nearestAngle = CGFloat.greatestFiniteMagnitude
+
         for dimension in WeatherDetailDimension.allCases {
             guard let itemNode = detailDimensionItemNodes[dimension] else { continue }
+            let interactionNode = detailDimensionInteractionNodes[dimension]
+            let spinNode = detailDimensionSpinNodes[dimension]
             let baseAngle = Float(dimension.rawValue) * detailDimensionAngleStep
             let normalizedAngle = normalizedOrbitAngle(baseAngle + ringYaw)
             let absoluteAngle = CGFloat(abs(normalizedAngle))
@@ -885,9 +917,87 @@ final class WeatherSceneManager: ObservableObject {
                 opacity = secondScreenMotionTuning.rearOpacity
             }
 
+            itemNode.eulerAngles = SCNVector3(0, baseAngle, 0)
+            interactionNode?.eulerAngles = SCNVector3Zero
+            if dimension == .sun, let spinNode {
+                setEmbeddedLightsHidden(in: spinNode, isHidden: absoluteAngle > frontBand)
+            }
             itemNode.opacity = opacity
             itemNode.scale = SCNVector3(Float(scale), Float(scale), Float(scale))
             itemNode.renderingOrder = Int((10 - absoluteAngle).rounded())
+
+            if absoluteAngle < nearestAngle {
+                nearestAngle = absoluteAngle
+                nearestDimension = dimension
+            }
+        }
+
+        if presentedDetailDimension != nearestDimension {
+            setPresentedDetailDimension(nearestDimension)
+        }
+    }
+
+    private func roundedOrbitIndex(for ringYaw: Float) -> Int {
+        Int(round(Double(-ringYaw / detailDimensionAngleStep)))
+    }
+
+    private func animateDetailOrbit(
+        ringNode: SCNNode,
+        from startYaw: Float,
+        to endYaw: Float,
+        settledDimension: WeatherDetailDimension,
+        settledOrbitIndex: Int,
+        decision: WeatherSecondScreenOrbitDecision
+    ) {
+        let duration = orbitSettleDuration(for: decision)
+        let action = SCNAction.customAction(duration: duration) { [weak self] node, elapsed in
+            guard let self else { return }
+            let rawProgress = elapsed / CGFloat(max(duration, 0.0001))
+            let progress = decision.usesMomentum
+                ? self.orbitEaseOutDecay(
+                    rawProgress,
+                    decayFactor: self.secondScreenMotionTuning.orbitMomentumDecayFactor
+                )
+                : self.easeOutCubic(rawProgress)
+            let yaw = startYaw + Float(progress) * (endYaw - startYaw)
+            node.eulerAngles = SCNVector3(0, yaw, 0)
+            self.updateDetailDimensionPresentation(ringYaw: yaw)
+        }
+        let settle = SCNAction.run { [weak self] node in
+            guard let self else { return }
+            node.eulerAngles = SCNVector3(0, endYaw, 0)
+            self.currentDetailDimension = settledDimension
+            self.setPresentedDetailDimension(settledDimension)
+            self.currentDetailOrbitIndex = settledOrbitIndex
+            self.updateDetailDimensionPresentation(ringYaw: endYaw)
+            self.updateDetailDimensionSelfSpin(selectedDimension: settledDimension, autoSpinEnabled: false)
+            self.scheduleDetailAutoSpin()
+        }
+        ringNode.runAction(.sequence([action, settle]), forKey: detailOrbitMotionActionKey)
+    }
+
+    private func orbitSettleDuration(for decision: WeatherSecondScreenOrbitDecision) -> TimeInterval {
+        let stepCount = max(abs(decision.stepOffset), 1)
+        let duration = secondScreenMotionTuning.orbitSettleBaseDuration
+            + Double(stepCount - 1) * secondScreenMotionTuning.orbitSettleTurnDuration
+        return min(duration, secondScreenMotionTuning.orbitSettleMaxDuration)
+    }
+
+    private func orbitEaseOutDecay(_ value: CGFloat, decayFactor: CGFloat) -> CGFloat {
+        let safeValue = min(max(value, 0), 1)
+        let safeDecayFactor = max(decayFactor, 0.001)
+        return (1 - exp(-safeDecayFactor * safeValue)) / (1 - exp(-safeDecayFactor))
+    }
+
+    private func setPresentedDetailDimension(_ dimension: WeatherDetailDimension) {
+        if Thread.isMainThread {
+            presentedDetailDimension = dimension
+            return
+        }
+
+        DispatchQueue.main.async { [weak self] in
+            guard let self, self.presentedDetailDimension != dimension else { return }
+            self.presentedDetailDimension = dimension
         }
     }
 
@@ -935,6 +1045,7 @@ final class WeatherSceneManager: ObservableObject {
         detailTitleNode = nil
         detailDimensionRingNode = nil
         detailDimensionItemNodes = [:]
+        detailDimensionInteractionNodes = [:]
         detailDimensionSpinNodes = [:]
         detailDimensionTitleNodes = [:]
         sunBurstNode = nil
@@ -1204,15 +1315,20 @@ final class WeatherSceneManager: ObservableObject {
             model.position = SCNVector3(0, 0, 0)
             detailDimensionSpinNodes[dimension] = model
 
+            let interactionContainer = SCNNode()
+            interactionContainer.name = "weather_detail_interaction_\(dimension.title.lowercased())"
+
             let modelContainer = SCNNode()
             modelContainer.position = SCNVector3(0, detailSunPosition.y, 0)
             modelContainer.addChildNode(model)
-            item.addChildNode(modelContainer)
+            interactionContainer.addChildNode(modelContainer)
 
             let title = makeSunDetailTitleNode(text: dimension.title)
             title.position = SCNVector3(0, detailTitlePosition.y, 0)
             detailDimensionTitleNodes[dimension] = title
-            item.addChildNode(title)
+            interactionContainer.addChildNode(title)
+            detailDimensionInteractionNodes[dimension] = interactionContainer
+            item.addChildNode(interactionContainer)
             detailDimensionItemNodes[dimension] = item
 
             ring.addChildNode(item)
@@ -1341,12 +1457,16 @@ final class WeatherSceneManager: ObservableObject {
 
     private func setSunEmbeddedLightsHidden(_ isHidden: Bool) {
         guard let sunNode else { return }
-        if sunNode.light != nil {
-            sunNode.isHidden = isHidden
+        setEmbeddedLightsHidden(in: sunNode, isHidden: isHidden)
+    }
+
+    private func setEmbeddedLightsHidden(in node: SCNNode, isHidden: Bool) {
+        if node.light != nil {
+            node.isHidden = isHidden
         }
-        sunNode.enumerateChildNodes { node, _ in
-            if node.light != nil {
-                node.isHidden = isHidden
+        node.enumerateChildNodes { child, _ in
+            if child.light != nil {
+                child.isHidden = isHidden
             }
         }
     }

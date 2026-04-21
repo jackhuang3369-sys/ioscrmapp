@@ -48,7 +48,7 @@ struct WeatherSunDetailOverlay: View {
                 .allowsHitTesting(allowsInteraction)
                 
                 WeatherDetailCarouselView(
-                    selectedDimension: manager.currentDetailDimension,
+                    selectedDimension: manager.presentedDetailDimension,
                     width: size.width * 0.6,
                     allowsInteraction: allowsInteraction,
                     onOrbitDragChanged: { progress in
