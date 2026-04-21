@@ -26,18 +26,18 @@ enum MockWeatherData {
 
     static let timeline: [WeatherTimelineEntry] = [
         .init(id: "now", label: "Now", temperature: 31, symbolName: "sun.max.fill", isCurrent: true),
-        .init(id: "09", label: "09", temperature: 32, symbolName: "sun.max.fill", isCurrent: false),
+        .init(id: "09", label: "09", temperature: 34, symbolName: "sun.max.fill", isCurrent: false),
         .init(id: "12", label: "12", temperature: 33, symbolName: "sun.max.fill", isCurrent: false),
         .init(id: "15", label: "15", temperature: 35, symbolName: "sun.max.fill", isCurrent: false),
         .init(id: "18", label: "18", temperature: 31, symbolName: "sunset.fill", isCurrent: false),
-        .init(id: "21", label: "21", temperature: 25, symbolName: "sunset.fill", isCurrent: false),
-        .init(id: "00", label: "00", temperature: 23, symbolName: "moon.stars.fill", isCurrent: false),
-        .init(id: "03", label: "03", temperature: 22, symbolName: "moon.stars.fill", isCurrent: false)
+        .init(id: "21", label: "21", temperature: 35, symbolName: "sunset.fill", isCurrent: false),
+        .init(id: "00", label: "00", temperature: 31, symbolName: "moon.stars.fill", isCurrent: false),
+        .init(id: "03", label: "03", temperature: 35, symbolName: "moon.stars.fill", isCurrent: false)
     ]
 
     static let hourlyDemoPoints: [WeatherHourlyStripPoint] = [
         hourlyPoint(id: "now", hour: 8, label: "NOW", temperature: 31, scenePreset: .sunny, isCurrent: true),
-        hourlyPoint(hour: 9, temperature: 32, scenePreset: .sunCloudy),
+        hourlyPoint(hour: 9, temperature: 31, scenePreset: .sunCloudy),
         hourlyPoint(hour: 10, temperature: 33, scenePreset: .sunCloudy2),
         hourlyPoint(hour: 11, temperature: 34, scenePreset: .sunny),
         hourlyPoint(hour: 12, temperature: 35, scenePreset: .sunCloudy2),
@@ -48,18 +48,18 @@ enum MockWeatherData {
         hourlyPoint(hour: 17, temperature: 32, scenePreset: .sunCloudy),
         hourlyPoint(hour: 18, temperature: 31, scenePreset: .sunCloudy2),
         hourlyPoint(hour: 19, temperature: 31, scenePreset: .moonCloudy),
-        hourlyPoint(hour: 20, temperature: 25, scenePreset: .moon),
-        hourlyPoint(hour: 21, temperature: 25, scenePreset: .moonCloudy),
-        hourlyPoint(hour: 22, temperature: 24, scenePreset: .moonCloudy2),
-        hourlyPoint(hour: 23, temperature: 24, scenePreset: .moon),
-        hourlyPoint(hour: 0, temperature: 23, scenePreset: .moon),
-        hourlyPoint(hour: 1, temperature: 23, scenePreset: .moonCloudy),
-        hourlyPoint(hour: 2, temperature: 22, scenePreset: .cloud),
-        hourlyPoint(hour: 3, temperature: 22, scenePreset: .moonCloudy2),
-        hourlyPoint(hour: 4, temperature: 21, scenePreset: .moon),
-        hourlyPoint(hour: 5, temperature: 21, scenePreset: .moonCloudy),
-        hourlyPoint(hour: 6, temperature: 22, scenePreset: .sunCloudy),
-        hourlyPoint(hour: 7, temperature: 25, scenePreset: .sunny)
+        hourlyPoint(hour: 20, temperature: 35, scenePreset: .moon),
+        hourlyPoint(hour: 21, temperature: 33, scenePreset: .moonCloudy),
+        hourlyPoint(hour: 22, temperature: 33, scenePreset: .moonCloudy2),
+        hourlyPoint(hour: 23, temperature: 31, scenePreset: .moon),
+        hourlyPoint(hour: 0, temperature: 33, scenePreset: .moon),
+        hourlyPoint(hour: 1, temperature: 33, scenePreset: .moonCloudy),
+        hourlyPoint(hour: 2, temperature: 15, scenePreset: .cloud),
+        hourlyPoint(hour: 3, temperature: 15, scenePreset: .moonCloudy2),
+        hourlyPoint(hour: 4, temperature: 13, scenePreset: .moon),
+        hourlyPoint(hour: 5, temperature: 13, scenePreset: .moonCloudy),
+        hourlyPoint(hour: 6, temperature: 11, scenePreset: .sunCloudy),
+        hourlyPoint(hour: 7, temperature: 11, scenePreset: .sunny)
     ]
 
     private static func hourlyPoint(
