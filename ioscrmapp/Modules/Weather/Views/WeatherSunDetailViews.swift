@@ -59,9 +59,6 @@ struct WeatherSunDetailOverlay: View {
             .opacity(interfaceOpacity)
         }
         .ignoresSafeArea()
-        .onAppear {
-            manager.prepareDetailSecondScreen()
-        }
     }
 }
 
