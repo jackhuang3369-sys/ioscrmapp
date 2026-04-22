@@ -2,7 +2,7 @@ import SwiftUI
 import UIKit
 
 struct WeatherSunDetailOverlay: View {
-    @ObservedObject var manager: WeatherSceneManager
+    let manager: WeatherSceneManager
     let size: CGSize
     let safeAreaInsets: EdgeInsets
     let interfaceOpacity: Double
@@ -44,22 +44,13 @@ struct WeatherSunDetailOverlay: View {
                 .padding(.horizontal, 6)
                 .allowsHitTesting(allowsInteraction)
                 
-                WeatherDetailCarouselView(
-                    selectedDimension: manager.presentedDetailDimension,
+                WeatherObservedDetailCarousel(
+                    manager: manager,
                     contentWidth: size.width * 0.6,
                     interactionWidth: size.width,
                     gestureReferenceWidth: size.width,
                     allowsInteraction: allowsInteraction,
-                    onDismissTap: onClose,
-                    onOrbitDragStarted: {
-                        manager.beginDetailOrbitInteraction()
-                    },
-                    onOrbitDragChanged: { progress in
-                        manager.updateDetailOrbitInteraction(progress: progress)
-                    },
-                    onOrbitDragEnded: { sample in
-                        manager.settleDetailOrbitInteraction(sample: sample)
-                    }
+                    onDismissTap: onClose
                 )
                 .frame(width: size.width)
                 .padding(.bottom, (max(safeAreaInsets.bottom, 14) + 2) * 2)
@@ -71,6 +62,35 @@ struct WeatherSunDetailOverlay: View {
         .onAppear {
             manager.prepareDetailSecondScreen()
         }
+    }
+}
+
+private struct WeatherObservedDetailCarousel: View {
+    @ObservedObject var manager: WeatherSceneManager
+    let contentWidth: CGFloat
+    let interactionWidth: CGFloat
+    let gestureReferenceWidth: CGFloat
+    let allowsInteraction: Bool
+    let onDismissTap: () -> Void
+
+    var body: some View {
+        WeatherDetailCarouselView(
+            selectedDimension: manager.presentedDetailDimension,
+            contentWidth: contentWidth,
+            interactionWidth: interactionWidth,
+            gestureReferenceWidth: gestureReferenceWidth,
+            allowsInteraction: allowsInteraction,
+            onDismissTap: onDismissTap,
+            onOrbitDragStarted: {
+                manager.beginDetailOrbitInteraction()
+            },
+            onOrbitDragChanged: { progress in
+                manager.updateDetailOrbitInteraction(progress: progress)
+            },
+            onOrbitDragEnded: { sample in
+                manager.settleDetailOrbitInteraction(sample: sample)
+            }
+        )
     }
 }
 

@@ -51,7 +51,7 @@ final class WeatherSceneManager: ObservableObject {
     static let sunReturnTransitionDuration: TimeInterval = 0.2 //回场动画，第二屏回到第一屏的时间。
 
     private(set) var displayGroupRotation: SCNVector3 = SCNVector3(0, 0, 0)
-    @Published private(set) var currentDetailDimension: WeatherDetailDimension = .sun
+    private(set) var currentDetailDimension: WeatherDetailDimension = .sun
     @Published private(set) var presentedDetailDimension: WeatherDetailDimension = .sun
     private var currentDetailOrbitIndex: Int = 0
     private(set) var scene: SCNScene
@@ -288,6 +288,7 @@ final class WeatherSceneManager: ObservableObject {
     func beginDetailOrbitInteraction() {
         guard mode == .sunDetail || mode == .sunTransition else { return }
         cancelDetailAutoSpin()
+        endDetailOrbitFeedbackSession()
         if let detailDimensionRingNode {
             let visibleYaw = detailDimensionRingNode.presentation.eulerAngles.y
             detailDimensionRingNode.removeAction(forKey: detailOrbitMotionActionKey)
