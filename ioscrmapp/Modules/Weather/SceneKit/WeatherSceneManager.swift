@@ -1416,7 +1416,10 @@ final class WeatherSceneManager: ObservableObject {
             interactionContainer.name = "weather_detail_interaction_\(dimension.title.lowercased())"
 
             let modelContainer = SCNNode()
-            modelContainer.position = SCNVector3(0, detailSunPosition.y, 0)
+            let modelContainerY = dimension == .precipitation
+            ? detailSunPosition.y - 1.2
+                : detailSunPosition.y
+            modelContainer.position = SCNVector3(0, modelContainerY, 0)
             modelContainer.addChildNode(model)
             interactionContainer.addChildNode(modelContainer)
 
