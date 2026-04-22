@@ -470,9 +470,8 @@ struct WeatherSceneView: UIViewRepresentable {
         }
 
         private func updateInputRouting() {
-            let isDetailMode = manager?.isSunDetailMode == true
             panGestureRecognizer?.isEnabled = allowsInteraction
-            tapGestureRecognizer?.isEnabled = allowsInteraction && !isDetailMode
+            tapGestureRecognizer?.isEnabled = allowsInteraction
         }
 
         private func updateRenderLoopState() {
@@ -508,7 +507,9 @@ struct WeatherSceneView: UIViewRepresentable {
 
         func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
             guard manager?.isSunDetailMode == true else { return true }
-            guard gestureRecognizer is UIPanGestureRecognizer else { return false }
+            guard gestureRecognizer is UIPanGestureRecognizer || gestureRecognizer is UITapGestureRecognizer else {
+                return false
+            }
             guard let view = gestureRecognizer.view else { return true }
 
             let location = gestureRecognizer.location(in: view)
@@ -1020,7 +1021,6 @@ struct WeatherSceneView: UIViewRepresentable {
 
         @objc func handleTap(_ gesture: UITapGestureRecognizer) {
             guard gesture.state == .ended,
-                  manager?.isSunDetailMode != true,
                   let scnView = gesture.view as? SCNView else { return }
 
             let location = gesture.location(in: scnView)
@@ -1028,7 +1028,7 @@ struct WeatherSceneView: UIViewRepresentable {
             // Ignore temperature digits so tapping numbers does not trigger sun interaction.
             if hits.contains(where: { isInteractiveNode($0.node) && !isTemperatureNode($0.node) }) {
                 onSunTap?()
-            } else {
+            } else if manager?.isSunDetailMode != true {
                 onBackgroundTap?()
             }
         }
