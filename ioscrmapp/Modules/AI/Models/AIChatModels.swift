@@ -187,6 +187,96 @@ struct PaymentContext: Sendable, Equatable {
     let subscriberKey: String
 }
 
+// MARK: - Itinerary Models
+
+enum ItinerarySegmentType: String, Codable, Sendable {
+    case flight, hotel, activity
+}
+
+enum ItineraryStatus: String, Codable, Sendable {
+    case confirmed, pending, completed, cancelled
+}
+
+struct FlightSegment: Identifiable, Codable, Sendable, Equatable {
+    let id: String
+    let flightNumber: String
+    let airline: String
+    let airlineCode: String?
+    let departureAirport: String
+    let departureCity: String
+    let arrivalAirport: String
+    let arrivalCity: String
+    let departureTime: Date
+    let arrivalTime: Date
+    let durationMinutes: Int?
+    let seatNumber: String?
+    let terminal: String?
+    let gate: String?
+    let baggage: String?
+    let meal: String?
+
+    enum CodingKeys: String, CodingKey {
+        case id, flightNumber, airline, airlineCode
+        case departureAirport, departureCity, arrivalAirport, arrivalCity
+        case departureTime, arrivalTime, durationMinutes
+        case seatNumber, terminal, gate, baggage, meal
+    }
+}
+
+struct HotelBooking: Identifiable, Codable, Sendable, Equatable {
+    let id: String
+    let hotelName: String
+    let address: String
+    let city: String?
+    let checkInDate: Date
+    let checkOutDate: Date
+    let roomType: String
+    let guests: Int
+    let nights: Int?
+    let confirmationNumber: String?
+
+    enum CodingKeys: String, CodingKey {
+        case id, hotelName, address, city
+        case checkInDate, checkOutDate, roomType, guests, nights
+        case confirmationNumber
+    }
+}
+
+struct ActivityTicket: Identifiable, Codable, Sendable, Equatable {
+    let id: String
+    let activityName: String
+    let venue: String
+    let city: String?
+    let date: Date
+    let time: String
+    let ticketCount: Int
+    let confirmationNumber: String?
+
+    enum CodingKeys: String, CodingKey {
+        case id, activityName, venue, city, date, time
+        case ticketCount, confirmationNumber
+    }
+}
+
+struct AIChatItineraryCard: Identifiable, Codable, Sendable, Equatable {
+    let id: String
+    let bookingReference: String
+    let travelerName: String
+    let flightSegments: [FlightSegment]
+    let hotelBookings: [HotelBooking]
+    let activityTickets: [ActivityTicket]
+    let totalPrice: Decimal?
+    let currency: String?
+    let status: ItineraryStatus
+    let createdAt: Date
+
+    enum CodingKeys: String, CodingKey {
+        case id, bookingReference, travelerName
+        case flightSegments, hotelBookings, activityTickets
+        case totalPrice, currency, status, createdAt
+    }
+}
+
 enum AIChatSender: String, Equatable {
     case user
     case assistant
@@ -422,6 +512,7 @@ struct AIChatReply {
     let actions: [AIChatAction]
     let paymentCard: AIChatPaymentCard?
     let paymentResult: PaymentResultCard?
+    let itineraryCard: AIChatItineraryCard?
 
     init(
         conversationID: String?,
@@ -432,7 +523,8 @@ struct AIChatReply {
         recommendedOffers: [AIChatOffer] = [],
         actions: [AIChatAction] = [],
         paymentCard: AIChatPaymentCard? = nil,
-        paymentResult: PaymentResultCard? = nil
+        paymentResult: PaymentResultCard? = nil,
+        itineraryCard: AIChatItineraryCard? = nil
     ) {
         self.conversationID = conversationID
         self.text = text
@@ -443,6 +535,7 @@ struct AIChatReply {
         self.actions = actions
         self.paymentCard = paymentCard
         self.paymentResult = paymentResult
+        self.itineraryCard = itineraryCard
     }
 }
 
