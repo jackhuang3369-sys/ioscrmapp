@@ -1673,3 +1673,87 @@ private extension String {
         return self[matchedRange]
     }
 }
+
+// MARK: - Mock Payment Service
+
+protocol PaymentServicing: Sendable {
+    func processPayment(
+        methodId: String,
+        amount: Decimal,
+        context: PaymentContext
+    ) async throws -> PaymentResultCard
+
+    func requestOTP(methodId: String, context: PaymentContext) async throws -> String
+}
+
+struct MockPaymentService: PaymentServicing {
+    let successRate: Double
+    let processingDelaySeconds: TimeInterval
+
+    init(successRate: Double = 0.8, processingDelaySeconds: TimeInterval = 2.0) {
+        self.successRate = successRate
+        self.processingDelaySeconds = processingDelaySeconds
+    }
+
+    func processPayment(
+        methodId: String,
+        amount: Decimal,
+        context: PaymentContext
+    ) async throws -> PaymentResultCard {
+        // Simulate network delay (iOS 15 compatible)
+        try await Task.sleep(nanoseconds: UInt64(processingDelaySeconds * 1_000_000_000))
+
+        // Simulate success/failure based on rate
+        let isSuccess = Double.random(in: 0...1) < successRate
+
+        if isSuccess {
+            return PaymentResultCard(
+                status: .success,
+                orderId: "MOCK-\(UUID().uuidString.prefix(8))",
+                amount: amount,
+                currency: "AED",
+                message: localizedSuccessMessage(for: context.languageCode),
+                timestamp: Date()
+            )
+        } else {
+            return PaymentResultCard(
+                status: .failed,
+                orderId: nil,
+                amount: amount,
+                currency: "AED",
+                message: localizedFailureMessage(for: context.languageCode),
+                timestamp: Date()
+            )
+        }
+    }
+
+    func requestOTP(methodId: String, context: PaymentContext) async throws -> String {
+        // Simulate OTP request delay (iOS 15 compatible)
+        try await Task.sleep(nanoseconds: 500_000_000) // 0.5 seconds
+
+        // Return masked account identifier
+        return "Account ending in ****567"
+    }
+
+    private func localizedSuccessMessage(for languageCode: String) -> String {
+        switch languageCode {
+        case "zh-Hans":
+            return "充值成功"
+        case "ar":
+            return "تم الدفع بنجاح"
+        default:
+            return "Payment completed successfully"
+        }
+    }
+
+    private func localizedFailureMessage(for languageCode: String) -> String {
+        switch languageCode {
+        case "zh-Hans":
+            return "支付失败，请重试"
+        case "ar":
+            return "فشل الدفع. حاول مرة أخرى."
+        default:
+            return "Payment failed. Please try again."
+        }
+    }
+}
