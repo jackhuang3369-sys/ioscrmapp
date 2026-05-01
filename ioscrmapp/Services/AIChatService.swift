@@ -113,6 +113,17 @@ struct MockAIChatService: AIChatServicing {
             )
         }
 
+        // Payment intent check - return payment card
+        if isPaymentIntent(normalized) {
+            return AIChatReply(
+                conversationID: conversationID ?? UUID().uuidString,
+                text: localizedPaymentPrompt(for: language),
+                thinkingText: "",
+                actions: [],
+                paymentCard: mockPaymentCard()
+            )
+        }
+
         do {
             return try await DeepSeekFallbackService().complete(
                 userMessage: text,
@@ -204,6 +215,71 @@ struct MockAIChatService: AIChatServicing {
                 resourceSummary: "Unlimited"
             )
         ]
+    }
+
+    // MARK: - Payment Intent Detection
+
+    private func isPaymentIntent(_ normalizedText: String) -> Bool {
+        let paymentKeywords = [
+            "recharge", "top-up", "topup", "充值",
+            "subscribe", "subscription", "订购", "购买", "套餐",
+            "pay", "payment", "支付", "付款",
+            "balance", "余额", "add balance"
+        ]
+        return paymentKeywords.contains { normalizedText.contains($0) }
+    }
+
+    private func mockPaymentCard() -> AIChatPaymentCard {
+        AIChatPaymentCard(
+            transactionType: .recharge,
+            amountOptions: PaymentAmountOptions(
+                min: 10.0,
+                max: 500.0,
+                defaultAmount: 50.0,
+                quickAmounts: [10, 20, 50, 100],
+                currency: "AED"
+            ),
+            paymentMethods: [
+                PaymentMethodOption(
+                    id: "tabby",
+                    name: "Tabby BNPL",
+                    description: "Split in 4 installments • No interest",
+                    iconType: .tabby,
+                    installmentOptions: [
+                        InstallmentOption(installments: 4, amountPerInstallment: 12.50)
+                    ],
+                    isDefault: true
+                ),
+                PaymentMethodOption(
+                    id: "apple_pay",
+                    name: "Apple Pay",
+                    description: "Instant payment",
+                    iconType: .apple,
+                    installmentOptions: nil,
+                    isDefault: false
+                ),
+                PaymentMethodOption(
+                    id: "google_pay",
+                    name: "Google Pay",
+                    description: "Instant payment",
+                    iconType: .google,
+                    installmentOptions: nil,
+                    isDefault: false
+                )
+            ],
+            subscriberInfo: nil
+        )
+    }
+
+    private func localizedPaymentPrompt(for language: AppLanguage) -> String {
+        switch language {
+        case .simplifiedChinese:
+            return "我来帮你完成充值。请选择支付方式："
+        case .arabic:
+            return "سأساعدك في إعادة الشحن. اختر طريقة الدفع:"
+        default:
+            return "I'll help you complete the recharge. Please select your payment method."
+        }
     }
 }
 
