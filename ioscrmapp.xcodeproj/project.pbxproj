@@ -138,6 +138,7 @@
 		F10000000000000000000003 /* AIChatViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F20000000000000000000003 /* AIChatViewModel.swift */; };
 		F10000000000000000000004 /* AIChatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F20000000000000000000004 /* AIChatView.swift */; };
 		F10000000000000000000005 /* AIAssistantEntryComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = F20000000000000000000005 /* AIAssistantEntryComponents.swift */; };
+		F10000000000000000000006 /* AIChatPaymentViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = F20000000000000000000006 /* AIChatPaymentViews.swift */; };
 		AB1000000000000000000101 /* AppThemeStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000000000000000000101 /* AppThemeStore.swift */; };
 		AB1000000000000000000102 /* ThemeSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000000000000000000102 /* ThemeSettingsView.swift */; };
 		AB1000000000000000000103 /* DUColorPrimitives.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000000000000000000103 /* DUColorPrimitives.swift */; };
@@ -293,6 +294,7 @@
 		F20000000000000000000003 /* AIChatViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIChatViewModel.swift; sourceTree = "<group>"; };
 		F20000000000000000000004 /* AIChatView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIChatView.swift; sourceTree = "<group>"; };
 		F20000000000000000000005 /* AIAssistantEntryComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIAssistantEntryComponents.swift; sourceTree = "<group>"; };
+		F20000000000000000000006 /* AIChatPaymentViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIChatPaymentViews.swift; sourceTree = "<group>"; };
 		AB2000000000000000000101 /* AppThemeStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppThemeStore.swift; sourceTree = "<group>"; };
 		AB2000000000000000000102 /* ThemeSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeSettingsView.swift; sourceTree = "<group>"; };
 		AB2000000000000000000103 /* DUColorPrimitives.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DUColorPrimitives.swift; sourceTree = "<group>"; };
@@ -1080,6 +1082,7 @@
 			children = (
 				F20000000000000000000005 /* AIAssistantEntryComponents.swift */,
 				F20000000000000000000004 /* AIChatView.swift */,
+				F20000000000000000000006 /* AIChatPaymentViews.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -1274,6 +1277,7 @@
 				A10000000000000000000009 /* MeModels.swift in Sources */,
 				F10000000000000000000005 /* AIAssistantEntryComponents.swift in Sources */,
 				F10000000000000000000004 /* AIChatView.swift in Sources */,
+				F10000000000000000000006 /* AIChatPaymentViews.swift in Sources */,
 				F10000000000000000000003 /* AIChatViewModel.swift in Sources */,
 				F10000000000000000000002 /* AIChatModels.swift in Sources */,
 				A10000000000000000000006 /* HomeView.swift in Sources */,

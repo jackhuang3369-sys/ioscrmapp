@@ -1057,6 +1057,16 @@ struct AIChatView: View {
                             }
                         }
                     }
+
+                    if let paymentCard = viewModel.currentPaymentCard {
+                        AIChatPaymentCardView(
+                            paymentCard: paymentCard,
+                            context: viewModel.buildPaymentContext(),
+                            onComplete: { result in
+                                viewModel.handlePaymentResult(result)
+                            }
+                        )
+                    }
                 }
                 .padding(.horizontal, hPad)
                 .padding(.top, 18)

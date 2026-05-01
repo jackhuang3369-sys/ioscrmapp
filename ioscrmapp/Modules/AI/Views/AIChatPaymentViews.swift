@@ -80,7 +80,7 @@ struct AIChatPaymentCardView: View {
                     Text(formatAmount(selectedAmount))
                         .font(.system(size: 42, weight: .bold, design: .rounded))
                         .foregroundColor(.white)
-                        .shadow(color: .paymentGlow.opacity(0.5), radius: 30)
+                        .shadow(color: Color.paymentGlow.opacity(0.5), radius: 30)
 
                     Text(paymentCard.amountOptions.currency)
                         .font(.system(size: 20, weight: .medium))
@@ -100,9 +100,9 @@ struct AIChatPaymentCardView: View {
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 14)
                             .background(RoundedRectangle(cornerRadius: 12)
-                                .fill(selectedAmount == amount ? .paymentAccent.opacity(0.3) : Color.gray.opacity(0.3)))
+                                .fill(selectedAmount == amount ? Color.paymentAccent.opacity(0.3) : Color.gray.opacity(0.3)))
                             .overlay(RoundedRectangle(cornerRadius: 12)
-                                .strokeBorder(selectedAmount == amount ? .paymentAccent.opacity(0.4) : .white.opacity(0.05), lineWidth: 1))
+                                .strokeBorder(selectedAmount == amount ? Color.paymentAccent.opacity(0.4) : .white.opacity(0.05), lineWidth: 1))
                     }
                     .buttonStyle(.plain)
                 }
@@ -143,9 +143,9 @@ struct AIChatPaymentCardView: View {
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 18)
                 .background(RoundedRectangle(cornerRadius: 16)
-                    .fill(LinearGradient(colors: [.paymentAccent, Color(red: 86/255)], startPoint: .topLeading, endPoint: .bottomTrailing)))
+                    .fill(LinearGradient(colors: [Color.paymentAccent, Color(red: 86/255, green: 86/255, blue: 86/255)], startPoint: .topLeading, endPoint: .bottomTrailing)))
                 .overlay(RoundedRectangle(cornerRadius: 16).strokeBorder(.white.opacity(0.1), lineWidth: 1))
-                .shadow(color: .paymentAccent.opacity(0.4), radius: 30, y: 10)
+                .shadow(color: Color.paymentAccent.opacity(0.4), radius: 30, y: 10)
             }
             .buttonStyle(.plain)
             .disabled(!paymentCard.amountOptions.isValidAmount(selectedAmount) || isProcessing)
@@ -204,7 +204,7 @@ struct PaymentMethodRowView: View {
                 Text(method.iconType.emoji)
                     .font(.system(size: 20))
                     .frame(width: 48, height: 48)
-                    .background(RoundedRectangle(cornerRadius: 12).fill(Color(red: 26/255)))
+                    .background(RoundedRectangle(cornerRadius: 12).fill(Color(red: 26/255, green: 26/255, blue: 26/255)))
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(method.name)
@@ -213,7 +213,7 @@ struct PaymentMethodRowView: View {
 
                     Text(method.description)
                         .font(.system(size: 12))
-                        .foregroundColor(isSelected ? .paymentAccent : .gray.opacity(0.6))
+                        .foregroundColor(isSelected ? Color.paymentAccent : .gray.opacity(0.6))
                 }
 
                 Spacer()
@@ -221,9 +221,9 @@ struct PaymentMethodRowView: View {
                 ZStack {
                     if isSelected {
                         Circle()
-                            .fill(.paymentAccent)
+                            .fill(Color.paymentAccent)
                             .frame(width: 24, height: 24)
-                            .shadow(color: .paymentAccent.opacity(0.5), radius: 10)
+                            .shadow(color: Color.paymentAccent.opacity(0.5), radius: 10)
 
                         Image(systemName: "checkmark")
                             .font(.system(size: 12, weight: .bold))
@@ -237,9 +237,9 @@ struct PaymentMethodRowView: View {
             }
             .padding(16)
             .background(RoundedRectangle(cornerRadius: 16)
-                .fill(isSelected ? .paymentAccent.opacity(0.15) : Color.paymentCardBackground.opacity(0.6)))
+                .fill(isSelected ? Color.paymentAccent.opacity(0.15) : Color.paymentCardBackground.opacity(0.6)))
             .overlay(RoundedRectangle(cornerRadius: 16)
-                .strokeBorder(isSelected ? .paymentAccent.opacity(0.3) : .white.opacity(0.08), lineWidth: 1))
+                .strokeBorder(isSelected ? Color.paymentAccent.opacity(0.3) : .white.opacity(0.08), lineWidth: 1))
         }
         .buttonStyle(.plain)
     }

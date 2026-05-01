@@ -13,6 +13,7 @@ final class AIChatViewModel: ObservableObject {
     @Published var isProcessingSubscription = false
     @Published var subscriptionErrorMessage: String?
     @Published var acceptedResult: OfferAcceptedResult?
+    @Published var currentPaymentCard: AIChatPaymentCard?
 
     let language: AppLanguage
     let title: String
@@ -241,6 +242,9 @@ final class AIChatViewModel: ObservableObject {
                 await MainActor.run {
                     conversationID = reply.conversationID ?? conversationID
                     applyReplyMetadata(reply)
+                    if let paymentCard = reply.paymentCard {
+                        currentPaymentCard = paymentCard
+                    }
                     updateAssistantPlaceholder(
                         placeholderID: placeholderID,
                         text: resolvedReplyText(reply),
@@ -359,6 +363,61 @@ final class AIChatViewModel: ObservableObject {
             .split(separator: " ")
             .joined(separator: " ")
             .trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    func buildPaymentContext() -> PaymentContext {
+        let tokenStore = KeychainAuthTokenStore()
+        let accessToken = tokenStore.loadTokens()?.currentAuthorizationToken() ?? ""
+        return PaymentContext(
+            serviceNumber: custSubInfo.serviceNumber ?? custSubInfo.phoneNumber,
+            accessToken: accessToken,
+            languageCode: language.rawValue,
+            subscriberKey: custSubInfo.subscriberKey ?? ""
+        )
+    }
+
+    func handlePaymentResult(_ result: PaymentResultCard) {
+        currentPaymentCard = nil
+
+        if result.status == .success {
+            let successMessage = paymentSuccessMessage(for: result)
+            let resultMessage = AIChatMessage(
+                sender: .assistant,
+                text: successMessage
+            )
+            messages.append(resultMessage)
+        }
+    }
+
+    private func paymentSuccessMessage(for result: PaymentResultCard) -> String {
+        switch language {
+        case .english:
+            let amountText = formatPaymentAmount(result.amount, currency: result.currency)
+            if let orderId = result.orderId {
+                return "Payment successful! You've recharged \(amountText).\nOrder ID: \(orderId)"
+            }
+            return "Payment successful! You've recharged \(amountText)."
+        case .simplifiedChinese:
+            let amountText = formatPaymentAmount(result.amount, currency: result.currency)
+            if let orderId = result.orderId {
+                return "支付成功！已充值 \(amountText)。\n订单号：\(orderId)"
+            }
+            return "支付成功！已充值 \(amountText)。"
+        case .arabic:
+            let amountText = formatPaymentAmount(result.amount, currency: result.currency)
+            if let orderId = result.orderId {
+                return "تم الدفع بنجاح! تم شحن \(amountText).\nرقم الطلب: \(orderId)"
+            }
+            return "تم الدفع بنجاح! تم شحن \(amountText)."
+        }
+    }
+
+    private func formatPaymentAmount(_ amount: Decimal, currency: String) -> String {
+        let formatter = NumberFormatter()
+        formatter.minimumFractionDigits = 2
+        formatter.maximumFractionDigits = 2
+        let amountString = formatter.string(from: amount as NSNumber) ?? "\(amount)"
+        return "\(amountString) \(currency)"
     }
 
     private func buildContext() -> AIChatContext {
