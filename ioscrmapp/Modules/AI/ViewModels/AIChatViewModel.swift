@@ -14,6 +14,7 @@ final class AIChatViewModel: ObservableObject {
     @Published var subscriptionErrorMessage: String?
     @Published var acceptedResult: OfferAcceptedResult?
     @Published var currentPaymentCard: AIChatPaymentCard?
+    @Published var currentItineraryCard: AIChatItineraryCard?
 
     let language: AppLanguage
     let title: String
@@ -140,6 +141,8 @@ final class AIChatViewModel: ObservableObject {
         acceptedResult = nil
         subscriptionErrorMessage = nil
         activeAssistantMessageID = nil
+        currentPaymentCard = nil
+        currentItineraryCard = nil
     }
 
     func selectOffer(_ offer: AIChatOffer) {
@@ -244,6 +247,9 @@ final class AIChatViewModel: ObservableObject {
                     applyReplyMetadata(reply)
                     if let paymentCard = reply.paymentCard {
                         currentPaymentCard = paymentCard
+                    }
+                    if let itineraryCard = reply.itineraryCard {
+                        currentItineraryCard = itineraryCard
                     }
                     updateAssistantPlaceholder(
                         placeholderID: placeholderID,
