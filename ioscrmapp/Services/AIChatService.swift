@@ -124,6 +124,17 @@ struct MockAIChatService: AIChatServicing {
             )
         }
 
+        // Itinerary intent check - return itinerary card
+        if isItineraryIntent(normalized) {
+            return AIChatReply(
+                conversationID: conversationID ?? UUID().uuidString,
+                text: localizedItineraryPrompt(for: language),
+                thinkingText: "",
+                actions: [],
+                itineraryCard: mockItineraryCard()
+            )
+        }
+
         do {
             return try await DeepSeekFallbackService().complete(
                 userMessage: text,
@@ -279,6 +290,89 @@ struct MockAIChatService: AIChatServicing {
             return "سأساعدك في إعادة الشحن. اختر طريقة الدفع:"
         default:
             return "I'll help you complete the recharge. Please select your payment method."
+        }
+    }
+
+    // MARK: - Itinerary Intent Detection
+
+    private func isItineraryIntent(_ normalizedText: String) -> Bool {
+        let itineraryKeywords = [
+            "ticket", "my ticket", "show my ticket", "view ticket",
+            "itinerary", "booking", "flight", "航班", "机票", "行程",
+            "票", "预订", "تذكرة", "حجز", "بطاقة السفر"
+        ]
+        return itineraryKeywords.contains { normalizedText.contains($0) }
+    }
+
+    private func mockItineraryCard() -> AIChatItineraryCard {
+        let now = Date()
+        let calendar = Calendar.current
+
+        let flight = FlightSegment(
+            id: "FL001",
+            flightNumber: "EK 123",
+            airline: "Emirates",
+            airlineCode: "EK",
+            departureAirport: "DXB",
+            departureCity: "Dubai",
+            arrivalAirport: "LHR",
+            arrivalCity: "London",
+            departureTime: calendar.date(byAdding: .day, value: 7, to: now) ?? now,
+            arrivalTime: calendar.date(byAdding: .hour, value: 7, to: calendar.date(byAdding: .day, value: 7, to: now) ?? now) ?? now,
+            durationMinutes: 420,
+            seatNumber: "12A",
+            terminal: "T3",
+            gate: "B12",
+            baggage: "2x23kg",
+            meal: "Full meal service"
+        )
+
+        let hotel = HotelBooking(
+            id: "HT001",
+            hotelName: "Grand Hyatt Dubai",
+            address: "Sheikh Zayed Road, Dubai, UAE",
+            city: "Dubai",
+            checkInDate: calendar.date(byAdding: .day, value: 7, to: now) ?? now,
+            checkOutDate: calendar.date(byAdding: .day, value: 10, to: now) ?? now,
+            roomType: "Deluxe Suite",
+            guests: 2,
+            nights: 3,
+            confirmationNumber: "GH-2024-001"
+        )
+
+        let activity = ActivityTicket(
+            id: "AC001",
+            activityName: "Dubai Safari Park",
+            venue: "Dubai Safari Park",
+            city: "Dubai",
+            date: calendar.date(byAdding: .day, value: 8, to: now) ?? now,
+            time: "09:00 AM",
+            ticketCount: 2,
+            confirmationNumber: "DS-2024-002"
+        )
+
+        return AIChatItineraryCard(
+            id: "IT001",
+            bookingReference: "PNR: EK2024ABC",
+            travelerName: "John Doe",
+            flightSegments: [flight],
+            hotelBookings: [hotel],
+            activityTickets: [activity],
+            totalPrice: 2450.00,
+            currency: "AED",
+            status: .confirmed,
+            createdAt: now
+        )
+    }
+
+    private func localizedItineraryPrompt(for language: AppLanguage) -> String {
+        switch language {
+        case .simplifiedChinese:
+            return "以下是您即将出行的行程单："
+        case .arabic:
+            return "إليك برنامج رحلتك القادمة:"
+        default:
+            return "Here's your travel itinerary for your upcoming trip:"
         }
     }
 }
