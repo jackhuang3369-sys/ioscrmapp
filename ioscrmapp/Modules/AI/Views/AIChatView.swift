@@ -1067,6 +1067,10 @@ struct AIChatView: View {
                             }
                         )
                     }
+
+                    if let itineraryCard = viewModel.currentItineraryCard {
+                        AIChatItineraryCardView(itineraryCard: itineraryCard)
+                    }
                 }
                 .padding(.horizontal, hPad)
                 .padding(.top, 18)
