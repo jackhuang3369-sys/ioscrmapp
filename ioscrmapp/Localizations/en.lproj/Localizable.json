@@ -56,6 +56,7 @@
     "social": {
       "otherWays": "Other ways",
       "sms": "SMS",
+      "uaePass": "UAE Pass",
       "fingerprint": "Fingerprint",
       "face": "Face"
     },
@@ -142,6 +143,9 @@
       "fingerprint": "Fingerprint login is coming soon.",
       "face": "Face login is coming soon.",
       "registration": "Registration is coming soon."
+    },
+    "uaepass": {
+      "exchanging": "Completing UAE Pass sign in..."
     },
     "error": {
       "invalidPhone": "Enter a valid UAE phone number.",

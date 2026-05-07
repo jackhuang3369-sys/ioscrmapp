@@ -20,6 +20,7 @@ enum LoginAuthType: String, Codable, Equatable, Sendable {
     case password = "1"
     case otp = "2"
     case biometric = "3"
+    case uaePass = "4"
 
     init(loginMode: LoginMode) {
         switch loginMode {
@@ -32,7 +33,7 @@ enum LoginAuthType: String, Codable, Equatable, Sendable {
 }
 
 /// Minimal customer/subscriber snapshot used by the authenticated shell and persistence layer.
-struct CustSubInfo: Codable, Equatable {
+struct CustSubInfo: Codable, Equatable, Sendable {
     let displayName: String
     let phoneNumber: String
     let greeting: String
@@ -79,6 +80,17 @@ struct CustSubInfo: Codable, Equatable {
         serviceNumber = try container.decodeIfPresent(String.self, forKey: .serviceNumber)
         subscriberKey = try container.decodeIfPresent(String.self, forKey: .subscriberKey)
     }
+
+    /// Mock 数据，用于测试和预览
+    static let mock = CustSubInfo(
+        displayName: "Mock User",
+        phoneNumber: "+971501234567",
+        greeting: "Hello",
+        balanceText: "AED 100.00",
+        userID: "mock_user_id",
+        serviceNumber: "12345678",
+        subscriberKey: "mock_subscriber_key"
+    )
 }
 
 struct AuthToken: Codable, Equatable, Sendable {
@@ -413,3 +425,4 @@ enum AuthValidator {
         value.trimmingCharacters(in: .whitespacesAndNewlines).count >= 8
     }
 }
+

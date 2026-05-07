@@ -15,6 +15,13 @@ final class AIChatViewModel: ObservableObject {
     @Published var acceptedResult: OfferAcceptedResult?
     @Published var currentPaymentCard: AIChatPaymentCard?
     @Published var currentItineraryCard: AIChatItineraryCard?
+    @Published var activeDomainFlow: BoltDomainFlow?
+    @Published var selectedBillingInvoice: BillingInvoice?
+
+    // Intent Recognition State
+    @Published var pendingIntentResult: IntentRecognitionResult?
+    @Published var isRecognizingIntent = false
+    @Published var intentConfirmationPresented = false
 
     let language: AppLanguage
     let title: String
@@ -24,19 +31,55 @@ final class AIChatViewModel: ObservableObject {
     private let custSubInfo: CustSubInfo
     private let aiChatService: any AIChatServicing
     private let offersService: any OffersServicing
-    private var conversationID: String?
+    private let billingService: any BillingServicing
+    private let rechargeService: any RechargeServicing
+    private let ticketsService: any TicketsServicing
+    private let intentRecognitionService: (any IntentRecognitionServicing)?
+    private let intentRoutingService: any IntentRoutingServicing
+    private let subscribeOfferUseCase: any SubscribeOfferUseCase
+    private let rechargeExecutionUseCase: any ExecuteRechargeUseCase
+    private let payBillUseCase: any PayBillUseCase
+    private let onNavigate: (AIChatNavigationTarget) -> Void
+    private(set) var conversationID: String?
     private var activeAssistantMessageID: UUID?
 
     init(
         custSubInfo: CustSubInfo,
         language: AppLanguage,
         aiChatService: any AIChatServicing,
-        offersService: (any OffersServicing)? = nil
+        offersService: (any OffersServicing)? = nil,
+        billingService: (any BillingServicing)? = nil,
+        rechargeService: (any RechargeServicing)? = nil,
+        ticketsService: (any TicketsServicing)? = nil,
+        intentRecognitionService: (any IntentRecognitionServicing)? = nil,
+        intentRoutingService: (any IntentRoutingServicing)? = nil,
+        subscribeOfferUseCase: (any SubscribeOfferUseCase)? = nil,
+        rechargeExecutionUseCase: (any ExecuteRechargeUseCase)? = nil,
+        payBillUseCase: (any PayBillUseCase)? = nil,
+        onNavigate: @escaping (AIChatNavigationTarget) -> Void = { _ in }
     ) {
+        let services = AppServices()
         self.custSubInfo = custSubInfo
         self.language = language
         self.aiChatService = aiChatService
-        self.offersService = offersService ?? AppServices().offersService
+        self.offersService = offersService ?? services.offersService
+        self.billingService = billingService ?? services.billingService
+        self.rechargeService = rechargeService ?? services.rechargeService
+        self.ticketsService = ticketsService ?? services.ticketsService
+        self.intentRecognitionService = intentRecognitionService ?? AppServices.makeIntentRecognitionService(
+            aiChatService: aiChatService,
+            configuration: services.configuration
+        )
+        self.intentRoutingService = intentRoutingService ?? DefaultIntentRoutingService(
+            session: custSubInfo,
+            offersService: self.offersService,
+            billingService: self.billingService,
+            rechargeService: self.rechargeService
+        )
+        self.subscribeOfferUseCase = subscribeOfferUseCase ?? DefaultSubscribeOfferUseCase(offersService: self.offersService)
+        self.rechargeExecutionUseCase = rechargeExecutionUseCase ?? DefaultExecuteRechargeUseCase(rechargeService: self.rechargeService)
+        self.payBillUseCase = payBillUseCase ?? DefaultPayBillUseCase(billingService: self.billingService)
+        self.onNavigate = onNavigate
         title = AIChatLocalizedCopy.title(for: language)
         subtitle = AIChatLocalizedCopy.subtitle(for: language)
         suggestedPrompts = AIChatLocalizedCopy.suggestedPrompts(for: language)
@@ -55,6 +98,216 @@ final class AIChatViewModel: ObservableObject {
     }
 
     func directNavigationTarget(for text: String) -> AIChatNavigationTarget? {
+        return legacyDirectNavigationTarget(for: text)
+    }
+
+    func processPotentialNavigation(
+        for text: String,
+        fallbackToChat: @escaping @MainActor () -> Void
+    ) {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else {
+            return
+        }
+
+        if let intentRecognitionService {
+            recognizeIntentAndNavigate(
+                text: trimmed,
+                service: intentRecognitionService,
+                fallbackToChat: fallbackToChat
+            )
+            return
+        }
+
+        if let target = legacyDirectNavigationTarget(for: trimmed) {
+            navigateToTarget(target)
+        } else {
+            fallbackToChat()
+        }
+    }
+
+    /// 新系统：意图识别并导航
+    private func recognizeIntentAndNavigate(
+        text: String,
+        service: any IntentRecognitionServicing,
+        fallbackToChat: @escaping @MainActor () -> Void
+    ) {
+        Task {
+            isRecognizingIntent = true
+
+            do {
+                let result = try await service.recognizeIntent(
+                    text: text,
+                    context: buildContext(),
+                    conversationHistory: messages,
+                    language: language
+                )
+
+                isRecognizingIntent = false
+                let outcome = await intentRoutingService.resolve(
+                    text: text,
+                    result: result,
+                    context: buildContext(),
+                    conversationHistory: messages,
+                    language: language
+                )
+
+                handleIntentRoutingOutcome(
+                    outcome,
+                    originalText: text,
+                    recognizedResult: result,
+                    fallbackToChat: fallbackToChat
+                )
+            } catch {
+                isRecognizingIntent = false
+                intentConfirmationPresented = false
+                pendingIntentResult = nil
+
+                if let fallbackTarget = legacyDirectNavigationTarget(for: text) {
+                    navigateToTarget(fallbackTarget)
+                } else {
+                    fallbackToChat()
+                }
+            }
+        }
+    }
+
+    /// 导航到目标页面（外部回调）
+    private func navigateToTarget(_ target: AIChatNavigationTarget) {
+        onNavigate(target)
+    }
+
+    private func handleIntentRoutingOutcome(
+        _ outcome: IntentRoutingOutcome,
+        originalText: String,
+        recognizedResult: IntentRecognitionResult,
+        fallbackToChat: @escaping @MainActor () -> Void
+    ) {
+        switch outcome {
+        case .navigateExplicitly(let target):
+            if recognizedResult.needsUserConfirmation && !recognizedResult.isHighConfidence {
+                pendingIntentResult = IntentRecognitionResult(
+                    intentType: recognizedResult.intentType,
+                    confidence: recognizedResult.confidence,
+                    navigationTarget: target,
+                    businessParameters: recognizedResult.businessParameters,
+                    requiresConfirmation: recognizedResult.requiresConfirmation,
+                    suggestedActions: recognizedResult.suggestedActions,
+                    alternativeIntents: recognizedResult.alternativeIntents
+                )
+                intentConfirmationPresented = true
+            } else {
+                intentConfirmationPresented = false
+                pendingIntentResult = nil
+                navigateToTarget(target)
+            }
+        case .presentDomainFlow(let flow):
+            intentConfirmationPresented = false
+            pendingIntentResult = nil
+            presentDomainFlow(flow, for: originalText)
+        case .presentFollowUp(let reply):
+            intentConfirmationPresented = false
+            pendingIntentResult = nil
+            presentIntentResolvedReply(for: originalText, reply: reply)
+        case .handoffToGenericChat:
+            intentConfirmationPresented = false
+            pendingIntentResult = nil
+            fallbackToChat()
+        }
+    }
+
+    private func presentDomainFlow(_ flow: BoltDomainFlow, for userText: String) {
+        messages.append(
+            AIChatMessage(
+                sender: .user,
+                text: userText
+            )
+        )
+
+        clearInteractiveArtifacts()
+        activeDomainFlow = flow
+
+        let assistantText = flow.assistantText
+        if !assistantText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            let assistantMessage = AIChatMessage(
+                sender: .assistant,
+                text: assistantText
+            )
+            messages.append(assistantMessage)
+            activeAssistantMessageID = assistantMessage.id
+        } else {
+            activeAssistantMessageID = nil
+        }
+
+        switch flow {
+        case .offers(let context),
+             .roaming(let context):
+            offers = context.offers
+            selectedOffer = nil
+            currentStep = .offersList
+        case .travel:
+            currentStep = .answer
+        case .recharge(let context):
+            currentPaymentCard = context.paymentCard
+            currentStep = .answer
+        case .billing(let context):
+            selectedBillingInvoice = context.summary.outstandingInvoices.first
+            currentStep = .answer
+        case .payment(let context):
+            currentPaymentCard = context.paymentCard
+            selectedBillingInvoice = context.invoice
+            currentStep = .answer
+        case .balance,
+             .usage,
+             .serviceRequest,
+             .multiIntentSelection:
+            currentStep = .answer
+        }
+    }
+
+    private func presentIntentResolvedReply(for userText: String, reply: AIChatReply) {
+        messages.append(
+            AIChatMessage(
+                sender: .user,
+                text: userText
+            )
+        )
+
+        conversationID = reply.conversationID ?? conversationID
+        activeDomainFlow = nil
+        applyReplyMetadata(reply)
+        currentPaymentCard = reply.paymentResult == nil ? reply.paymentCard : nil
+        currentItineraryCard = reply.itineraryCard
+        selectedBillingInvoice = nil
+
+        let assistantMessage = AIChatMessage(
+            sender: .assistant,
+            text: resolvedReplyText(reply),
+            thinkingText: reply.thinkingText,
+            recommendedOffers: reply.recommendedOffers,
+            actions: reply.actions
+        )
+        messages.append(assistantMessage)
+        activeAssistantMessageID = assistantMessage.id
+        offers = reply.recommendedOffers
+        selectedOffer = nil
+        acceptedResult = nil
+        subscriptionErrorMessage = nil
+
+        withAnimation(.spring(response: 0.5, dampingFraction: 0.82)) {
+            currentStep = reply.recommendedOffers.isEmpty ? .answer : .offersList
+        }
+    }
+
+    private func clearInteractiveArtifacts() {
+        currentPaymentCard = nil
+        currentItineraryCard = nil
+        selectedBillingInvoice = nil
+        subscriptionErrorMessage = nil
+    }
+
+    /// 原有硬编码关键词匹配逻辑（fallback）
+    private func legacyDirectNavigationTarget(for text: String) -> AIChatNavigationTarget? {
         let normalized = normalizedIntentText(text)
         guard !normalized.isEmpty else {
             return nil
@@ -98,6 +351,23 @@ final class AIChatViewModel: ObservableObject {
         return nil
     }
 
+    /// 用户确认意图后执行导航
+    func confirmIntentAndNavigate() {
+        guard let result = pendingIntentResult, let target = result.navigationTarget else {
+            return
+        }
+
+        intentConfirmationPresented = false
+        pendingIntentResult = nil
+        navigateToTarget(target)
+    }
+
+    /// 用户拒绝意图确认
+    func dismissIntentConfirmation() {
+        intentConfirmationPresented = false
+        pendingIntentResult = nil
+    }
+
     func sendDraft() {
         let message = draft.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !message.isEmpty else {
@@ -106,6 +376,15 @@ final class AIChatViewModel: ObservableObject {
 
         draft = ""
         send(message)
+    }
+
+    func sendMessageText(_ message: String) {
+        let trimmed = message.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else {
+            return
+        }
+
+        send(trimmed)
     }
 
     func sendSuggestedPrompt(_ prompt: String) {
@@ -136,7 +415,9 @@ final class AIChatViewModel: ObservableObject {
         isSending = false
         isProcessingSubscription = false
         currentStep = .home
+        activeDomainFlow = nil
         selectedOffer = nil
+        selectedBillingInvoice = nil
         offers = []
         acceptedResult = nil
         subscriptionErrorMessage = nil
@@ -168,15 +449,24 @@ final class AIChatViewModel: ObservableObject {
             return
         }
 
+        guard hasExecutableOfferIdentity(selectedOffer) else {
+            subscriptionErrorMessage = missingOfferConfigurationMessage()
+            return
+        }
+
         subscriptionErrorMessage = nil
         isProcessingSubscription = true
 
         Task {
             do {
-                _ = try await notifyOfferEvent(.subscriptionRequested, offer: selectedOffer)
+                let executionResult = try await subscribeOfferUseCase.execute(
+                    offer: selectedOffer,
+                    session: custSubInfo
+                )
+                _ = try? await notifyOfferEvent(.subscriptionRequested, offer: selectedOffer)
 
                 await MainActor.run {
-                    acceptedResult = nil
+                    acceptedResult = executionResult
                     isProcessingSubscription = false
                     withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
                         currentStep = .success
@@ -203,8 +493,17 @@ final class AIChatViewModel: ObservableObject {
             case .offerDetails:
                 currentStep = .offersList
             case .answer:
-                currentStep = .home
+                if let billingFlow = restoreBillingFlowFromPayment() {
+                    activeDomainFlow = .billing(billingFlow)
+                    currentPaymentCard = nil
+                } else {
+                    activeDomainFlow = nil
+                    currentPaymentCard = nil
+                    selectedBillingInvoice = nil
+                    currentStep = .home
+                }
             case .offersList:
+                activeDomainFlow = nil
                 currentStep = .home
             case .home:
                 break
@@ -216,6 +515,10 @@ final class AIChatViewModel: ObservableObject {
         guard !isSending else {
             return
         }
+
+        activeDomainFlow = nil
+        currentPaymentCard = nil
+        selectedBillingInvoice = nil
 
         let placeholderID = UUID()
         messages.append(
@@ -245,12 +548,8 @@ final class AIChatViewModel: ObservableObject {
                 await MainActor.run {
                     conversationID = reply.conversationID ?? conversationID
                     applyReplyMetadata(reply)
-                    if let paymentCard = reply.paymentCard {
-                        currentPaymentCard = paymentCard
-                    }
-                    if let itineraryCard = reply.itineraryCard {
-                        currentItineraryCard = itineraryCard
-                    }
+                    currentPaymentCard = reply.paymentResult == nil ? reply.paymentCard : nil
+                    currentItineraryCard = reply.itineraryCard
                     updateAssistantPlaceholder(
                         placeholderID: placeholderID,
                         text: resolvedReplyText(reply),
@@ -334,6 +633,7 @@ final class AIChatViewModel: ObservableObject {
         messages[index].actions = actions
         messages[index].isLoading = false
         activeAssistantMessageID = placeholderID
+        activeDomainFlow = nil
         offers = recommendedOffers
         selectedOffer = nil
         acceptedResult = nil
@@ -348,6 +648,10 @@ final class AIChatViewModel: ObservableObject {
     private func resolvedReplyText(_ reply: AIChatReply) -> String {
         if !reply.text.isEmpty {
             return reply.text
+        }
+
+        if let paymentResult = reply.paymentResult, !paymentResult.message.isEmpty {
+            return paymentResult.message
         }
 
         if reply.htmlContent != nil || reply.richText != nil || !reply.actions.isEmpty || !reply.recommendedOffers.isEmpty {
@@ -371,6 +675,245 @@ final class AIChatViewModel: ObservableObject {
             .trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
+    func submitFollowUpSuggestion(_ suggestion: String) {
+        let trimmed = suggestion.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else {
+            return
+        }
+
+        processPotentialNavigation(for: trimmed) {
+            self.sendMessageText(trimmed)
+        }
+    }
+
+    /// 用户选择多意图中的一个后提交处理
+    func submitIntentSelection(_ intentType: String, originalText: String) {
+        guard let selectedIntent = UserIntentType(rawValue: intentType) else {
+            // 无法解析意图类型，直接提交原文重新处理
+            sendMessageText(originalText)
+            return
+        }
+
+        // 根据选择的意图创建对应的 DomainFlow
+        let flow = createDomainFlowForIntent(selectedIntent, originalText: originalText)
+        activeDomainFlow = flow
+        currentStep = .answer
+    }
+
+    private func createDomainFlowForIntent(_ intentType: UserIntentType, originalText: String) -> BoltDomainFlow? {
+        // 通用占位卡片，后续会通过服务获取真实数据
+        let placeholderInfoCard = BoltInfoCard(
+            title: intentType.displayName(for: language),
+            accentValue: "--",
+            accentCaption: "Loading...",
+            detailLines: [],
+            footnote: nil
+        )
+
+        // 通用占位支付卡，后续会通过服务获取真实数据
+        let placeholderPaymentCard = AIChatPaymentCard(
+            transactionType: .recharge,
+            amountOptions: PaymentAmountOptions(
+                min: 10.0,
+                max: 500.0,
+                defaultAmount: 50.0,
+                quickAmounts: [10, 20, 50, 100],
+                currency: "AED"
+            ),
+            paymentMethods: [
+                PaymentMethodOption(
+                    id: "tabby",
+                    name: "Tabby BNPL",
+                    description: "Split in 4 installments",
+                    iconType: .tabby,
+                    installmentOptions: nil,
+                    isDefault: true
+                ),
+                PaymentMethodOption(
+                    id: "apple_pay",
+                    name: "Apple Pay",
+                    description: "Instant payment",
+                    iconType: .apple,
+                    installmentOptions: nil,
+                    isDefault: false
+                )
+            ],
+            subscriberInfo: nil
+        )
+
+        switch intentType {
+        case .rechargeAccount:
+            // 充值需要真实的服务号和余额，这里用占位值
+            return .recharge(BoltRechargeFlowContext(
+                title: "Recharge",
+                message: "How would you like to recharge your account?",
+                paymentCard: placeholderPaymentCard,
+                serviceNumber: "",
+                balanceText: ""
+            ))
+        case .viewOffers, .subscribeOffer:
+            return .offers(BoltOfferFlowContext(
+                title: "Offers",
+                message: "Here are available offers for you",
+                offers: [],
+                allowExternalNavigation: true,
+                isRoaming: false
+            ))
+        case .balanceInquiry:
+            return .balance(placeholderInfoCard)
+        case .dataUsageQuery:
+            return .usage(BoltInfoCard(
+                title: "Data Usage",
+                accentValue: "-- GB",
+                accentCaption: "Remaining Data",
+                detailLines: [],
+                footnote: nil
+            ))
+        case .voiceUsageQuery:
+            return .usage(BoltInfoCard(
+                title: "Voice Usage",
+                accentValue: "-- min",
+                accentCaption: "Remaining Minutes",
+                detailLines: [],
+                footnote: nil
+            ))
+        case .itineraryQuery, .flightInfo, .hotelInfo:
+            return .travel(BoltTravelFlowContext(
+                title: "Travel",
+                message: "Planning your trip",
+                destination: nil,
+                transportMode: nil,
+                departureDateText: nil,
+                returnDateText: nil,
+                passengerCount: nil,
+                priceRange: nil,
+                followUpQuestion: "Where would you like to go?",
+                suggestedReplies: [],
+                ticketPageURL: nil,
+                isResolvingTicketPage: false,
+                ticketPageErrorMessage: nil
+            ))
+        default:
+            return nil
+        }
+    }
+
+    func openTravelTicketsInBolt() {
+        guard case .travel(let travelFlow) = activeDomainFlow else {
+            return
+        }
+
+        activeDomainFlow = .travel(
+            BoltTravelFlowContext(
+                title: travelFlow.title,
+                message: travelFlow.message,
+                destination: travelFlow.destination,
+                transportMode: travelFlow.transportMode,
+                departureDateText: travelFlow.departureDateText,
+                returnDateText: travelFlow.returnDateText,
+                passengerCount: travelFlow.passengerCount,
+                priceRange: travelFlow.priceRange,
+                followUpQuestion: nil,
+                suggestedReplies: [],
+                ticketPageURL: nil,
+                isResolvingTicketPage: true,
+                ticketPageErrorMessage: nil
+            )
+        )
+
+        Task {
+            do {
+                let url = try await ticketsService.fetchTicketURL()
+                await MainActor.run {
+                    guard case .travel(let latestFlow) = self.activeDomainFlow else {
+                        return
+                    }
+
+                    self.activeDomainFlow = .travel(
+                        BoltTravelFlowContext(
+                            title: latestFlow.title,
+                            message: self.localizedTravelBookingReadyMessage(for: latestFlow),
+                            destination: latestFlow.destination,
+                            transportMode: latestFlow.transportMode,
+                            departureDateText: latestFlow.departureDateText,
+                            returnDateText: latestFlow.returnDateText,
+                            passengerCount: latestFlow.passengerCount,
+                            priceRange: latestFlow.priceRange,
+                            followUpQuestion: nil,
+                            suggestedReplies: [],
+                            ticketPageURL: url,
+                            isResolvingTicketPage: false,
+                            ticketPageErrorMessage: nil
+                        )
+                    )
+                    self.currentStep = .answer
+                }
+            } catch {
+                await MainActor.run {
+                    guard case .travel(let latestFlow) = self.activeDomainFlow else {
+                        return
+                    }
+
+                    self.activeDomainFlow = .travel(
+                        BoltTravelFlowContext(
+                            title: latestFlow.title,
+                            message: latestFlow.message,
+                            destination: latestFlow.destination,
+                            transportMode: latestFlow.transportMode,
+                            departureDateText: latestFlow.departureDateText,
+                            returnDateText: latestFlow.returnDateText,
+                            passengerCount: latestFlow.passengerCount,
+                            priceRange: latestFlow.priceRange,
+                            followUpQuestion: latestFlow.followUpQuestion,
+                            suggestedReplies: latestFlow.suggestedReplies,
+                            ticketPageURL: nil,
+                            isResolvingTicketPage: false,
+                            ticketPageErrorMessage: self.localizedTravelTicketLoadError()
+                        )
+                    )
+                }
+            }
+        }
+    }
+
+    func openTravelOffersInBolt() {
+        submitFollowUpSuggestion(localizedTravelOffersPrompt())
+    }
+
+    func beginBillingPayment(for invoice: BillingInvoice) {
+        guard case .billing(let billingFlow) = activeDomainFlow else {
+            return
+        }
+
+        selectedBillingInvoice = invoice
+        activeDomainFlow = .payment(
+            BoltPaymentFlowContext(
+                title: billingFlow.title,
+                message: localizedBillPaymentPrompt(for: invoice),
+                paymentCard: makeBillPaymentCard(for: invoice),
+                invoice: invoice,
+                summary: billingFlow.summary
+            )
+        )
+        currentPaymentCard = makeBillPaymentCard(for: invoice)
+        currentStep = .answer
+    }
+
+    func currentPaymentService() -> PaymentServicing {
+        if case .payment(let paymentFlow) = activeDomainFlow, let invoice = paymentFlow.invoice {
+            return BillingDomainPaymentService(
+                session: custSubInfo,
+                invoice: invoice,
+                useCase: payBillUseCase
+            )
+        }
+
+        return RechargeDomainPaymentService(
+            session: custSubInfo,
+            useCase: rechargeExecutionUseCase
+        )
+    }
+
     func buildPaymentContext() -> PaymentContext {
         let tokenStore = KeychainAuthTokenStore()
         let accessToken = tokenStore.loadTokens()?.currentAuthorizationToken() ?? ""
@@ -383,19 +926,46 @@ final class AIChatViewModel: ObservableObject {
     }
 
     func handlePaymentResult(_ result: PaymentResultCard) {
-        currentPaymentCard = nil
-
-        if result.status == .success {
-            let successMessage = paymentSuccessMessage(for: result)
-            let resultMessage = AIChatMessage(
-                sender: .assistant,
-                text: successMessage
-            )
-            messages.append(resultMessage)
+        guard result.status == .success else {
+            return
         }
+
+        currentPaymentCard = nil
+        let message = paymentSuccessMessage(for: result)
+
+        if case .payment(let paymentFlow) = activeDomainFlow, let summary = paymentFlow.summary {
+            activeDomainFlow = .billing(
+                BoltBillingFlowContext(
+                    title: paymentFlow.title,
+                    message: localizedBillingReturnMessage(),
+                    summary: summary
+                )
+            )
+        } else {
+            activeDomainFlow = nil
+        }
+
+        let resultMessage = AIChatMessage(
+            sender: .assistant,
+            text: message
+        )
+        messages.append(resultMessage)
+        activeAssistantMessageID = resultMessage.id
+        currentStep = .answer
     }
 
     private func paymentSuccessMessage(for result: PaymentResultCard) -> String {
+        if case .payment(let paymentFlow) = activeDomainFlow, let invoice = paymentFlow.invoice {
+            switch language {
+            case .english:
+                return "Payment successful for invoice \(invoice.invoiceNo).\nOrder ID: \(result.orderId ?? "-")"
+            case .simplifiedChinese:
+                return "账单 \(invoice.invoiceNo) 支付成功。\n订单号：\(result.orderId ?? "-")"
+            case .arabic:
+                return "تم سداد الفاتورة \(invoice.invoiceNo) بنجاح.\nرقم الطلب: \(result.orderId ?? "-")"
+            }
+        }
+
         switch language {
         case .english:
             let amountText = formatPaymentAmount(result.amount, currency: result.currency)
@@ -424,6 +994,137 @@ final class AIChatViewModel: ObservableObject {
         formatter.maximumFractionDigits = 2
         let amountString = formatter.string(from: amount as NSNumber) ?? "\(amount)"
         return "\(amountString) \(currency)"
+    }
+
+    private func makeBillPaymentCard(for invoice: BillingInvoice) -> AIChatPaymentCard {
+        let amount = BillingNumberParser.decimal(invoice.openAmountRaw) ?? 0
+        return AIChatPaymentCard(
+            transactionType: .billPayment,
+            amountOptions: PaymentAmountOptions(
+                min: amount,
+                max: amount,
+                defaultAmount: amount,
+                quickAmounts: [amount],
+                currency: "AED"
+            ),
+            paymentMethods: [
+                PaymentMethodOption(
+                    id: "tabby",
+                    name: "Tabby BNPL",
+                    description: "Split in 4 installments • No interest",
+                    iconType: .tabby,
+                    installmentOptions: [
+                        InstallmentOption(
+                            installments: 4,
+                            amountPerInstallment: amount / Decimal(4)
+                        )
+                    ],
+                    isDefault: true
+                ),
+                PaymentMethodOption(
+                    id: "apple_pay",
+                    name: "Apple Pay",
+                    description: "Instant payment",
+                    iconType: .apple,
+                    installmentOptions: nil,
+                    isDefault: false
+                ),
+                PaymentMethodOption(
+                    id: "google_pay",
+                    name: "Google Pay",
+                    description: "Instant payment",
+                    iconType: .google,
+                    installmentOptions: nil,
+                    isDefault: false
+                )
+            ],
+            subscriberInfo: PaymentSubscriberInfo(
+                serviceNumber: custSubInfo.serviceNumber ?? custSubInfo.phoneNumber,
+                currentBalance: nil
+            )
+        )
+    }
+
+    private func localizedBillPaymentPrompt(for invoice: BillingInvoice) -> String {
+        switch language {
+        case .english:
+            return "Pay invoice \(invoice.invoiceNo) for \(invoice.openAmountText) directly inside Bolt."
+        case .simplifiedChinese:
+            return "直接在 Bolt 内支付账单 \(invoice.invoiceNo)，金额 \(invoice.openAmountText)。"
+        case .arabic:
+            return "ادفع الفاتورة \(invoice.invoiceNo) بقيمة \(invoice.openAmountText) مباشرة داخل Bolt."
+        }
+    }
+
+    private func localizedBillingReturnMessage() -> String {
+        switch language {
+        case .english:
+            return "You can review the remaining billing summary below."
+        case .simplifiedChinese:
+            return "你可以继续在下方查看账单摘要。"
+        case .arabic:
+            return "يمكنك متابعة مراجعة ملخص الفاتورة أدناه."
+        }
+    }
+
+    private func localizedTravelBookingReadyMessage(for travelFlow: BoltTravelFlowContext) -> String {
+        guard
+            let destination = travelFlow.destination,
+            let transportMode = travelFlow.transportMode,
+            let departureDateText = travelFlow.departureDateText
+        else {
+            switch language {
+            case .english:
+                return "The ticket page is now ready inside Bolt."
+            case .simplifiedChinese:
+                return "票务页面已经在 Bolt 内打开。"
+            case .arabic:
+                return "تم فتح صفحة التذاكر داخل Bolt."
+            }
+        }
+
+        switch language {
+        case .english:
+            return "Continuing your \(transportMode.rawValue) booking to \(destination) on \(departureDateText) inside Bolt."
+        case .simplifiedChinese:
+            return "正在 Bolt 内继续处理你在 \(departureDateText) 前往 \(destination) 的\(transportMode == .flight ? "机票" : "火车票")预订。"
+        case .arabic:
+            return "يتم الآن متابعة حجز \(transportMode == .flight ? "تذاكر الطيران" : "تذاكر القطار") إلى \(destination) بتاريخ \(departureDateText) داخل Bolt."
+        }
+    }
+
+    private func localizedTravelTicketLoadError() -> String {
+        switch language {
+        case .english:
+            return "The ticket page could not be loaded inside Bolt right now. You can try again without leaving the chat."
+        case .simplifiedChinese:
+            return "当前无法在 Bolt 内加载票务页面，你可以直接在聊天框内重试。"
+        case .arabic:
+            return "تعذر تحميل صفحة التذاكر داخل Bolt حالياً، ويمكنك إعادة المحاولة دون مغادرة الدردشة."
+        }
+    }
+
+    private func localizedTravelOffersPrompt() -> String {
+        switch language {
+        case .english:
+            return "show me roaming offers for this trip"
+        case .simplifiedChinese:
+            return "给我看看这次出行相关的漫游优惠"
+        case .arabic:
+            return "اعرض علي عروض التجوال لهذه الرحلة"
+        }
+    }
+
+    private func restoreBillingFlowFromPayment() -> BoltBillingFlowContext? {
+        guard case .payment(let paymentFlow) = activeDomainFlow, let summary = paymentFlow.summary else {
+            return nil
+        }
+
+        return BoltBillingFlowContext(
+            title: paymentFlow.title,
+            message: localizedBillingReturnMessage(),
+            summary: summary
+        )
     }
 
     private func buildContext() -> AIChatContext {
@@ -478,6 +1179,12 @@ final class AIChatViewModel: ObservableObject {
             "validity: \(offer.validityRaw ?? offer.validity)"
         ]
         .joined(separator: "\n")
+    }
+
+    private func hasExecutableOfferIdentity(_ offer: AIChatOffer) -> Bool {
+        let offerIdValid = !(offer.offerId?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ?? true)
+        let offerCodeValid = !(offer.offerCode?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ?? true)
+        return offerIdValid && offerCodeValid
     }
 
     private func resolveEligibleOffer(from offer: AIChatOffer) async throws -> EligibleOfferItem {

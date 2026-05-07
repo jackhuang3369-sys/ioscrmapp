@@ -68,14 +68,21 @@ struct AIChatView: View {
         language: AppLanguage,
         aiChatService: any AIChatServicing,
         offersService: (any OffersServicing)? = nil,
+        intentRecognitionService: (any IntentRecognitionServicing)? = nil,
         onNavigate: @escaping (AIChatNavigationTarget) -> Void
     ) {
+        let appServices = AppServices()
         _viewModel = StateObject(
             wrappedValue: AIChatViewModel(
                 custSubInfo: custSubInfo,
                 language: language,
                 aiChatService: aiChatService,
-                offersService: offersService
+                offersService: offersService,
+                intentRecognitionService: intentRecognitionService ?? AppServices.makeIntentRecognitionService(
+                    aiChatService: aiChatService,
+                    configuration: appServices.configuration
+                ),
+                onNavigate: onNavigate
             )
         )
         self.onNavigate = onNavigate
@@ -187,6 +194,17 @@ struct AIChatView: View {
                 }
             )
         }
+        .intentConfirmation(
+            isPresented: $viewModel.intentConfirmationPresented,
+            intentResult: viewModel.pendingIntentResult,
+            language: viewModel.language,
+            onConfirm: {
+                viewModel.confirmIntentAndNavigate()
+            },
+            onDismiss: {
+                viewModel.dismissIntentConfirmation()
+            }
+        )
         .onAppear {
             withAnimation(.easeInOut(duration: 8).repeatForever(autoreverses: true)) {
                 isAnimatingCore = true
@@ -543,9 +561,7 @@ struct AIChatView: View {
 
     private func promptCapsule(_ text: String, index: Int, width: CGFloat) -> some View {
         Button {
-            if let target = viewModel.directNavigationTarget(for: text) {
-                onNavigate(target)
-            } else {
+            viewModel.processPotentialNavigation(for: text) {
                 viewModel.sendSuggestedPrompt(text)
             }
         } label: {
@@ -919,19 +935,11 @@ struct AIChatView: View {
             return
         }
 
-        if let target = viewModel.directNavigationTarget(for: message) {
-            viewModel.draft = ""
-            isDraftFieldFocused = false
-            onNavigate(target)
-            return
-        }
-
-        guard viewModel.canSend else {
-            return
-        }
-
-        viewModel.sendDraft()
+        viewModel.draft = ""
         isDraftFieldFocused = false
+        viewModel.processPotentialNavigation(for: message) {
+            viewModel.sendMessageText(message)
+        }
     }
 
     private func focusDraftField() {
@@ -1038,6 +1046,10 @@ struct AIChatView: View {
                         assistantAnswerContent(message: assistantMessage)
                     }
 
+                    if let activeDomainFlow = viewModel.activeDomainFlow {
+                        boltDomainFlowSection(activeDomainFlow)
+                    }
+
                     if let actions = assistantMessage?.actions, !actions.isEmpty {
                         infoGlassCard(title: AIChatLocalizedCopy.suggestedActionsTitle(for: viewModel.language)) {
                             VStack(alignment: .leading, spacing: 14) {
@@ -1061,6 +1073,7 @@ struct AIChatView: View {
                     if let paymentCard = viewModel.currentPaymentCard {
                         AIChatPaymentCardView(
                             paymentCard: paymentCard,
+                            paymentService: viewModel.currentPaymentService(),
                             context: viewModel.buildPaymentContext(),
                             onComplete: { result in
                                 viewModel.handlePaymentResult(result)
@@ -1078,6 +1091,237 @@ struct AIChatView: View {
             }
         }
         .padding(.top, 8)
+    }
+
+    @ViewBuilder
+    private func boltDomainFlowSection(_ flow: BoltDomainFlow) -> some View {
+        switch flow {
+        case .balance(let card),
+             .usage(let card):
+            infoGlassCard(title: card.title) {
+                VStack(alignment: .leading, spacing: 14) {
+                    BoltResultCard(
+                        title: card.accentCaption,
+                        message: card.accentValue,
+                        footnote: card.footnote
+                    )
+
+                    VStack(alignment: .leading, spacing: 10) {
+                        ForEach(card.detailLines) { line in
+                            AIBoltDetailRow(title: line.title, value: line.value)
+                        }
+                    }
+                }
+            }
+
+        case .billing(let context):
+            infoGlassCard(title: context.title) {
+                VStack(alignment: .leading, spacing: 16) {
+                    BoltDetailCard(title: "Total Due", value: context.summary.summary.totalDueAmountText)
+                    BoltDetailCard(title: "Due Date", value: context.summary.summary.dueDateText)
+                    BoltDetailCard(title: "Unbilled", value: context.summary.summary.unbilledAmountText)
+
+                    if !context.summary.outstandingInvoices.isEmpty {
+                        BoltListCard(title: "Outstanding Invoices") {
+                            ForEach(context.summary.outstandingInvoices) { invoice in
+                                Button {
+                                    viewModel.beginBillingPayment(for: invoice)
+                                } label: {
+                                    BoltSelectableRow(
+                                        title: invoice.invoiceNo,
+                                        subtitle: invoice.dueDateText,
+                                        trailingValue: invoice.openAmountText,
+                                        buttonTitle: "Pay In Bolt"
+                                    )
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
+                    }
+                }
+            }
+
+        case .payment(let context):
+            infoGlassCard(title: context.title) {
+                VStack(alignment: .leading, spacing: 16) {
+                    if let invoice = context.invoice {
+                        BoltDetailCard(title: "Invoice", value: invoice.invoiceNo)
+                        BoltDetailCard(title: "Amount", value: invoice.openAmountText)
+                    }
+                    BoltFormCard(
+                        title: "Payment Method",
+                        message: context.message,
+                        helper: "Confirm the method below and complete the payment inside Bolt."
+                    )
+                }
+            }
+
+        case .recharge(let context):
+            infoGlassCard(title: context.title) {
+                VStack(alignment: .leading, spacing: 16) {
+                    BoltDetailCard(title: "Service Number", value: context.serviceNumber)
+                    BoltDetailCard(title: "Current Balance", value: context.balanceText)
+                    BoltFormCard(
+                        title: "Recharge Flow",
+                        message: context.message,
+                        helper: "Choose amount, confirm method, then review the result without leaving Bolt."
+                    )
+                }
+            }
+
+        case .travel(let context):
+            if let destination = context.destination {
+                let dateParser = ISO8601DateParser()
+
+                let travelIntent = TravelIntent(
+                    destination: destination,
+                    departureDate: context.departureDateText.flatMap { dateParser.parse($0) },
+                    returnDate: context.returnDateText.flatMap { dateParser.parse($0) },
+                    transportMode: context.transportMode == .train ? .train : .flight,
+                    passengerCount: context.passengerCount ?? 0,
+                    priceRange: context.priceRange.map {
+                        TravelIntent.PriceRange(min: $0.min, max: $0.max, currency: $0.currency)
+                    },
+                    suggestions: []
+                )
+
+                BoltTravelShowcase(
+                    intent: travelIntent,
+                    onExploreFlights: { viewModel.openTravelTicketsInBolt() },
+                    onExploreHotels: { viewModel.openTravelOffersInBolt() },
+                    onSelectSuggestion: { _ in }
+                )
+            } else {
+                infoGlassCard(title: context.title) {
+                    VStack(alignment: .leading, spacing: 16) {
+                        if let ticketPageErrorMessage = context.ticketPageErrorMessage, !ticketPageErrorMessage.isEmpty {
+                            BoltResultCard(
+                                title: "Ticket Page Status",
+                                message: ticketPageErrorMessage,
+                                footnote: nil
+                            )
+                        }
+
+                        if context.isResolvingTicketPage {
+                            BoltFormCard(
+                                title: "Opening Tickets In Bolt",
+                                message: context.message,
+                                helper: "The ticket page is being prepared inside the current chat workspace."
+                            )
+                        } else if let ticketPageURL = context.ticketPageURL {
+                            BoltFormCard(
+                                title: "Ticket Booking Workspace",
+                                message: context.message,
+                                helper: "Continue the booking below without leaving the assistant."
+                            )
+
+                            BoltEmbeddedWebCard(url: ticketPageURL)
+                        } else if let followUpQuestion = context.followUpQuestion {
+                            BoltFollowUpCard(
+                                title: context.title,
+                                question: followUpQuestion,
+                                suggestions: context.suggestedReplies
+                            ) { suggestion in
+                                viewModel.submitFollowUpSuggestion(suggestion)
+                            }
+                        } else {
+                            BoltActionGroup(
+                                title: "Ticket Booking",
+                                message: context.message,
+                                actions: [
+                                    "Continue in Bolt",
+                                    "Roaming Offers"
+                                ]
+                            )
+
+                            VStack(spacing: 12) {
+                                BoltPrimaryActionButton(title: "Continue Ticket Booking") {
+                                    viewModel.openTravelTicketsInBolt()
+                                }
+
+                                BoltSecondaryActionButton(title: "View Roaming Offers") {
+                                    viewModel.openTravelOffersInBolt()
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+        case .offers(let context),
+             .roaming(let context):
+            infoGlassCard(title: context.title) {
+                BoltActionGroup(
+                    title: context.isRoaming ? "Roaming" : "Offers",
+                    message: context.message,
+                    actions: [
+                        "Review list",
+                        "Compare detail",
+                        "Process immediately"
+                    ]
+                )
+            }
+
+        case .serviceRequest(let context):
+            infoGlassCard(title: context.title) {
+                VStack(alignment: .leading, spacing: 16) {
+                    if let result = context.submissionResult {
+                        BoltResultCard(
+                            title: result.title,
+                            message: result.message,
+                            footnote: result.reference
+                        )
+                    } else {
+                        BoltFollowUpCard(
+                            title: context.title,
+                            question: context.followUpQuestion ?? context.message,
+                            suggestions: context.suggestedReplies
+                        ) { suggestion in
+                            viewModel.submitFollowUpSuggestion(suggestion)
+                        }
+                    }
+                }
+            }
+
+        case .multiIntentSelection(let context):
+            infoGlassCard(title: context.title) {
+                VStack(alignment: .leading, spacing: 16) {
+                    Text(context.selectionPrompt)
+                        .font(.system(size: 15, weight: .regular, design: .rounded))
+                        .foregroundColor(.white.opacity(0.92))
+                        .lineSpacing(4)
+
+                    ForEach(context.intentOptions) { option in
+                        Button(action: {
+                            // 用户选择后提交对应意图
+                            viewModel.submitIntentSelection(option.intentType, originalText: context.originalUserText)
+                        }) {
+                            HStack {
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(option.displayName)
+                                        .font(.system(size: 14, weight: .semibold, design: .rounded))
+                                        .foregroundColor(.white.opacity(0.94))
+                                    if let desc = option.description {
+                                        Text(desc)
+                                            .font(.system(size: 12, weight: .regular, design: .rounded))
+                                            .foregroundColor(.white.opacity(0.7))
+                                    }
+                                }
+                                Spacer()
+                                Image(systemName: "chevron.right")
+                                    .font(.system(size: 12, weight: .medium))
+                                    .foregroundColor(.white.opacity(0.5))
+                            }
+                            .padding(.vertical, 12)
+                            .padding(.horizontal, 16)
+                            .background(RoundedRectangle(cornerRadius: 12)
+                                .fill(Color.white.opacity(0.08)))
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                    }
+                }
+            }
+        }
     }
 
     @ViewBuilder
@@ -1777,6 +2021,10 @@ struct AIChatView: View {
 
     private func handleAction(_ action: AIChatAction) {
         if let target = action.target {
+            if target == .tickets, case .travel = viewModel.activeDomainFlow {
+                viewModel.openTravelTicketsInBolt()
+                return
+            }
             onNavigate(target)
             return
         }
@@ -1797,10 +2045,30 @@ struct AIChatView: View {
         openURL(url)
     }
 
+    private func travelModeDisplayText(_ mode: BoltTravelTransportMode) -> String {
+        switch (mode, viewModel.language) {
+        case (.flight, .english):
+            return "Flight Tickets"
+        case (.flight, .simplifiedChinese):
+            return "机票"
+        case (.flight, .arabic):
+            return "تذاكر الطيران"
+        case (.train, .english):
+            return "Train Tickets"
+        case (.train, .simplifiedChinese):
+            return "火车票"
+        case (.train, .arabic):
+            return "تذاكر القطار"
+        }
+    }
+
     private func navigationTarget(from rawValue: String) -> AIChatNavigationTarget? {
         let normalized = rawValue.lowercased()
 
         if normalized.hasPrefix("app://") {
+            if normalized.contains("ticket") {
+                return .tickets
+            }
             if normalized.contains("recharge") {
                 return .recharge
             }
@@ -1825,7 +2093,7 @@ struct AIChatView: View {
         }
 
         if let url = URL(string: rawValue), let scheme = url.scheme?.lowercased(), ["http", "https"].contains(scheme) {
-            return .external(url)
+            return .externalURL(url)
         }
 
         return nil
@@ -3158,6 +3426,339 @@ private extension UIColor {
     }
 }
 
+private struct BoltListCard<Content: View>: View {
+    let title: String
+    @ViewBuilder let content: () -> Content
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text(title)
+                .font(.system(size: 13, weight: .semibold, design: .rounded))
+                .foregroundColor(.white.opacity(0.66))
+
+            content()
+        }
+    }
+}
+
+private struct BoltDetailCard: View {
+    let title: String
+    let value: String
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(title.uppercased())
+                .font(.system(size: 11, weight: .bold, design: .rounded))
+                .foregroundColor(.white.opacity(0.5))
+                .tracking(0.8)
+
+            Text(value)
+                .font(.system(size: 16, weight: .semibold, design: .rounded))
+                .foregroundColor(.white.opacity(0.96))
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .padding(16)
+        .background(Color.white.opacity(0.08))
+        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+    }
+}
+
+private struct AIBoltDetailRow: View {
+    let title: String
+    let value: String
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 12) {
+            Text(title)
+                .font(.system(size: 13, weight: .medium, design: .rounded))
+                .foregroundColor(.white.opacity(0.68))
+            Spacer()
+            Text(value)
+                .font(.system(size: 13, weight: .semibold, design: .rounded))
+                .foregroundColor(.white.opacity(0.92))
+                .multilineTextAlignment(.trailing)
+        }
+    }
+}
+
+private struct BoltSelectableRow: View {
+    let title: String
+    let subtitle: String
+    let trailingValue: String
+    let buttonTitle: String
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(alignment: .top, spacing: 12) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(title)
+                        .font(.system(size: 15, weight: .semibold, design: .rounded))
+                        .foregroundColor(.white)
+                    Text(subtitle)
+                        .font(.system(size: 12, weight: .medium, design: .rounded))
+                        .foregroundColor(.white.opacity(0.62))
+                }
+                Spacer()
+                Text(trailingValue)
+                    .font(.system(size: 14, weight: .bold, design: .rounded))
+                    .foregroundColor(.white)
+            }
+
+            Text(buttonTitle)
+                .font(.system(size: 12, weight: .bold, design: .rounded))
+                .foregroundColor(Color(hex: 0x3CD1FF))
+        }
+        .padding(16)
+        .background(Color.white.opacity(0.08))
+        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+    }
+}
+
+private struct BoltActionGroup: View {
+    let title: String
+    let message: String
+    let actions: [String]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text(title)
+                .font(.system(size: 13, weight: .semibold, design: .rounded))
+                .foregroundColor(.white.opacity(0.68))
+
+            Text(message)
+                .font(.system(size: 15, weight: .medium, design: .rounded))
+                .foregroundColor(.white.opacity(0.94))
+                .fixedSize(horizontal: false, vertical: true)
+
+            FlexibleTagCloud(items: actions)
+        }
+    }
+}
+
+private struct BoltFormCard: View {
+    let title: String
+    let message: String
+    let helper: String
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text(title)
+                .font(.system(size: 13, weight: .semibold, design: .rounded))
+                .foregroundColor(.white.opacity(0.68))
+
+            Text(message)
+                .font(.system(size: 15, weight: .medium, design: .rounded))
+                .foregroundColor(.white.opacity(0.96))
+                .fixedSize(horizontal: false, vertical: true)
+
+            Text(helper)
+                .font(.system(size: 12, weight: .medium, design: .rounded))
+                .foregroundColor(.white.opacity(0.62))
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(16)
+        .background(Color.white.opacity(0.08))
+        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+    }
+}
+
+private struct BoltEmbeddedWebCard: View {
+    let url: URL
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text(url.absoluteString)
+                .font(.system(size: 11, weight: .medium, design: .rounded))
+                .foregroundColor(.white.opacity(0.5))
+                .lineLimit(1)
+                .truncationMode(.middle)
+
+            BoltEmbeddedWebView(url: url)
+                .frame(height: 360)
+                .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+        }
+        .padding(14)
+        .background(Color.white.opacity(0.08))
+        .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+    }
+}
+
+private struct BoltEmbeddedWebView: UIViewRepresentable {
+    let url: URL
+
+    func makeUIView(context: Context) -> WKWebView {
+        let configuration = WKWebViewConfiguration()
+        configuration.defaultWebpagePreferences.allowsContentJavaScript = true
+        configuration.preferences.javaScriptCanOpenWindowsAutomatically = true
+        configuration.websiteDataStore = .default()
+
+        let webView = WKWebView(frame: .zero, configuration: configuration)
+        webView.scrollView.contentInsetAdjustmentBehavior = .automatic
+        webView.allowsBackForwardNavigationGestures = true
+        webView.isOpaque = false
+        webView.backgroundColor = .clear
+        webView.scrollView.backgroundColor = .clear
+        webView.load(URLRequest(url: url))
+        return webView
+    }
+
+    func updateUIView(_ webView: WKWebView, context: Context) {
+        guard webView.url != url else {
+            return
+        }
+        webView.load(URLRequest(url: url))
+    }
+}
+
+private struct BoltResultCard: View {
+    let title: String
+    let message: String
+    let footnote: String?
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text(title)
+                .font(.system(size: 13, weight: .bold, design: .rounded))
+                .foregroundColor(Color(hex: 0x7DD3FC))
+                .tracking(0.6)
+
+            Text(message)
+                .font(.system(size: 24, weight: .bold, design: .rounded))
+                .foregroundColor(.white)
+                .fixedSize(horizontal: false, vertical: true)
+
+            if let footnote, !footnote.isEmpty {
+                Text(footnote)
+                    .font(.system(size: 13, weight: .medium, design: .rounded))
+                    .foregroundColor(.white.opacity(0.68))
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .padding(18)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.white.opacity(0.08))
+        .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+    }
+}
+
+private struct BoltPrimaryActionButton: View {
+    let title: String
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Text(title)
+                .font(.system(size: 14, weight: .bold, design: .rounded))
+                .foregroundColor(.white)
+                .frame(maxWidth: .infinity)
+                .frame(minHeight: 52)
+                .background(
+                    LinearGradient(
+                        colors: [Color(hex: 0x3CD1FF), Color(hex: 0xC349FF)],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                )
+                .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+private struct BoltSecondaryActionButton: View {
+    let title: String
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Text(title)
+                .font(.system(size: 14, weight: .semibold, design: .rounded))
+                .foregroundColor(.white.opacity(0.92))
+                .frame(maxWidth: .infinity)
+                .frame(minHeight: 50)
+                .background(Color.white.opacity(0.08))
+                .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                        .stroke(Color.white.opacity(0.18), lineWidth: 1)
+                )
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+private struct BoltFollowUpCard: View {
+    let title: String
+    let question: String
+    let suggestions: [String]
+    let onSelectSuggestion: (String) -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            Text(title)
+                .font(.system(size: 13, weight: .bold, design: .rounded))
+                .foregroundColor(Color(hex: 0xF9A8D4))
+                .tracking(0.6)
+
+            Text(question)
+                .font(.system(size: 15, weight: .medium, design: .rounded))
+                .foregroundColor(.white.opacity(0.96))
+                .fixedSize(horizontal: false, vertical: true)
+
+            ForEach(suggestions, id: \.self) { suggestion in
+                Button {
+                    onSelectSuggestion(suggestion)
+                } label: {
+                    Text(suggestion)
+                        .font(.system(size: 13, weight: .semibold, design: .rounded))
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 12)
+                        .background(Color.white.opacity(0.08))
+                        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                }
+                .buttonStyle(.plain)
+            }
+        }
+    }
+}
+
+private struct FlexibleTagCloud: View {
+    let items: [String]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            ForEach(items.chunked(into: 2), id: \.self) { row in
+                HStack(spacing: 10) {
+                    ForEach(row, id: \.self) { item in
+                        Text(item)
+                            .font(.system(size: 12, weight: .semibold, design: .rounded))
+                            .foregroundColor(.white.opacity(0.88))
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 8)
+                            .background(Color.white.opacity(0.08))
+                            .clipShape(Capsule())
+                    }
+                    Spacer(minLength: 0)
+                }
+            }
+        }
+    }
+}
+
+private extension Array {
+    func chunked(into size: Int) -> [[Element]] {
+        guard size > 0 else {
+            return [self]
+        }
+
+        return stride(from: 0, to: count, by: size).map { startIndex in
+            Array(self[startIndex ..< Swift.min(startIndex + size, count)])
+        }
+    }
+}
+
 struct AIChatHomeLayout {
     let contentWidth: CGFloat
     let heroStageWidth: CGFloat
@@ -3170,4 +3771,33 @@ struct AIChatHomeLayout {
     let promptMaxWidth: CGFloat
     let titleTopPadding: CGFloat
     let safeAreaInsets: EdgeInsets
+}
+
+// MARK: - ISO8601 Date Parser
+
+private struct ISO8601DateParser {
+    private let formats: [String]
+
+    init() {
+        formats = [
+            "yyyy-MM-dd",
+            "yyyy/MM/dd",
+            "MMM d, yyyy",
+            "MMM dd, yyyy",
+            "d MMM yyyy"
+        ]
+    }
+
+    func parse(_ string: String) -> Date? {
+        for format in formats {
+            let formatter = DateFormatter()
+            formatter.dateFormat = format
+            formatter.locale = Locale(identifier: "en_US_POSIX")
+            if let date = formatter.date(from: string) { return date }
+        }
+        // fallback: ISO8601
+        let iso = ISO8601DateFormatter()
+        iso.formatOptions = [.withFullDate, .withDashSeparatorInDate]
+        return iso.date(from: string)
+    }
 }

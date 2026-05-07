@@ -1,0 +1,212 @@
+{
+  "version": "1.0",
+  "description": "意图识别测试用例 - 验证方案1+2+4效果",
+  "test_suites": [
+    {
+      "name": "data_usage_query 核心验证（之前误判为 view_offers 的输入）",
+      "expected": "data_usage_query",
+      "cases": [
+        "check my data package is enough or not",
+        "check my data package",
+        "check my data is enough or not",
+        "i want to check my data package is enough or not",
+        "is my data package enough",
+        "is my data enough",
+        "my data enough or not",
+        "data is enough",
+        "my data package",
+        "what about my data package",
+        "what about my data",
+        "how is my data package",
+        "current data package status",
+        "my data"
+      ]
+    },
+    {
+      "name": "data_usage_query 变体覆盖（同义替换后的输入）",
+      "expected": "data_usage_query",
+      "cases": [
+        "see my data usage",
+        "view my data consumption",
+        "show me my data left",
+        "how much internet data do i have remaining",
+        "hows my data looking",
+        "tell me my data balance",
+        "look at my data usage",
+        "whats my remaining data",
+        "am i running out of data",
+        "is my data running low",
+        "how many gb left",
+        "how much data do i have left",
+        "remaining data this month",
+        "data remaining",
+        "check my internet usage"
+      ]
+    },
+    {
+      "name": "拼写错误容错（data_usage_query）",
+      "expected": "data_usage_query",
+      "cases": [
+        "chek my data usage",
+        "chekc my data",
+        "my data is enogh",
+        "is my data pakage enuff",
+        "remaing data",
+        "check my interent usage",
+        "how much data is lef"
+      ]
+    },
+    {
+      "name": "view_offers 正常输入（不应被误判为 data_usage_query）",
+      "expected": "view_offers",
+      "cases": [
+        "what offers are available",
+        "show me available packages",
+        "any promotions right now",
+        "view offers",
+        "what plans do you have",
+        "current deals"
+      ]
+    },
+    {
+      "name": "subscribe_offer（订购套餐，不是查询流量）",
+      "expected": "subscribe_offer",
+      "cases": [
+        "i want to buy a data plan",
+        "subscribe to this offer",
+        "activate the 10gb package",
+        "purchase this plan",
+        "i need a bigger data package",
+        "buy more data"
+      ]
+    },
+    {
+      "name": "其他意图正常输入",
+      "expected": null,
+      "cases": [
+        {
+          "text": "check my balance",
+          "expected": "balance_inquiry"
+        },
+        {
+          "text": "how much credit do i have",
+          "expected": "balance_inquiry"
+        },
+        {
+          "text": "recharge my account",
+          "expected": "recharge_account"
+        },
+        {
+          "text": "top up 50 dirhams",
+          "expected": "recharge_account"
+        },
+        {
+          "text": "view my bill",
+          "expected": "view_bill"
+        },
+        {
+          "text": "check my remaining minutes",
+          "expected": "voice_usage_query"
+        },
+        {
+          "text": "how many texts left",
+          "expected": "sms_usage_query"
+        },
+        {
+          "text": "invoice this month",
+          "expected": "view_bill"
+        },
+        {
+          "text": "pay my bill",
+          "expected": "make_payment"
+        },
+        {
+          "text": "make a payment",
+          "expected": "make_payment"
+        },
+        {
+          "text": "payment history",
+          "expected": "payment_history"
+        },
+        {
+          "text": "travel to hongkong",
+          "expected": "itinerary_query"
+        },
+        {
+          "text": "flight to dubai",
+          "expected": "flight_info"
+        },
+        {
+          "text": "hotel in paris",
+          "expected": "hotel_info"
+        }
+      ]
+    },
+    {
+      "name": "中文输入覆盖",
+      "expected": null,
+      "cases": [
+        {
+          "text": "查流量",
+          "expected": "data_usage_query"
+        },
+        {
+          "text": "剩余流量还有多少",
+          "expected": "data_usage_query"
+        },
+        {
+          "text": "看一下我的流量使用情况",
+          "expected": "data_usage_query"
+        },
+        {
+          "text": "流量不够了吗",
+          "expected": "data_usage_query"
+        },
+        {
+          "text": "我的流量还剩多少",
+          "expected": "data_usage_query"
+        },
+        {
+          "text": "查余额",
+          "expected": "balance_inquiry"
+        },
+        {
+          "text": "查语音",
+          "expected": "voice_usage_query"
+        },
+        {
+          "text": "查短信",
+          "expected": "sms_usage_query"
+        },
+        {
+          "text": "我要充值",
+          "expected": "recharge_account"
+        },
+        {
+          "text": "有什么优惠",
+          "expected": "view_offers"
+        },
+        {
+          "text": "套餐",
+          "expected": "view_offers"
+        },
+        {
+          "text": "订阅套餐",
+          "expected": "subscribe_offer"
+        },
+        {
+          "text": "查看账单",
+          "expected": "view_bill"
+        },
+        {
+          "text": "支付",
+          "expected": "make_payment"
+        },
+        {
+          "text": "去香港旅行",
+          "expected": "itinerary_query"
+        }
+      ]
+    }
+  ]
+}

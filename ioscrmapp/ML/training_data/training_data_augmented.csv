@@ -1,0 +1,1012 @@
+text,label
+"check my balance",balance_inquiry
+"how can i check my balance",balance_inquiry
+"view my balance",balance_inquiry
+"my balance",balance_inquiry
+"balance inquiry",balance_inquiry
+"current balance",balance_inquiry
+"remaining balance",balance_inquiry
+"account balance",balance_inquiry
+"查看余额",balance_inquiry
+"查余额",balance_inquiry
+"余额",balance_inquiry
+"我的余额",balance_inquiry
+"当前余额",balance_inquiry
+"الرصيد",balance_inquiry
+"كيف أتحقق من الرصيد",balance_inquiry
+"رصيد الحساب",balance_inquiry
+"display my balance",balance_inquiry
+"see my balance",balance_inquiry
+"look at my balance",balance_inquiry
+"check my credit",balance_inquiry
+"check my account balance",balance_inquiry
+"check my wallet",balance_inquiry
+"chek my balance",balance_inquiry
+"check my balnace",balance_inquiry
+"check my balance?",balance_inquiry
+"please check my balance",balance_inquiry
+"can i check my balance?",balance_inquiry
+"i want to check my balance",balance_inquiry
+"i need to check my balance",balance_inquiry
+"how can i check my account balance",balance_inquiry
+"can i check my balance",balance_inquiry
+"how can i check my credit",balance_inquiry
+"how am i able to check my balance",balance_inquiry
+"how can i look at my balance",balance_inquiry
+"help me check my balance",balance_inquiry
+"how is it possible to check my balance",balance_inquiry
+"how can i see my balance",balance_inquiry
+"how can i check my wallet",balance_inquiry
+"how do i check my balance",balance_inquiry
+"how can i display my balance",balance_inquiry
+"how may i check my balance",balance_inquiry
+"how can i chcek my balance",balance_inquiry
+"how can i check my balnace",balance_inquiry
+"how can i check my balance?",balance_inquiry
+"please how can i check my balance",balance_inquiry
+"view my wallet",balance_inquiry
+"view my remaining balance",balance_inquiry
+"view my credit",balance_inquiry
+"view my balnace",balance_inquiry
+"view my balance?",balance_inquiry
+"please view my balance",balance_inquiry
+"can you show me my balance",balance_inquiry
+"let me view my balance",balance_inquiry
+"my wallet",balance_inquiry
+"my credit",balance_inquiry
+"my account balance",balance_inquiry
+"my balnace",balance_inquiry
+"my balance?",balance_inquiry
+"please my balance",balance_inquiry
+"wallet inquiry",balance_inquiry
+"account balance inquiry",balance_inquiry
+"remaining balance inquiry",balance_inquiry
+"balence inquiry",balance_inquiry
+"balance inquiry?",balance_inquiry
+"please balance inquiry",balance_inquiry
+"current credit",balance_inquiry
+"current remaining balance",balance_inquiry
+"current wallet",balance_inquiry
+"current balence",balance_inquiry
+"current balance?",balance_inquiry
+"please current balance",balance_inquiry
+"remaining wallet",balance_inquiry
+"unused balance",balance_inquiry
+"remaining account balance",balance_inquiry
+"remaining remaining balance",balance_inquiry
+"left balance",balance_inquiry
+"available balance",balance_inquiry
+"remaining balence",balance_inquiry
+"remaing balance",balance_inquiry
+"remaining balance?",balance_inquiry
+"please remaining balance",balance_inquiry
+"mobile account balance",balance_inquiry
+"account account balance",balance_inquiry
+"account wallet",balance_inquiry
+"phone account balance",balance_inquiry
+"account credit",balance_inquiry
+"account balnace",balance_inquiry
+"accout balance",balance_inquiry
+"account balance?",balance_inquiry
+"please account balance",balance_inquiry
+"查看话费余额",balance_inquiry
+"查看剩余话费",balance_inquiry
+"查剩余话费",balance_inquiry
+"查话费余额",balance_inquiry
+"话费余额",balance_inquiry
+"剩余话费",balance_inquiry
+"我的话费余额",balance_inquiry
+"我的账户余额",balance_inquiry
+"我的剩余话费",balance_inquiry
+"当前剩余话费",balance_inquiry
+"当前账户余额",balance_inquiry
+"check my data usage",data_usage_query
+"how much data do i have left",data_usage_query
+"remaining data",data_usage_query
+"data left",data_usage_query
+"my data usage",data_usage_query
+"check my data package is enough or not",data_usage_query
+"is my data package enough",data_usage_query
+"how much data remaining",data_usage_query
+"data balance",data_usage_query
+"check data balance",data_usage_query
+"remaining internet data",data_usage_query
+"my data consumption",data_usage_query
+"data usage check",data_usage_query
+"show my data usage",data_usage_query
+"view data usage",data_usage_query
+"data package status",data_usage_query
+"how much data have i used",data_usage_query
+"data remaining this month",data_usage_query
+"check my internet usage",data_usage_query
+"mobile data usage",data_usage_query
+"am i running out of data",data_usage_query
+"data package remaining",data_usage_query
+"how many gb left",data_usage_query
+"is my data running low",data_usage_query
+"查询流量",data_usage_query
+"剩余流量",data_usage_query
+"流量还剩多少",data_usage_query
+"查流量",data_usage_query
+"我的流量",data_usage_query
+"流量使用情况",data_usage_query
+"当前流量",data_usage_query
+"流量余额",data_usage_query
+"数据流量查询",data_usage_query
+"本月流量",data_usage_query
+"流量剩余查询",data_usage_query
+"查看流量使用",data_usage_query
+"流量消耗",data_usage_query
+"还有多少流量",data_usage_query
+"流量不够了吗",data_usage_query
+"استخدام البيانات",data_usage_query
+"البيانات المتبقية",data_usage_query
+"كم البيانات المتبقية",data_usage_query
+"استهلاك البيانات",data_usage_query
+"كم GB متبقي",data_usage_query
+"check my cellular data usage",data_usage_query
+"check my data utilization",data_usage_query
+"check my data plan usage",data_usage_query
+"check my data used",data_usage_query
+"look at my data usage",data_usage_query
+"check my data consumption",data_usage_query
+"view my data usage",data_usage_query
+"display my data usage",data_usage_query
+"check my mobile data usage",data_usage_query
+"chcek my data usage",data_usage_query
+"check my data usage?",data_usage_query
+"please check my data usage",data_usage_query
+"can i check my data usage?",data_usage_query
+"i want to check my data usage",data_usage_query
+"i need to check my data usage",data_usage_query
+"what's my data do i have left",data_usage_query
+"tell me my data do i have left",data_usage_query
+"how much data plan do i have left",data_usage_query
+"how much mobile data do i have left",data_usage_query
+"how much internet data do i have left",data_usage_query
+"how many data do i have left",data_usage_query
+"how much data do i have left?",data_usage_query
+"please how much data do i have left",data_usage_query
+"remaining mobile data",data_usage_query
+"still have data",data_usage_query
+"unused data",data_usage_query
+"left data",data_usage_query
+"remaining cellular data",data_usage_query
+"remainning data",data_usage_query
+"remaining data?",data_usage_query
+"please remaining data",data_usage_query
+"mobile data left",data_usage_query
+"data plan left",data_usage_query
+"internet data left",data_usage_query
+"data left?",data_usage_query
+"please data left",data_usage_query
+"my mobile data usage",data_usage_query
+"my data used",data_usage_query
+"my data plan usage",data_usage_query
+"my cellular data usage",data_usage_query
+"my data utilization",data_usage_query
+"my data usage?",data_usage_query
+"please my data usage",data_usage_query
+"check my data plan is enough or not",data_usage_query
+"check my data bundle is enough or not",data_usage_query
+"check my data data package is enough or not",data_usage_query
+"look at my data package is enough or not",data_usage_query
+"check my data package is running low or not",data_usage_query
+"check my mobile data package is enough or not",data_usage_query
+"check my cellular data package is enough or not",data_usage_query
+"check my data plan package is enough or not",data_usage_query
+"see my data package is enough or not",data_usage_query
+"check my data package is adequate or not",data_usage_query
+"view my data package is enough or not",data_usage_query
+"check my data package is sufficient or not",data_usage_query
+"chek my data package is enough or not",data_usage_query
+"check my data package is enouhg or not",data_usage_query
+"check my data pakage is enough or not",data_usage_query
+"check my data package is enough or not?",data_usage_query
+"please check my data package is enough or not",data_usage_query
+"can i check my data package is enough or not?",data_usage_query
+"i want to check my data package is enough or not",data_usage_query
+"i need to check my data package is enough or not",data_usage_query
+"is my cellular data package enough",data_usage_query
+"is my data plan package enough",data_usage_query
+"is my data package adequate",data_usage_query
+"is my mobile data package enough",data_usage_query
+"is my data data package enough",data_usage_query
+"is my data package sufficient",data_usage_query
+"is my data plan enough",data_usage_query
+"is my data package running out",data_usage_query
+"is my data bundle enough",data_usage_query
+"is my data package enouhg",data_usage_query
+"is my data pakg enough",data_usage_query
+"is my data package enough?",data_usage_query
+"please is my data package enough",data_usage_query
+"how many data remaining",data_usage_query
+"how much data plan remaining",data_usage_query
+"how much internet data remaining",data_usage_query
+"how much data available",data_usage_query
+"how much mobile data remaining",data_usage_query
+"what is my data remaining",data_usage_query
+"how much data left",data_usage_query
+"what's my data remaining",data_usage_query
+"how much data still have",data_usage_query
+"how much data remainig",data_usage_query
+"how much data remaining?",data_usage_query
+"please how much data remaining",data_usage_query
+"data account balance",data_usage_query
+"cellular data balance",data_usage_query
+"data remaining balance",data_usage_query
+"internet data balance",data_usage_query
+"data credit",data_usage_query
+"data plan balance",data_usage_query
+"data balnace",data_usage_query
+"data balance?",data_usage_query
+"please data balance",data_usage_query
+"see data balance",data_usage_query
+"check data plan balance",data_usage_query
+"check data account balance",data_usage_query
+"check data remaining balance",data_usage_query
+"check data credit",data_usage_query
+"display data balance",data_usage_query
+"check internet data balance",data_usage_query
+"view data balance",data_usage_query
+"check cellular data balance",data_usage_query
+"chek data balance",data_usage_query
+"check data balanc",data_usage_query
+"check data balance?",data_usage_query
+"please check data balance",data_usage_query
+"can i check data balance?",data_usage_query
+"i want to check data balance",data_usage_query
+"i need to check data balance",data_usage_query
+"still have internet data",data_usage_query
+"remaining internet mobile data",data_usage_query
+"remaining internet internet data",data_usage_query
+"unused internet data",data_usage_query
+"left internet data",data_usage_query
+"remaining internet cellular data",data_usage_query
+"remainig internet data",data_usage_query
+"remaining internat data",data_usage_query
+"remaining internet data?",data_usage_query
+"please remaining internet data",data_usage_query
+"my cellular data consumption",data_usage_query
+"my data plan consumption",data_usage_query
+"my internet data consumption",data_usage_query
+"my data consumption?",data_usage_query
+"please my data consumption",data_usage_query
+"data utilization check",data_usage_query
+"cellular data usage check",data_usage_query
+"data usage show",data_usage_query
+"data used check",data_usage_query
+"mobile data usage check",data_usage_query
+"data usage view",data_usage_query
+"data usage look at",data_usage_query
+"data consumption check",data_usage_query
+"data plan usage check",data_usage_query
+"data usage chekc",data_usage_query
+"data usage check?",data_usage_query
+"please data usage check",data_usage_query
+"show my data used",data_usage_query
+"show my cellular data usage",data_usage_query
+"show my data utilization",data_usage_query
+"show my data plan usage",data_usage_query
+"show my mobile data usage",data_usage_query
+"show my data consumption",data_usage_query
+"show my data usage?",data_usage_query
+"please show my data usage",data_usage_query
+"could you show my data usage?",data_usage_query
+"view data plan usage",data_usage_query
+"view mobile data usage",data_usage_query
+"view internet data usage",data_usage_query
+"view data consumption",data_usage_query
+"view data utilization",data_usage_query
+"view data used",data_usage_query
+"view data usage?",data_usage_query
+"please view data usage",data_usage_query
+"can you show me data usage",data_usage_query
+"let me view data usage",data_usage_query
+"data data package status",data_usage_query
+"cellular data package status",data_usage_query
+"data plan status",data_usage_query
+"data bundle status",data_usage_query
+"internet data package status",data_usage_query
+"data plan package status",data_usage_query
+"data pakcage status",data_usage_query
+"data package status?",data_usage_query
+"please data package status",data_usage_query
+"what is my data have i used",data_usage_query
+"how much mobile data have i used",data_usage_query
+"tell me my data have i used",data_usage_query
+"how much cellular data have i used",data_usage_query
+"how many data have i used",data_usage_query
+"how much data plan have i used",data_usage_query
+"how much data have i used?",data_usage_query
+"please how much data have i used",data_usage_query
+"data available this month",data_usage_query
+"internet data remaining this month",data_usage_query
+"data still have this month",data_usage_query
+"data left this month",data_usage_query
+"data plan remaining this month",data_usage_query
+"mobile data remaining this month",data_usage_query
+"data remainning this month",data_usage_query
+"data remaining this month?",data_usage_query
+"please data remaining this month",data_usage_query
+"check my internet used",data_usage_query
+"check my internet consumption",data_usage_query
+"show my internet usage",data_usage_query
+"check my internet utilization",data_usage_query
+"see my internet usage",data_usage_query
+"view my internet usage",data_usage_query
+"chekc my internet usage",data_usage_query
+"check my intrenet usage",data_usage_query
+"check my internet usage?",data_usage_query
+"please check my internet usage",data_usage_query
+"can i check my internet usage?",data_usage_query
+"i want to check my internet usage",data_usage_query
+"i need to check my internet usage",data_usage_query
+"mobile data utilization",data_usage_query
+"mobile cellular data usage",data_usage_query
+"mobile internet data usage",data_usage_query
+"mobile data used",data_usage_query
+"mobile data consumption",data_usage_query
+"mobile data plan usage",data_usage_query
+"mobile data usage?",data_usage_query
+"please mobile data usage",data_usage_query
+"am i running out of data plan",data_usage_query
+"am i running out of cellular data",data_usage_query
+"am i running out of mobile data",data_usage_query
+"am i running out of data?",data_usage_query
+"please am i running out of data",data_usage_query
+"cellular data package remaining",data_usage_query
+"data package unused",data_usage_query
+"data plan package remaining",data_usage_query
+"data package left",data_usage_query
+"data bundle remaining",data_usage_query
+"data data package remaining",data_usage_query
+"data package still have",data_usage_query
+"data plan remaining",data_usage_query
+"mobile data package remaining",data_usage_query
+"data package remainning",data_usage_query
+"data pakcage remaining",data_usage_query
+"data package remaining?",data_usage_query
+"please data package remaining",data_usage_query
+"how many gb left?",data_usage_query
+"please how many gb left",data_usage_query
+"is my mobile data running low",data_usage_query
+"is my internet data running low",data_usage_query
+"is my data plan running low",data_usage_query
+"is my data running low?",data_usage_query
+"please is my data running low",data_usage_query
+"帮我查流量",data_usage_query
+"查询移动数据",data_usage_query
+"看一下流量",data_usage_query
+"查询数据流量",data_usage_query
+"查询网络流量",data_usage_query
+"查看流量",data_usage_query
+"未用流量",data_usage_query
+"还有流量",data_usage_query
+"剩余移动数据",data_usage_query
+"剩余上网流量",data_usage_query
+"剩下流量",data_usage_query
+"剩余网络流量",data_usage_query
+"流量还剩多少了",data_usage_query
+"流量还剩有多少",data_usage_query
+"数据流量还剩多少",data_usage_query
+"流量还剩几多",data_usage_query
+"网络流量还剩多少",data_usage_query
+"上网流量还剩多少",data_usage_query
+"查网络流量",data_usage_query
+"查移动数据",data_usage_query
+"查上网流量",data_usage_query
+"我的上网流量",data_usage_query
+"我的网络流量",data_usage_query
+"我的数据流量",data_usage_query
+"数据流量使用情况",data_usage_query
+"上网流量使用情况",data_usage_query
+"移动数据使用情况",data_usage_query
+"当前数据流量",data_usage_query
+"当前移动数据",data_usage_query
+"当前网络流量",data_usage_query
+"网络流量余额",data_usage_query
+"流量剩余话费",data_usage_query
+"移动数据余额",data_usage_query
+"流量话费余额",data_usage_query
+"数据流量余额",data_usage_query
+"数据上网流量查询",data_usage_query
+"数据流量查看",data_usage_query
+"数据流量查",data_usage_query
+"数据网络流量查询",data_usage_query
+"数据流量看一下",data_usage_query
+"数据数据流量查询",data_usage_query
+"本月移动数据",data_usage_query
+"本月数据流量",data_usage_query
+"本月上网流量",data_usage_query
+"上网流量剩余查询",data_usage_query
+"流量还有查询",data_usage_query
+"流量剩余查",data_usage_query
+"流量剩余查看",data_usage_query
+"移动数据剩余查询",data_usage_query
+"流量未用查询",data_usage_query
+"流量剩余看一下",data_usage_query
+"数据流量剩余查询",data_usage_query
+"流量可用查询",data_usage_query
+"查看上网流量使用",data_usage_query
+"查看移动数据使用",data_usage_query
+"查看网络流量使用",data_usage_query
+"数据流量消耗",data_usage_query
+"网络流量消耗",data_usage_query
+"上网流量消耗",data_usage_query
+"还有几多流量",data_usage_query
+"还有多少上网流量",data_usage_query
+"还有多少网络流量",data_usage_query
+"还有有多少流量",data_usage_query
+"还有多少了流量",data_usage_query
+"还有多少数据流量",data_usage_query
+"网络流量不够了吗",data_usage_query
+"上网流量不够了吗",data_usage_query
+"数据流量不够了吗",data_usage_query
+"recharge my account",recharge_account
+"how do i recharge my account",recharge_account
+"recharge account",recharge_account
+"top up my account",recharge_account
+"top up",recharge_account
+"how to recharge",recharge_account
+"充值",recharge_account
+"充话费",recharge_account
+"重新充值",recharge_account
+"怎么充值",recharge_account
+"我要充值",recharge_account
+"اعادة شحن",recharge_account
+"شحن الحساب",recharge_account
+"كيف أعيد شحن",recharge_account
+"recharge my my account",recharge_account
+"recharge my mobile account",recharge_account
+"load my account",recharge_account
+"refill my account",recharge_account
+"add credit to my account",recharge_account
+"recharge my phone account",recharge_account
+"recharj my account",recharge_account
+"recharge my accout",recharge_account
+"recharge my account?",recharge_account
+"please recharge my account",recharge_account
+"how do i add credit to my account",recharge_account
+"how do i recharge my phone account",recharge_account
+"how do i refill my account",recharge_account
+"how do i top up my account",recharge_account
+"how do i recharge my my account",recharge_account
+"how do i recharge my mobile account",recharge_account
+"how do i rechrge my account",recharge_account
+"how do i recharge my acount",recharge_account
+"how do i recharge my account?",recharge_account
+"please how do i recharge my account",recharge_account
+"recharge phone account",recharge_account
+"add credit to account",recharge_account
+"top up account",recharge_account
+"recharge mobile account",recharge_account
+"load account",recharge_account
+"recharj account",recharge_account
+"recharge accont",recharge_account
+"recharge account?",recharge_account
+"please recharge account",recharge_account
+"top up my phone account",recharge_account
+"top up my mobile account",recharge_account
+"top up my my account",recharge_account
+"top up my accont",recharge_account
+"top up my account?",recharge_account
+"please top up my account",recharge_account
+"top up?",recharge_account
+"please top up",recharge_account
+"how to load",recharge_account
+"how to top up",recharge_account
+"how to refill",recharge_account
+"how to rechrge",recharge_account
+"how to recharge?",recharge_account
+"please how to recharge",recharge_account
+"重新缴费",recharge_account
+"重新续费",recharge_account
+"重新充钱",recharge_account
+"怎么充钱",recharge_account
+"怎么缴费",recharge_account
+"怎么续费",recharge_account
+"怎样充值",recharge_account
+"如何充值",recharge_account
+"我要充钱",recharge_account
+"我要充话费",recharge_account
+"我要续费",recharge_account
+"what offers are available",view_offers
+"view offers",view_offers
+"show offers",view_offers
+"available packages",view_offers
+"current offers",view_offers
+"promotions",view_offers
+"roaming plan",view_offers
+"roaming package",view_offers
+"查看优惠",view_offers
+"优惠",view_offers
+"套餐",view_offers
+"有什么优惠",view_offers
+"可用套餐",view_offers
+"العروض",view_offers
+"ما العروض المتاحة",view_offers
+"عرض الباقات",view_offers
+"what deals are available",view_offers
+"what packages are available",view_offers
+"what promotions are available",view_offers
+"what offrs are available",view_offers
+"what offers are available?",view_offers
+"please what offers are available",view_offers
+"view deals",view_offers
+"view packages",view_offers
+"view promotions",view_offers
+"view offrs",view_offers
+"view offers?",view_offers
+"please view offers",view_offers
+"can you show me offers",view_offers
+"let me view offers",view_offers
+"show promotions",view_offers
+"show packages",view_offers
+"show deals",view_offers
+"show ofers",view_offers
+"show offers?",view_offers
+"please show offers",view_offers
+"could you show offers?",view_offers
+"available plans",view_offers
+"available data packages",view_offers
+"available bundles",view_offers
+"available pakgs",view_offers
+"available packages?",view_offers
+"please available packages",view_offers
+"current plans",view_offers
+"current packages",view_offers
+"current deals",view_offers
+"current ofer",view_offers
+"current offers?",view_offers
+"please current offers",view_offers
+"promotions?",view_offers
+"please promotions",view_offers
+"roamingg plan",view_offers
+"roaming plan?",view_offers
+"please roaming plan",view_offers
+"roaming bundle",view_offers
+"roaming data package",view_offers
+"roaming pakage",view_offers
+"roaing package",view_offers
+"roaming package?",view_offers
+"please roaming package",view_offers
+"查看活动",view_offers
+"查看折扣",view_offers
+"查看特惠",view_offers
+"有什么折扣",view_offers
+"有什么促销",view_offers
+"有什么活动",view_offers
+"可用套餐包",view_offers
+"可用资费",view_offers
+"可用流量包",view_offers
+"subscribe offer",subscribe_offer
+"i want to subscribe",subscribe_offer
+"activate package",subscribe_offer
+"purchase plan",subscribe_offer
+"buy offer",subscribe_offer
+"订阅套餐",subscribe_offer
+"办理套餐",subscribe_offer
+"激活套餐",subscribe_offer
+"购买套餐",subscribe_offer
+"اشتراك عرض",subscribe_offer
+"تفعيل الباقة",subscribe_offer
+"sign up for offer",subscribe_offer
+"activate offer",subscribe_offer
+"get offer",subscribe_offer
+"subscibe offer",subscribe_offer
+"subscribe offer?",subscribe_offer
+"please subscribe offer",subscribe_offer
+"i want to activate",subscribe_offer
+"i would like to to subscribe",subscribe_offer
+"i wish to to subscribe",subscribe_offer
+"i need to subscribe",subscribe_offer
+"i want to get",subscribe_offer
+"i want to purchase",subscribe_offer
+"i want to suscribe",subscribe_offer
+"i want to subscribe?",subscribe_offer
+"please i want to subscribe",subscribe_offer
+"activate bundle",subscribe_offer
+"activate plan",subscribe_offer
+"activate data package",subscribe_offer
+"activate pakage",subscribe_offer
+"activate package?",subscribe_offer
+"please activate package",subscribe_offer
+"purchase plan?",subscribe_offer
+"please purchase plan",subscribe_offer
+"buy offer?",subscribe_offer
+"please buy offer",subscribe_offer
+"订阅套餐包",subscribe_offer
+"订阅资费",subscribe_offer
+"订阅流量包",subscribe_offer
+"办理资费",subscribe_offer
+"办理套餐包",subscribe_offer
+"办理流量包",subscribe_offer
+"激活流量包",subscribe_offer
+"激活资费",subscribe_offer
+"激活套餐包",subscribe_offer
+"购买资费",subscribe_offer
+"购买套餐包",subscribe_offer
+"购买流量包",subscribe_offer
+"how can i view my bill",view_bill
+"view my bill",view_bill
+"billing statement",view_bill
+"my bill",view_bill
+"invoice",view_bill
+"查看账单",view_bill
+"账单",view_bill
+"我的账单",view_bill
+"月账单",view_bill
+"فاتورة",view_bill
+"كيف أعرض الفاتورة",view_bill
+"how am i able to view my bill",view_bill
+"help me view my bill",view_bill
+"how do i view my bill",view_bill
+"how can i view my invoice",view_bill
+"how is it possible to view my bill",view_bill
+"how can i view my billing",view_bill
+"how can i view my statement",view_bill
+"how to view my bill",view_bill
+"how may i view my bill",view_bill
+"how can i view my bill?",view_bill
+"please how can i view my bill",view_bill
+"view my statement",view_bill
+"view my invoice",view_bill
+"view my charges",view_bill
+"view my bill?",view_bill
+"please view my bill",view_bill
+"can you show me my bill",view_bill
+"let me view my bill",view_bill
+"chargesing statement",view_bill
+"invoiceing statement",view_bill
+"billinging statement",view_bill
+"billing statement?",view_bill
+"please billing statement",view_bill
+"my billing",view_bill
+"my charges",view_bill
+"my statement",view_bill
+"my bill?",view_bill
+"please my bill",view_bill
+"invoice?",view_bill
+"please invoice",view_bill
+"查看发票",view_bill
+"查看月账单",view_bill
+"查看消费单",view_bill
+"我的月账单",view_bill
+"我的消费单",view_bill
+"我的发票",view_bill
+"月月账单",view_bill
+"月消费单",view_bill
+"account help",account_help
+"account settings",account_help
+"profile settings",account_help
+"my account",account_help
+"service request",account_help
+"network issue",account_help
+"complaint",account_help
+"need support",account_help
+"账户帮助",account_help
+"账户设置",account_help
+"个人设置",account_help
+"我的账户",account_help
+"مساعدة الحساب",account_help
+"إعدادات الحساب",account_help
+"phone account help",account_help
+"my account help",account_help
+"account assistance",account_help
+"account help me with",account_help
+"mobile account help",account_help
+"account support",account_help
+"accout help",account_help
+"account help?",account_help
+"please account help",account_help
+"phone account settings",account_help
+"my account settings",account_help
+"mobile account settings",account_help
+"accont settings",account_help
+"account settings?",account_help
+"please account settings",account_help
+"profile settings?",account_help
+"please profile settings",account_help
+"my phone account",account_help
+"my mobile account",account_help
+"my my account",account_help
+"my accout",account_help
+"my account?",account_help
+"please my account",account_help
+"service request?",account_help
+"please service request",account_help
+"network issue?",account_help
+"please network issue",account_help
+"complaint?",account_help
+"please complaint",account_help
+"need support?",account_help
+"please need support",account_help
+"make payment",make_payment
+"pay bill",make_payment
+"payment",make_payment
+"pay now",make_payment
+"支付",make_payment
+"付款",make_payment
+"我要支付",make_payment
+"立即支付",make_payment
+"الدفع",make_payment
+"إجراء الدفع",make_payment
+"make clear",make_payment
+"make pay",make_payment
+"make settle",make_payment
+"make paymen",make_payment
+"make payment?",make_payment
+"please make payment",make_payment
+"pay charges",make_payment
+"pay invoice",make_payment
+"pay billing",make_payment
+"pay bill?",make_payment
+"please pay bill",make_payment
+"settle",make_payment
+"clear",make_payment
+"paymnet",make_payment
+"payment?",make_payment
+"please payment",make_payment
+"pay now?",make_payment
+"please pay now",make_payment
+"我要缴费",make_payment
+"我要付款",make_payment
+"我要交费",make_payment
+"立即缴费",make_payment
+"立即交费",make_payment
+"立即付款",make_payment
+"payment history",payment_history
+"past payments",payment_history
+"payment records",payment_history
+"支付历史",payment_history
+"支付记录",payment_history
+"付款记录",payment_history
+"تاريخ الدفع",payment_history
+"سجل الدفع",payment_history
+"clear history",payment_history
+"settle history",payment_history
+"pay history",payment_history
+"paymet history",payment_history
+"payment histroy",payment_history
+"payment history?",payment_history
+"please payment history",payment_history
+"past settles",payment_history
+"past clears",payment_history
+"past pays",payment_history
+"past paymets",payment_history
+"past payments?",payment_history
+"please past payments",payment_history
+"clear records",payment_history
+"pay records",payment_history
+"settle records",payment_history
+"paymnet records",payment_history
+"payment records?",payment_history
+"please payment records",payment_history
+"交费历史",payment_history
+"缴费历史",payment_history
+"付款历史",payment_history
+"交费记录",payment_history
+"缴费记录",payment_history
+"payment status",payment_status
+"check payment status",payment_status
+"payment tracking",payment_status
+"支付状态",payment_status
+"查询支付状态",payment_status
+"حالة الدفع",payment_status
+"pay status",payment_status
+"clear status",payment_status
+"settle status",payment_status
+"paymen status",payment_status
+"payment status?",payment_status
+"please payment status",payment_status
+"check pay status",payment_status
+"look at payment status",payment_status
+"display payment status",payment_status
+"check clear status",payment_status
+"check settle status",payment_status
+"show payment status",payment_status
+"chekc payment status",payment_status
+"check paymet status",payment_status
+"check payment status?",payment_status
+"please check payment status",payment_status
+"can i check payment status?",payment_status
+"i want to check payment status",payment_status
+"i need to check payment status",payment_status
+"settle tracking",payment_status
+"clear tracking",payment_status
+"pay tracking",payment_status
+"paymen tracking",payment_status
+"payment tracking?",payment_status
+"please payment tracking",payment_status
+"交费状态",payment_status
+"缴费状态",payment_status
+"付款状态",payment_status
+"查询缴费状态",payment_status
+"查询交费状态",payment_status
+"查看支付状态",payment_status
+"查询付款状态",payment_status
+"看一下支付状态",payment_status
+"查支付状态",payment_status
+"travel to",itinerary_query
+"travelling to",itinerary_query
+"traveling to",itinerary_query
+"traval to",itinerary_query
+"travle to",itinerary_query
+"tranval to",itinerary_query
+"go to",itinerary_query
+"trip to",itinerary_query
+"visit",itinerary_query
+"itinerary",itinerary_query
+"ticket",itinerary_query
+"booking",itinerary_query
+"旅行",itinerary_query
+"行程",itinerary_query
+"预订",itinerary_query
+"订票",itinerary_query
+"出行",itinerary_query
+"سفر إلى",itinerary_query
+"رحلة إلى",itinerary_query
+"تذكرة",itinerary_query
+"حجز",itinerary_query
+"visit to",itinerary_query
+"travel to?",itinerary_query
+"please travel to",itinerary_query
+"goling to",itinerary_query
+"journeyling to",itinerary_query
+"tripling to",itinerary_query
+"travvelling to",itinerary_query
+"travelling to?",itinerary_query
+"please travelling to",itinerary_query
+"journeying to",itinerary_query
+"visiting to",itinerary_query
+"triping to",itinerary_query
+"travleing to",itinerary_query
+"traveling to?",itinerary_query
+"please traveling to",itinerary_query
+"traval to?",itinerary_query
+"please traval to",itinerary_query
+"travle to?",itinerary_query
+"please travle to",itinerary_query
+"tranval to?",itinerary_query
+"please tranval to",itinerary_query
+"go to?",itinerary_query
+"please go to",itinerary_query
+"trip to?",itinerary_query
+"please trip to",itinerary_query
+"visit?",itinerary_query
+"please visit",itinerary_query
+"itinarery",itinerary_query
+"itinerary?",itinerary_query
+"please itinerary",itinerary_query
+"tickt",itinerary_query
+"ticket?",itinerary_query
+"please ticket",itinerary_query
+"booking?",itinerary_query
+"please booking",itinerary_query
+"flight ticket",flight_info
+"flight tickets",flight_info
+"flight to",flight_info
+"fly to",flight_info
+"book a flight",flight_info
+"机票",flight_info
+"航班",flight_info
+"订机票",flight_info
+"تذكرة طيران",flight_info
+"رحلة طيران",flight_info
+"airline ticket",flight_info
+"plane ticket",flight_info
+"air ticket ticket",flight_info
+"fligth ticket",flight_info
+"flight tiket",flight_info
+"flight ticket?",flight_info
+"please flight ticket",flight_info
+"plane tickets",flight_info
+"airline tickets",flight_info
+"air ticket tickets",flight_info
+"fllight tickets",flight_info
+"flight tickts",flight_info
+"flight tickets?",flight_info
+"please flight tickets",flight_info
+"air ticket to",flight_info
+"plane to",flight_info
+"airline to",flight_info
+"flihgt to",flight_info
+"flight to?",flight_info
+"please flight to",flight_info
+"fly to?",flight_info
+"please fly to",flight_info
+"book a airline",flight_info
+"book a plane",flight_info
+"book a air ticket",flight_info
+"book a flihgt",flight_info
+"book a flight?",flight_info
+"please book a flight",flight_info
+"hotel in",hotel_info
+"book hotel",hotel_info
+"hotel booking",hotel_info
+"酒店",hotel_info
+"订酒店",hotel_info
+"فندق",hotel_info
+"حجز فندق",hotel_info
+"room in",hotel_info
+"place to stay in",hotel_info
+"accommodation in",hotel_info
+"hoetl in",hotel_info
+"hotel in?",hotel_info
+"please hotel in",hotel_info
+"book room",hotel_info
+"book accommodation",hotel_info
+"book place to stay",hotel_info
+"book hotal",hotel_info
+"book hotel?",hotel_info
+"please book hotel",hotel_info
+"accommodation booking",hotel_info
+"room booking",hotel_info
+"place to stay booking",hotel_info
+"hoetl booking",hotel_info
+"hotel booking?",hotel_info
+"please hotel booking",hotel_info
+"what is",general_question
+"how do",general_question
+"can you",general_question
+"tell me",general_question
+"help me",general_question
+"是什么",general_question
+"怎么",general_question
+"帮我",general_question
+"ما هو",general_question
+"كيف",general_question
+"what is?",general_question
+"please what is",general_question
+"how do?",general_question
+"please how do",general_question
+"can you?",general_question
+"let me know",general_question
+"inform me about",general_question
+"show me",general_question
+"tell me?",general_question
+"please tell me",general_question
+"help me with me",general_question
+"assistance me",general_question
+"support me",general_question
+"help me?",general_question
+"please help me",general_question
+"open page",navigation_intent
+"go to page",navigation_intent
+"navigate to",navigation_intent
+"take me to",navigation_intent
+"show me page",navigation_intent
+"打开页面",navigation_intent
+"进入",navigation_intent
+"跳转到",navigation_intent
+"去",navigation_intent
+"افتح",navigation_intent
+"اذهب إلى",navigation_intent
+"انتقل إلى",navigation_intent
+"open page?",navigation_intent
+"please open page",navigation_intent
+"go to page?",navigation_intent
+"please go to page",navigation_intent
+"navigate to?",navigation_intent
+"please navigate to",navigation_intent
+"take me to?",navigation_intent
+"please take me to",navigation_intent
+"show me page?",navigation_intent
+"please show me page",navigation_intent
+"could you show me page?",navigation_intent
+"asdfgh",unknown
+"qwerty",unknown
+"random",unknown
+"noise",unknown
+"123456",unknown
+"asdfgh?",unknown
+"please asdfgh",unknown
+"qwerty?",unknown
+"please qwerty",unknown
+"random?",unknown
+"please random",unknown
+"noise?",unknown
+"please noise",unknown
+"123456?",unknown
+"please 123456",unknown

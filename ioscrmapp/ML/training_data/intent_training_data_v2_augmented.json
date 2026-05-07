@@ -1,0 +1,4147 @@
+{
+  "version": "2.1",
+  "intent_types": [
+    "account_help",
+    "balance_inquiry",
+    "data_usage_query",
+    "flight_info",
+    "general_question",
+    "hotel_info",
+    "itinerary_query",
+    "make_payment",
+    "navigation_intent",
+    "payment_history",
+    "payment_status",
+    "recharge_account",
+    "subscribe_offer",
+    "unknown",
+    "view_bill",
+    "view_offers"
+  ],
+  "training_data": [
+    {
+      "intent_type": "balance_inquiry",
+      "samples": [
+        {
+          "text": "check my balance",
+          "language": "english"
+        },
+        {
+          "text": "how can i check my balance",
+          "language": "english"
+        },
+        {
+          "text": "view my balance",
+          "language": "english"
+        },
+        {
+          "text": "my balance",
+          "language": "english"
+        },
+        {
+          "text": "balance inquiry",
+          "language": "english"
+        },
+        {
+          "text": "current balance",
+          "language": "english"
+        },
+        {
+          "text": "remaining balance",
+          "language": "english"
+        },
+        {
+          "text": "account balance",
+          "language": "english"
+        },
+        {
+          "text": "查看余额",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "查余额",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "余额",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "我的余额",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "当前余额",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "الرصيد",
+          "language": "arabic"
+        },
+        {
+          "text": "كيف أتحقق من الرصيد",
+          "language": "arabic"
+        },
+        {
+          "text": "رصيد الحساب",
+          "language": "arabic"
+        },
+        {
+          "text": "display my balance",
+          "language": "english"
+        },
+        {
+          "text": "see my balance",
+          "language": "english"
+        },
+        {
+          "text": "look at my balance",
+          "language": "english"
+        },
+        {
+          "text": "check my credit",
+          "language": "english"
+        },
+        {
+          "text": "check my account balance",
+          "language": "english"
+        },
+        {
+          "text": "check my wallet",
+          "language": "english"
+        },
+        {
+          "text": "chek my balance",
+          "language": "english"
+        },
+        {
+          "text": "check my balnace",
+          "language": "english"
+        },
+        {
+          "text": "check my balance?",
+          "language": "english"
+        },
+        {
+          "text": "please check my balance",
+          "language": "english"
+        },
+        {
+          "text": "can i check my balance?",
+          "language": "english"
+        },
+        {
+          "text": "i want to check my balance",
+          "language": "english"
+        },
+        {
+          "text": "i need to check my balance",
+          "language": "english"
+        },
+        {
+          "text": "how can i check my account balance",
+          "language": "english"
+        },
+        {
+          "text": "can i check my balance",
+          "language": "english"
+        },
+        {
+          "text": "how can i check my credit",
+          "language": "english"
+        },
+        {
+          "text": "how am i able to check my balance",
+          "language": "english"
+        },
+        {
+          "text": "how can i look at my balance",
+          "language": "english"
+        },
+        {
+          "text": "help me check my balance",
+          "language": "english"
+        },
+        {
+          "text": "how is it possible to check my balance",
+          "language": "english"
+        },
+        {
+          "text": "how can i see my balance",
+          "language": "english"
+        },
+        {
+          "text": "how can i check my wallet",
+          "language": "english"
+        },
+        {
+          "text": "how do i check my balance",
+          "language": "english"
+        },
+        {
+          "text": "how can i display my balance",
+          "language": "english"
+        },
+        {
+          "text": "how may i check my balance",
+          "language": "english"
+        },
+        {
+          "text": "how can i chcek my balance",
+          "language": "english"
+        },
+        {
+          "text": "how can i check my balnace",
+          "language": "english"
+        },
+        {
+          "text": "how can i check my balance?",
+          "language": "english"
+        },
+        {
+          "text": "please how can i check my balance",
+          "language": "english"
+        },
+        {
+          "text": "view my wallet",
+          "language": "english"
+        },
+        {
+          "text": "view my remaining balance",
+          "language": "english"
+        },
+        {
+          "text": "view my credit",
+          "language": "english"
+        },
+        {
+          "text": "view my balnace",
+          "language": "english"
+        },
+        {
+          "text": "view my balance?",
+          "language": "english"
+        },
+        {
+          "text": "please view my balance",
+          "language": "english"
+        },
+        {
+          "text": "can you show me my balance",
+          "language": "english"
+        },
+        {
+          "text": "let me view my balance",
+          "language": "english"
+        },
+        {
+          "text": "my wallet",
+          "language": "english"
+        },
+        {
+          "text": "my credit",
+          "language": "english"
+        },
+        {
+          "text": "my account balance",
+          "language": "english"
+        },
+        {
+          "text": "my balnace",
+          "language": "english"
+        },
+        {
+          "text": "my balance?",
+          "language": "english"
+        },
+        {
+          "text": "please my balance",
+          "language": "english"
+        },
+        {
+          "text": "wallet inquiry",
+          "language": "english"
+        },
+        {
+          "text": "account balance inquiry",
+          "language": "english"
+        },
+        {
+          "text": "remaining balance inquiry",
+          "language": "english"
+        },
+        {
+          "text": "balence inquiry",
+          "language": "english"
+        },
+        {
+          "text": "balance inquiry?",
+          "language": "english"
+        },
+        {
+          "text": "please balance inquiry",
+          "language": "english"
+        },
+        {
+          "text": "current credit",
+          "language": "english"
+        },
+        {
+          "text": "current remaining balance",
+          "language": "english"
+        },
+        {
+          "text": "current wallet",
+          "language": "english"
+        },
+        {
+          "text": "current balence",
+          "language": "english"
+        },
+        {
+          "text": "current balance?",
+          "language": "english"
+        },
+        {
+          "text": "please current balance",
+          "language": "english"
+        },
+        {
+          "text": "remaining wallet",
+          "language": "english"
+        },
+        {
+          "text": "unused balance",
+          "language": "english"
+        },
+        {
+          "text": "remaining account balance",
+          "language": "english"
+        },
+        {
+          "text": "remaining remaining balance",
+          "language": "english"
+        },
+        {
+          "text": "left balance",
+          "language": "english"
+        },
+        {
+          "text": "available balance",
+          "language": "english"
+        },
+        {
+          "text": "remaining balence",
+          "language": "english"
+        },
+        {
+          "text": "remaing balance",
+          "language": "english"
+        },
+        {
+          "text": "remaining balance?",
+          "language": "english"
+        },
+        {
+          "text": "please remaining balance",
+          "language": "english"
+        },
+        {
+          "text": "mobile account balance",
+          "language": "english"
+        },
+        {
+          "text": "account account balance",
+          "language": "english"
+        },
+        {
+          "text": "account wallet",
+          "language": "english"
+        },
+        {
+          "text": "phone account balance",
+          "language": "english"
+        },
+        {
+          "text": "account credit",
+          "language": "english"
+        },
+        {
+          "text": "account balnace",
+          "language": "english"
+        },
+        {
+          "text": "accout balance",
+          "language": "english"
+        },
+        {
+          "text": "account balance?",
+          "language": "english"
+        },
+        {
+          "text": "please account balance",
+          "language": "english"
+        },
+        {
+          "text": "查看话费余额",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "查看剩余话费",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "查剩余话费",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "查话费余额",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "话费余额",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "剩余话费",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "我的话费余额",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "我的账户余额",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "我的剩余话费",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "当前剩余话费",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "当前账户余额",
+          "language": "simplifiedChinese"
+        }
+      ]
+    },
+    {
+      "intent_type": "data_usage_query",
+      "samples": [
+        {
+          "text": "check my data usage",
+          "language": "english"
+        },
+        {
+          "text": "how much data do i have left",
+          "language": "english"
+        },
+        {
+          "text": "remaining data",
+          "language": "english"
+        },
+        {
+          "text": "data left",
+          "language": "english"
+        },
+        {
+          "text": "my data usage",
+          "language": "english"
+        },
+        {
+          "text": "check my data package is enough or not",
+          "language": "english"
+        },
+        {
+          "text": "is my data package enough",
+          "language": "english"
+        },
+        {
+          "text": "how much data remaining",
+          "language": "english"
+        },
+        {
+          "text": "data balance",
+          "language": "english"
+        },
+        {
+          "text": "check data balance",
+          "language": "english"
+        },
+        {
+          "text": "remaining internet data",
+          "language": "english"
+        },
+        {
+          "text": "my data consumption",
+          "language": "english"
+        },
+        {
+          "text": "data usage check",
+          "language": "english"
+        },
+        {
+          "text": "show my data usage",
+          "language": "english"
+        },
+        {
+          "text": "view data usage",
+          "language": "english"
+        },
+        {
+          "text": "data package status",
+          "language": "english"
+        },
+        {
+          "text": "how much data have i used",
+          "language": "english"
+        },
+        {
+          "text": "data remaining this month",
+          "language": "english"
+        },
+        {
+          "text": "check my internet usage",
+          "language": "english"
+        },
+        {
+          "text": "mobile data usage",
+          "language": "english"
+        },
+        {
+          "text": "am i running out of data",
+          "language": "english"
+        },
+        {
+          "text": "data package remaining",
+          "language": "english"
+        },
+        {
+          "text": "how many gb left",
+          "language": "english"
+        },
+        {
+          "text": "is my data running low",
+          "language": "english"
+        },
+        {
+          "text": "查询流量",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "剩余流量",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "流量还剩多少",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "查流量",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "我的流量",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "流量使用情况",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "当前流量",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "流量余额",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "数据流量查询",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "本月流量",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "流量剩余查询",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "查看流量使用",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "流量消耗",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "还有多少流量",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "流量不够了吗",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "استخدام البيانات",
+          "language": "arabic"
+        },
+        {
+          "text": "البيانات المتبقية",
+          "language": "arabic"
+        },
+        {
+          "text": "كم البيانات المتبقية",
+          "language": "arabic"
+        },
+        {
+          "text": "استهلاك البيانات",
+          "language": "arabic"
+        },
+        {
+          "text": "كم GB متبقي",
+          "language": "arabic"
+        },
+        {
+          "text": "check my cellular data usage",
+          "language": "english"
+        },
+        {
+          "text": "check my data utilization",
+          "language": "english"
+        },
+        {
+          "text": "check my data plan usage",
+          "language": "english"
+        },
+        {
+          "text": "check my data used",
+          "language": "english"
+        },
+        {
+          "text": "look at my data usage",
+          "language": "english"
+        },
+        {
+          "text": "check my data consumption",
+          "language": "english"
+        },
+        {
+          "text": "view my data usage",
+          "language": "english"
+        },
+        {
+          "text": "display my data usage",
+          "language": "english"
+        },
+        {
+          "text": "check my mobile data usage",
+          "language": "english"
+        },
+        {
+          "text": "chcek my data usage",
+          "language": "english"
+        },
+        {
+          "text": "check my data usage?",
+          "language": "english"
+        },
+        {
+          "text": "please check my data usage",
+          "language": "english"
+        },
+        {
+          "text": "can i check my data usage?",
+          "language": "english"
+        },
+        {
+          "text": "i want to check my data usage",
+          "language": "english"
+        },
+        {
+          "text": "i need to check my data usage",
+          "language": "english"
+        },
+        {
+          "text": "what's my data do i have left",
+          "language": "english"
+        },
+        {
+          "text": "tell me my data do i have left",
+          "language": "english"
+        },
+        {
+          "text": "how much data plan do i have left",
+          "language": "english"
+        },
+        {
+          "text": "how much mobile data do i have left",
+          "language": "english"
+        },
+        {
+          "text": "how much internet data do i have left",
+          "language": "english"
+        },
+        {
+          "text": "how many data do i have left",
+          "language": "english"
+        },
+        {
+          "text": "how much data do i have left?",
+          "language": "english"
+        },
+        {
+          "text": "please how much data do i have left",
+          "language": "english"
+        },
+        {
+          "text": "remaining mobile data",
+          "language": "english"
+        },
+        {
+          "text": "still have data",
+          "language": "english"
+        },
+        {
+          "text": "unused data",
+          "language": "english"
+        },
+        {
+          "text": "left data",
+          "language": "english"
+        },
+        {
+          "text": "remaining cellular data",
+          "language": "english"
+        },
+        {
+          "text": "remainning data",
+          "language": "english"
+        },
+        {
+          "text": "remaining data?",
+          "language": "english"
+        },
+        {
+          "text": "please remaining data",
+          "language": "english"
+        },
+        {
+          "text": "mobile data left",
+          "language": "english"
+        },
+        {
+          "text": "data plan left",
+          "language": "english"
+        },
+        {
+          "text": "internet data left",
+          "language": "english"
+        },
+        {
+          "text": "data left?",
+          "language": "english"
+        },
+        {
+          "text": "please data left",
+          "language": "english"
+        },
+        {
+          "text": "my mobile data usage",
+          "language": "english"
+        },
+        {
+          "text": "my data used",
+          "language": "english"
+        },
+        {
+          "text": "my data plan usage",
+          "language": "english"
+        },
+        {
+          "text": "my cellular data usage",
+          "language": "english"
+        },
+        {
+          "text": "my data utilization",
+          "language": "english"
+        },
+        {
+          "text": "my data usage?",
+          "language": "english"
+        },
+        {
+          "text": "please my data usage",
+          "language": "english"
+        },
+        {
+          "text": "check my data plan is enough or not",
+          "language": "english"
+        },
+        {
+          "text": "check my data bundle is enough or not",
+          "language": "english"
+        },
+        {
+          "text": "check my data data package is enough or not",
+          "language": "english"
+        },
+        {
+          "text": "look at my data package is enough or not",
+          "language": "english"
+        },
+        {
+          "text": "check my data package is running low or not",
+          "language": "english"
+        },
+        {
+          "text": "check my mobile data package is enough or not",
+          "language": "english"
+        },
+        {
+          "text": "check my cellular data package is enough or not",
+          "language": "english"
+        },
+        {
+          "text": "check my data plan package is enough or not",
+          "language": "english"
+        },
+        {
+          "text": "see my data package is enough or not",
+          "language": "english"
+        },
+        {
+          "text": "check my data package is adequate or not",
+          "language": "english"
+        },
+        {
+          "text": "view my data package is enough or not",
+          "language": "english"
+        },
+        {
+          "text": "check my data package is sufficient or not",
+          "language": "english"
+        },
+        {
+          "text": "chek my data package is enough or not",
+          "language": "english"
+        },
+        {
+          "text": "check my data package is enouhg or not",
+          "language": "english"
+        },
+        {
+          "text": "check my data pakage is enough or not",
+          "language": "english"
+        },
+        {
+          "text": "check my data package is enough or not?",
+          "language": "english"
+        },
+        {
+          "text": "please check my data package is enough or not",
+          "language": "english"
+        },
+        {
+          "text": "can i check my data package is enough or not?",
+          "language": "english"
+        },
+        {
+          "text": "i want to check my data package is enough or not",
+          "language": "english"
+        },
+        {
+          "text": "i need to check my data package is enough or not",
+          "language": "english"
+        },
+        {
+          "text": "is my cellular data package enough",
+          "language": "english"
+        },
+        {
+          "text": "is my data plan package enough",
+          "language": "english"
+        },
+        {
+          "text": "is my data package adequate",
+          "language": "english"
+        },
+        {
+          "text": "is my mobile data package enough",
+          "language": "english"
+        },
+        {
+          "text": "is my data data package enough",
+          "language": "english"
+        },
+        {
+          "text": "is my data package sufficient",
+          "language": "english"
+        },
+        {
+          "text": "is my data plan enough",
+          "language": "english"
+        },
+        {
+          "text": "is my data package running out",
+          "language": "english"
+        },
+        {
+          "text": "is my data bundle enough",
+          "language": "english"
+        },
+        {
+          "text": "is my data package enouhg",
+          "language": "english"
+        },
+        {
+          "text": "is my data pakg enough",
+          "language": "english"
+        },
+        {
+          "text": "is my data package enough?",
+          "language": "english"
+        },
+        {
+          "text": "please is my data package enough",
+          "language": "english"
+        },
+        {
+          "text": "how many data remaining",
+          "language": "english"
+        },
+        {
+          "text": "how much data plan remaining",
+          "language": "english"
+        },
+        {
+          "text": "how much internet data remaining",
+          "language": "english"
+        },
+        {
+          "text": "how much data available",
+          "language": "english"
+        },
+        {
+          "text": "how much mobile data remaining",
+          "language": "english"
+        },
+        {
+          "text": "what is my data remaining",
+          "language": "english"
+        },
+        {
+          "text": "how much data left",
+          "language": "english"
+        },
+        {
+          "text": "what's my data remaining",
+          "language": "english"
+        },
+        {
+          "text": "how much data still have",
+          "language": "english"
+        },
+        {
+          "text": "how much data remainig",
+          "language": "english"
+        },
+        {
+          "text": "how much data remaining?",
+          "language": "english"
+        },
+        {
+          "text": "please how much data remaining",
+          "language": "english"
+        },
+        {
+          "text": "data account balance",
+          "language": "english"
+        },
+        {
+          "text": "cellular data balance",
+          "language": "english"
+        },
+        {
+          "text": "data remaining balance",
+          "language": "english"
+        },
+        {
+          "text": "internet data balance",
+          "language": "english"
+        },
+        {
+          "text": "data credit",
+          "language": "english"
+        },
+        {
+          "text": "data plan balance",
+          "language": "english"
+        },
+        {
+          "text": "data balnace",
+          "language": "english"
+        },
+        {
+          "text": "data balance?",
+          "language": "english"
+        },
+        {
+          "text": "please data balance",
+          "language": "english"
+        },
+        {
+          "text": "see data balance",
+          "language": "english"
+        },
+        {
+          "text": "check data plan balance",
+          "language": "english"
+        },
+        {
+          "text": "check data account balance",
+          "language": "english"
+        },
+        {
+          "text": "check data remaining balance",
+          "language": "english"
+        },
+        {
+          "text": "check data credit",
+          "language": "english"
+        },
+        {
+          "text": "display data balance",
+          "language": "english"
+        },
+        {
+          "text": "check internet data balance",
+          "language": "english"
+        },
+        {
+          "text": "view data balance",
+          "language": "english"
+        },
+        {
+          "text": "check cellular data balance",
+          "language": "english"
+        },
+        {
+          "text": "chek data balance",
+          "language": "english"
+        },
+        {
+          "text": "check data balanc",
+          "language": "english"
+        },
+        {
+          "text": "check data balance?",
+          "language": "english"
+        },
+        {
+          "text": "please check data balance",
+          "language": "english"
+        },
+        {
+          "text": "can i check data balance?",
+          "language": "english"
+        },
+        {
+          "text": "i want to check data balance",
+          "language": "english"
+        },
+        {
+          "text": "i need to check data balance",
+          "language": "english"
+        },
+        {
+          "text": "still have internet data",
+          "language": "english"
+        },
+        {
+          "text": "remaining internet mobile data",
+          "language": "english"
+        },
+        {
+          "text": "remaining internet internet data",
+          "language": "english"
+        },
+        {
+          "text": "unused internet data",
+          "language": "english"
+        },
+        {
+          "text": "left internet data",
+          "language": "english"
+        },
+        {
+          "text": "remaining internet cellular data",
+          "language": "english"
+        },
+        {
+          "text": "remainig internet data",
+          "language": "english"
+        },
+        {
+          "text": "remaining internat data",
+          "language": "english"
+        },
+        {
+          "text": "remaining internet data?",
+          "language": "english"
+        },
+        {
+          "text": "please remaining internet data",
+          "language": "english"
+        },
+        {
+          "text": "my cellular data consumption",
+          "language": "english"
+        },
+        {
+          "text": "my data plan consumption",
+          "language": "english"
+        },
+        {
+          "text": "my internet data consumption",
+          "language": "english"
+        },
+        {
+          "text": "my data consumption?",
+          "language": "english"
+        },
+        {
+          "text": "please my data consumption",
+          "language": "english"
+        },
+        {
+          "text": "data utilization check",
+          "language": "english"
+        },
+        {
+          "text": "cellular data usage check",
+          "language": "english"
+        },
+        {
+          "text": "data usage show",
+          "language": "english"
+        },
+        {
+          "text": "data used check",
+          "language": "english"
+        },
+        {
+          "text": "mobile data usage check",
+          "language": "english"
+        },
+        {
+          "text": "data usage view",
+          "language": "english"
+        },
+        {
+          "text": "data usage look at",
+          "language": "english"
+        },
+        {
+          "text": "data consumption check",
+          "language": "english"
+        },
+        {
+          "text": "data plan usage check",
+          "language": "english"
+        },
+        {
+          "text": "data usage chekc",
+          "language": "english"
+        },
+        {
+          "text": "data usage check?",
+          "language": "english"
+        },
+        {
+          "text": "please data usage check",
+          "language": "english"
+        },
+        {
+          "text": "show my data used",
+          "language": "english"
+        },
+        {
+          "text": "show my cellular data usage",
+          "language": "english"
+        },
+        {
+          "text": "show my data utilization",
+          "language": "english"
+        },
+        {
+          "text": "show my data plan usage",
+          "language": "english"
+        },
+        {
+          "text": "show my mobile data usage",
+          "language": "english"
+        },
+        {
+          "text": "show my data consumption",
+          "language": "english"
+        },
+        {
+          "text": "show my data usage?",
+          "language": "english"
+        },
+        {
+          "text": "please show my data usage",
+          "language": "english"
+        },
+        {
+          "text": "could you show my data usage?",
+          "language": "english"
+        },
+        {
+          "text": "view data plan usage",
+          "language": "english"
+        },
+        {
+          "text": "view mobile data usage",
+          "language": "english"
+        },
+        {
+          "text": "view internet data usage",
+          "language": "english"
+        },
+        {
+          "text": "view data consumption",
+          "language": "english"
+        },
+        {
+          "text": "view data utilization",
+          "language": "english"
+        },
+        {
+          "text": "view data used",
+          "language": "english"
+        },
+        {
+          "text": "view data usage?",
+          "language": "english"
+        },
+        {
+          "text": "please view data usage",
+          "language": "english"
+        },
+        {
+          "text": "can you show me data usage",
+          "language": "english"
+        },
+        {
+          "text": "let me view data usage",
+          "language": "english"
+        },
+        {
+          "text": "data data package status",
+          "language": "english"
+        },
+        {
+          "text": "cellular data package status",
+          "language": "english"
+        },
+        {
+          "text": "data plan status",
+          "language": "english"
+        },
+        {
+          "text": "data bundle status",
+          "language": "english"
+        },
+        {
+          "text": "internet data package status",
+          "language": "english"
+        },
+        {
+          "text": "data plan package status",
+          "language": "english"
+        },
+        {
+          "text": "data pakcage status",
+          "language": "english"
+        },
+        {
+          "text": "data package status?",
+          "language": "english"
+        },
+        {
+          "text": "please data package status",
+          "language": "english"
+        },
+        {
+          "text": "what is my data have i used",
+          "language": "english"
+        },
+        {
+          "text": "how much mobile data have i used",
+          "language": "english"
+        },
+        {
+          "text": "tell me my data have i used",
+          "language": "english"
+        },
+        {
+          "text": "how much cellular data have i used",
+          "language": "english"
+        },
+        {
+          "text": "how many data have i used",
+          "language": "english"
+        },
+        {
+          "text": "how much data plan have i used",
+          "language": "english"
+        },
+        {
+          "text": "how much data have i used?",
+          "language": "english"
+        },
+        {
+          "text": "please how much data have i used",
+          "language": "english"
+        },
+        {
+          "text": "data available this month",
+          "language": "english"
+        },
+        {
+          "text": "internet data remaining this month",
+          "language": "english"
+        },
+        {
+          "text": "data still have this month",
+          "language": "english"
+        },
+        {
+          "text": "data left this month",
+          "language": "english"
+        },
+        {
+          "text": "data plan remaining this month",
+          "language": "english"
+        },
+        {
+          "text": "mobile data remaining this month",
+          "language": "english"
+        },
+        {
+          "text": "data remainning this month",
+          "language": "english"
+        },
+        {
+          "text": "data remaining this month?",
+          "language": "english"
+        },
+        {
+          "text": "please data remaining this month",
+          "language": "english"
+        },
+        {
+          "text": "check my internet used",
+          "language": "english"
+        },
+        {
+          "text": "check my internet consumption",
+          "language": "english"
+        },
+        {
+          "text": "show my internet usage",
+          "language": "english"
+        },
+        {
+          "text": "check my internet utilization",
+          "language": "english"
+        },
+        {
+          "text": "see my internet usage",
+          "language": "english"
+        },
+        {
+          "text": "view my internet usage",
+          "language": "english"
+        },
+        {
+          "text": "chekc my internet usage",
+          "language": "english"
+        },
+        {
+          "text": "check my intrenet usage",
+          "language": "english"
+        },
+        {
+          "text": "check my internet usage?",
+          "language": "english"
+        },
+        {
+          "text": "please check my internet usage",
+          "language": "english"
+        },
+        {
+          "text": "can i check my internet usage?",
+          "language": "english"
+        },
+        {
+          "text": "i want to check my internet usage",
+          "language": "english"
+        },
+        {
+          "text": "i need to check my internet usage",
+          "language": "english"
+        },
+        {
+          "text": "mobile data utilization",
+          "language": "english"
+        },
+        {
+          "text": "mobile cellular data usage",
+          "language": "english"
+        },
+        {
+          "text": "mobile internet data usage",
+          "language": "english"
+        },
+        {
+          "text": "mobile data used",
+          "language": "english"
+        },
+        {
+          "text": "mobile data consumption",
+          "language": "english"
+        },
+        {
+          "text": "mobile data plan usage",
+          "language": "english"
+        },
+        {
+          "text": "mobile data usage?",
+          "language": "english"
+        },
+        {
+          "text": "please mobile data usage",
+          "language": "english"
+        },
+        {
+          "text": "am i running out of data plan",
+          "language": "english"
+        },
+        {
+          "text": "am i running out of cellular data",
+          "language": "english"
+        },
+        {
+          "text": "am i running out of mobile data",
+          "language": "english"
+        },
+        {
+          "text": "am i running out of data?",
+          "language": "english"
+        },
+        {
+          "text": "please am i running out of data",
+          "language": "english"
+        },
+        {
+          "text": "cellular data package remaining",
+          "language": "english"
+        },
+        {
+          "text": "data package unused",
+          "language": "english"
+        },
+        {
+          "text": "data plan package remaining",
+          "language": "english"
+        },
+        {
+          "text": "data package left",
+          "language": "english"
+        },
+        {
+          "text": "data bundle remaining",
+          "language": "english"
+        },
+        {
+          "text": "data data package remaining",
+          "language": "english"
+        },
+        {
+          "text": "data package still have",
+          "language": "english"
+        },
+        {
+          "text": "data plan remaining",
+          "language": "english"
+        },
+        {
+          "text": "mobile data package remaining",
+          "language": "english"
+        },
+        {
+          "text": "data package remainning",
+          "language": "english"
+        },
+        {
+          "text": "data pakcage remaining",
+          "language": "english"
+        },
+        {
+          "text": "data package remaining?",
+          "language": "english"
+        },
+        {
+          "text": "please data package remaining",
+          "language": "english"
+        },
+        {
+          "text": "how many gb left?",
+          "language": "english"
+        },
+        {
+          "text": "please how many gb left",
+          "language": "english"
+        },
+        {
+          "text": "is my mobile data running low",
+          "language": "english"
+        },
+        {
+          "text": "is my internet data running low",
+          "language": "english"
+        },
+        {
+          "text": "is my data plan running low",
+          "language": "english"
+        },
+        {
+          "text": "is my data running low?",
+          "language": "english"
+        },
+        {
+          "text": "please is my data running low",
+          "language": "english"
+        },
+        {
+          "text": "帮我查流量",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "查询移动数据",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "看一下流量",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "查询数据流量",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "查询网络流量",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "查看流量",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "未用流量",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "还有流量",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "剩余移动数据",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "剩余上网流量",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "剩下流量",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "剩余网络流量",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "流量还剩多少了",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "流量还剩有多少",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "数据流量还剩多少",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "流量还剩几多",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "网络流量还剩多少",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "上网流量还剩多少",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "查网络流量",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "查移动数据",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "查上网流量",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "我的上网流量",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "我的网络流量",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "我的数据流量",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "数据流量使用情况",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "上网流量使用情况",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "移动数据使用情况",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "当前数据流量",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "当前移动数据",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "当前网络流量",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "网络流量余额",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "流量剩余话费",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "移动数据余额",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "流量话费余额",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "数据流量余额",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "数据上网流量查询",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "数据流量查看",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "数据流量查",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "数据网络流量查询",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "数据流量看一下",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "数据数据流量查询",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "本月移动数据",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "本月数据流量",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "本月上网流量",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "上网流量剩余查询",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "流量还有查询",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "流量剩余查",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "流量剩余查看",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "移动数据剩余查询",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "流量未用查询",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "流量剩余看一下",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "数据流量剩余查询",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "流量可用查询",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "查看上网流量使用",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "查看移动数据使用",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "查看网络流量使用",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "数据流量消耗",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "网络流量消耗",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "上网流量消耗",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "还有几多流量",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "还有多少上网流量",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "还有多少网络流量",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "还有有多少流量",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "还有多少了流量",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "还有多少数据流量",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "网络流量不够了吗",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "上网流量不够了吗",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "数据流量不够了吗",
+          "language": "simplifiedChinese"
+        }
+      ]
+    },
+    {
+      "intent_type": "recharge_account",
+      "samples": [
+        {
+          "text": "recharge my account",
+          "language": "english"
+        },
+        {
+          "text": "how do i recharge my account",
+          "language": "english"
+        },
+        {
+          "text": "recharge account",
+          "language": "english"
+        },
+        {
+          "text": "top up my account",
+          "language": "english"
+        },
+        {
+          "text": "top up",
+          "language": "english"
+        },
+        {
+          "text": "how to recharge",
+          "language": "english"
+        },
+        {
+          "text": "充值",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "充话费",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "重新充值",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "怎么充值",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "我要充值",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "اعادة شحن",
+          "language": "arabic"
+        },
+        {
+          "text": "شحن الحساب",
+          "language": "arabic"
+        },
+        {
+          "text": "كيف أعيد شحن",
+          "language": "arabic"
+        },
+        {
+          "text": "recharge my my account",
+          "language": "english"
+        },
+        {
+          "text": "recharge my mobile account",
+          "language": "english"
+        },
+        {
+          "text": "load my account",
+          "language": "english"
+        },
+        {
+          "text": "refill my account",
+          "language": "english"
+        },
+        {
+          "text": "add credit to my account",
+          "language": "english"
+        },
+        {
+          "text": "recharge my phone account",
+          "language": "english"
+        },
+        {
+          "text": "recharj my account",
+          "language": "english"
+        },
+        {
+          "text": "recharge my accout",
+          "language": "english"
+        },
+        {
+          "text": "recharge my account?",
+          "language": "english"
+        },
+        {
+          "text": "please recharge my account",
+          "language": "english"
+        },
+        {
+          "text": "how do i add credit to my account",
+          "language": "english"
+        },
+        {
+          "text": "how do i recharge my phone account",
+          "language": "english"
+        },
+        {
+          "text": "how do i refill my account",
+          "language": "english"
+        },
+        {
+          "text": "how do i top up my account",
+          "language": "english"
+        },
+        {
+          "text": "how do i recharge my my account",
+          "language": "english"
+        },
+        {
+          "text": "how do i recharge my mobile account",
+          "language": "english"
+        },
+        {
+          "text": "how do i rechrge my account",
+          "language": "english"
+        },
+        {
+          "text": "how do i recharge my acount",
+          "language": "english"
+        },
+        {
+          "text": "how do i recharge my account?",
+          "language": "english"
+        },
+        {
+          "text": "please how do i recharge my account",
+          "language": "english"
+        },
+        {
+          "text": "recharge phone account",
+          "language": "english"
+        },
+        {
+          "text": "add credit to account",
+          "language": "english"
+        },
+        {
+          "text": "top up account",
+          "language": "english"
+        },
+        {
+          "text": "recharge mobile account",
+          "language": "english"
+        },
+        {
+          "text": "load account",
+          "language": "english"
+        },
+        {
+          "text": "recharj account",
+          "language": "english"
+        },
+        {
+          "text": "recharge accont",
+          "language": "english"
+        },
+        {
+          "text": "recharge account?",
+          "language": "english"
+        },
+        {
+          "text": "please recharge account",
+          "language": "english"
+        },
+        {
+          "text": "top up my phone account",
+          "language": "english"
+        },
+        {
+          "text": "top up my mobile account",
+          "language": "english"
+        },
+        {
+          "text": "top up my my account",
+          "language": "english"
+        },
+        {
+          "text": "top up my accont",
+          "language": "english"
+        },
+        {
+          "text": "top up my account?",
+          "language": "english"
+        },
+        {
+          "text": "please top up my account",
+          "language": "english"
+        },
+        {
+          "text": "top up?",
+          "language": "english"
+        },
+        {
+          "text": "please top up",
+          "language": "english"
+        },
+        {
+          "text": "how to load",
+          "language": "english"
+        },
+        {
+          "text": "how to top up",
+          "language": "english"
+        },
+        {
+          "text": "how to refill",
+          "language": "english"
+        },
+        {
+          "text": "how to rechrge",
+          "language": "english"
+        },
+        {
+          "text": "how to recharge?",
+          "language": "english"
+        },
+        {
+          "text": "please how to recharge",
+          "language": "english"
+        },
+        {
+          "text": "重新缴费",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "重新续费",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "重新充钱",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "怎么充钱",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "怎么缴费",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "怎么续费",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "怎样充值",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "如何充值",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "我要充钱",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "我要充话费",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "我要续费",
+          "language": "simplifiedChinese"
+        }
+      ]
+    },
+    {
+      "intent_type": "view_offers",
+      "samples": [
+        {
+          "text": "what offers are available",
+          "language": "english"
+        },
+        {
+          "text": "view offers",
+          "language": "english"
+        },
+        {
+          "text": "show offers",
+          "language": "english"
+        },
+        {
+          "text": "available packages",
+          "language": "english"
+        },
+        {
+          "text": "current offers",
+          "language": "english"
+        },
+        {
+          "text": "promotions",
+          "language": "english"
+        },
+        {
+          "text": "roaming plan",
+          "language": "english"
+        },
+        {
+          "text": "roaming package",
+          "language": "english"
+        },
+        {
+          "text": "查看优惠",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "优惠",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "套餐",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "有什么优惠",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "可用套餐",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "العروض",
+          "language": "arabic"
+        },
+        {
+          "text": "ما العروض المتاحة",
+          "language": "arabic"
+        },
+        {
+          "text": "عرض الباقات",
+          "language": "arabic"
+        },
+        {
+          "text": "what deals are available",
+          "language": "english"
+        },
+        {
+          "text": "what packages are available",
+          "language": "english"
+        },
+        {
+          "text": "what promotions are available",
+          "language": "english"
+        },
+        {
+          "text": "what offrs are available",
+          "language": "english"
+        },
+        {
+          "text": "what offers are available?",
+          "language": "english"
+        },
+        {
+          "text": "please what offers are available",
+          "language": "english"
+        },
+        {
+          "text": "view deals",
+          "language": "english"
+        },
+        {
+          "text": "view packages",
+          "language": "english"
+        },
+        {
+          "text": "view promotions",
+          "language": "english"
+        },
+        {
+          "text": "view offrs",
+          "language": "english"
+        },
+        {
+          "text": "view offers?",
+          "language": "english"
+        },
+        {
+          "text": "please view offers",
+          "language": "english"
+        },
+        {
+          "text": "can you show me offers",
+          "language": "english"
+        },
+        {
+          "text": "let me view offers",
+          "language": "english"
+        },
+        {
+          "text": "show promotions",
+          "language": "english"
+        },
+        {
+          "text": "show packages",
+          "language": "english"
+        },
+        {
+          "text": "show deals",
+          "language": "english"
+        },
+        {
+          "text": "show ofers",
+          "language": "english"
+        },
+        {
+          "text": "show offers?",
+          "language": "english"
+        },
+        {
+          "text": "please show offers",
+          "language": "english"
+        },
+        {
+          "text": "could you show offers?",
+          "language": "english"
+        },
+        {
+          "text": "available plans",
+          "language": "english"
+        },
+        {
+          "text": "available data packages",
+          "language": "english"
+        },
+        {
+          "text": "available bundles",
+          "language": "english"
+        },
+        {
+          "text": "available pakgs",
+          "language": "english"
+        },
+        {
+          "text": "available packages?",
+          "language": "english"
+        },
+        {
+          "text": "please available packages",
+          "language": "english"
+        },
+        {
+          "text": "current plans",
+          "language": "english"
+        },
+        {
+          "text": "current packages",
+          "language": "english"
+        },
+        {
+          "text": "current deals",
+          "language": "english"
+        },
+        {
+          "text": "current ofer",
+          "language": "english"
+        },
+        {
+          "text": "current offers?",
+          "language": "english"
+        },
+        {
+          "text": "please current offers",
+          "language": "english"
+        },
+        {
+          "text": "promotions?",
+          "language": "english"
+        },
+        {
+          "text": "please promotions",
+          "language": "english"
+        },
+        {
+          "text": "roamingg plan",
+          "language": "english"
+        },
+        {
+          "text": "roaming plan?",
+          "language": "english"
+        },
+        {
+          "text": "please roaming plan",
+          "language": "english"
+        },
+        {
+          "text": "roaming bundle",
+          "language": "english"
+        },
+        {
+          "text": "roaming data package",
+          "language": "english"
+        },
+        {
+          "text": "roaming pakage",
+          "language": "english"
+        },
+        {
+          "text": "roaing package",
+          "language": "english"
+        },
+        {
+          "text": "roaming package?",
+          "language": "english"
+        },
+        {
+          "text": "please roaming package",
+          "language": "english"
+        },
+        {
+          "text": "查看活动",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "查看折扣",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "查看特惠",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "有什么折扣",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "有什么促销",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "有什么活动",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "可用套餐包",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "可用资费",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "可用流量包",
+          "language": "simplifiedChinese"
+        }
+      ]
+    },
+    {
+      "intent_type": "subscribe_offer",
+      "samples": [
+        {
+          "text": "subscribe offer",
+          "language": "english"
+        },
+        {
+          "text": "i want to subscribe",
+          "language": "english"
+        },
+        {
+          "text": "activate package",
+          "language": "english"
+        },
+        {
+          "text": "purchase plan",
+          "language": "english"
+        },
+        {
+          "text": "buy offer",
+          "language": "english"
+        },
+        {
+          "text": "订阅套餐",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "办理套餐",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "激活套餐",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "购买套餐",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "اشتراك عرض",
+          "language": "arabic"
+        },
+        {
+          "text": "تفعيل الباقة",
+          "language": "arabic"
+        },
+        {
+          "text": "sign up for offer",
+          "language": "english"
+        },
+        {
+          "text": "activate offer",
+          "language": "english"
+        },
+        {
+          "text": "get offer",
+          "language": "english"
+        },
+        {
+          "text": "subscibe offer",
+          "language": "english"
+        },
+        {
+          "text": "subscribe offer?",
+          "language": "english"
+        },
+        {
+          "text": "please subscribe offer",
+          "language": "english"
+        },
+        {
+          "text": "i want to activate",
+          "language": "english"
+        },
+        {
+          "text": "i would like to to subscribe",
+          "language": "english"
+        },
+        {
+          "text": "i wish to to subscribe",
+          "language": "english"
+        },
+        {
+          "text": "i need to subscribe",
+          "language": "english"
+        },
+        {
+          "text": "i want to get",
+          "language": "english"
+        },
+        {
+          "text": "i want to purchase",
+          "language": "english"
+        },
+        {
+          "text": "i want to suscribe",
+          "language": "english"
+        },
+        {
+          "text": "i want to subscribe?",
+          "language": "english"
+        },
+        {
+          "text": "please i want to subscribe",
+          "language": "english"
+        },
+        {
+          "text": "activate bundle",
+          "language": "english"
+        },
+        {
+          "text": "activate plan",
+          "language": "english"
+        },
+        {
+          "text": "activate data package",
+          "language": "english"
+        },
+        {
+          "text": "activate pakage",
+          "language": "english"
+        },
+        {
+          "text": "activate package?",
+          "language": "english"
+        },
+        {
+          "text": "please activate package",
+          "language": "english"
+        },
+        {
+          "text": "purchase plan?",
+          "language": "english"
+        },
+        {
+          "text": "please purchase plan",
+          "language": "english"
+        },
+        {
+          "text": "buy offer?",
+          "language": "english"
+        },
+        {
+          "text": "please buy offer",
+          "language": "english"
+        },
+        {
+          "text": "订阅套餐包",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "订阅资费",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "订阅流量包",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "办理资费",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "办理套餐包",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "办理流量包",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "激活流量包",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "激活资费",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "激活套餐包",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "购买资费",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "购买套餐包",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "购买流量包",
+          "language": "simplifiedChinese"
+        }
+      ]
+    },
+    {
+      "intent_type": "view_bill",
+      "samples": [
+        {
+          "text": "how can i view my bill",
+          "language": "english"
+        },
+        {
+          "text": "view my bill",
+          "language": "english"
+        },
+        {
+          "text": "billing statement",
+          "language": "english"
+        },
+        {
+          "text": "my bill",
+          "language": "english"
+        },
+        {
+          "text": "invoice",
+          "language": "english"
+        },
+        {
+          "text": "查看账单",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "账单",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "我的账单",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "月账单",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "فاتورة",
+          "language": "arabic"
+        },
+        {
+          "text": "كيف أعرض الفاتورة",
+          "language": "arabic"
+        },
+        {
+          "text": "how am i able to view my bill",
+          "language": "english"
+        },
+        {
+          "text": "help me view my bill",
+          "language": "english"
+        },
+        {
+          "text": "how do i view my bill",
+          "language": "english"
+        },
+        {
+          "text": "how can i view my invoice",
+          "language": "english"
+        },
+        {
+          "text": "how is it possible to view my bill",
+          "language": "english"
+        },
+        {
+          "text": "how can i view my billing",
+          "language": "english"
+        },
+        {
+          "text": "how can i view my statement",
+          "language": "english"
+        },
+        {
+          "text": "how to view my bill",
+          "language": "english"
+        },
+        {
+          "text": "how may i view my bill",
+          "language": "english"
+        },
+        {
+          "text": "how can i view my bill?",
+          "language": "english"
+        },
+        {
+          "text": "please how can i view my bill",
+          "language": "english"
+        },
+        {
+          "text": "view my statement",
+          "language": "english"
+        },
+        {
+          "text": "view my invoice",
+          "language": "english"
+        },
+        {
+          "text": "view my charges",
+          "language": "english"
+        },
+        {
+          "text": "view my bill?",
+          "language": "english"
+        },
+        {
+          "text": "please view my bill",
+          "language": "english"
+        },
+        {
+          "text": "can you show me my bill",
+          "language": "english"
+        },
+        {
+          "text": "let me view my bill",
+          "language": "english"
+        },
+        {
+          "text": "chargesing statement",
+          "language": "english"
+        },
+        {
+          "text": "invoiceing statement",
+          "language": "english"
+        },
+        {
+          "text": "billinging statement",
+          "language": "english"
+        },
+        {
+          "text": "billing statement?",
+          "language": "english"
+        },
+        {
+          "text": "please billing statement",
+          "language": "english"
+        },
+        {
+          "text": "my billing",
+          "language": "english"
+        },
+        {
+          "text": "my charges",
+          "language": "english"
+        },
+        {
+          "text": "my statement",
+          "language": "english"
+        },
+        {
+          "text": "my bill?",
+          "language": "english"
+        },
+        {
+          "text": "please my bill",
+          "language": "english"
+        },
+        {
+          "text": "invoice?",
+          "language": "english"
+        },
+        {
+          "text": "please invoice",
+          "language": "english"
+        },
+        {
+          "text": "查看发票",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "查看月账单",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "查看消费单",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "我的月账单",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "我的消费单",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "我的发票",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "月月账单",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "月消费单",
+          "language": "simplifiedChinese"
+        }
+      ]
+    },
+    {
+      "intent_type": "account_help",
+      "samples": [
+        {
+          "text": "account help",
+          "language": "english"
+        },
+        {
+          "text": "account settings",
+          "language": "english"
+        },
+        {
+          "text": "profile settings",
+          "language": "english"
+        },
+        {
+          "text": "my account",
+          "language": "english"
+        },
+        {
+          "text": "service request",
+          "language": "english"
+        },
+        {
+          "text": "network issue",
+          "language": "english"
+        },
+        {
+          "text": "complaint",
+          "language": "english"
+        },
+        {
+          "text": "need support",
+          "language": "english"
+        },
+        {
+          "text": "账户帮助",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "账户设置",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "个人设置",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "我的账户",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "مساعدة الحساب",
+          "language": "arabic"
+        },
+        {
+          "text": "إعدادات الحساب",
+          "language": "arabic"
+        },
+        {
+          "text": "phone account help",
+          "language": "english"
+        },
+        {
+          "text": "my account help",
+          "language": "english"
+        },
+        {
+          "text": "account assistance",
+          "language": "english"
+        },
+        {
+          "text": "account help me with",
+          "language": "english"
+        },
+        {
+          "text": "mobile account help",
+          "language": "english"
+        },
+        {
+          "text": "account support",
+          "language": "english"
+        },
+        {
+          "text": "accout help",
+          "language": "english"
+        },
+        {
+          "text": "account help?",
+          "language": "english"
+        },
+        {
+          "text": "please account help",
+          "language": "english"
+        },
+        {
+          "text": "phone account settings",
+          "language": "english"
+        },
+        {
+          "text": "my account settings",
+          "language": "english"
+        },
+        {
+          "text": "mobile account settings",
+          "language": "english"
+        },
+        {
+          "text": "accont settings",
+          "language": "english"
+        },
+        {
+          "text": "account settings?",
+          "language": "english"
+        },
+        {
+          "text": "please account settings",
+          "language": "english"
+        },
+        {
+          "text": "profile settings?",
+          "language": "english"
+        },
+        {
+          "text": "please profile settings",
+          "language": "english"
+        },
+        {
+          "text": "my phone account",
+          "language": "english"
+        },
+        {
+          "text": "my mobile account",
+          "language": "english"
+        },
+        {
+          "text": "my my account",
+          "language": "english"
+        },
+        {
+          "text": "my accout",
+          "language": "english"
+        },
+        {
+          "text": "my account?",
+          "language": "english"
+        },
+        {
+          "text": "please my account",
+          "language": "english"
+        },
+        {
+          "text": "service request?",
+          "language": "english"
+        },
+        {
+          "text": "please service request",
+          "language": "english"
+        },
+        {
+          "text": "network issue?",
+          "language": "english"
+        },
+        {
+          "text": "please network issue",
+          "language": "english"
+        },
+        {
+          "text": "complaint?",
+          "language": "english"
+        },
+        {
+          "text": "please complaint",
+          "language": "english"
+        },
+        {
+          "text": "need support?",
+          "language": "english"
+        },
+        {
+          "text": "please need support",
+          "language": "english"
+        }
+      ]
+    },
+    {
+      "intent_type": "make_payment",
+      "samples": [
+        {
+          "text": "make payment",
+          "language": "english"
+        },
+        {
+          "text": "pay bill",
+          "language": "english"
+        },
+        {
+          "text": "payment",
+          "language": "english"
+        },
+        {
+          "text": "pay now",
+          "language": "english"
+        },
+        {
+          "text": "支付",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "付款",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "我要支付",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "立即支付",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "الدفع",
+          "language": "arabic"
+        },
+        {
+          "text": "إجراء الدفع",
+          "language": "arabic"
+        },
+        {
+          "text": "make clear",
+          "language": "english"
+        },
+        {
+          "text": "make pay",
+          "language": "english"
+        },
+        {
+          "text": "make settle",
+          "language": "english"
+        },
+        {
+          "text": "make paymen",
+          "language": "english"
+        },
+        {
+          "text": "make payment?",
+          "language": "english"
+        },
+        {
+          "text": "please make payment",
+          "language": "english"
+        },
+        {
+          "text": "pay charges",
+          "language": "english"
+        },
+        {
+          "text": "pay invoice",
+          "language": "english"
+        },
+        {
+          "text": "pay billing",
+          "language": "english"
+        },
+        {
+          "text": "pay bill?",
+          "language": "english"
+        },
+        {
+          "text": "please pay bill",
+          "language": "english"
+        },
+        {
+          "text": "settle",
+          "language": "english"
+        },
+        {
+          "text": "clear",
+          "language": "english"
+        },
+        {
+          "text": "paymnet",
+          "language": "english"
+        },
+        {
+          "text": "payment?",
+          "language": "english"
+        },
+        {
+          "text": "please payment",
+          "language": "english"
+        },
+        {
+          "text": "pay now?",
+          "language": "english"
+        },
+        {
+          "text": "please pay now",
+          "language": "english"
+        },
+        {
+          "text": "我要缴费",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "我要付款",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "我要交费",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "立即缴费",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "立即交费",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "立即付款",
+          "language": "simplifiedChinese"
+        }
+      ]
+    },
+    {
+      "intent_type": "payment_history",
+      "samples": [
+        {
+          "text": "payment history",
+          "language": "english"
+        },
+        {
+          "text": "past payments",
+          "language": "english"
+        },
+        {
+          "text": "payment records",
+          "language": "english"
+        },
+        {
+          "text": "支付历史",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "支付记录",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "付款记录",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "تاريخ الدفع",
+          "language": "arabic"
+        },
+        {
+          "text": "سجل الدفع",
+          "language": "arabic"
+        },
+        {
+          "text": "clear history",
+          "language": "english"
+        },
+        {
+          "text": "settle history",
+          "language": "english"
+        },
+        {
+          "text": "pay history",
+          "language": "english"
+        },
+        {
+          "text": "paymet history",
+          "language": "english"
+        },
+        {
+          "text": "payment histroy",
+          "language": "english"
+        },
+        {
+          "text": "payment history?",
+          "language": "english"
+        },
+        {
+          "text": "please payment history",
+          "language": "english"
+        },
+        {
+          "text": "past settles",
+          "language": "english"
+        },
+        {
+          "text": "past clears",
+          "language": "english"
+        },
+        {
+          "text": "past pays",
+          "language": "english"
+        },
+        {
+          "text": "past paymets",
+          "language": "english"
+        },
+        {
+          "text": "past payments?",
+          "language": "english"
+        },
+        {
+          "text": "please past payments",
+          "language": "english"
+        },
+        {
+          "text": "clear records",
+          "language": "english"
+        },
+        {
+          "text": "pay records",
+          "language": "english"
+        },
+        {
+          "text": "settle records",
+          "language": "english"
+        },
+        {
+          "text": "paymnet records",
+          "language": "english"
+        },
+        {
+          "text": "payment records?",
+          "language": "english"
+        },
+        {
+          "text": "please payment records",
+          "language": "english"
+        },
+        {
+          "text": "交费历史",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "缴费历史",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "付款历史",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "交费记录",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "缴费记录",
+          "language": "simplifiedChinese"
+        }
+      ]
+    },
+    {
+      "intent_type": "payment_status",
+      "samples": [
+        {
+          "text": "payment status",
+          "language": "english"
+        },
+        {
+          "text": "check payment status",
+          "language": "english"
+        },
+        {
+          "text": "payment tracking",
+          "language": "english"
+        },
+        {
+          "text": "支付状态",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "查询支付状态",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "حالة الدفع",
+          "language": "arabic"
+        },
+        {
+          "text": "pay status",
+          "language": "english"
+        },
+        {
+          "text": "clear status",
+          "language": "english"
+        },
+        {
+          "text": "settle status",
+          "language": "english"
+        },
+        {
+          "text": "paymen status",
+          "language": "english"
+        },
+        {
+          "text": "payment status?",
+          "language": "english"
+        },
+        {
+          "text": "please payment status",
+          "language": "english"
+        },
+        {
+          "text": "check pay status",
+          "language": "english"
+        },
+        {
+          "text": "look at payment status",
+          "language": "english"
+        },
+        {
+          "text": "display payment status",
+          "language": "english"
+        },
+        {
+          "text": "check clear status",
+          "language": "english"
+        },
+        {
+          "text": "check settle status",
+          "language": "english"
+        },
+        {
+          "text": "show payment status",
+          "language": "english"
+        },
+        {
+          "text": "chekc payment status",
+          "language": "english"
+        },
+        {
+          "text": "check paymet status",
+          "language": "english"
+        },
+        {
+          "text": "check payment status?",
+          "language": "english"
+        },
+        {
+          "text": "please check payment status",
+          "language": "english"
+        },
+        {
+          "text": "can i check payment status?",
+          "language": "english"
+        },
+        {
+          "text": "i want to check payment status",
+          "language": "english"
+        },
+        {
+          "text": "i need to check payment status",
+          "language": "english"
+        },
+        {
+          "text": "settle tracking",
+          "language": "english"
+        },
+        {
+          "text": "clear tracking",
+          "language": "english"
+        },
+        {
+          "text": "pay tracking",
+          "language": "english"
+        },
+        {
+          "text": "paymen tracking",
+          "language": "english"
+        },
+        {
+          "text": "payment tracking?",
+          "language": "english"
+        },
+        {
+          "text": "please payment tracking",
+          "language": "english"
+        },
+        {
+          "text": "交费状态",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "缴费状态",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "付款状态",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "查询缴费状态",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "查询交费状态",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "查看支付状态",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "查询付款状态",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "看一下支付状态",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "查支付状态",
+          "language": "simplifiedChinese"
+        }
+      ]
+    },
+    {
+      "intent_type": "itinerary_query",
+      "samples": [
+        {
+          "text": "travel to",
+          "language": "english"
+        },
+        {
+          "text": "travelling to",
+          "language": "english"
+        },
+        {
+          "text": "traveling to",
+          "language": "english"
+        },
+        {
+          "text": "traval to",
+          "language": "english"
+        },
+        {
+          "text": "travle to",
+          "language": "english"
+        },
+        {
+          "text": "tranval to",
+          "language": "english"
+        },
+        {
+          "text": "go to",
+          "language": "english"
+        },
+        {
+          "text": "trip to",
+          "language": "english"
+        },
+        {
+          "text": "visit",
+          "language": "english"
+        },
+        {
+          "text": "itinerary",
+          "language": "english"
+        },
+        {
+          "text": "ticket",
+          "language": "english"
+        },
+        {
+          "text": "booking",
+          "language": "english"
+        },
+        {
+          "text": "旅行",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "行程",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "预订",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "订票",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "出行",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "سفر إلى",
+          "language": "arabic"
+        },
+        {
+          "text": "رحلة إلى",
+          "language": "arabic"
+        },
+        {
+          "text": "تذكرة",
+          "language": "arabic"
+        },
+        {
+          "text": "حجز",
+          "language": "arabic"
+        },
+        {
+          "text": "visit to",
+          "language": "english"
+        },
+        {
+          "text": "travel to?",
+          "language": "english"
+        },
+        {
+          "text": "please travel to",
+          "language": "english"
+        },
+        {
+          "text": "goling to",
+          "language": "english"
+        },
+        {
+          "text": "journeyling to",
+          "language": "english"
+        },
+        {
+          "text": "tripling to",
+          "language": "english"
+        },
+        {
+          "text": "travvelling to",
+          "language": "english"
+        },
+        {
+          "text": "travelling to?",
+          "language": "english"
+        },
+        {
+          "text": "please travelling to",
+          "language": "english"
+        },
+        {
+          "text": "journeying to",
+          "language": "english"
+        },
+        {
+          "text": "visiting to",
+          "language": "english"
+        },
+        {
+          "text": "triping to",
+          "language": "english"
+        },
+        {
+          "text": "travleing to",
+          "language": "english"
+        },
+        {
+          "text": "traveling to?",
+          "language": "english"
+        },
+        {
+          "text": "please traveling to",
+          "language": "english"
+        },
+        {
+          "text": "traval to?",
+          "language": "english"
+        },
+        {
+          "text": "please traval to",
+          "language": "english"
+        },
+        {
+          "text": "travle to?",
+          "language": "english"
+        },
+        {
+          "text": "please travle to",
+          "language": "english"
+        },
+        {
+          "text": "tranval to?",
+          "language": "english"
+        },
+        {
+          "text": "please tranval to",
+          "language": "english"
+        },
+        {
+          "text": "go to?",
+          "language": "english"
+        },
+        {
+          "text": "please go to",
+          "language": "english"
+        },
+        {
+          "text": "trip to?",
+          "language": "english"
+        },
+        {
+          "text": "please trip to",
+          "language": "english"
+        },
+        {
+          "text": "visit?",
+          "language": "english"
+        },
+        {
+          "text": "please visit",
+          "language": "english"
+        },
+        {
+          "text": "itinarery",
+          "language": "english"
+        },
+        {
+          "text": "itinerary?",
+          "language": "english"
+        },
+        {
+          "text": "please itinerary",
+          "language": "english"
+        },
+        {
+          "text": "tickt",
+          "language": "english"
+        },
+        {
+          "text": "ticket?",
+          "language": "english"
+        },
+        {
+          "text": "please ticket",
+          "language": "english"
+        },
+        {
+          "text": "booking?",
+          "language": "english"
+        },
+        {
+          "text": "please booking",
+          "language": "english"
+        }
+      ]
+    },
+    {
+      "intent_type": "flight_info",
+      "samples": [
+        {
+          "text": "flight ticket",
+          "language": "english"
+        },
+        {
+          "text": "flight tickets",
+          "language": "english"
+        },
+        {
+          "text": "flight to",
+          "language": "english"
+        },
+        {
+          "text": "fly to",
+          "language": "english"
+        },
+        {
+          "text": "book a flight",
+          "language": "english"
+        },
+        {
+          "text": "机票",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "航班",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "订机票",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "تذكرة طيران",
+          "language": "arabic"
+        },
+        {
+          "text": "رحلة طيران",
+          "language": "arabic"
+        },
+        {
+          "text": "airline ticket",
+          "language": "english"
+        },
+        {
+          "text": "plane ticket",
+          "language": "english"
+        },
+        {
+          "text": "air ticket ticket",
+          "language": "english"
+        },
+        {
+          "text": "fligth ticket",
+          "language": "english"
+        },
+        {
+          "text": "flight tiket",
+          "language": "english"
+        },
+        {
+          "text": "flight ticket?",
+          "language": "english"
+        },
+        {
+          "text": "please flight ticket",
+          "language": "english"
+        },
+        {
+          "text": "plane tickets",
+          "language": "english"
+        },
+        {
+          "text": "airline tickets",
+          "language": "english"
+        },
+        {
+          "text": "air ticket tickets",
+          "language": "english"
+        },
+        {
+          "text": "fllight tickets",
+          "language": "english"
+        },
+        {
+          "text": "flight tickts",
+          "language": "english"
+        },
+        {
+          "text": "flight tickets?",
+          "language": "english"
+        },
+        {
+          "text": "please flight tickets",
+          "language": "english"
+        },
+        {
+          "text": "air ticket to",
+          "language": "english"
+        },
+        {
+          "text": "plane to",
+          "language": "english"
+        },
+        {
+          "text": "airline to",
+          "language": "english"
+        },
+        {
+          "text": "flihgt to",
+          "language": "english"
+        },
+        {
+          "text": "flight to?",
+          "language": "english"
+        },
+        {
+          "text": "please flight to",
+          "language": "english"
+        },
+        {
+          "text": "fly to?",
+          "language": "english"
+        },
+        {
+          "text": "please fly to",
+          "language": "english"
+        },
+        {
+          "text": "book a airline",
+          "language": "english"
+        },
+        {
+          "text": "book a plane",
+          "language": "english"
+        },
+        {
+          "text": "book a air ticket",
+          "language": "english"
+        },
+        {
+          "text": "book a flihgt",
+          "language": "english"
+        },
+        {
+          "text": "book a flight?",
+          "language": "english"
+        },
+        {
+          "text": "please book a flight",
+          "language": "english"
+        }
+      ]
+    },
+    {
+      "intent_type": "hotel_info",
+      "samples": [
+        {
+          "text": "hotel in",
+          "language": "english"
+        },
+        {
+          "text": "book hotel",
+          "language": "english"
+        },
+        {
+          "text": "hotel booking",
+          "language": "english"
+        },
+        {
+          "text": "酒店",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "订酒店",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "فندق",
+          "language": "arabic"
+        },
+        {
+          "text": "حجز فندق",
+          "language": "arabic"
+        },
+        {
+          "text": "room in",
+          "language": "english"
+        },
+        {
+          "text": "place to stay in",
+          "language": "english"
+        },
+        {
+          "text": "accommodation in",
+          "language": "english"
+        },
+        {
+          "text": "hoetl in",
+          "language": "english"
+        },
+        {
+          "text": "hotel in?",
+          "language": "english"
+        },
+        {
+          "text": "please hotel in",
+          "language": "english"
+        },
+        {
+          "text": "book room",
+          "language": "english"
+        },
+        {
+          "text": "book accommodation",
+          "language": "english"
+        },
+        {
+          "text": "book place to stay",
+          "language": "english"
+        },
+        {
+          "text": "book hotal",
+          "language": "english"
+        },
+        {
+          "text": "book hotel?",
+          "language": "english"
+        },
+        {
+          "text": "please book hotel",
+          "language": "english"
+        },
+        {
+          "text": "accommodation booking",
+          "language": "english"
+        },
+        {
+          "text": "room booking",
+          "language": "english"
+        },
+        {
+          "text": "place to stay booking",
+          "language": "english"
+        },
+        {
+          "text": "hoetl booking",
+          "language": "english"
+        },
+        {
+          "text": "hotel booking?",
+          "language": "english"
+        },
+        {
+          "text": "please hotel booking",
+          "language": "english"
+        }
+      ]
+    },
+    {
+      "intent_type": "general_question",
+      "samples": [
+        {
+          "text": "what is",
+          "language": "english"
+        },
+        {
+          "text": "how do",
+          "language": "english"
+        },
+        {
+          "text": "can you",
+          "language": "english"
+        },
+        {
+          "text": "tell me",
+          "language": "english"
+        },
+        {
+          "text": "help me",
+          "language": "english"
+        },
+        {
+          "text": "是什么",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "怎么",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "帮我",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "ما هو",
+          "language": "arabic"
+        },
+        {
+          "text": "كيف",
+          "language": "arabic"
+        },
+        {
+          "text": "what is?",
+          "language": "english"
+        },
+        {
+          "text": "please what is",
+          "language": "english"
+        },
+        {
+          "text": "how do?",
+          "language": "english"
+        },
+        {
+          "text": "please how do",
+          "language": "english"
+        },
+        {
+          "text": "can you?",
+          "language": "english"
+        },
+        {
+          "text": "let me know",
+          "language": "english"
+        },
+        {
+          "text": "inform me about",
+          "language": "english"
+        },
+        {
+          "text": "show me",
+          "language": "english"
+        },
+        {
+          "text": "tell me?",
+          "language": "english"
+        },
+        {
+          "text": "please tell me",
+          "language": "english"
+        },
+        {
+          "text": "help me with me",
+          "language": "english"
+        },
+        {
+          "text": "assistance me",
+          "language": "english"
+        },
+        {
+          "text": "support me",
+          "language": "english"
+        },
+        {
+          "text": "help me?",
+          "language": "english"
+        },
+        {
+          "text": "please help me",
+          "language": "english"
+        }
+      ]
+    },
+    {
+      "intent_type": "navigation_intent",
+      "samples": [
+        {
+          "text": "open page",
+          "language": "english"
+        },
+        {
+          "text": "go to page",
+          "language": "english"
+        },
+        {
+          "text": "navigate to",
+          "language": "english"
+        },
+        {
+          "text": "take me to",
+          "language": "english"
+        },
+        {
+          "text": "show me page",
+          "language": "english"
+        },
+        {
+          "text": "打开页面",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "进入",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "跳转到",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "去",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "افتح",
+          "language": "arabic"
+        },
+        {
+          "text": "اذهب إلى",
+          "language": "arabic"
+        },
+        {
+          "text": "انتقل إلى",
+          "language": "arabic"
+        },
+        {
+          "text": "open page?",
+          "language": "english"
+        },
+        {
+          "text": "please open page",
+          "language": "english"
+        },
+        {
+          "text": "go to page?",
+          "language": "english"
+        },
+        {
+          "text": "please go to page",
+          "language": "english"
+        },
+        {
+          "text": "navigate to?",
+          "language": "english"
+        },
+        {
+          "text": "please navigate to",
+          "language": "english"
+        },
+        {
+          "text": "take me to?",
+          "language": "english"
+        },
+        {
+          "text": "please take me to",
+          "language": "english"
+        },
+        {
+          "text": "show me page?",
+          "language": "english"
+        },
+        {
+          "text": "please show me page",
+          "language": "english"
+        },
+        {
+          "text": "could you show me page?",
+          "language": "english"
+        }
+      ]
+    },
+    {
+      "intent_type": "unknown",
+      "samples": [
+        {
+          "text": "asdfgh",
+          "language": "english"
+        },
+        {
+          "text": "qwerty",
+          "language": "english"
+        },
+        {
+          "text": "random",
+          "language": "english"
+        },
+        {
+          "text": "noise",
+          "language": "english"
+        },
+        {
+          "text": "123456",
+          "language": "english"
+        },
+        {
+          "text": "asdfgh?",
+          "language": "english"
+        },
+        {
+          "text": "please asdfgh",
+          "language": "english"
+        },
+        {
+          "text": "qwerty?",
+          "language": "english"
+        },
+        {
+          "text": "please qwerty",
+          "language": "english"
+        },
+        {
+          "text": "random?",
+          "language": "english"
+        },
+        {
+          "text": "please random",
+          "language": "english"
+        },
+        {
+          "text": "noise?",
+          "language": "english"
+        },
+        {
+          "text": "please noise",
+          "language": "english"
+        },
+        {
+          "text": "123456?",
+          "language": "english"
+        },
+        {
+          "text": "please 123456",
+          "language": "english"
+        }
+      ]
+    }
+  ]
+}

@@ -79,6 +79,7 @@ struct RemoteAuthService: AuthServicing {
         }
     }
 
+    // MARK: - Logout
     func logout(authType: LoginAuthType) async throws {
         do {
             if contextBuilder.shouldRenewAuthentication(for: .protectedRequest) {
@@ -1026,12 +1027,12 @@ private struct LoginRequestBuilder {
     }
 }
 
-private struct ParsedLoginResponse {
+struct ParsedLoginResponse {
     let custSubInfo: CustSubInfo
     let tokens: AuthSessionTokens
 }
 
-private enum LoginResponseMapper {
+enum LoginResponseMapper {
     static func map(from responseData: HTTPClient.ResponseData, fallbackPhone: String) throws -> ParsedLoginResponse {
         guard let dictionary = responseData.objectValue else {
             throw HTTPClient.ClientError.invalidResponse
@@ -1125,7 +1126,7 @@ private enum LoginRemoteErrorMapper {
     }
 }
 
-private enum ResponseDataValue {
+enum ResponseDataValue {
     static func int(in responseData: HTTPClient.ResponseData, keys: [String]) -> Int? {
         guard let dictionary = responseData.objectValue else {
             return nil

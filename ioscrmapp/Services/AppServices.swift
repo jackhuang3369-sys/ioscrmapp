@@ -3,6 +3,7 @@ import Foundation
 struct AppServices {
     let aiChatService: any AIChatServicing
     let authService: any AuthServicing
+    let uaePassService: UAEPassServicing
     let homeService: any HomeServicing
     let mallService: any MallServicing
     let videoService: any VideoServicing
@@ -14,16 +15,17 @@ struct AppServices {
     let badgeCenterService: any BadgeCenterServicing
     let notificationService: any NotificationServicing
     let splashAdService: any SplashAdServicing
+    let intentRecognitionService: any IntentRecognitionServicing
     let configuration: AppServiceConfiguration
 
     init(configuration: AppServiceConfiguration = AppConfig.current.serviceConfiguration) {
         self.configuration = configuration
-
         switch configuration.mode {
         case .mock:
             let mockBadgeCenterService = MockBadgeCenterService()
             aiChatService = MockAIChatService()
             authService = MockAuthService()
+            uaePassService = MockUAEPassService()
             homeService = MockHomeService()
             mallService = MockMallService()
             videoService = MockVideoService()
@@ -35,9 +37,14 @@ struct AppServices {
             badgeCenterService = mockBadgeCenterService
             notificationService = MockNotificationService()
             splashAdService = MockSplashAdService()
+            intentRecognitionService = Self.makeIntentRecognitionService(
+                aiChatService: aiChatService,
+                configuration: configuration
+            )
         case .remote:
             aiChatService = RemoteAIChatService()
             authService = RemoteAuthService(serverURL: configuration.serverURL)
+            uaePassService = RemoteUAEPassService(client: HTTPClient(baseURL: configuration.serverURL))
             homeService = RemoteHomeService(serverURL: configuration.serverURL)
             mallService = RemoteMallService(serverURL: configuration.serverURL)
             //videoService = RemoteVideoService(serverURL: configuration.serverURL)
@@ -51,7 +58,33 @@ struct AppServices {
             meService = RemoteMeService(badgeCenterService: remoteBadgeCenterService)
             notificationService = RemoteNotificationService(serverURL: configuration.serverURL)
             splashAdService = RemoteSplashAdService(serverURL: configuration.serverURL)
+            intentRecognitionService = Self.makeIntentRecognitionService(
+                aiChatService: aiChatService,
+                configuration: configuration
+            )
         }
+    }
+
+    static func makeIntentRecognitionService(
+        aiChatService: any AIChatServicing,
+        configuration: AppServiceConfiguration = AppConfig.current.serviceConfiguration
+    ) -> any IntentRecognitionServicing {
+        let intentConfiguration = IntentClassifierConfiguration.current(serviceMode: configuration.mode)
+        let classifier = CoreMLIntentClassifier(
+            modelProvider: BundleIntentModelProvider(),
+            minimumAcceptedConfidence: intentConfiguration.minimumAcceptedCoreMLConfidence
+        )
+
+        // Create ONB persona classifier and fusion service
+        let onbClassifier = CoreMLONBPersonaClassifier()
+        let onbFusionService = ONBIntentFusionService(personaClassifier: onbClassifier)
+
+        return DefaultIntentRecognitionService(
+            aiChatService: aiChatService,
+            classifier: classifier,
+            configuration: intentConfiguration,
+            onbFusionService: onbFusionService
+        )
     }
 }
 

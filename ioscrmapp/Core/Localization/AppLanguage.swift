@@ -1,6 +1,6 @@
 import SwiftUI
 
-enum AppLanguage: String, CaseIterable, Identifiable, Sendable {
+enum AppLanguage: String, CaseIterable, Identifiable, Codable, Sendable {
     case english = "en"
     case simplifiedChinese = "zh-Hans"
     case arabic = "ar"

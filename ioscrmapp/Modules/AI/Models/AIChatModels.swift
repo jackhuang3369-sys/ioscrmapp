@@ -151,7 +151,7 @@ enum PaymentFlowState: Equatable, Sendable {
 
     var isProcessing: Bool {
         switch self {
-        case .processing, .otpRequired:
+        case .processing:
             return true
         default:
             return false
@@ -277,7 +277,7 @@ struct AIChatItineraryCard: Identifiable, Codable, Sendable, Equatable {
     }
 }
 
-enum AIChatSender: String, Equatable {
+enum AIChatSender: String, Codable, Sendable, Equatable {
     case user
     case assistant
 }
@@ -290,18 +290,222 @@ enum AIChatViewStep: Equatable {
     case success
 }
 
-enum AIChatNavigationTarget: Equatable {
+struct BoltInfoLine: Identifiable, Equatable, Sendable {
+    let id: String
+    let title: String
+    let value: String
+
+    init(id: String = UUID().uuidString, title: String, value: String) {
+        self.id = id
+        self.title = title
+        self.value = value
+    }
+}
+
+struct BoltInfoCard: Equatable, Sendable {
+    let title: String
+    let accentValue: String
+    let accentCaption: String
+    let detailLines: [BoltInfoLine]
+    let footnote: String?
+}
+
+struct BoltOfferFlowContext: Equatable, Sendable {
+    let title: String
+    let message: String
+    let offers: [AIChatOffer]
+    let allowExternalNavigation: Bool
+    let isRoaming: Bool
+}
+
+struct BoltRechargeFlowContext: Equatable, Sendable {
+    let title: String
+    let message: String
+    let paymentCard: AIChatPaymentCard
+    let serviceNumber: String
+    let balanceText: String
+}
+
+struct BoltBillingFlowContext: Equatable, Sendable {
+    let title: String
+    let message: String
+    let summary: BillingSummarySnapshot
+}
+
+struct BoltPaymentFlowContext: Equatable, Sendable {
+    let title: String
+    let message: String
+    let paymentCard: AIChatPaymentCard
+    let invoice: BillingInvoice?
+    let summary: BillingSummarySnapshot?
+}
+
+enum BoltTravelTransportMode: String, Codable, Equatable, Sendable {
+    case flight
+    case train
+}
+
+struct BoltTravelFlowContext: Equatable, Sendable {
+    let title: String
+    let message: String
+    let destination: String?
+    let transportMode: BoltTravelTransportMode?
+    let departureDateText: String?
+    let returnDateText: String?
+    let passengerCount: Int?
+    let priceRange: BoltTravelPriceRange?
+    let followUpQuestion: String?
+    let suggestedReplies: [String]
+    let ticketPageURL: URL?
+    let isResolvingTicketPage: Bool
+    let ticketPageErrorMessage: String?
+}
+
+struct BoltTravelPriceRange: Equatable, Sendable {
+    let min: Double
+    let max: Double
+    let currency: String
+}
+
+struct BoltServiceSubmissionResult: Equatable, Sendable {
+    let title: String
+    let message: String
+    let reference: String?
+}
+
+struct BoltServiceFlowContext: Equatable, Sendable {
+    let title: String
+    let message: String
+    let followUpQuestion: String?
+    let suggestedReplies: [String]
+    let submissionResult: BoltServiceSubmissionResult?
+}
+
+/// 多意图选择上下文，用于用户输入包含多个意图时的选择场景
+struct BoltMultiIntentSelectionContext: Equatable, Sendable {
+    let title: String
+    let message: String
+    let selectionPrompt: String
+    let intentOptions: [BoltIntentOption]
+    let originalUserText: String
+}
+
+/// 单个意图选项
+struct BoltIntentOption: Equatable, Sendable, Identifiable {
+    let id = UUID()
+    let intentType: String
+    let displayName: String
+    let description: String?
+    let confidence: Double
+}
+
+enum BoltUIPrimitiveKind: String, Equatable, Sendable {
+    case answerCard
+    case listCard
+    case detailCard
+    case formCard
+    case actionGroup
+    case paymentCard
+    case resultCard
+    case followUpCard
+}
+
+enum BoltDomainFlow: Equatable, Sendable {
+    case offers(BoltOfferFlowContext)
+    case roaming(BoltOfferFlowContext)
+    case recharge(BoltRechargeFlowContext)
+    case billing(BoltBillingFlowContext)
+    case payment(BoltPaymentFlowContext)
+    case travel(BoltTravelFlowContext)
+    case balance(BoltInfoCard)
+    case usage(BoltInfoCard)
+    case serviceRequest(BoltServiceFlowContext)
+    case multiIntentSelection(BoltMultiIntentSelectionContext)
+
+    var assistantText: String {
+        switch self {
+        case .offers(let context),
+             .roaming(let context):
+            return context.message
+        case .recharge(let context):
+            return context.message
+        case .billing(let context):
+            return context.message
+        case .payment(let context):
+            return context.message
+        case .travel(let context):
+            return context.message
+        case .balance(let card),
+             .usage(let card):
+            return card.footnote ?? card.title
+        case .serviceRequest(let context):
+            return context.message
+        case .multiIntentSelection(let context):
+            return context.selectionPrompt
+        }
+    }
+
+    var primitiveKinds: [BoltUIPrimitiveKind] {
+        switch self {
+        case .offers, .roaming:
+            return [.listCard, .detailCard, .actionGroup, .resultCard]
+        case .recharge:
+            return [.formCard, .paymentCard, .resultCard]
+        case .billing:
+            return [.detailCard, .listCard]
+        case .payment:
+            return [.detailCard, .paymentCard, .resultCard]
+        case .travel(let context):
+            if context.ticketPageURL != nil {
+                return [.detailCard, .resultCard]
+            }
+            if context.followUpQuestion != nil {
+                return [.followUpCard, .detailCard]
+            }
+            return [.detailCard, .actionGroup]
+        case .balance, .usage:
+            return [.answerCard, .resultCard]
+        case .serviceRequest(let context):
+            if context.submissionResult == nil {
+                return [.followUpCard, .formCard]
+            }
+            return [.resultCard]
+        case .multiIntentSelection:
+            return [.actionGroup, .followUpCard]
+        }
+    }
+}
+
+enum AIChatNavigationTarget: String, Equatable, Codable, Sendable {
     case home
     case service
     case mall
     case offers
     case billing
     case recharge
+    case tickets
     case me
-    case external(URL)
+    case external
+
+    /// 临时存储 external case 关联的 URL
+    private static var _externalURL: URL?
+
+    /// 辅助方法：创建带 URL 的 external case
+    static func externalURL(_ url: URL) -> AIChatNavigationTarget {
+        _externalURL = url
+        return .external
+    }
+
+    /// 获取关联的 URL（如果存在）
+    var associatedURL: URL? {
+        if self == .external {
+            return AIChatNavigationTarget._externalURL
+        }
+        return nil
+    }
 }
 
-struct AIChatOffer: Identifiable, Equatable {
+struct AIChatOffer: Identifiable, Equatable, Sendable {
     let id: String
     let name: String
     let price: String
@@ -413,7 +617,7 @@ struct AIChatMessage: Identifiable, Equatable {
     }
 }
 
-struct AIChatContext {
+struct AIChatContext: Codable, Sendable, Equatable {
     let accessToken: String
     let authorization: String
     let userID: String
@@ -830,6 +1034,12 @@ enum AIChatLocalizedCopy {
             return "打开充值"
         case (.recharge, .arabic):
             return "فتح إعادة الشحن"
+        case (.tickets, .english):
+            return "Open Tickets"
+        case (.tickets, .simplifiedChinese):
+            return "打开票务"
+        case (.tickets, .arabic):
+            return "فتح التذاكر"
         case (.offers, .english):
             return "Open Offers"
         case (.offers, .simplifiedChinese):

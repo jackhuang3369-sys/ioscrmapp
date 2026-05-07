@@ -56,6 +56,7 @@
     "social": {
       "otherWays": "其他方式",
       "sms": "短信",
+      "uaePass": "UAE Pass",
       "fingerprint": "指纹",
       "face": "面容"
     },
@@ -142,6 +143,9 @@
       "fingerprint": "指纹登录功能即将上线。",
       "face": "面容登录功能即将上线。",
       "registration": "注册功能即将上线。"
+    },
+    "uaepass": {
+      "exchanging": "正在完成 UAE Pass 登录..."
     },
     "error": {
       "invalidPhone": "请输入有效的阿联酋手机号。",

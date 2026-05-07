@@ -9,7 +9,7 @@ private let aiChatLogger = Logger(
     category: "AIChat"
 )
 
-protocol AIChatServicing {
+protocol AIChatServicing: Sendable {
     func sendMessage(
         _ text: String,
         conversationID: String?,
@@ -40,16 +40,10 @@ struct AIChatConfiguration: Sendable {
     let apiKey: String
 
     static let current = AIChatConfiguration(
-        chatCompletionsURL: URL(
-            string: ProcessInfo.processInfo.environment["IOSCRMAPP_AI_CHAT_URL"]
-                ?? "https://10.110.63.144:36667/agent-platform/api/v1/chat/completions"
-        ),
-        authorizationToken: ProcessInfo.processInfo.environment["IOSCRMAPP_AI_AUTH_TOKEN"]
-            ?? "Bearer uLPyuQK1Who3IjwOeZaLKfTrlfDncmRcgMHLUAOzZ9I35VPGhu7wENlCxVn",
-        appID: ProcessInfo.processInfo.environment["IOSCRMAPP_AI_APP_ID"]
-            ?? "698ae4d0aaf0d645fac831cc",
-        apiKey: ProcessInfo.processInfo.environment["IOSCRMAPP_AI_API_KEY"]
-            ?? "uLPyuQK1Who3IjwOeZaLKfTrlfDncmRcgMHLUAOzZ9I35VPGhu7wENlCxVn"
+        chatCompletionsURL: ProcessInfo.processInfo.environment["IOSCRMAPP_AI_CHAT_URL"].flatMap(URL.init(string:)),
+        authorizationToken: ProcessInfo.processInfo.environment["IOSCRMAPP_AI_AUTH_TOKEN"] ?? "",
+        appID: ProcessInfo.processInfo.environment["IOSCRMAPP_AI_APP_ID"] ?? "",
+        apiKey: ProcessInfo.processInfo.environment["IOSCRMAPP_AI_API_KEY"] ?? ""
     )
 }
 
@@ -120,7 +114,7 @@ struct MockAIChatService: AIChatServicing {
                 text: localizedPaymentPrompt(for: language),
                 thinkingText: "",
                 actions: [],
-                paymentCard: mockPaymentCard()
+                paymentCard: mockPaymentCard(for: normalized, context: context)
             )
         }
 
@@ -240,9 +234,27 @@ struct MockAIChatService: AIChatServicing {
         return paymentKeywords.contains { normalizedText.contains($0) }
     }
 
-    private func mockPaymentCard() -> AIChatPaymentCard {
-        AIChatPaymentCard(
-            transactionType: .recharge,
+    private func mockPaymentCard(for normalizedText: String, context: AIChatContext) -> AIChatPaymentCard {
+        let transactionType: PaymentTransactionType
+        if normalizedText.contains("subscription")
+            || normalizedText.contains("subscribe")
+            || normalizedText.contains("订购")
+            || normalizedText.contains("套餐")
+        {
+            transactionType = .subscription
+        } else if normalizedText.contains("bill")
+            || normalizedText.contains("payment")
+            || normalizedText.contains("pay")
+            || normalizedText.contains("支付")
+            || normalizedText.contains("付款")
+        {
+            transactionType = .billPayment
+        } else {
+            transactionType = .recharge
+        }
+
+        return AIChatPaymentCard(
+            transactionType: transactionType,
             amountOptions: PaymentAmountOptions(
                 min: 10.0,
                 max: 500.0,
@@ -278,7 +290,10 @@ struct MockAIChatService: AIChatServicing {
                     isDefault: false
                 )
             ],
-            subscriberInfo: nil
+            subscriberInfo: PaymentSubscriberInfo(
+                serviceNumber: context.serviceNumber,
+                currentBalance: "125.50 AED"
+            )
         )
     }
 
@@ -388,9 +403,7 @@ struct DeepSeekConfiguration {
 
     static let `default` = DeepSeekConfiguration(
         baseURL: URL(string: "https://api.deepseek.com")!,
-        // TODO: 填入你的 DeepSeek API Key（从 platform.deepseek.com 获取）
-        apiKey: ProcessInfo.processInfo.environment["DEEPSEEK_API_KEY"]
-            ?? "sk-68efd72aa6a34620b7aeba1850c5672e",
+        apiKey: ProcessInfo.processInfo.environment["DEEPSEEK_API_KEY"] ?? "",
         model: "deepseek-chat",
         maxTokens: 1024,
         temperature: 0.7
@@ -409,7 +422,7 @@ struct DeepSeekFallbackService {
         context: AIChatContext,
         conversationID: String?
     ) async throws -> AIChatReply {
-        guard configuration.apiKey != "<YOUR_DEEPSEEK_API_KEY>" else {
+        guard !configuration.apiKey.isEmpty else {
             throw AIChatServiceError.missingConfiguration
         }
 
@@ -556,7 +569,15 @@ struct RemoteAIChatService: AIChatServicing {
             }
 
             let parsed = AIChatResponseParser.parse(content: content)
-            if parsed.text.isEmpty, parsed.htmlContent == nil, parsed.richText == nil, parsed.actions.isEmpty {
+            if
+                parsed.text.isEmpty,
+                parsed.htmlContent == nil,
+                parsed.richText == nil,
+                parsed.actions.isEmpty,
+                parsed.paymentCard == nil,
+                parsed.paymentResult == nil,
+                parsed.itineraryCard == nil
+            {
                 aiChatLogger.error(
                     "AI chat parsed empty content. Raw content: \(String(describing: content), privacy: .public)"
                 )
@@ -568,7 +589,10 @@ struct RemoteAIChatService: AIChatServicing {
                 richText: parsed.richText,
                 thinkingText: parsed.thinkingText,
                 recommendedOffers: parsed.recommendedOffers,
-                actions: parsed.actions
+                actions: parsed.actions,
+                paymentCard: parsed.paymentCard,
+                paymentResult: parsed.paymentResult,
+                itineraryCard: parsed.itineraryCard
             )
         } catch let error as AIChatServiceError {
             throw error
@@ -665,7 +689,7 @@ private final class AIChatURLSessionDelegate: NSObject, URLSessionDelegate {
     func urlSession(
         _ session: URLSession,
         didReceive challenge: URLAuthenticationChallenge,
-        completionHandler: @escaping @Sendable (URLSession.AuthChallengeDisposition, URLCredential?) -> Void
+        completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void
     ) {
         guard
             challenge.protectionSpace.authenticationMethod == NSURLAuthenticationMethodServerTrust,
@@ -692,6 +716,9 @@ private struct AIChatParsedContent {
     let thinkingText: String
     let recommendedOffers: [AIChatOffer]
     let actions: [AIChatAction]
+    let paymentCard: AIChatPaymentCard?
+    let paymentResult: PaymentResultCard?
+    let itineraryCard: AIChatItineraryCard?
 }
 
 private struct AIChatRenderedText {
@@ -705,6 +732,9 @@ private enum AIChatResponseParser {
         var thinkingParts: [String] = []
         var actions: [AIChatAction] = []
         var recommendedOffers: [AIChatOffer] = []
+        let paymentCard = paymentCard(from: content)
+        let paymentResult = paymentResult(from: content)
+        let itineraryCard = itineraryCard(from: content)
 
         collect(
             node: content,
@@ -723,7 +753,10 @@ private enum AIChatResponseParser {
             richText: combinedRichText(from: renderedParts),
             thinkingText: thinkingParts.joined(separator: "\n\n").trimmingCharacters(in: .whitespacesAndNewlines),
             recommendedOffers: recommendedOffers,
-            actions: actions
+            actions: actions,
+            paymentCard: paymentCard,
+            paymentResult: paymentResult,
+            itineraryCard: itineraryCard
         )
     }
 
@@ -772,15 +805,327 @@ private enum AIChatResponseParser {
     }
 
     private static func jsonObject(from rawText: String) -> Any? {
-        guard rawText.first == "{" || rawText.first == "[" else {
+        guard let normalizedText = normalizedJSONText(from: rawText) else {
             return nil
         }
 
-        guard let data = rawText.data(using: .utf8) else {
+        guard let data = normalizedText.data(using: .utf8) else {
             return nil
         }
 
         return try? JSONSerialization.jsonObject(with: data)
+    }
+
+    private static func normalizedJSONText(from rawText: String) -> String? {
+        let trimmed = rawText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else {
+            return nil
+        }
+
+        var candidate = trimmed
+        if candidate.hasPrefix("```") {
+            candidate = candidate
+                .replacingOccurrences(of: #"^```(?:json)?"#, with: "", options: .regularExpression)
+                .replacingOccurrences(of: #"```$"#, with: "", options: .regularExpression)
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+        }
+
+        if candidate.first == "{" || candidate.first == "[" {
+            return candidate
+        }
+
+        guard
+            let start = candidate.firstIndex(where: { $0 == "{" || $0 == "[" }),
+            let end = candidate.lastIndex(where: { $0 == "}" || $0 == "]" }),
+            start < end
+        else {
+            return nil
+        }
+
+        let extracted = String(candidate[start ... end]).trimmingCharacters(in: .whitespacesAndNewlines)
+        guard extracted.first == "{" || extracted.first == "[" else {
+            return nil
+        }
+
+        return extracted
+    }
+
+    private static func modelDecoder() -> JSONDecoder {
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .custom { decoder in
+            let container = try decoder.singleValueContainer()
+
+            if let timestamp = try? container.decode(Double.self) {
+                if timestamp > 1_000_000_000_000 {
+                    return Date(timeIntervalSince1970: timestamp / 1_000)
+                }
+                return Date(timeIntervalSince1970: timestamp)
+            }
+
+            let stringValue = try container.decode(String.self)
+            let trimmed = stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
+            if let timestamp = Double(trimmed) {
+                if timestamp > 1_000_000_000_000 {
+                    return Date(timeIntervalSince1970: timestamp / 1_000)
+                }
+                return Date(timeIntervalSince1970: timestamp)
+            }
+
+            let fractionalFormatter = ISO8601DateFormatter()
+            fractionalFormatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+            if let date = fractionalFormatter.date(from: trimmed) {
+                return date
+            }
+
+            let standardFormatter = ISO8601DateFormatter()
+            standardFormatter.formatOptions = [.withInternetDateTime]
+            if let date = standardFormatter.date(from: trimmed) {
+                return date
+            }
+
+            let formatter = DateFormatter()
+            formatter.locale = Locale(identifier: "en_US_POSIX")
+            formatter.timeZone = TimeZone(secondsFromGMT: 0)
+            formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+            if let date = formatter.date(from: trimmed) {
+                return date
+            }
+
+            throw DecodingError.dataCorruptedError(
+                in: container,
+                debugDescription: "Unsupported date format: \(trimmed)"
+            )
+        }
+        return decoder
+    }
+
+    private static func decodedModel<T: Decodable>(_ type: T.Type, from node: Any) -> T? {
+        if let text = node as? String, let object = jsonObject(from: text) {
+            return decodedModel(type, from: object)
+        }
+
+        guard JSONSerialization.isValidJSONObject(node) else {
+            return nil
+        }
+
+        guard let data = try? JSONSerialization.data(withJSONObject: node) else {
+            return nil
+        }
+
+        return try? modelDecoder().decode(type, from: data)
+    }
+
+    private static func nestedValue(forKeys keys: [String], in dictionary: [String: Any]) -> Any? {
+        for key in keys {
+            if let value = dictionary[key] {
+                return value
+            }
+
+            if let value = dictionary.first(where: { $0.key.lowercased() == key.lowercased() })?.value {
+                return value
+            }
+        }
+
+        return nil
+    }
+
+    private static func containsAllKeys(_ keys: [String], in dictionary: [String: Any]) -> Bool {
+        keys.allSatisfy { key in
+            dictionary[key] != nil
+                || dictionary.keys.contains(where: { $0.lowercased() == key.lowercased() })
+        }
+    }
+
+    private static func normalizedTypeName(from dictionary: [String: Any]) -> String {
+        let rawType = firstString(in: dictionary, keys: ["type", "response_type", "component", "kind"])
+        return rawType.lowercased().replacingOccurrences(of: "-", with: "_")
+    }
+
+    private static func paymentCard(from node: Any) -> AIChatPaymentCard? {
+        switch node {
+        case let text as String:
+            guard let object = jsonObject(from: text) else {
+                return nil
+            }
+            return paymentCard(from: object)
+        case let array as [Any]:
+            for item in array {
+                if let card = paymentCard(from: item) {
+                    return card
+                }
+            }
+            return nil
+        case let dictionary as [String: Any]:
+            if let value = nestedValue(forKeys: ["payment_card", "paymentCard"], in: dictionary),
+               let card = decodedModel(AIChatPaymentCard.self, from: value)
+            {
+                return card
+            }
+
+            let typeName = normalizedTypeName(from: dictionary)
+            if typeName == "payment_card" || typeName == "card_payment" {
+                if let value = nestedValue(forKeys: ["data", "payload", "card"], in: dictionary),
+                   let card = decodedModel(AIChatPaymentCard.self, from: value)
+                {
+                    return card
+                }
+
+                if let card = decodedModel(AIChatPaymentCard.self, from: dictionary) {
+                    return card
+                }
+            }
+
+            if containsAllKeys(["transaction_type", "amount_options", "payment_methods"], in: dictionary),
+               let card = decodedModel(AIChatPaymentCard.self, from: dictionary)
+            {
+                return card
+            }
+
+            for key in [
+                "content", "body", "data", "payload", "response", "result", "output",
+                "outputs", "items", "children", "interactive", "message"
+            ] {
+                if let value = dictionary[key], let card = paymentCard(from: value) {
+                    return card
+                }
+            }
+
+            return nil
+        default:
+            return nil
+        }
+    }
+
+    private static func paymentResult(from node: Any) -> PaymentResultCard? {
+        switch node {
+        case let text as String:
+            guard let object = jsonObject(from: text) else {
+                return nil
+            }
+            return paymentResult(from: object)
+        case let array as [Any]:
+            for item in array {
+                if let result = paymentResult(from: item) {
+                    return result
+                }
+            }
+            return nil
+        case let dictionary as [String: Any]:
+            if let value = nestedValue(forKeys: ["payment_result", "paymentResult"], in: dictionary),
+               let result = decodedModel(PaymentResultCard.self, from: value)
+            {
+                return result
+            }
+
+            let typeName = normalizedTypeName(from: dictionary)
+            if typeName == "payment_result" || typeName == "action_result" {
+                if let value = nestedValue(forKeys: ["data", "payload", "result"], in: dictionary),
+                   let result = decodedModel(PaymentResultCard.self, from: value)
+                {
+                    return result
+                }
+
+                if let result = decodedModel(PaymentResultCard.self, from: dictionary) {
+                    return result
+                }
+            }
+
+            if containsAllKeys(["status", "amount", "currency", "message"], in: dictionary),
+               let result = decodedModel(PaymentResultCard.self, from: dictionary)
+            {
+                return result
+            }
+
+            for key in [
+                "content", "body", "data", "payload", "response", "result", "output",
+                "outputs", "items", "children", "interactive", "message"
+            ] {
+                if let value = dictionary[key], let result = paymentResult(from: value) {
+                    return result
+                }
+            }
+
+            return nil
+        default:
+            return nil
+        }
+    }
+
+    private static func itineraryCard(from node: Any) -> AIChatItineraryCard? {
+        switch node {
+        case let text as String:
+            guard let object = jsonObject(from: text) else {
+                return nil
+            }
+            return itineraryCard(from: object)
+        case let array as [Any]:
+            for item in array {
+                if let card = itineraryCard(from: item) {
+                    return card
+                }
+            }
+            return nil
+        case let dictionary as [String: Any]:
+            if let value = nestedValue(forKeys: ["itinerary_card", "itineraryCard"], in: dictionary),
+               let card = decodedModel(AIChatItineraryCard.self, from: value)
+            {
+                return card
+            }
+
+            let typeName = normalizedTypeName(from: dictionary)
+            if typeName == "itinerary_card" || typeName == "travel_itinerary" {
+                if let value = nestedValue(forKeys: ["data", "payload", "card"], in: dictionary),
+                   let card = decodedModel(AIChatItineraryCard.self, from: value)
+                {
+                    return card
+                }
+
+                if let card = decodedModel(AIChatItineraryCard.self, from: dictionary) {
+                    return card
+                }
+            }
+
+            if containsAllKeys(["bookingReference", "travelerName", "status"], in: dictionary)
+                || containsAllKeys(["booking_reference", "traveler_name", "status"], in: dictionary)
+            {
+                if let card = decodedModel(AIChatItineraryCard.self, from: dictionary) {
+                    return card
+                }
+            }
+
+            for key in [
+                "content", "body", "data", "payload", "response", "result", "output",
+                "outputs", "items", "children", "interactive", "message"
+            ] {
+                if let value = dictionary[key], let card = itineraryCard(from: value) {
+                    return card
+                }
+            }
+
+            return nil
+        default:
+            return nil
+        }
+    }
+
+    private static func jsonString(from dictionary: [String: Any]) -> String? {
+        guard JSONSerialization.isValidJSONObject(dictionary) else {
+            return nil
+        }
+
+        guard
+            let data = try? JSONSerialization.data(withJSONObject: dictionary, options: [.prettyPrinted]),
+            let string = String(data: data, encoding: .utf8)
+        else {
+            return nil
+        }
+
+        return string
+    }
+
+    private static func looksLikeIntentRecognitionPayload(_ dictionary: [String: Any]) -> Bool {
+        containsAllKeys(["intent_type", "confidence"], in: dictionary)
+            || containsAllKeys(["intent", "confidence"], in: dictionary)
     }
 
     private static func collectRecommendedOffers(from node: Any, offers: inout [AIChatOffer]) {
@@ -1176,6 +1521,11 @@ private enum AIChatResponseParser {
                     )
                     return
                 }
+            }
+
+            if looksLikeIntentRecognitionPayload(dictionary), let jsonText = jsonString(from: dictionary) {
+                appendText(jsonText, renderedParts: &renderedParts, thinkingParts: &thinkingParts)
+                return
             }
 
             if
@@ -1776,7 +2126,7 @@ private enum AIChatResponseParser {
         }
 
         if trimmed.hasPrefix("http://") || trimmed.hasPrefix("https://") {
-            return URL(string: trimmed).map { .external($0) }
+            return URL(string: trimmed).map { .externalURL($0) }
         }
 
         let lowercased = trimmed.lowercased()
@@ -1787,6 +2137,8 @@ private enum AIChatResponseParser {
                 return .home
             case "currentplan", "plan", "primaryoffer", "offer", "offers":
                 return .offers
+            case "tickets", "ticket":
+                return .tickets
             case "recharge":
                 return .recharge
             case "paybill":
@@ -1804,6 +2156,9 @@ private enum AIChatResponseParser {
 
         if lowercased.contains("/pages/recharge/recharge") {
             return .recharge
+        }
+        if lowercased.contains("/pages/tickets/tickets") || lowercased.contains("/ticket") {
+            return .tickets
         }
         if lowercased.contains("/pages/paybill/paybill") {
             return .billing

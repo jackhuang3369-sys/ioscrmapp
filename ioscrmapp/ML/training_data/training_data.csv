@@ -1,0 +1,216 @@
+text,label
+"check my balance",balance_inquiry
+"how can i check my balance",balance_inquiry
+"view my balance",balance_inquiry
+"my balance",balance_inquiry
+"balance inquiry",balance_inquiry
+"current balance",balance_inquiry
+"remaining balance",balance_inquiry
+"account balance",balance_inquiry
+"查看余额",balance_inquiry
+"查余额",balance_inquiry
+"余额",balance_inquiry
+"我的余额",balance_inquiry
+"当前余额",balance_inquiry
+"الرصيد",balance_inquiry
+"كيف أتحقق من الرصيد",balance_inquiry
+"رصيد الحساب",balance_inquiry
+"check my data usage",data_usage_query
+"how much data do i have left",data_usage_query
+"remaining data",data_usage_query
+"data left",data_usage_query
+"my data usage",data_usage_query
+"check my data package is enough or not",data_usage_query
+"is my data package enough",data_usage_query
+"how much data remaining",data_usage_query
+"data balance",data_usage_query
+"check data balance",data_usage_query
+"remaining internet data",data_usage_query
+"my data consumption",data_usage_query
+"data usage check",data_usage_query
+"show my data usage",data_usage_query
+"view data usage",data_usage_query
+"data package status",data_usage_query
+"how much data have i used",data_usage_query
+"data remaining this month",data_usage_query
+"check my internet usage",data_usage_query
+"mobile data usage",data_usage_query
+"am i running out of data",data_usage_query
+"data package remaining",data_usage_query
+"how many gb left",data_usage_query
+"is my data running low",data_usage_query
+"查询流量",data_usage_query
+"剩余流量",data_usage_query
+"流量还剩多少",data_usage_query
+"查流量",data_usage_query
+"我的流量",data_usage_query
+"流量使用情况",data_usage_query
+"当前流量",data_usage_query
+"流量余额",data_usage_query
+"数据流量查询",data_usage_query
+"本月流量",data_usage_query
+"流量剩余查询",data_usage_query
+"查看流量使用",data_usage_query
+"流量消耗",data_usage_query
+"还有多少流量",data_usage_query
+"流量不够了吗",data_usage_query
+"استخدام البيانات",data_usage_query
+"البيانات المتبقية",data_usage_query
+"كم البيانات المتبقية",data_usage_query
+"استهلاك البيانات",data_usage_query
+"كم GB متبقي",data_usage_query
+"recharge my account",recharge_account
+"how do i recharge my account",recharge_account
+"recharge account",recharge_account
+"top up my account",recharge_account
+"top up",recharge_account
+"how to recharge",recharge_account
+"充值",recharge_account
+"充话费",recharge_account
+"重新充值",recharge_account
+"怎么充值",recharge_account
+"我要充值",recharge_account
+"اعادة شحن",recharge_account
+"شحن الحساب",recharge_account
+"كيف أعيد شحن",recharge_account
+"what offers are available",view_offers
+"view offers",view_offers
+"show offers",view_offers
+"available packages",view_offers
+"current offers",view_offers
+"promotions",view_offers
+"roaming plan",view_offers
+"roaming package",view_offers
+"查看优惠",view_offers
+"优惠",view_offers
+"套餐",view_offers
+"有什么优惠",view_offers
+"可用套餐",view_offers
+"العروض",view_offers
+"ما العروض المتاحة",view_offers
+"عرض الباقات",view_offers
+"subscribe offer",subscribe_offer
+"i want to subscribe",subscribe_offer
+"activate package",subscribe_offer
+"purchase plan",subscribe_offer
+"buy offer",subscribe_offer
+"订阅套餐",subscribe_offer
+"办理套餐",subscribe_offer
+"激活套餐",subscribe_offer
+"购买套餐",subscribe_offer
+"اشتراك عرض",subscribe_offer
+"تفعيل الباقة",subscribe_offer
+"how can i view my bill",view_bill
+"view my bill",view_bill
+"billing statement",view_bill
+"my bill",view_bill
+"invoice",view_bill
+"查看账单",view_bill
+"账单",view_bill
+"我的账单",view_bill
+"月账单",view_bill
+"فاتورة",view_bill
+"كيف أعرض الفاتورة",view_bill
+"account help",account_help
+"account settings",account_help
+"profile settings",account_help
+"my account",account_help
+"service request",account_help
+"network issue",account_help
+"complaint",account_help
+"need support",account_help
+"账户帮助",account_help
+"账户设置",account_help
+"个人设置",account_help
+"我的账户",account_help
+"مساعدة الحساب",account_help
+"إعدادات الحساب",account_help
+"make payment",make_payment
+"pay bill",make_payment
+"payment",make_payment
+"pay now",make_payment
+"支付",make_payment
+"付款",make_payment
+"我要支付",make_payment
+"立即支付",make_payment
+"الدفع",make_payment
+"إجراء الدفع",make_payment
+"payment history",payment_history
+"past payments",payment_history
+"payment records",payment_history
+"支付历史",payment_history
+"支付记录",payment_history
+"付款记录",payment_history
+"تاريخ الدفع",payment_history
+"سجل الدفع",payment_history
+"payment status",payment_status
+"check payment status",payment_status
+"payment tracking",payment_status
+"支付状态",payment_status
+"查询支付状态",payment_status
+"حالة الدفع",payment_status
+"travel to",itinerary_query
+"travelling to",itinerary_query
+"traveling to",itinerary_query
+"traval to",itinerary_query
+"travle to",itinerary_query
+"tranval to",itinerary_query
+"go to",itinerary_query
+"trip to",itinerary_query
+"visit",itinerary_query
+"itinerary",itinerary_query
+"ticket",itinerary_query
+"booking",itinerary_query
+"旅行",itinerary_query
+"行程",itinerary_query
+"预订",itinerary_query
+"订票",itinerary_query
+"出行",itinerary_query
+"سفر إلى",itinerary_query
+"رحلة إلى",itinerary_query
+"تذكرة",itinerary_query
+"حجز",itinerary_query
+"flight ticket",flight_info
+"flight tickets",flight_info
+"flight to",flight_info
+"fly to",flight_info
+"book a flight",flight_info
+"机票",flight_info
+"航班",flight_info
+"订机票",flight_info
+"تذكرة طيران",flight_info
+"رحلة طيران",flight_info
+"hotel in",hotel_info
+"book hotel",hotel_info
+"hotel booking",hotel_info
+"酒店",hotel_info
+"订酒店",hotel_info
+"فندق",hotel_info
+"حجز فندق",hotel_info
+"what is",general_question
+"how do",general_question
+"can you",general_question
+"tell me",general_question
+"help me",general_question
+"是什么",general_question
+"怎么",general_question
+"帮我",general_question
+"ما هو",general_question
+"كيف",general_question
+"open page",navigation_intent
+"go to page",navigation_intent
+"navigate to",navigation_intent
+"take me to",navigation_intent
+"show me page",navigation_intent
+"打开页面",navigation_intent
+"进入",navigation_intent
+"跳转到",navigation_intent
+"去",navigation_intent
+"افتح",navigation_intent
+"اذهب إلى",navigation_intent
+"انتقل إلى",navigation_intent
+"asdfgh",unknown
+"qwerty",unknown
+"random",unknown
+"noise",unknown
+"123456",unknown

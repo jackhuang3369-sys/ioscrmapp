@@ -89,6 +89,24 @@ enum AuthAPI {
         requiresAuthorization: false
     )
 
+    // UAE Pass 登录配置获取接口
+    static let uaePassConfig = HTTPClient.Endpoint(
+        path: "/ser-user-auth/api/auth/uaepass/config",
+        method: .post,
+        includeCommonParameters: false,
+        includeDeviceInfo: false,
+        requiresAuthorization: false
+    )
+
+    // UAE Pass 授权码兑换接口（换取访问令牌）
+    static let uaePassExchangeCode = HTTPClient.Endpoint(
+        path: "/ser-user-auth/api/auth/uaepass/exchange-code",
+        method: .post,
+        includeCommonParameters: false,
+        includeDeviceInfo: false,
+        requiresAuthorization: false
+    )
+
     static func logout(authorizationToken: String) -> HTTPClient.Endpoint {
         HTTPClient.Endpoint(
             path: "/ser-user-auth/api/auth/logout",

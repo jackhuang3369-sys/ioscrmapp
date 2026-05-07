@@ -1110,6 +1110,8 @@ struct HomeView: View {
                 isBillingPresented = true
             case .recharge:
                 isRechargePresented = true
+            case .tickets:
+                isTicketsPresented = true
             case .me:
                 selectedTab = .me
             case .external:

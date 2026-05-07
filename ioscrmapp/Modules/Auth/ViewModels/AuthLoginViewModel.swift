@@ -1,3 +1,4 @@
+import AuthenticationServices
 import Combine
 import Foundation
 import os
@@ -18,11 +19,15 @@ final class AuthLoginViewModel: ObservableObject {
     @Published var otpCooldownRemaining = 0
 
     private let authService: any AuthServicing
+    private let uaePassService: UAEPassServicing
     private let sessionStore: SessionStore
     private var countdownTask: Task<Void, Never>?
+    private var uaePassSession: ASWebAuthenticationSession?
+    private var uaePassPresentationProvider: AuthPresentationContextProvider?
 
-    init(authService: any AuthServicing, sessionStore: SessionStore) {
+    init(authService: any AuthServicing, uaePassService: UAEPassServicing = MockUAEPassService(), sessionStore: SessionStore) {
         self.authService = authService
+        self.uaePassService = uaePassService
         self.sessionStore = sessionStore
         selectedMode = sessionStore.preferredLoginMode
         let initialPhone = sessionStore.rememberedPhone.isEmpty ? AuthValidator.demoPhone : sessionStore.rememberedPhone
@@ -130,6 +135,121 @@ final class AuthLoginViewModel: ObservableObject {
     func showPlaceholderMessage(for key: String) {
         bannerTone = .info
         bannerMessage = .key(key)
+    }
+
+    func loginWithUAEPass() {
+        clearMessages()
+        isLoading = true
+
+        Task {
+            do {
+                let config = try await uaePassService.getConfig()
+                let fullURL = try buildUAEPassAuthorizeURL(from: config)
+                let code = try await presentAuthSession(url: fullURL, scheme: "duapp")
+
+                isLoading = true
+                bannerTone = .info
+                bannerMessage = .key("auth.uaepass.exchanging")
+
+                let session = try await uaePassService.loginWithCode(
+                    code: code,
+                    state: config.state,
+                    requestId: UUID().uuidString
+                )
+
+                sessionStore.signIn(
+                    with: session,
+                    rememberCredentials: false,
+                    phone: session.phoneNumber,
+                    password: nil,
+                    loginMode: .password,
+                    authType: .uaePass
+                )
+            } catch let error as UAEPassAuthError {
+                applyUAEPassError(error)
+                isLoading = false
+            } catch let error as AuthError {
+                apply(error: error)
+                isLoading = false
+            } catch {
+                bannerTone = .error
+                bannerMessage = .key("auth.error.networkUnavailable")
+                isLoading = false
+            }
+        }
+    }
+
+    private func buildUAEPassAuthorizeURL(from config: UAEPassConfig) throws -> URL {
+        guard var components = URLComponents(string: config.authorizeURL) else {
+            throw UAEPassAuthError.configFetchFailed
+        }
+        components.queryItems = [
+            URLQueryItem(name: "client_id", value: config.clientId),
+            URLQueryItem(name: "redirect_uri", value: config.redirectUri),
+            URLQueryItem(name: "response_type", value: "code"),
+            URLQueryItem(name: "scope", value: config.scope),
+            URLQueryItem(name: "state", value: config.state),
+            URLQueryItem(name: "acr_values", value: config.installedFlowAcrValues),
+            URLQueryItem(name: "language", value: config.language)
+        ]
+        guard let url = components.url else {
+            throw UAEPassAuthError.configFetchFailed
+        }
+        return url
+    }
+
+    private func presentAuthSession(url: URL, scheme: String) async throws -> String {
+        uaePassPresentationProvider = AuthPresentationContextProvider()
+
+        return try await withCheckedThrowingContinuation { continuation in
+            let session = ASWebAuthenticationSession(
+                url: url,
+                callbackURLScheme: scheme
+            ) { [weak self] callbackURL, error in
+                self?.uaePassPresentationProvider = nil
+                self?.uaePassSession = nil
+
+                if let error = error as? ASWebAuthenticationSessionError {
+                    switch error.code {
+                    case .canceledLogin:
+                        continuation.resume(throwing: UAEPassAuthError.userCancelled)
+                    default:
+                        continuation.resume(throwing: UAEPassAuthError.authSessionFailed(error.localizedDescription))
+                    }
+                    return
+                }
+
+                guard let callbackURL = callbackURL,
+                      let components = URLComponents(url: callbackURL, resolvingAgainstBaseURL: false),
+                      let codeItem = components.queryItems?.first(where: { $0.name == "code" }),
+                      let code = codeItem.value,
+                      !code.isEmpty
+                else {
+                    continuation.resume(throwing: UAEPassAuthError.noAuthCode)
+                    return
+                }
+
+                continuation.resume(returning: code)
+            }
+
+            session.prefersEphemeralWebBrowserSession = true
+            session.presentationContextProvider = uaePassPresentationProvider
+
+            uaePassSession = session
+            session.start()
+        }
+    }
+
+    private func applyUAEPassError(_ error: UAEPassAuthError) {
+        bannerTone = .error
+        switch error {
+        case .userCancelled:
+            bannerMessage = nil
+        case .configFetchFailed, .networkUnavailable:
+            bannerMessage = .key("auth.error.networkUnavailable")
+        default:
+            bannerMessage = .literal(error.localizedDescription)
+        }
     }
 
     func applyRegistrationResult(_ result: RegistrationFlowResult) {
@@ -838,4 +958,16 @@ final class AuthForgotPasswordViewModel: ObservableObject {
 private enum ForgotPasswordStage {
     case verify
     case password
+}
+
+private final class AuthPresentationContextProvider: NSObject, ASWebAuthenticationPresentationContextProviding {
+    func presentationAnchor(for session: ASWebAuthenticationSession) -> ASPresentationAnchor {
+        guard
+            let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+            let window = scene.windows.first(where: { $0.isKeyWindow })
+        else {
+            return UIWindow()
+        }
+        return window
+    }
 }

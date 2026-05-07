@@ -1,0 +1,225 @@
+{
+  "version": "3.0",
+  "focus": "semantic_distinction_training_english",
+  "description": "English samples focused on semantic distinction: CHECK/QUERY vs PURCHASE/SUBSCRIBE",
+  "samples": [
+    {
+      "intent_type": "sms_usage_query",
+      "samples": [
+        {"text": "how many sms do i have left", "language": "english"},
+        {"text": "check my remaining sms", "language": "english"},
+        {"text": "show my text message balance", "language": "english"},
+        {"text": "how many text messages remaining", "language": "english"},
+        {"text": "sms balance check", "language": "english"},
+        {"text": "do i have any sms left", "language": "english"},
+        {"text": "my sms remaining", "language": "english"},
+        {"text": "check text message usage", "language": "english"},
+        {"text": "how many sms can i still send", "language": "english"},
+        {"text": "remaining sms count", "language": "english"},
+        {"text": "view my sms balance", "language": "english"},
+        {"text": "text messages left this month", "language": "english"},
+        {"text": "show remaining text messages", "language": "english"},
+        {"text": "how much sms credit do i have", "language": "english"},
+        {"text": "what is my sms status", "language": "english"},
+        {"text": "check sms allowance", "language": "english"},
+        {"text": "tell me my sms balance", "language": "english"},
+        {"text": "how many messages left", "language": "english"},
+        {"text": "i want to see my sms usage", "language": "english"},
+        {"text": "text message counter", "language": "english"},
+        {"text": "how many texts can i send", "language": "english"},
+        {"text": "am i out of sms", "language": "english"},
+        {"text": "check my messages left", "language": "english"},
+        {"text": "remaining sms this billing cycle", "language": "english"},
+        {"text": "did i use all my sms", "language": "english"},
+        {"text": "look up my sms remaining", "language": "english"},
+        {"text": "how is my sms usage", "language": "english"},
+        {"text": "any text messages available on my plan", "language": "english"},
+        {"text": "text bundle status", "language": "english"},
+        {"text": "how many free sms left", "language": "english"}
+      ]
+    },
+    {
+      "intent_type": "subscribe_offer",
+      "samples": [
+        {"text": "i want to buy an sms package", "language": "english"},
+        {"text": "subscribe to a text message plan", "language": "english"},
+        {"text": "activate an sms bundle", "language": "english"},
+        {"text": "get me an sms add-on", "language": "english"},
+        {"text": "purchase text message pack", "language": "english"},
+        {"text": "i need more sms, buy a package", "language": "english"},
+        {"text": "add sms to my plan", "language": "english"},
+        {"text": "buy additional text messages", "language": "english"},
+        {"text": "upgrade my plan to include sms", "language": "english"},
+        {"text": "i want to subscribe to sms bundle", "language": "english"},
+        {"text": "get sms subscription", "language": "english"},
+        {"text": "i ran out of sms, i want to buy more", "language": "english"},
+        {"text": "order text message bundle", "language": "english"},
+        {"text": "purchase sms top up package", "language": "english"},
+        {"text": "add a messaging pack to my line", "language": "english"},
+        {"text": "i need to buy an sms plan", "language": "english"},
+        {"text": "enable sms package on my account", "language": "english"},
+        {"text": "get the sms booster", "language": "english"},
+        {"text": "give me the text addon", "language": "english"},
+        {"text": "sign me up for sms pack", "language": "english"}
+      ]
+    },
+    {
+      "intent_type": "view_offers",
+      "samples": [
+        {"text": "show me available sms packages", "language": "english"},
+        {"text": "what sms plans do you have", "language": "english"},
+        {"text": "list text message bundles", "language": "english"},
+        {"text": "show sms offers", "language": "english"},
+        {"text": "browse sms packages", "language": "english"},
+        {"text": "what text plans are available", "language": "english"},
+        {"text": "i want to see sms options", "language": "english"},
+        {"text": "tell me about sms deals", "language": "english"},
+        {"text": "any sms promotions", "language": "english"},
+        {"text": "compare sms plans", "language": "english"},
+        {"text": "show me what text message packs you offer", "language": "english"},
+        {"text": "what sms bundles do you have", "language": "english"},
+        {"text": "display sms packages", "language": "english"},
+        {"text": "check available text plans", "language": "english"},
+        {"text": "any new sms offers", "language": "english"}
+      ]
+    },
+    {
+      "intent_type": "data_usage_query",
+      "samples": [
+        {"text": "how much data do i have left", "language": "english"},
+        {"text": "check my remaining data", "language": "english"},
+        {"text": "data usage status", "language": "english"},
+        {"text": "how many gb remaining", "language": "english"},
+        {"text": "show my data balance", "language": "english"},
+        {"text": "am i out of data", "language": "english"},
+        {"text": "check internet usage", "language": "english"},
+        {"text": "how much data have i used", "language": "english"},
+        {"text": "remaining internet data", "language": "english"},
+        {"text": "did i finish my data", "language": "english"},
+        {"text": "what is my data status", "language": "english"},
+        {"text": "look up data remaining", "language": "english"},
+        {"text": "how fast did i use data this month", "language": "english"},
+        {"text": "mb remaining on my plan", "language": "english"},
+        {"text": "check my mobile data balance", "language": "english"}
+      ]
+    },
+    {
+      "intent_type": "voice_usage_query",
+      "samples": [
+        {"text": "how many minutes do i have left", "language": "english"},
+        {"text": "check my remaining call minutes", "language": "english"},
+        {"text": "voice minutes balance", "language": "english"},
+        {"text": "how much talk time remaining", "language": "english"},
+        {"text": "show my call usage", "language": "english"},
+        {"text": "am i out of minutes", "language": "english"},
+        {"text": "remaining voice allowance", "language": "english"},
+        {"text": "how many minutes did i use this month", "language": "english"},
+        {"text": "check voice credit left", "language": "english"},
+        {"text": "talk time status", "language": "english"},
+        {"text": "how many calling minutes do i have", "language": "english"},
+        {"text": "voice bundle remaining", "language": "english"},
+        {"text": "did i use all my minutes", "language": "english"},
+        {"text": "look up my voice usage", "language": "english"},
+        {"text": "check call minutes left", "language": "english"}
+      ]
+    },
+    {
+      "intent_type": "balance_inquiry",
+      "samples": [
+        {"text": "what is my balance", "language": "english"},
+        {"text": "check account credit", "language": "english"},
+        {"text": "how much money do i have", "language": "english"},
+        {"text": "show my account balance", "language": "english"},
+        {"text": "remaining credit on my account", "language": "english"},
+        {"text": "how much is left in my account", "language": "english"},
+        {"text": "current credit status", "language": "english"},
+        {"text": "check my prepaid balance", "language": "english"},
+        {"text": "account credit amount", "language": "english"},
+        {"text": "do i have enough credit", "language": "english"}
+      ]
+    },
+    {
+      "intent_type": "recharge_account",
+      "samples": [
+        {"text": "i want to top up", "language": "english"},
+        {"text": "add credit to my account", "language": "english"},
+        {"text": "recharge my phone", "language": "english"},
+        {"text": "put money on my account", "language": "english"},
+        {"text": "i need to recharge", "language": "english"},
+        {"text": "top up my balance", "language": "english"},
+        {"text": "add funds to my prepaid", "language": "english"},
+        {"text": "recharge account with 50 aed", "language": "english"},
+        {"text": "i want to add credit", "language": "english"},
+        {"text": "load credit onto my phone", "language": "english"},
+        {"text": "refill my account", "language": "english"},
+        {"text": "recharge now", "language": "english"}
+      ]
+    },
+    {
+      "intent_type": "itinerary_query",
+      "samples": [
+        {"text": "i am in saudi arabia", "language": "english"},
+        {"text": "i am traveling to dubai", "language": "english"},
+        {"text": "going overseas", "language": "english"},
+        {"text": "i am abroad right now", "language": "english"},
+        {"text": "currently in another country", "language": "english"},
+        {"text": "i arrived in the uae", "language": "english"},
+        {"text": "traveling internationally", "language": "english"},
+        {"text": "i am roaming", "language": "english"},
+        {"text": "going to pakistan soon", "language": "english"},
+        {"text": "i am outside the country", "language": "english"}
+      ]
+    }
+  ],
+  "contrast_pairs": [
+    {
+      "description": "CRITICAL: QUERY vs PURCHASE semantic distinction examples",
+      "pairs": [
+        {
+          "text": "how many sms do i have left",
+          "correct_intent": "sms_usage_query",
+          "common_wrong_intent": "subscribe_offer",
+          "why_correct": "User wants to VIEW existing status, not buy anything"
+        },
+        {
+          "text": "i want to buy an sms package",
+          "correct_intent": "subscribe_offer",
+          "common_wrong_intent": "sms_usage_query",
+          "why_correct": "User explicitly wants to PURCHASE"
+        },
+        {
+          "text": "i ran out of sms, i want to buy more",
+          "correct_intents": ["sms_usage_query", "subscribe_offer"],
+          "why_correct": "User states running out (QUERY) then buying (PURCHASE) — TWO intents"
+        },
+        {
+          "text": "show me available sms packages",
+          "correct_intent": "view_offers",
+          "why_correct": "User wants to BROWSE offers, not purchase yet"
+        },
+        {
+          "text": "check my remaining data",
+          "correct_intent": "data_usage_query",
+          "common_wrong_intent": "subscribe_offer",
+          "why_correct": "User wants to VIEW data status, not subscribe"
+        },
+        {
+          "text": "i used all my data, i need a new plan",
+          "correct_intents": ["data_usage_query", "subscribe_offer"],
+          "why_correct": "User states usage exhausted THEN wants to purchase — TWO intents"
+        },
+        {
+          "text": "how much talk time do i have",
+          "correct_intent": "voice_usage_query",
+          "common_wrong_intent": "subscribe_offer",
+          "why_correct": "User wants to VIEW voice status, not subscribe"
+        },
+        {
+          "text": "i need more minutes, buy a pack",
+          "correct_intents": ["voice_usage_query", "subscribe_offer"],
+          "why_correct": "User acknowledges need THEN wants to purchase — TWO intents"
+        }
+      ]
+    }
+  ]
+}

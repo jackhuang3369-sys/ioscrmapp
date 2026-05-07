@@ -59,4 +59,8 @@ extension Color {
         let blue = Double(hex & 0x0000FF) / 255
         self.init(.sRGB, red: red, green: green, blue: blue, opacity: opacity)
     }
+
+    init(hex: Int, opacity: Double = 1) {
+        self.init(hex: UInt32(hex), opacity: opacity)
+    }
 }

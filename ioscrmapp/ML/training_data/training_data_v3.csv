@@ -1,0 +1,511 @@
+text,label
+"account help",account_help
+"account settings",account_help
+"profile settings",account_help
+"my account",account_help
+"service request",account_help
+"network issue",account_help
+"complaint",account_help
+"need support",account_help
+"i need help with my sim",account_help
+"how do i change my plan",account_help
+"my service is not working",account_help
+"i need customer support",account_help
+"help with my mobile account",account_help
+"how can i update my profile",account_help
+"i want to raise a complaint",account_help
+"i need help with network issues",account_help
+"how do i manage my account",account_help
+"support for my number",account_help
+"账户帮助",account_help
+"账户设置",account_help
+"个人设置",account_help
+"我的账户",account_help
+"مساعدة الحساب",account_help
+"إعدادات الحساب",account_help
+"check my balance",balance_inquiry
+"how can i check my balance",balance_inquiry
+"view my balance",balance_inquiry
+"my balance",balance_inquiry
+"balance inquiry",balance_inquiry
+"current balance",balance_inquiry
+"remaining balance",balance_inquiry
+"account balance",balance_inquiry
+"what is my prepaid balance",balance_inquiry
+"check my airtime balance",balance_inquiry
+"how much credit is left on my line",balance_inquiry
+"show my available balance",balance_inquiry
+"what balance do i have right now",balance_inquiry
+"remaining prepaid credit",balance_inquiry
+"check account credit",balance_inquiry
+"how much balance is on this number",balance_inquiry
+"查看余额",balance_inquiry
+"查余额",balance_inquiry
+"余额",balance_inquiry
+"我的余额",balance_inquiry
+"当前余额",balance_inquiry
+"الرصيد",balance_inquiry
+"كيف أتحقق من الرصيد",balance_inquiry
+"رصيد الحساب",balance_inquiry
+"what is my balance",balance_inquiry
+"how much money do i have",balance_inquiry
+"show my account balance",balance_inquiry
+"remaining credit on my account",balance_inquiry
+"how much is left in my account",balance_inquiry
+"current credit status",balance_inquiry
+"check my prepaid balance",balance_inquiry
+"account credit amount",balance_inquiry
+"do i have enough credit",balance_inquiry
+"check my data usage",data_usage_query
+"how much data do i have left",data_usage_query
+"remaining data",data_usage_query
+"data left",data_usage_query
+"my data usage",data_usage_query
+"what about my data package",data_usage_query
+"what about my data",data_usage_query
+"how is my data package",data_usage_query
+"current data package status",data_usage_query
+"check my data package is enough or not",data_usage_query
+"is my data package enough",data_usage_query
+"how much data remaining",data_usage_query
+"data balance",data_usage_query
+"check data balance",data_usage_query
+"remaining internet data",data_usage_query
+"my data consumption",data_usage_query
+"data usage check",data_usage_query
+"show my data usage",data_usage_query
+"view data usage",data_usage_query
+"data package status",data_usage_query
+"how much data have i used",data_usage_query
+"data remaining this month",data_usage_query
+"check my internet usage",data_usage_query
+"mobile data usage",data_usage_query
+"am i running out of data",data_usage_query
+"data package remaining",data_usage_query
+"how many gb left",data_usage_query
+"is my data running low",data_usage_query
+"how much mobile data have i got left",data_usage_query
+"show my remaining internet allowance",data_usage_query
+"check my 5g data usage",data_usage_query
+"is my data allowance almost finished",data_usage_query
+"how much of my data bundle have i used",data_usage_query
+"how much internet do i still have",data_usage_query
+"show my data bundle balance",data_usage_query
+"am i close to my data limit",data_usage_query
+"check my roaming data usage",data_usage_query
+"how many gigabytes remain on my package",data_usage_query
+"查询流量",data_usage_query
+"剩余流量",data_usage_query
+"流量还剩多少",data_usage_query
+"查流量",data_usage_query
+"我的流量",data_usage_query
+"流量使用情况",data_usage_query
+"当前流量",data_usage_query
+"流量余额",data_usage_query
+"数据流量查询",data_usage_query
+"本月流量",data_usage_query
+"流量剩余查询",data_usage_query
+"查看流量使用",data_usage_query
+"流量消耗",data_usage_query
+"还有多少流量",data_usage_query
+"流量不够了吗",data_usage_query
+"استخدام البيانات",data_usage_query
+"البيانات المتبقية",data_usage_query
+"كم البيانات المتبقية",data_usage_query
+"استهلاك البيانات",data_usage_query
+"كم GB متبقي",data_usage_query
+"check my remaining data",data_usage_query
+"data usage status",data_usage_query
+"how many gb remaining",data_usage_query
+"show my data balance",data_usage_query
+"am i out of data",data_usage_query
+"check internet usage",data_usage_query
+"did i finish my data",data_usage_query
+"what is my data status",data_usage_query
+"look up data remaining",data_usage_query
+"how fast did i use data this month",data_usage_query
+"mb remaining on my plan",data_usage_query
+"check my mobile data balance",data_usage_query
+"flight ticket from dubai to paris",flight_info
+"flight tickets for two passengers",flight_info
+"flight to dubai tomorrow",flight_info
+"fly to cairo next monday",flight_info
+"book a flight to istanbul",flight_info
+"查询上海到北京机票",flight_info
+"查询明天航班",flight_info
+"订去东京的机票",flight_info
+"تذكرة طيران إلى دبي",flight_info
+"رحلة طيران إلى باريس",flight_info
+"what is photosynthesis",general_question
+"how do solar eclipses happen",general_question
+"can you explain recursion",general_question
+"tell me about desert animals",general_question
+"help me write a grocery list",general_question
+"光合作用是什么",general_question
+"日食是怎么形成的",general_question
+"帮我写购物清单",general_question
+"ما هو كسوف الشمس",general_question
+"كيف تعمل البوصلة",general_question
+"hotel in paris near the station",hotel_info
+"book hotel for three nights",hotel_info
+"hotel booking in london",hotel_info
+"预订上海酒店",hotel_info
+"订东京酒店",hotel_info
+"فندق قريب من المطار",hotel_info
+"حجز فندق في دبي",hotel_info
+"plan a weekend trip to paris",itinerary_query
+"travelling to tokyo next week",itinerary_query
+"traveling to london for vacation",itinerary_query
+"traval to singapore tomorrow",itinerary_query
+"travle to rome this summer",itinerary_query
+"tranval to bangkok for holiday",itinerary_query
+"go to hong kong for travel",itinerary_query
+"trip to dubai itinerary",itinerary_query
+"visit museums in paris",itinerary_query
+"build my travel itinerary",itinerary_query
+"book train tickets for my trip",itinerary_query
+"travel booking for my vacation",itinerary_query
+"规划东京旅行",itinerary_query
+"北京三日游行程",itinerary_query
+"预订旅行门票",itinerary_query
+"预订火车票",itinerary_query
+"上海周末出行计划",itinerary_query
+"去香港旅行",itinerary_query
+"香港旅行行程",itinerary_query
+"计划去香港旅游",itinerary_query
+"安排香港三日游",itinerary_query
+"خطط سفر إلى القاهرة",itinerary_query
+"رحلة سياحية إلى عمان",itinerary_query
+"حجز تذكرة قطار للسفر",itinerary_query
+"حجز رحلة سياحية",itinerary_query
+"i am in saudi arabia",itinerary_query
+"i am traveling to dubai",itinerary_query
+"going overseas",itinerary_query
+"i am abroad right now",itinerary_query
+"currently in another country",itinerary_query
+"i arrived in the uae",itinerary_query
+"traveling internationally",itinerary_query
+"i am roaming",itinerary_query
+"going to pakistan soon",itinerary_query
+"i am outside the country",itinerary_query
+"make payment",make_payment
+"pay bill",make_payment
+"payment",make_payment
+"pay now",make_payment
+"pay my outstanding bill",make_payment
+"settle my mobile invoice",make_payment
+"make a bill payment now",make_payment
+"pay the amount due",make_payment
+"clear my postpaid balance",make_payment
+"pay this month's charges",make_payment
+"complete payment for my bill",make_payment
+"pay my telecom bill",make_payment
+"i want to settle the invoice",make_payment
+"bill payment",make_payment
+"支付",make_payment
+"付款",make_payment
+"我要支付",make_payment
+"立即支付",make_payment
+"الدفع",make_payment
+"إجراء الدفع",make_payment
+"open the profile page",navigation_intent
+"go to the settings page",navigation_intent
+"navigate to the orders page",navigation_intent
+"take me to the help center page",navigation_intent
+"show me the app settings page",navigation_intent
+"打开设置页面",navigation_intent
+"进入订单页面",navigation_intent
+"跳转到个人中心页面",navigation_intent
+"去首页页面",navigation_intent
+"افتح صفحة الإعدادات",navigation_intent
+"اذهب إلى صفحة الطلبات",navigation_intent
+"انتقل إلى صفحة المساعدة",navigation_intent
+"payment history",payment_history
+"past payments",payment_history
+"payment records",payment_history
+"show my previous bill payments",payment_history
+"view my payment transactions",payment_history
+"list my recent payments",payment_history
+"payment receipts",payment_history
+"see my bill payment history",payment_history
+"show paid invoices",payment_history
+"view recent payment records",payment_history
+"how much did i pay before",payment_history
+"payment activity",payment_history
+"show completed payments",payment_history
+"支付历史",payment_history
+"支付记录",payment_history
+"付款记录",payment_history
+"تاريخ الدفع",payment_history
+"سجل الدفع",payment_history
+"payment status",payment_status
+"check payment status",payment_status
+"payment tracking",payment_status
+"did my bill payment go through",payment_status
+"is my payment successful",payment_status
+"check if my invoice payment was received",payment_status
+"track my bill payment",payment_status
+"has the payment been posted",payment_status
+"payment confirmation status",payment_status
+"verify my payment",payment_status
+"did you receive my payment",payment_status
+"check transaction status",payment_status
+"is the payment still pending",payment_status
+"支付状态",payment_status
+"查询支付状态",payment_status
+"حالة الدفع",payment_status
+"recharge my account",recharge_account
+"how do i recharge my account",recharge_account
+"recharge account",recharge_account
+"top up my account",recharge_account
+"top up",recharge_account
+"how to recharge",recharge_account
+"top up my phone",recharge_account
+"add credit to this number",recharge_account
+"recharge my mobile line",recharge_account
+"load balance to my account",recharge_account
+"i need to top up my prepaid",recharge_account
+"buy recharge credit",recharge_account
+"can i add 20 dollars to my line",recharge_account
+"top up this service number",recharge_account
+"recharge my sim",recharge_account
+"put credit on my account",recharge_account
+"充值",recharge_account
+"充话费",recharge_account
+"重新充值",recharge_account
+"怎么充值",recharge_account
+"我要充值",recharge_account
+"اعادة شحن",recharge_account
+"شحن الحساب",recharge_account
+"كيف أعيد شحن",recharge_account
+"i want to top up",recharge_account
+"add credit to my account",recharge_account
+"recharge my phone",recharge_account
+"put money on my account",recharge_account
+"i need to recharge",recharge_account
+"top up my balance",recharge_account
+"add funds to my prepaid",recharge_account
+"recharge account with 50 aed",recharge_account
+"i want to add credit",recharge_account
+"load credit onto my phone",recharge_account
+"refill my account",recharge_account
+"recharge now",recharge_account
+"check my sms usage",sms_usage_query
+"how many texts do i have left",sms_usage_query
+"remaining sms",sms_usage_query
+"sms balance",sms_usage_query
+"message usage",sms_usage_query
+"check my remaining texts",sms_usage_query
+"how many messages left",sms_usage_query
+"texts left on my plan",sms_usage_query
+"remaining mms",sms_usage_query
+"check my text balance",sms_usage_query
+"how many sms do i have remaining",sms_usage_query
+"show my text message usage",sms_usage_query
+"remaining text messages on my plan",sms_usage_query
+"check my sms balance",sms_usage_query
+"how many messages can i still send",sms_usage_query
+"have i used all my sms",sms_usage_query
+"show my messaging allowance",sms_usage_query
+"text allowance left",sms_usage_query
+"remaining local sms",sms_usage_query
+"check my mms balance",sms_usage_query
+"查短信",sms_usage_query
+"剩余短信",sms_usage_query
+"短信还剩多少",sms_usage_query
+"短信用量",sms_usage_query
+"查询短信条数",sms_usage_query
+"استخدام الرسائل",sms_usage_query
+"كم رسالة متبقية",sms_usage_query
+"الرسائل المتبقية",sms_usage_query
+"رصيد الرسائل",sms_usage_query
+"how many sms do i have left",sms_usage_query
+"check my remaining sms",sms_usage_query
+"show my text message balance",sms_usage_query
+"how many text messages remaining",sms_usage_query
+"sms balance check",sms_usage_query
+"do i have any sms left",sms_usage_query
+"my sms remaining",sms_usage_query
+"check text message usage",sms_usage_query
+"how many sms can i still send",sms_usage_query
+"remaining sms count",sms_usage_query
+"view my sms balance",sms_usage_query
+"text messages left this month",sms_usage_query
+"show remaining text messages",sms_usage_query
+"how much sms credit do i have",sms_usage_query
+"what is my sms status",sms_usage_query
+"check sms allowance",sms_usage_query
+"tell me my sms balance",sms_usage_query
+"i want to see my sms usage",sms_usage_query
+"text message counter",sms_usage_query
+"how many texts can i send",sms_usage_query
+"am i out of sms",sms_usage_query
+"check my messages left",sms_usage_query
+"remaining sms this billing cycle",sms_usage_query
+"did i use all my sms",sms_usage_query
+"look up my sms remaining",sms_usage_query
+"how is my sms usage",sms_usage_query
+"any text messages available on my plan",sms_usage_query
+"text bundle status",sms_usage_query
+"how many free sms left",sms_usage_query
+"subscribe offer",subscribe_offer
+"i want to subscribe",subscribe_offer
+"activate package",subscribe_offer
+"purchase plan",subscribe_offer
+"buy offer",subscribe_offer
+"activate the 20gb bundle",subscribe_offer
+"buy the weekly data package",subscribe_offer
+"subscribe to the roaming add-on",subscribe_offer
+"turn on this offer for my line",subscribe_offer
+"purchase the unlimited calls bundle",subscribe_offer
+"activate the monthly plan",subscribe_offer
+"get me the social media pack",subscribe_offer
+"buy the international minutes add-on",subscribe_offer
+"enable the selected package",subscribe_offer
+"i want to activate this bundle now",subscribe_offer
+"i need a bigger data package",subscribe_offer
+"buy more data",subscribe_offer
+"get more data for my line",subscribe_offer
+"upgrade to a bigger data bundle",subscribe_offer
+"add extra data to my plan",subscribe_offer
+"purchase more internet data",subscribe_offer
+"订阅套餐",subscribe_offer
+"办理套餐",subscribe_offer
+"激活套餐",subscribe_offer
+"购买套餐",subscribe_offer
+"اشتراك عرض",subscribe_offer
+"تفعيل الباقة",subscribe_offer
+"i want to buy an sms package",subscribe_offer
+"subscribe to a text message plan",subscribe_offer
+"activate an sms bundle",subscribe_offer
+"get me an sms add-on",subscribe_offer
+"purchase text message pack",subscribe_offer
+"i need more sms, buy a package",subscribe_offer
+"add sms to my plan",subscribe_offer
+"buy additional text messages",subscribe_offer
+"upgrade my plan to include sms",subscribe_offer
+"i want to subscribe to sms bundle",subscribe_offer
+"get sms subscription",subscribe_offer
+"i ran out of sms, i want to buy more",subscribe_offer
+"order text message bundle",subscribe_offer
+"purchase sms top up package",subscribe_offer
+"add a messaging pack to my line",subscribe_offer
+"i need to buy an sms plan",subscribe_offer
+"enable sms package on my account",subscribe_offer
+"get the sms booster",subscribe_offer
+"give me the text addon",subscribe_offer
+"sign me up for sms pack",subscribe_offer
+"asdfgh",unknown
+"qwerty",unknown
+"blue banana square",unknown
+"lorem ipsum placeholder",unknown
+"zzzz 987 random symbols",unknown
+"how can i view my bill",view_bill
+"view my bill",view_bill
+"billing statement",view_bill
+"my bill",view_bill
+"invoice",view_bill
+"show my latest bill",view_bill
+"open my monthly invoice",view_bill
+"check this month's charges",view_bill
+"view my postpaid statement",view_bill
+"see the bill breakdown",view_bill
+"show my outstanding invoice",view_bill
+"open my billing details",view_bill
+"what was i charged this month",view_bill
+"show my invoice summary",view_bill
+"check my bill amount",view_bill
+"invoice this month",view_bill
+"show invoice this month",view_bill
+"this month's invoice",view_bill
+"monthly invoice amount",view_bill
+"check invoice for this month",view_bill
+"查看账单",view_bill
+"账单",view_bill
+"我的账单",view_bill
+"月账单",view_bill
+"فاتورة",view_bill
+"كيف أعرض الفاتورة",view_bill
+"what offers are available",view_offers
+"view offers",view_offers
+"show offers",view_offers
+"available packages",view_offers
+"current offers",view_offers
+"promotions",view_offers
+"roaming plan",view_offers
+"roaming package",view_offers
+"show me prepaid offers",view_offers
+"what data bundles can i buy",view_offers
+"show available add-ons",view_offers
+"what roaming packages do you have",view_offers
+"any call bundles available",view_offers
+"show me internet plans",view_offers
+"which bundles are available for my line",view_offers
+"what promotions can i activate",view_offers
+"list the current prepaid packages",view_offers
+"show my eligible offers",view_offers
+"查看优惠",view_offers
+"优惠",view_offers
+"套餐",view_offers
+"有什么优惠",view_offers
+"可用套餐",view_offers
+"العروض",view_offers
+"ما العروض المتاحة",view_offers
+"عرض الباقات",view_offers
+"show me available sms packages",view_offers
+"what sms plans do you have",view_offers
+"list text message bundles",view_offers
+"show sms offers",view_offers
+"browse sms packages",view_offers
+"what text plans are available",view_offers
+"i want to see sms options",view_offers
+"tell me about sms deals",view_offers
+"any sms promotions",view_offers
+"compare sms plans",view_offers
+"show me what text message packs you offer",view_offers
+"what sms bundles do you have",view_offers
+"display sms packages",view_offers
+"check available text plans",view_offers
+"any new sms offers",view_offers
+"check my voice usage",voice_usage_query
+"how many minutes do i have left",voice_usage_query
+"remaining call minutes",voice_usage_query
+"voice balance",voice_usage_query
+"call usage",voice_usage_query
+"check my remaining minutes",voice_usage_query
+"how much talk time left",voice_usage_query
+"check my call balance",voice_usage_query
+"minutes left on my plan",voice_usage_query
+"remaining voice minutes",voice_usage_query
+"how many call minutes remain",voice_usage_query
+"check my outgoing minutes balance",voice_usage_query
+"how much talk time do i still have",voice_usage_query
+"show my local minutes usage",voice_usage_query
+"how many national minutes are left",voice_usage_query
+"check my call allowance",voice_usage_query
+"have i used all my call minutes",voice_usage_query
+"remaining voice allowance",voice_usage_query
+"international calling minutes left",voice_usage_query
+"show my talk time balance",voice_usage_query
+"查语音",voice_usage_query
+"剩余分钟",voice_usage_query
+"通话还剩多少",voice_usage_query
+"语音用量",voice_usage_query
+"查询通话分钟",voice_usage_query
+"استخدام المكالمات",voice_usage_query
+"كم دقيقة متبقية",voice_usage_query
+"الدقائق المتبقية",voice_usage_query
+"رصيد المكالمات",voice_usage_query
+"check my remaining call minutes",voice_usage_query
+"voice minutes balance",voice_usage_query
+"how much talk time remaining",voice_usage_query
+"show my call usage",voice_usage_query
+"am i out of minutes",voice_usage_query
+"how many minutes did i use this month",voice_usage_query
+"check voice credit left",voice_usage_query
+"talk time status",voice_usage_query
+"how many calling minutes do i have",voice_usage_query
+"voice bundle remaining",voice_usage_query
+"did i use all my minutes",voice_usage_query
+"look up my voice usage",voice_usage_query
+"check call minutes left",voice_usage_query

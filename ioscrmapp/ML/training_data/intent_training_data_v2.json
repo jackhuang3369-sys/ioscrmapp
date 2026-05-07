@@ -1,0 +1,1737 @@
+{
+  "version": "2.2",
+  "dataset_metadata": {
+    "focus": "telecom_operator_business",
+    "language_priority": [
+      "english",
+      "simplifiedChinese",
+      "arabic"
+    ],
+    "notes": [
+      "English-first expansion for telecom operator user intents.",
+      "Primary training coverage focuses on usage, balance, recharge, offers, billing, payment, and account support."
+    ]
+  },
+  "business_domains": [
+    {
+      "domain": "usage_and_balance",
+      "intents": [
+        "balance_inquiry",
+        "data_usage_query",
+        "voice_usage_query",
+        "sms_usage_query"
+      ]
+    },
+    {
+      "domain": "recharge_and_credit",
+      "intents": [
+        "recharge_account"
+      ]
+    },
+    {
+      "domain": "offers_and_subscription",
+      "intents": [
+        "view_offers",
+        "subscribe_offer"
+      ]
+    },
+    {
+      "domain": "billing_and_payment",
+      "intents": [
+        "view_bill",
+        "make_payment",
+        "payment_history",
+        "payment_status"
+      ]
+    },
+    {
+      "domain": "account_support",
+      "intents": [
+        "account_help",
+        "navigation_intent",
+        "general_question",
+        "unknown"
+      ]
+    },
+    {
+      "domain": "auxiliary_non_telecom",
+      "intents": [
+        "itinerary_query",
+        "flight_info",
+        "hotel_info"
+      ]
+    }
+  ],
+  "intent_types": [
+    "balance_inquiry",
+    "data_usage_query",
+    "voice_usage_query",
+    "sms_usage_query",
+    "recharge_account",
+    "view_offers",
+    "subscribe_offer",
+    "view_bill",
+    "account_help",
+    "make_payment",
+    "payment_history",
+    "payment_status",
+    "itinerary_query",
+    "flight_info",
+    "hotel_info",
+    "general_question",
+    "navigation_intent",
+    "unknown"
+  ],
+  "training_data": [
+    {
+      "intent_type": "balance_inquiry",
+      "samples": [
+        {
+          "text": "check my balance",
+          "language": "english"
+        },
+        {
+          "text": "how can i check my balance",
+          "language": "english"
+        },
+        {
+          "text": "view my balance",
+          "language": "english"
+        },
+        {
+          "text": "my balance",
+          "language": "english"
+        },
+        {
+          "text": "balance inquiry",
+          "language": "english"
+        },
+        {
+          "text": "current balance",
+          "language": "english"
+        },
+        {
+          "text": "remaining balance",
+          "language": "english"
+        },
+        {
+          "text": "account balance",
+          "language": "english"
+        },
+        {
+          "text": "what is my prepaid balance",
+          "language": "english"
+        },
+        {
+          "text": "check my airtime balance",
+          "language": "english"
+        },
+        {
+          "text": "how much credit is left on my line",
+          "language": "english"
+        },
+        {
+          "text": "show my available balance",
+          "language": "english"
+        },
+        {
+          "text": "what balance do i have right now",
+          "language": "english"
+        },
+        {
+          "text": "remaining prepaid credit",
+          "language": "english"
+        },
+        {
+          "text": "check account credit",
+          "language": "english"
+        },
+        {
+          "text": "how much balance is on this number",
+          "language": "english"
+        },
+        {
+          "text": "查看余额",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "查余额",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "余额",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "我的余额",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "当前余额",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "الرصيد",
+          "language": "arabic"
+        },
+        {
+          "text": "كيف أتحقق من الرصيد",
+          "language": "arabic"
+        },
+        {
+          "text": "رصيد الحساب",
+          "language": "arabic"
+        }
+      ]
+    },
+    {
+      "intent_type": "data_usage_query",
+      "samples": [
+        {
+          "text": "check my data usage",
+          "language": "english"
+        },
+        {
+          "text": "how much data do i have left",
+          "language": "english"
+        },
+        {
+          "text": "remaining data",
+          "language": "english"
+        },
+        {
+          "text": "data left",
+          "language": "english"
+        },
+        {
+          "text": "my data usage",
+          "language": "english"
+        },
+        {
+          "text": "what about my data package",
+          "language": "english"
+        },
+        {
+          "text": "what about my data",
+          "language": "english"
+        },
+        {
+          "text": "how is my data package",
+          "language": "english"
+        },
+        {
+          "text": "current data package status",
+          "language": "english"
+        },
+        {
+          "text": "check my data package is enough or not",
+          "language": "english"
+        },
+        {
+          "text": "is my data package enough",
+          "language": "english"
+        },
+        {
+          "text": "how much data remaining",
+          "language": "english"
+        },
+        {
+          "text": "data balance",
+          "language": "english"
+        },
+        {
+          "text": "check data balance",
+          "language": "english"
+        },
+        {
+          "text": "remaining internet data",
+          "language": "english"
+        },
+        {
+          "text": "my data consumption",
+          "language": "english"
+        },
+        {
+          "text": "data usage check",
+          "language": "english"
+        },
+        {
+          "text": "show my data usage",
+          "language": "english"
+        },
+        {
+          "text": "view data usage",
+          "language": "english"
+        },
+        {
+          "text": "data package status",
+          "language": "english"
+        },
+        {
+          "text": "how much data have i used",
+          "language": "english"
+        },
+        {
+          "text": "data remaining this month",
+          "language": "english"
+        },
+        {
+          "text": "check my internet usage",
+          "language": "english"
+        },
+        {
+          "text": "mobile data usage",
+          "language": "english"
+        },
+        {
+          "text": "am i running out of data",
+          "language": "english"
+        },
+        {
+          "text": "data package remaining",
+          "language": "english"
+        },
+        {
+          "text": "how many gb left",
+          "language": "english"
+        },
+        {
+          "text": "is my data running low",
+          "language": "english"
+        },
+        {
+          "text": "how much mobile data have i got left",
+          "language": "english"
+        },
+        {
+          "text": "show my remaining internet allowance",
+          "language": "english"
+        },
+        {
+          "text": "check my 5g data usage",
+          "language": "english"
+        },
+        {
+          "text": "is my data allowance almost finished",
+          "language": "english"
+        },
+        {
+          "text": "how much of my data bundle have i used",
+          "language": "english"
+        },
+        {
+          "text": "how much internet do i still have",
+          "language": "english"
+        },
+        {
+          "text": "show my data bundle balance",
+          "language": "english"
+        },
+        {
+          "text": "am i close to my data limit",
+          "language": "english"
+        },
+        {
+          "text": "check my roaming data usage",
+          "language": "english"
+        },
+        {
+          "text": "how many gigabytes remain on my package",
+          "language": "english"
+        },
+        {
+          "text": "查询流量",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "剩余流量",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "流量还剩多少",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "查流量",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "我的流量",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "流量使用情况",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "当前流量",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "流量余额",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "数据流量查询",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "本月流量",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "流量剩余查询",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "查看流量使用",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "流量消耗",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "还有多少流量",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "流量不够了吗",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "استخدام البيانات",
+          "language": "arabic"
+        },
+        {
+          "text": "البيانات المتبقية",
+          "language": "arabic"
+        },
+        {
+          "text": "كم البيانات المتبقية",
+          "language": "arabic"
+        },
+        {
+          "text": "استهلاك البيانات",
+          "language": "arabic"
+        },
+        {
+          "text": "كم GB متبقي",
+          "language": "arabic"
+        }
+      ]
+    },
+    {
+      "intent_type": "voice_usage_query",
+      "samples": [
+        {
+          "text": "check my voice usage",
+          "language": "english"
+        },
+        {
+          "text": "how many minutes do i have left",
+          "language": "english"
+        },
+        {
+          "text": "remaining call minutes",
+          "language": "english"
+        },
+        {
+          "text": "voice balance",
+          "language": "english"
+        },
+        {
+          "text": "call usage",
+          "language": "english"
+        },
+        {
+          "text": "check my remaining minutes",
+          "language": "english"
+        },
+        {
+          "text": "how much talk time left",
+          "language": "english"
+        },
+        {
+          "text": "check my call balance",
+          "language": "english"
+        },
+        {
+          "text": "minutes left on my plan",
+          "language": "english"
+        },
+        {
+          "text": "remaining voice minutes",
+          "language": "english"
+        },
+        {
+          "text": "how many call minutes remain",
+          "language": "english"
+        },
+        {
+          "text": "check my outgoing minutes balance",
+          "language": "english"
+        },
+        {
+          "text": "how much talk time do i still have",
+          "language": "english"
+        },
+        {
+          "text": "show my local minutes usage",
+          "language": "english"
+        },
+        {
+          "text": "how many national minutes are left",
+          "language": "english"
+        },
+        {
+          "text": "check my call allowance",
+          "language": "english"
+        },
+        {
+          "text": "have i used all my call minutes",
+          "language": "english"
+        },
+        {
+          "text": "remaining voice allowance",
+          "language": "english"
+        },
+        {
+          "text": "international calling minutes left",
+          "language": "english"
+        },
+        {
+          "text": "show my talk time balance",
+          "language": "english"
+        },
+        {
+          "text": "查语音",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "剩余分钟",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "通话还剩多少",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "语音用量",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "查询通话分钟",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "استخدام المكالمات",
+          "language": "arabic"
+        },
+        {
+          "text": "كم دقيقة متبقية",
+          "language": "arabic"
+        },
+        {
+          "text": "الدقائق المتبقية",
+          "language": "arabic"
+        },
+        {
+          "text": "رصيد المكالمات",
+          "language": "arabic"
+        }
+      ]
+    },
+    {
+      "intent_type": "sms_usage_query",
+      "samples": [
+        {
+          "text": "check my sms usage",
+          "language": "english"
+        },
+        {
+          "text": "how many texts do i have left",
+          "language": "english"
+        },
+        {
+          "text": "remaining sms",
+          "language": "english"
+        },
+        {
+          "text": "sms balance",
+          "language": "english"
+        },
+        {
+          "text": "message usage",
+          "language": "english"
+        },
+        {
+          "text": "check my remaining texts",
+          "language": "english"
+        },
+        {
+          "text": "how many messages left",
+          "language": "english"
+        },
+        {
+          "text": "texts left on my plan",
+          "language": "english"
+        },
+        {
+          "text": "remaining mms",
+          "language": "english"
+        },
+        {
+          "text": "check my text balance",
+          "language": "english"
+        },
+        {
+          "text": "how many sms do i have remaining",
+          "language": "english"
+        },
+        {
+          "text": "show my text message usage",
+          "language": "english"
+        },
+        {
+          "text": "remaining text messages on my plan",
+          "language": "english"
+        },
+        {
+          "text": "check my sms balance",
+          "language": "english"
+        },
+        {
+          "text": "how many messages can i still send",
+          "language": "english"
+        },
+        {
+          "text": "have i used all my sms",
+          "language": "english"
+        },
+        {
+          "text": "show my messaging allowance",
+          "language": "english"
+        },
+        {
+          "text": "text allowance left",
+          "language": "english"
+        },
+        {
+          "text": "remaining local sms",
+          "language": "english"
+        },
+        {
+          "text": "check my mms balance",
+          "language": "english"
+        },
+        {
+          "text": "查短信",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "剩余短信",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "短信还剩多少",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "短信用量",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "查询短信条数",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "استخدام الرسائل",
+          "language": "arabic"
+        },
+        {
+          "text": "كم رسالة متبقية",
+          "language": "arabic"
+        },
+        {
+          "text": "الرسائل المتبقية",
+          "language": "arabic"
+        },
+        {
+          "text": "رصيد الرسائل",
+          "language": "arabic"
+        }
+      ]
+    },
+    {
+      "intent_type": "recharge_account",
+      "samples": [
+        {
+          "text": "recharge my account",
+          "language": "english"
+        },
+        {
+          "text": "how do i recharge my account",
+          "language": "english"
+        },
+        {
+          "text": "recharge account",
+          "language": "english"
+        },
+        {
+          "text": "top up my account",
+          "language": "english"
+        },
+        {
+          "text": "top up",
+          "language": "english"
+        },
+        {
+          "text": "how to recharge",
+          "language": "english"
+        },
+        {
+          "text": "top up my phone",
+          "language": "english"
+        },
+        {
+          "text": "add credit to this number",
+          "language": "english"
+        },
+        {
+          "text": "recharge my mobile line",
+          "language": "english"
+        },
+        {
+          "text": "load balance to my account",
+          "language": "english"
+        },
+        {
+          "text": "i need to top up my prepaid",
+          "language": "english"
+        },
+        {
+          "text": "buy recharge credit",
+          "language": "english"
+        },
+        {
+          "text": "can i add 20 dollars to my line",
+          "language": "english"
+        },
+        {
+          "text": "top up this service number",
+          "language": "english"
+        },
+        {
+          "text": "recharge my sim",
+          "language": "english"
+        },
+        {
+          "text": "put credit on my account",
+          "language": "english"
+        },
+        {
+          "text": "充值",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "充话费",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "重新充值",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "怎么充值",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "我要充值",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "اعادة شحن",
+          "language": "arabic"
+        },
+        {
+          "text": "شحن الحساب",
+          "language": "arabic"
+        },
+        {
+          "text": "كيف أعيد شحن",
+          "language": "arabic"
+        }
+      ]
+    },
+    {
+      "intent_type": "view_offers",
+      "samples": [
+        {
+          "text": "what offers are available",
+          "language": "english"
+        },
+        {
+          "text": "view offers",
+          "language": "english"
+        },
+        {
+          "text": "show offers",
+          "language": "english"
+        },
+        {
+          "text": "available packages",
+          "language": "english"
+        },
+        {
+          "text": "current offers",
+          "language": "english"
+        },
+        {
+          "text": "promotions",
+          "language": "english"
+        },
+        {
+          "text": "roaming plan",
+          "language": "english"
+        },
+        {
+          "text": "roaming package",
+          "language": "english"
+        },
+        {
+          "text": "show me prepaid offers",
+          "language": "english"
+        },
+        {
+          "text": "what data bundles can i buy",
+          "language": "english"
+        },
+        {
+          "text": "show available add-ons",
+          "language": "english"
+        },
+        {
+          "text": "what roaming packages do you have",
+          "language": "english"
+        },
+        {
+          "text": "any call bundles available",
+          "language": "english"
+        },
+        {
+          "text": "show me internet plans",
+          "language": "english"
+        },
+        {
+          "text": "which bundles are available for my line",
+          "language": "english"
+        },
+        {
+          "text": "what promotions can i activate",
+          "language": "english"
+        },
+        {
+          "text": "list the current prepaid packages",
+          "language": "english"
+        },
+        {
+          "text": "show my eligible offers",
+          "language": "english"
+        },
+        {
+          "text": "查看优惠",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "优惠",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "套餐",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "有什么优惠",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "可用套餐",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "العروض",
+          "language": "arabic"
+        },
+        {
+          "text": "ما العروض المتاحة",
+          "language": "arabic"
+        },
+        {
+          "text": "عرض الباقات",
+          "language": "arabic"
+        }
+      ]
+    },
+    {
+      "intent_type": "subscribe_offer",
+      "samples": [
+        {
+          "text": "subscribe offer",
+          "language": "english"
+        },
+        {
+          "text": "i want to subscribe",
+          "language": "english"
+        },
+        {
+          "text": "activate package",
+          "language": "english"
+        },
+        {
+          "text": "purchase plan",
+          "language": "english"
+        },
+        {
+          "text": "buy offer",
+          "language": "english"
+        },
+        {
+          "text": "activate the 20gb bundle",
+          "language": "english"
+        },
+        {
+          "text": "buy the weekly data package",
+          "language": "english"
+        },
+        {
+          "text": "subscribe to the roaming add-on",
+          "language": "english"
+        },
+        {
+          "text": "turn on this offer for my line",
+          "language": "english"
+        },
+        {
+          "text": "purchase the unlimited calls bundle",
+          "language": "english"
+        },
+        {
+          "text": "activate the monthly plan",
+          "language": "english"
+        },
+        {
+          "text": "get me the social media pack",
+          "language": "english"
+        },
+        {
+          "text": "buy the international minutes add-on",
+          "language": "english"
+        },
+        {
+          "text": "enable the selected package",
+          "language": "english"
+        },
+        {
+          "text": "i want to activate this bundle now",
+          "language": "english"
+        },
+        {
+          "text": "i need a bigger data package",
+          "language": "english"
+        },
+        {
+          "text": "buy more data",
+          "language": "english"
+        },
+        {
+          "text": "get more data for my line",
+          "language": "english"
+        },
+        {
+          "text": "upgrade to a bigger data bundle",
+          "language": "english"
+        },
+        {
+          "text": "add extra data to my plan",
+          "language": "english"
+        },
+        {
+          "text": "purchase more internet data",
+          "language": "english"
+        },
+        {
+          "text": "订阅套餐",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "办理套餐",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "激活套餐",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "购买套餐",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "اشتراك عرض",
+          "language": "arabic"
+        },
+        {
+          "text": "تفعيل الباقة",
+          "language": "arabic"
+        }
+      ]
+    },
+    {
+      "intent_type": "view_bill",
+      "samples": [
+        {
+          "text": "how can i view my bill",
+          "language": "english"
+        },
+        {
+          "text": "view my bill",
+          "language": "english"
+        },
+        {
+          "text": "billing statement",
+          "language": "english"
+        },
+        {
+          "text": "my bill",
+          "language": "english"
+        },
+        {
+          "text": "invoice",
+          "language": "english"
+        },
+        {
+          "text": "show my latest bill",
+          "language": "english"
+        },
+        {
+          "text": "open my monthly invoice",
+          "language": "english"
+        },
+        {
+          "text": "check this month's charges",
+          "language": "english"
+        },
+        {
+          "text": "view my postpaid statement",
+          "language": "english"
+        },
+        {
+          "text": "see the bill breakdown",
+          "language": "english"
+        },
+        {
+          "text": "show my outstanding invoice",
+          "language": "english"
+        },
+        {
+          "text": "open my billing details",
+          "language": "english"
+        },
+        {
+          "text": "what was i charged this month",
+          "language": "english"
+        },
+        {
+          "text": "show my invoice summary",
+          "language": "english"
+        },
+        {
+          "text": "check my bill amount",
+          "language": "english"
+        },
+        {
+          "text": "invoice this month",
+          "language": "english"
+        },
+        {
+          "text": "show invoice this month",
+          "language": "english"
+        },
+        {
+          "text": "this month's invoice",
+          "language": "english"
+        },
+        {
+          "text": "monthly invoice amount",
+          "language": "english"
+        },
+        {
+          "text": "check invoice for this month",
+          "language": "english"
+        },
+        {
+          "text": "查看账单",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "账单",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "我的账单",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "月账单",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "فاتورة",
+          "language": "arabic"
+        },
+        {
+          "text": "كيف أعرض الفاتورة",
+          "language": "arabic"
+        }
+      ]
+    },
+    {
+      "intent_type": "account_help",
+      "samples": [
+        {
+          "text": "account help",
+          "language": "english"
+        },
+        {
+          "text": "account settings",
+          "language": "english"
+        },
+        {
+          "text": "profile settings",
+          "language": "english"
+        },
+        {
+          "text": "my account",
+          "language": "english"
+        },
+        {
+          "text": "service request",
+          "language": "english"
+        },
+        {
+          "text": "network issue",
+          "language": "english"
+        },
+        {
+          "text": "complaint",
+          "language": "english"
+        },
+        {
+          "text": "need support",
+          "language": "english"
+        },
+        {
+          "text": "i need help with my sim",
+          "language": "english"
+        },
+        {
+          "text": "how do i change my plan",
+          "language": "english"
+        },
+        {
+          "text": "my service is not working",
+          "language": "english"
+        },
+        {
+          "text": "i need customer support",
+          "language": "english"
+        },
+        {
+          "text": "help with my mobile account",
+          "language": "english"
+        },
+        {
+          "text": "how can i update my profile",
+          "language": "english"
+        },
+        {
+          "text": "i want to raise a complaint",
+          "language": "english"
+        },
+        {
+          "text": "i need help with network issues",
+          "language": "english"
+        },
+        {
+          "text": "how do i manage my account",
+          "language": "english"
+        },
+        {
+          "text": "support for my number",
+          "language": "english"
+        },
+        {
+          "text": "账户帮助",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "账户设置",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "个人设置",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "我的账户",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "مساعدة الحساب",
+          "language": "arabic"
+        },
+        {
+          "text": "إعدادات الحساب",
+          "language": "arabic"
+        }
+      ]
+    },
+    {
+      "intent_type": "make_payment",
+      "samples": [
+        {
+          "text": "make payment",
+          "language": "english"
+        },
+        {
+          "text": "pay bill",
+          "language": "english"
+        },
+        {
+          "text": "payment",
+          "language": "english"
+        },
+        {
+          "text": "pay now",
+          "language": "english"
+        },
+        {
+          "text": "pay my outstanding bill",
+          "language": "english"
+        },
+        {
+          "text": "settle my mobile invoice",
+          "language": "english"
+        },
+        {
+          "text": "make a bill payment now",
+          "language": "english"
+        },
+        {
+          "text": "pay the amount due",
+          "language": "english"
+        },
+        {
+          "text": "clear my postpaid balance",
+          "language": "english"
+        },
+        {
+          "text": "pay this month's charges",
+          "language": "english"
+        },
+        {
+          "text": "complete payment for my bill",
+          "language": "english"
+        },
+        {
+          "text": "pay my telecom bill",
+          "language": "english"
+        },
+        {
+          "text": "i want to settle the invoice",
+          "language": "english"
+        },
+        {
+          "text": "bill payment",
+          "language": "english"
+        },
+        {
+          "text": "支付",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "付款",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "我要支付",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "立即支付",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "الدفع",
+          "language": "arabic"
+        },
+        {
+          "text": "إجراء الدفع",
+          "language": "arabic"
+        }
+      ]
+    },
+    {
+      "intent_type": "payment_history",
+      "samples": [
+        {
+          "text": "payment history",
+          "language": "english"
+        },
+        {
+          "text": "past payments",
+          "language": "english"
+        },
+        {
+          "text": "payment records",
+          "language": "english"
+        },
+        {
+          "text": "show my previous bill payments",
+          "language": "english"
+        },
+        {
+          "text": "view my payment transactions",
+          "language": "english"
+        },
+        {
+          "text": "list my recent payments",
+          "language": "english"
+        },
+        {
+          "text": "payment receipts",
+          "language": "english"
+        },
+        {
+          "text": "see my bill payment history",
+          "language": "english"
+        },
+        {
+          "text": "show paid invoices",
+          "language": "english"
+        },
+        {
+          "text": "view recent payment records",
+          "language": "english"
+        },
+        {
+          "text": "how much did i pay before",
+          "language": "english"
+        },
+        {
+          "text": "payment activity",
+          "language": "english"
+        },
+        {
+          "text": "show completed payments",
+          "language": "english"
+        },
+        {
+          "text": "支付历史",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "支付记录",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "付款记录",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "تاريخ الدفع",
+          "language": "arabic"
+        },
+        {
+          "text": "سجل الدفع",
+          "language": "arabic"
+        }
+      ]
+    },
+    {
+      "intent_type": "payment_status",
+      "samples": [
+        {
+          "text": "payment status",
+          "language": "english"
+        },
+        {
+          "text": "check payment status",
+          "language": "english"
+        },
+        {
+          "text": "payment tracking",
+          "language": "english"
+        },
+        {
+          "text": "did my bill payment go through",
+          "language": "english"
+        },
+        {
+          "text": "is my payment successful",
+          "language": "english"
+        },
+        {
+          "text": "check if my invoice payment was received",
+          "language": "english"
+        },
+        {
+          "text": "track my bill payment",
+          "language": "english"
+        },
+        {
+          "text": "has the payment been posted",
+          "language": "english"
+        },
+        {
+          "text": "payment confirmation status",
+          "language": "english"
+        },
+        {
+          "text": "verify my payment",
+          "language": "english"
+        },
+        {
+          "text": "did you receive my payment",
+          "language": "english"
+        },
+        {
+          "text": "check transaction status",
+          "language": "english"
+        },
+        {
+          "text": "is the payment still pending",
+          "language": "english"
+        },
+        {
+          "text": "支付状态",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "查询支付状态",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "حالة الدفع",
+          "language": "arabic"
+        }
+      ]
+    },
+    {
+      "intent_type": "itinerary_query",
+      "samples": [
+        {
+          "text": "plan a weekend trip to paris",
+          "language": "english"
+        },
+        {
+          "text": "travelling to tokyo next week",
+          "language": "english"
+        },
+        {
+          "text": "traveling to london for vacation",
+          "language": "english"
+        },
+        {
+          "text": "traval to singapore tomorrow",
+          "language": "english"
+        },
+        {
+          "text": "travle to rome this summer",
+          "language": "english"
+        },
+        {
+          "text": "tranval to bangkok for holiday",
+          "language": "english"
+        },
+        {
+          "text": "go to hong kong for travel",
+          "language": "english"
+        },
+        {
+          "text": "trip to dubai itinerary",
+          "language": "english"
+        },
+        {
+          "text": "visit museums in paris",
+          "language": "english"
+        },
+        {
+          "text": "build my travel itinerary",
+          "language": "english"
+        },
+        {
+          "text": "book train tickets for my trip",
+          "language": "english"
+        },
+        {
+          "text": "travel booking for my vacation",
+          "language": "english"
+        },
+        {
+          "text": "规划东京旅行",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "北京三日游行程",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "预订旅行门票",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "预订火车票",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "上海周末出行计划",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "去香港旅行",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "香港旅行行程",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "计划去香港旅游",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "安排香港三日游",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "خطط سفر إلى القاهرة",
+          "language": "arabic"
+        },
+        {
+          "text": "رحلة سياحية إلى عمان",
+          "language": "arabic"
+        },
+        {
+          "text": "حجز تذكرة قطار للسفر",
+          "language": "arabic"
+        },
+        {
+          "text": "حجز رحلة سياحية",
+          "language": "arabic"
+        }
+      ]
+    },
+    {
+      "intent_type": "flight_info",
+      "samples": [
+        {
+          "text": "flight ticket from dubai to paris",
+          "language": "english"
+        },
+        {
+          "text": "flight tickets for two passengers",
+          "language": "english"
+        },
+        {
+          "text": "flight to dubai tomorrow",
+          "language": "english"
+        },
+        {
+          "text": "fly to cairo next monday",
+          "language": "english"
+        },
+        {
+          "text": "book a flight to istanbul",
+          "language": "english"
+        },
+        {
+          "text": "查询上海到北京机票",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "查询明天航班",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "订去东京的机票",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "تذكرة طيران إلى دبي",
+          "language": "arabic"
+        },
+        {
+          "text": "رحلة طيران إلى باريس",
+          "language": "arabic"
+        }
+      ]
+    },
+    {
+      "intent_type": "hotel_info",
+      "samples": [
+        {
+          "text": "hotel in paris near the station",
+          "language": "english"
+        },
+        {
+          "text": "book hotel for three nights",
+          "language": "english"
+        },
+        {
+          "text": "hotel booking in london",
+          "language": "english"
+        },
+        {
+          "text": "预订上海酒店",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "订东京酒店",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "فندق قريب من المطار",
+          "language": "arabic"
+        },
+        {
+          "text": "حجز فندق في دبي",
+          "language": "arabic"
+        }
+      ]
+    },
+    {
+      "intent_type": "general_question",
+      "samples": [
+        {
+          "text": "what is photosynthesis",
+          "language": "english"
+        },
+        {
+          "text": "how do solar eclipses happen",
+          "language": "english"
+        },
+        {
+          "text": "can you explain recursion",
+          "language": "english"
+        },
+        {
+          "text": "tell me about desert animals",
+          "language": "english"
+        },
+        {
+          "text": "help me write a grocery list",
+          "language": "english"
+        },
+        {
+          "text": "光合作用是什么",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "日食是怎么形成的",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "帮我写购物清单",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "ما هو كسوف الشمس",
+          "language": "arabic"
+        },
+        {
+          "text": "كيف تعمل البوصلة",
+          "language": "arabic"
+        }
+      ]
+    },
+    {
+      "intent_type": "navigation_intent",
+      "samples": [
+        {
+          "text": "open the profile page",
+          "language": "english"
+        },
+        {
+          "text": "go to the settings page",
+          "language": "english"
+        },
+        {
+          "text": "navigate to the orders page",
+          "language": "english"
+        },
+        {
+          "text": "take me to the help center page",
+          "language": "english"
+        },
+        {
+          "text": "show me the app settings page",
+          "language": "english"
+        },
+        {
+          "text": "打开设置页面",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "进入订单页面",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "跳转到个人中心页面",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "去首页页面",
+          "language": "simplifiedChinese"
+        },
+        {
+          "text": "افتح صفحة الإعدادات",
+          "language": "arabic"
+        },
+        {
+          "text": "اذهب إلى صفحة الطلبات",
+          "language": "arabic"
+        },
+        {
+          "text": "انتقل إلى صفحة المساعدة",
+          "language": "arabic"
+        }
+      ]
+    },
+    {
+      "intent_type": "unknown",
+      "samples": [
+        {
+          "text": "asdfgh",
+          "language": "english"
+        },
+        {
+          "text": "qwerty",
+          "language": "english"
+        },
+        {
+          "text": "blue banana square",
+          "language": "english"
+        },
+        {
+          "text": "lorem ipsum placeholder",
+          "language": "english"
+        },
+        {
+          "text": "zzzz 987 random symbols",
+          "language": "english"
+        }
+      ]
+    }
+  ]
+}

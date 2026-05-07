@@ -75,27 +75,41 @@ final class AppLanguageStore: ObservableObject {
     }
 
     private func loadCatalog(for language: AppLanguage) -> [String: String] {
-        guard
-            let baseURL = Bundle.main.url(forResource: "Localizations", withExtension: nil)
-                ?? Bundle.main.resourceURL?.appendingPathComponent("Localizations", isDirectory: true)
-        else {
-            return [:]
+        for fileURL in candidateCatalogURLs(for: language) {
+            guard
+                let data = try? Data(contentsOf: fileURL),
+                let jsonObject = try? JSONSerialization.jsonObject(with: data) as? [String: Any]
+            else {
+                continue
+            }
+
+            var flattenedCatalog: [String: String] = [:]
+            flatten(jsonObject, prefix: "", into: &flattenedCatalog)
+            if !flattenedCatalog.isEmpty {
+                return flattenedCatalog
+            }
         }
 
-        let fileURL = baseURL
-            .appendingPathComponent("\(language.rawValue).lproj", isDirectory: true)
-            .appendingPathComponent("Localizable.json", isDirectory: false)
+        return [:]
+    }
 
-        guard
-            let data = try? Data(contentsOf: fileURL),
-            let jsonObject = try? JSONSerialization.jsonObject(with: data) as? [String: Any]
-        else {
-            return [:]
-        }
+    private func candidateCatalogURLs(for language: AppLanguage) -> [URL] {
+        let resourceURL = Bundle.main.resourceURL
+        let localizedFolder = "\(language.rawValue).lproj"
+        let fileName = "Localizable.json"
 
-        var flattenedCatalog: [String: String] = [:]
-        flatten(jsonObject, prefix: "", into: &flattenedCatalog)
-        return flattenedCatalog
+        return [
+            Bundle.main.url(forResource: fileName, withExtension: nil, subdirectory: "Localizations/\(localizedFolder)"),
+            Bundle.main.url(forResource: "Localizable", withExtension: "json", subdirectory: "Localizations/\(localizedFolder)"),
+            Bundle.main.url(forResource: fileName, withExtension: nil, subdirectory: localizedFolder),
+            Bundle.main.url(forResource: "Localizable", withExtension: "json", subdirectory: localizedFolder),
+            resourceURL?.appendingPathComponent("Localizations", isDirectory: true)
+                .appendingPathComponent(localizedFolder, isDirectory: true)
+                .appendingPathComponent(fileName, isDirectory: false),
+            resourceURL?.appendingPathComponent(localizedFolder, isDirectory: true)
+                .appendingPathComponent(fileName, isDirectory: false)
+        ]
+        .compactMap { $0 }
     }
 
     private func flatten(_ dictionary: [String: Any], prefix: String, into output: inout [String: String]) {

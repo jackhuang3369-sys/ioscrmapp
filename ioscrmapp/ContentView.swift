@@ -10,6 +10,7 @@ import SwiftUI
 struct ContentView: View {
     @ObservedObject var sessionStore: SessionStore
     let authService: any AuthServicing
+    let uaePassService: UAEPassServicing
     let aiChatService: any AIChatServicing
     let homeService: any HomeServicing
     let mallService: any MallServicing
@@ -45,7 +46,7 @@ struct ContentView: View {
                     notificationService: notificationService
                 )
             } else {
-                AuthLoginContainerView(sessionStore: sessionStore, authService: authService)
+                AuthLoginContainerView(sessionStore: sessionStore, authService: authService, uaePassService: uaePassService)
             }
         }
         .animation(.easeInOut(duration: 0.2), value: sessionStore.isAuthenticated)
@@ -66,6 +67,7 @@ struct ContentView_Previews: PreviewProvider {
             ContentView(
                 sessionStore: SessionStore(),
                 authService: previewServices.authService,
+                uaePassService: previewServices.uaePassService,
                 aiChatService: previewServices.aiChatService,
                 homeService: previewServices.homeService,
                 mallService: previewServices.mallService,
@@ -87,6 +89,7 @@ struct ContentView_Previews: PreviewProvider {
             ContentView(
                 sessionStore: SessionStore.previewAuthenticated,
                 authService: previewServices.authService,
+                uaePassService: previewServices.uaePassService,
                 aiChatService: previewServices.aiChatService,
                 homeService: previewServices.homeService,
                 mallService: previewServices.mallService,

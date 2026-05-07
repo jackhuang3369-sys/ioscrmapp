@@ -8,6 +8,7 @@
 # Xcode build artifacts
 build/
 DerivedData/
+.deriveddata/
 *.moved-aside
 *.hmap
 *.ipa
@@ -16,6 +17,14 @@ DerivedData/
 
 # Swift Package Manager
 .build/
+.swift-cli-cache/
+.swift-module-cache/
+.tmp/
+
+# Python local/runtime artifacts
+**/.venv/
+**/__pycache__/
+*.pyc
 
 # Local editor/assistant settings
 .vscode/

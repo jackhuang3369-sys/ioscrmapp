@@ -1,0 +1,319 @@
+{
+  "version": "2.0",
+  "description": "Intent classification training data for telecom mobile app",
+  "intent_types": [
+    "balance_inquiry",
+    "data_usage_query",
+    "recharge_account",
+    "view_offers",
+    "subscribe_offer",
+    "view_bill",
+    "account_help",
+    "make_payment",
+    "payment_history",
+    "payment_status",
+    "itinerary_query",
+    "flight_info",
+    "hotel_info",
+    "general_question",
+    "navigation_intent",
+    "unknown"
+  ],
+  "training_data": [
+    {
+      "intent_type": "balance_inquiry",
+      "samples": [
+        {"text": "check my balance", "language": "english"},
+        {"text": "how can i check my balance", "language": "english"},
+        {"text": "view my balance", "language": "english"},
+        {"text": "my balance", "language": "english"},
+        {"text": "balance inquiry", "language": "english"},
+        {"text": "current balance", "language": "english"},
+        {"text": "remaining balance", "language": "english"},
+        {"text": "account balance", "language": "english"},
+        {"text": "查看余额", "language": "simplifiedChinese"},
+        {"text": "查余额", "language": "simplifiedChinese"},
+        {"text": "余额", "language": "simplifiedChinese"},
+        {"text": "我的余额", "language": "simplifiedChinese"},
+        {"text": "当前余额", "language": "simplifiedChinese"},
+        {"text": "الرصيد", "language": "arabic"},
+        {"text": "كيف أتحقق من الرصيد", "language": "arabic"},
+        {"text": "رصيد الحساب", "language": "arabic"}
+      ]
+    },
+    {
+      "intent_type": "data_usage_query",
+      "samples": [
+        {"text": "check my data usage", "language": "english"},
+        {"text": "how much data do i have left", "language": "english"},
+        {"text": "remaining data", "language": "english"},
+        {"text": "data left", "language": "english"},
+        {"text": "my data usage", "language": "english"},
+        {"text": "check my data package is enough or not", "language": "english"},
+        {"text": "is my data package enough", "language": "english"},
+        {"text": "how much data remaining", "language": "english"},
+        {"text": "data balance", "language": "english"},
+        {"text": "check data balance", "language": "english"},
+        {"text": "remaining internet data", "language": "english"},
+        {"text": "my data consumption", "language": "english"},
+        {"text": "data usage check", "language": "english"},
+        {"text": "show my data usage", "language": "english"},
+        {"text": "view data usage", "language": "english"},
+        {"text": "data package status", "language": "english"},
+        {"text": "how much data have i used", "language": "english"},
+        {"text": "data remaining this month", "language": "english"},
+        {"text": "check my internet usage", "language": "english"},
+        {"text": "mobile data usage", "language": "english"},
+        {"text": "am i running out of data", "language": "english"},
+        {"text": "data package remaining", "language": "english"},
+        {"text": "how many gb left", "language": "english"},
+        {"text": "is my data running low", "language": "english"},
+        {"text": "查询流量", "language": "simplifiedChinese"},
+        {"text": "剩余流量", "language": "simplifiedChinese"},
+        {"text": "流量还剩多少", "language": "simplifiedChinese"},
+        {"text": "查流量", "language": "simplifiedChinese"},
+        {"text": "我的流量", "language": "simplifiedChinese"},
+        {"text": "流量使用情况", "language": "simplifiedChinese"},
+        {"text": "当前流量", "language": "simplifiedChinese"},
+        {"text": "流量余额", "language": "simplifiedChinese"},
+        {"text": "数据流量查询", "language": "simplifiedChinese"},
+        {"text": "本月流量", "language": "simplifiedChinese"},
+        {"text": "流量剩余查询", "language": "simplifiedChinese"},
+        {"text": "查看流量使用", "language": "simplifiedChinese"},
+        {"text": "流量消耗", "language": "simplifiedChinese"},
+        {"text": "还有多少流量", "language": "simplifiedChinese"},
+        {"text": "流量不够了吗", "language": "simplifiedChinese"},
+        {"text": "استخدام البيانات", "language": "arabic"},
+        {"text": "البيانات المتبقية", "language": "arabic"},
+        {"text": "كم البيانات المتبقية", "language": "arabic"},
+        {"text": "استهلاك البيانات", "language": "arabic"},
+        {"text": "كم GB متبقي", "language": "arabic"}
+      ]
+    },
+    {
+      "intent_type": "recharge_account",
+      "samples": [
+        {"text": "recharge my account", "language": "english"},
+        {"text": "how do i recharge my account", "language": "english"},
+        {"text": "recharge account", "language": "english"},
+        {"text": "top up my account", "language": "english"},
+        {"text": "top up", "language": "english"},
+        {"text": "how to recharge", "language": "english"},
+        {"text": "充值", "language": "simplifiedChinese"},
+        {"text": "充话费", "language": "simplifiedChinese"},
+        {"text": "重新充值", "language": "simplifiedChinese"},
+        {"text": "怎么充值", "language": "simplifiedChinese"},
+        {"text": "我要充值", "language": "simplifiedChinese"},
+        {"text": "اعادة شحن", "language": "arabic"},
+        {"text": "شحن الحساب", "language": "arabic"},
+        {"text": "كيف أعيد شحن", "language": "arabic"}
+      ]
+    },
+    {
+      "intent_type": "view_offers",
+      "samples": [
+        {"text": "what offers are available", "language": "english"},
+        {"text": "view offers", "language": "english"},
+        {"text": "show offers", "language": "english"},
+        {"text": "available packages", "language": "english"},
+        {"text": "current offers", "language": "english"},
+        {"text": "promotions", "language": "english"},
+        {"text": "roaming plan", "language": "english"},
+        {"text": "roaming package", "language": "english"},
+        {"text": "查看优惠", "language": "simplifiedChinese"},
+        {"text": "优惠", "language": "simplifiedChinese"},
+        {"text": "套餐", "language": "simplifiedChinese"},
+        {"text": "有什么优惠", "language": "simplifiedChinese"},
+        {"text": "可用套餐", "language": "simplifiedChinese"},
+        {"text": "العروض", "language": "arabic"},
+        {"text": "ما العروض المتاحة", "language": "arabic"},
+        {"text": "عرض الباقات", "language": "arabic"}
+      ]
+    },
+    {
+      "intent_type": "subscribe_offer",
+      "samples": [
+        {"text": "subscribe offer", "language": "english"},
+        {"text": "i want to subscribe", "language": "english"},
+        {"text": "activate package", "language": "english"},
+        {"text": "purchase plan", "language": "english"},
+        {"text": "buy offer", "language": "english"},
+        {"text": "订阅套餐", "language": "simplifiedChinese"},
+        {"text": "办理套餐", "language": "simplifiedChinese"},
+        {"text": "激活套餐", "language": "simplifiedChinese"},
+        {"text": "购买套餐", "language": "simplifiedChinese"},
+        {"text": "اشتراك عرض", "language": "arabic"},
+        {"text": "تفعيل الباقة", "language": "arabic"}
+      ]
+    },
+    {
+      "intent_type": "view_bill",
+      "samples": [
+        {"text": "how can i view my bill", "language": "english"},
+        {"text": "view my bill", "language": "english"},
+        {"text": "billing statement", "language": "english"},
+        {"text": "my bill", "language": "english"},
+        {"text": "invoice", "language": "english"},
+        {"text": "查看账单", "language": "simplifiedChinese"},
+        {"text": "账单", "language": "simplifiedChinese"},
+        {"text": "我的账单", "language": "simplifiedChinese"},
+        {"text": "月账单", "language": "simplifiedChinese"},
+        {"text": "فاتورة", "language": "arabic"},
+        {"text": "كيف أعرض الفاتورة", "language": "arabic"}
+      ]
+    },
+    {
+      "intent_type": "account_help",
+      "samples": [
+        {"text": "account help", "language": "english"},
+        {"text": "account settings", "language": "english"},
+        {"text": "profile settings", "language": "english"},
+        {"text": "my account", "language": "english"},
+        {"text": "service request", "language": "english"},
+        {"text": "network issue", "language": "english"},
+        {"text": "complaint", "language": "english"},
+        {"text": "need support", "language": "english"},
+        {"text": "账户帮助", "language": "simplifiedChinese"},
+        {"text": "账户设置", "language": "simplifiedChinese"},
+        {"text": "个人设置", "language": "simplifiedChinese"},
+        {"text": "我的账户", "language": "simplifiedChinese"},
+        {"text": "مساعدة الحساب", "language": "arabic"},
+        {"text": "إعدادات الحساب", "language": "arabic"}
+      ]
+    },
+    {
+      "intent_type": "make_payment",
+      "samples": [
+        {"text": "make payment", "language": "english"},
+        {"text": "pay bill", "language": "english"},
+        {"text": "payment", "language": "english"},
+        {"text": "pay now", "language": "english"},
+        {"text": "支付", "language": "simplifiedChinese"},
+        {"text": "付款", "language": "simplifiedChinese"},
+        {"text": "我要支付", "language": "simplifiedChinese"},
+        {"text": "立即支付", "language": "simplifiedChinese"},
+        {"text": "الدفع", "language": "arabic"},
+        {"text": "إجراء الدفع", "language": "arabic"}
+      ]
+    },
+    {
+      "intent_type": "payment_history",
+      "samples": [
+        {"text": "payment history", "language": "english"},
+        {"text": "past payments", "language": "english"},
+        {"text": "payment records", "language": "english"},
+        {"text": "支付历史", "language": "simplifiedChinese"},
+        {"text": "支付记录", "language": "simplifiedChinese"},
+        {"text": "付款记录", "language": "simplifiedChinese"},
+        {"text": "تاريخ الدفع", "language": "arabic"},
+        {"text": "سجل الدفع", "language": "arabic"}
+      ]
+    },
+    {
+      "intent_type": "payment_status",
+      "samples": [
+        {"text": "payment status", "language": "english"},
+        {"text": "check payment status", "language": "english"},
+        {"text": "payment tracking", "language": "english"},
+        {"text": "支付状态", "language": "simplifiedChinese"},
+        {"text": "查询支付状态", "language": "simplifiedChinese"},
+        {"text": "حالة الدفع", "language": "arabic"}
+      ]
+    },
+    {
+      "intent_type": "itinerary_query",
+      "samples": [
+        {"text": "travel to", "language": "english"},
+        {"text": "travelling to", "language": "english"},
+        {"text": "traveling to", "language": "english"},
+        {"text": "traval to", "language": "english"},
+        {"text": "travle to", "language": "english"},
+        {"text": "tranval to", "language": "english"},
+        {"text": "go to", "language": "english"},
+        {"text": "trip to", "language": "english"},
+        {"text": "visit", "language": "english"},
+        {"text": "itinerary", "language": "english"},
+        {"text": "ticket", "language": "english"},
+        {"text": "booking", "language": "english"},
+        {"text": "旅行", "language": "simplifiedChinese"},
+        {"text": "行程", "language": "simplifiedChinese"},
+        {"text": "预订", "language": "simplifiedChinese"},
+        {"text": "订票", "language": "simplifiedChinese"},
+        {"text": "出行", "language": "simplifiedChinese"},
+        {"text": "سفر إلى", "language": "arabic"},
+        {"text": "رحلة إلى", "language": "arabic"},
+        {"text": "تذكرة", "language": "arabic"},
+        {"text": "حجز", "language": "arabic"}
+      ]
+    },
+    {
+      "intent_type": "flight_info",
+      "samples": [
+        {"text": "flight ticket", "language": "english"},
+        {"text": "flight tickets", "language": "english"},
+        {"text": "flight to", "language": "english"},
+        {"text": "fly to", "language": "english"},
+        {"text": "book a flight", "language": "english"},
+        {"text": "机票", "language": "simplifiedChinese"},
+        {"text": "航班", "language": "simplifiedChinese"},
+        {"text": "订机票", "language": "simplifiedChinese"},
+        {"text": "تذكرة طيران", "language": "arabic"},
+        {"text": "رحلة طيران", "language": "arabic"}
+      ]
+    },
+    {
+      "intent_type": "hotel_info",
+      "samples": [
+        {"text": "hotel in", "language": "english"},
+        {"text": "book hotel", "language": "english"},
+        {"text": "hotel booking", "language": "english"},
+        {"text": "酒店", "language": "simplifiedChinese"},
+        {"text": "订酒店", "language": "simplifiedChinese"},
+        {"text": "فندق", "language": "arabic"},
+        {"text": "حجز فندق", "language": "arabic"}
+      ]
+    },
+    {
+      "intent_type": "general_question",
+      "samples": [
+        {"text": "what is", "language": "english"},
+        {"text": "how do", "language": "english"},
+        {"text": "can you", "language": "english"},
+        {"text": "tell me", "language": "english"},
+        {"text": "help me", "language": "english"},
+        {"text": "是什么", "language": "simplifiedChinese"},
+        {"text": "怎么", "language": "simplifiedChinese"},
+        {"text": "帮我", "language": "simplifiedChinese"},
+        {"text": "ما هو", "language": "arabic"},
+        {"text": "كيف", "language": "arabic"}
+      ]
+    },
+    {
+      "intent_type": "navigation_intent",
+      "samples": [
+        {"text": "open page", "language": "english"},
+        {"text": "go to page", "language": "english"},
+        {"text": "navigate to", "language": "english"},
+        {"text": "take me to", "language": "english"},
+        {"text": "show me page", "language": "english"},
+        {"text": "打开页面", "language": "simplifiedChinese"},
+        {"text": "进入", "language": "simplifiedChinese"},
+        {"text": "跳转到", "language": "simplifiedChinese"},
+        {"text": "去", "language": "simplifiedChinese"},
+        {"text": "افتح", "language": "arabic"},
+        {"text": "اذهب إلى", "language": "arabic"},
+        {"text": "انتقل إلى", "language": "arabic"}
+      ]
+    },
+    {
+      "intent_type": "unknown",
+      "samples": [
+        {"text": "asdfgh", "language": "english"},
+        {"text": "qwerty", "language": "english"},
+        {"text": "random", "language": "english"},
+        {"text": "noise", "language": "english"},
+        {"text": "123456", "language": "english"}
+      ]
+    }
+  ]
+}

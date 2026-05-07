@@ -8,12 +8,15 @@ struct AuthLoginContainerView: View {
     @State private var isShowingForgotPassword = false
 
     private let authService: any AuthServicing
+    private let uaePassService: UAEPassServicing
 
-    init(sessionStore: SessionStore, authService: any AuthServicing) {
+    init(sessionStore: SessionStore, authService: any AuthServicing, uaePassService: UAEPassServicing = MockUAEPassService()) {
         self.authService = authService
+        self.uaePassService = uaePassService
         _viewModel = StateObject(
             wrappedValue: AuthLoginViewModel(
                 authService: authService,
+                uaePassService: uaePassService,
                 sessionStore: sessionStore
             )
         )
@@ -225,6 +228,18 @@ struct AuthLoginContainerView: View {
 
             HStack(spacing: DUSpacing.lg) {
                 DUIconButton(
+                    title: localized("auth.social.uaePass")
+                ) {
+                    Image("LoginUAEPassIcon")
+                        .renderingMode(.original)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 48, height: 48)
+                        .offset(y: 6)
+                } action: {
+                    viewModel.loginWithUAEPass()
+                }
+                DUIconButton(
                     title: localized("auth.social.sms")
                 ) {
                     Image("LoginSMSIcon")
@@ -236,17 +251,6 @@ struct AuthLoginContainerView: View {
                 } action: {
                     viewModel.showPlaceholderMessage(for: "auth.placeholder.sms")
                 }
-//                DUIconButton(
-//                    title: localized("auth.social.fingerprint")
-//                ) {
-//                    Image(systemName: "touchid")
-//                        .resizable()
-//                        .scaledToFit()
-//                        .frame(width: 30, height: 30)
-//                        .foregroundColor(theme.colors.text.secondary)
-//                } action: {
-//                    viewModel.showPlaceholderMessage(for: "auth.placeholder.fingerprint")
-//                }
                 DUIconButton(
                     title: localized("auth.social.face")
                 ) {
@@ -1113,7 +1117,7 @@ private struct RegistrationVerifyRegisteredPreviewHost: View {
 struct AuthLoginContainerView_Previews: PreviewProvider {
     static var previews: some View {
         Group {
-            AuthLoginContainerView(sessionStore: SessionStore(), authService: MockAuthService())
+            AuthLoginContainerView(sessionStore: SessionStore(), authService: MockAuthService(), uaePassService: MockUAEPassService())
                 .previewDisplayName("Login")
 
             AuthRegistrationContainerView(authService: MockAuthService()) { _ in }
