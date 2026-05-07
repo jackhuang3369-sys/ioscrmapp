@@ -20,6 +20,7 @@ DerivedData/
 .swift-cli-cache/
 .swift-module-cache/
 .tmp/
+**/.swiftpm/
 
 # Python local/runtime artifacts
 **/.venv/

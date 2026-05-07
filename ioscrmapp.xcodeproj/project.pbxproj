@@ -21,9 +21,9 @@
 		2BB8E032C18107EB6643F224 /* IntentRecognitionIntegrationExample.swift in Sources */ = {isa = PBXBuildFile; fileRef = 505682D2070CD6ED025471AD /* IntentRecognitionIntegrationExample.swift */; };
 		37FEF17DF975A26796165D2B /* IntentModelsXCTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 439D49860A0C5D7E7CF76F27 /* IntentModelsXCTests.swift */; };
 		3AFC95ABEACFFC1684763647 /* BoltFlightCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 353C64820D82296D39692DB1 /* BoltFlightCard.swift */; };
+		430108B6C80F87D4522A031F /* Tabby in Frameworks */ = {isa = PBXBuildFile; productRef = 9FF01388F3298FD17E444802 /* Tabby */; };
 		433F87247F486D638CCBD040 /* IntentRecognitionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC7B9C80A05189AD86FF81B6 /* IntentRecognitionService.swift */; };
 		48E45BC1E84FA2B343BAE41F /* IntentClassificationModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43C07370EAF9C8043A86D6D4 /* IntentClassificationModels.swift */; };
-
 		7C3C438D604FE056CE6EEDAD /* BoltTravelCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4A801A4D64CBB6F0AF180D7 /* BoltTravelCard.swift */; };
 		7CBB6A24A08F57A053687FEA /* IntentFeedbackView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFCE8308F215885FBCA8AA3F /* IntentFeedbackView.swift */; };
 		7F67316FEE030FD68D80B117 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34A671BDB3E34751046806B2 /* Foundation.framework */; };
@@ -234,7 +234,6 @@
 		544C4DBC9062BEAA4969F5FC /* IntentConfidenceCalculator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = IntentConfidenceCalculator.swift; path = Utilities/IntentConfidenceCalculator.swift; sourceTree = "<group>"; };
 		5464F08E1DFA446C4546066B /* IntentRecognitionIntegrationTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = IntentRecognitionIntegrationTests.swift; path = Tests/AIModelsTests/IntentRecognitionIntegrationTests.swift; sourceTree = "<group>"; };
 		61C9E5735A53CED795C2B2D1 /* BoltHotelCard.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = BoltHotelCard.swift; sourceTree = "<group>"; };
-
 		8DC1BE07F8B27099803E03CB /* BoltTheme.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = BoltTheme.swift; sourceTree = "<group>"; };
 		90EB538A9DFD7E021A5CE730 /* ONBPersonaModels.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ONBPersonaModels.swift; sourceTree = "<group>"; };
 		92D225A4B440E2161D2C61EB /* IntentModelsTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = IntentModelsTests.swift; path = Tests/AIModelsTests/IntentModelsTests.swift; sourceTree = "<group>"; };
@@ -413,6 +412,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				430108B6C80F87D4522A031F /* Tabby in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -441,6 +441,7 @@
 				04E692C62F5EA2CE0082C59F /* Products */,
 				D96EC575EEFC792DF568DDA1 /* Frameworks */,
 				D34EA61964B71F28ACC9D861 /* Tests */,
+				DF09DD906BEAC70EAB7712F9 /* TabbySDK */,
 			);
 			sourceTree = "<group>";
 		};
@@ -466,7 +467,6 @@
 				A20000000000000000000079 /* Localizations */,
 				A20000000000000000000071 /* Fonts */,
 				04E692CC2F5EA2CF0082C59F /* Assets.xcassets */,
-
 				04E692CE2F5EA2CF0082C59F /* Preview Content */,
 				0DEAD880F8CA7EB076F56C9C /* Utilities */,
 				A577DEA2174C86D02824455E /* ML */,
@@ -591,10 +591,11 @@
 				D241C9C3684F8D1CD9F2C9C5 /* IntentSignalFusion.swift */,
 				DED4BD6003762BC2702C8BF3 /* ONBIntentFusionService.swift */,
 				B4453371ECF9D623BF12D1E4 /* ONBPersonaClassifierService.swift */,
-		A20000000000000000000080 /* UAEPassServicing.swift */,
-		A20000000000000000000081 /* UAEPassModels.swift */,
-		A20000000000000000000082 /* MockUAEPassService.swift */,
-		A20000000000000000000083 /* RemoteUAEPassService.swift */,			);
+				A20000000000000000000080 /* UAEPassServicing.swift */,
+				A20000000000000000000081 /* UAEPassModels.swift */,
+				A20000000000000000000082 /* MockUAEPassService.swift */,
+				A20000000000000000000083 /* RemoteUAEPassService.swift */,
+			);
 			path = Services;
 			sourceTree = "<group>";
 		};
@@ -1252,6 +1253,14 @@
 			path = BoltUIKit;
 			sourceTree = "<group>";
 		};
+		DF09DD906BEAC70EAB7712F9 /* TabbySDK */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = TabbySDK;
+			path = TabbySDK;
+			sourceTree = "<group>";
+		};
 		E30000000000000000000001 /* Video */ = {
 			isa = PBXGroup;
 			children = (
@@ -1346,6 +1355,9 @@
 			dependencies = (
 			);
 			name = ioscrmapp;
+			packageProductDependencies = (
+				9FF01388F3298FD17E444802 /* Tabby */,
+			);
 			productName = ioscrmapp;
 			productReference = 04E692C52F5EA2CE0082C59F /* du App.app */;
 			productType = "com.apple.product-type.application";
@@ -1392,6 +1404,9 @@
 				Base,
 			);
 			mainGroup = 04E692BC2F5EA2CE0082C59F;
+			packageReferences = (
+				C148A62A81D35B5F2F94FFBF /* XCLocalSwiftPackageReference "TabbySDK" */,
+			);
 			productRefGroup = 04E692C62F5EA2CE0082C59F /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -1408,7 +1423,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				A10000000000000000000071 /* Fonts in Resources */,
-
 				A10000000000000000000079 /* Localizations in Resources */,
 				04E692D02F5EA2CF0082C59F /* Preview Assets.xcassets in Resources */,
 				04E692CD2F5EA2CF0082C59F /* Assets.xcassets in Resources */,
@@ -1556,7 +1570,8 @@
 				A10000000000000000000080 /* UAEPassServicing.swift in Sources */,
 				A10000000000000000000081 /* UAEPassModels.swift in Sources */,
 				A10000000000000000000082 /* MockUAEPassService.swift in Sources */,
-				A10000000000000000000083 /* RemoteUAEPassService.swift in Sources */,				F10000000000000000000001 /* AIChatService.swift in Sources */,
+				A10000000000000000000083 /* RemoteUAEPassService.swift in Sources */,
+				F10000000000000000000001 /* AIChatService.swift in Sources */,
 				A10000000000000000000008 /* MeService.swift in Sources */,
 				A1000000000000000000002C /* NotificationService.swift in Sources */,
 				A10000000000000000000001 /* SessionStore.swift in Sources */,
@@ -2264,6 +2279,21 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		C148A62A81D35B5F2F94FFBF /* XCLocalSwiftPackageReference "TabbySDK" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = TabbySDK;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		9FF01388F3298FD17E444802 /* Tabby */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C148A62A81D35B5F2F94FFBF /* XCLocalSwiftPackageReference "TabbySDK" */;
+			productName = Tabby;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 04E692BD2F5EA2CE0082C59F /* Project object */;
 }
