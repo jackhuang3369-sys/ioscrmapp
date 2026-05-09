@@ -164,10 +164,12 @@
 		C10000000000000000000006 /* BadgeCenterSharedComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20000000000000000000006 /* BadgeCenterSharedComponents.swift */; };
 		C10000000000000000000007 /* BadgeDetailContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20000000000000000000007 /* BadgeDetailContentView.swift */; };
 		C10000000000000000000008 /* BadgeUnlockPromptView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20000000000000000000008 /* BadgeUnlockPromptView.swift */; };
+		C3C3BE2A62E9F3D197FF990D /* OnboardingModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4A46090F96A6EBCEB971AA2 /* OnboardingModels.swift */; };
 		C5C72B507EAAE13342FA6888 /* BoltTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DC1BE07F8B27099803E03CB /* BoltTheme.swift */; };
 		C5EB1411228903915135A355 /* ONBPersonaClassifierService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4453371ECF9D623BF12D1E4 /* ONBPersonaClassifierService.swift */; };
 		C684EC50DE3BD834FB63F41B /* BoltTravelShowcase.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9A7DBB55514AE930F68A6B3 /* BoltTravelShowcase.swift */; };
 		CA8351FC2CBDB501C99913BC /* IntentConfidenceCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 544C4DBC9062BEAA4969F5FC /* IntentConfidenceCalculator.swift */; };
+		D0FCF998B3FD4132EC9F7EE1 /* OnboardingModelsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7424A6C778DB9B53C9E69D9C /* OnboardingModelsTests.swift */; };
 		D10000000000000000000001 /* OffersAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = D20000000000000000000001 /* OffersAPI.swift */; };
 		D10000000000000000000002 /* OffersService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D20000000000000000000002 /* OffersService.swift */; };
 		D10000000000000000000003 /* OffersModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = D20000000000000000000003 /* OffersModels.swift */; };
@@ -234,6 +236,7 @@
 		544C4DBC9062BEAA4969F5FC /* IntentConfidenceCalculator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = IntentConfidenceCalculator.swift; path = Utilities/IntentConfidenceCalculator.swift; sourceTree = "<group>"; };
 		5464F08E1DFA446C4546066B /* IntentRecognitionIntegrationTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = IntentRecognitionIntegrationTests.swift; path = Tests/AIModelsTests/IntentRecognitionIntegrationTests.swift; sourceTree = "<group>"; };
 		61C9E5735A53CED795C2B2D1 /* BoltHotelCard.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = BoltHotelCard.swift; sourceTree = "<group>"; };
+		7424A6C778DB9B53C9E69D9C /* OnboardingModelsTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = OnboardingModelsTests.swift; path = Tests/OnboardingTests/OnboardingModelsTests.swift; sourceTree = "<group>"; };
 		8DC1BE07F8B27099803E03CB /* BoltTheme.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = BoltTheme.swift; sourceTree = "<group>"; };
 		90EB538A9DFD7E021A5CE730 /* ONBPersonaModels.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ONBPersonaModels.swift; sourceTree = "<group>"; };
 		92D225A4B440E2161D2C61EB /* IntentModelsTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = IntentModelsTests.swift; path = Tests/AIModelsTests/IntentModelsTests.swift; sourceTree = "<group>"; };
@@ -372,6 +375,7 @@
 		C20000000000000000000006 /* BadgeCenterSharedComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BadgeCenterSharedComponents.swift; sourceTree = "<group>"; };
 		C20000000000000000000007 /* BadgeDetailContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BadgeDetailContentView.swift; sourceTree = "<group>"; };
 		C20000000000000000000008 /* BadgeUnlockPromptView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BadgeUnlockPromptView.swift; sourceTree = "<group>"; };
+		C4A46090F96A6EBCEB971AA2 /* OnboardingModels.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = OnboardingModels.swift; path = Onboarding/Models/OnboardingModels.swift; sourceTree = "<group>"; };
 		CF5DA21917F2349D61F7ACFD /* BoltPackageCard.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = BoltPackageCard.swift; sourceTree = "<group>"; };
 		D20000000000000000000001 /* OffersAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OffersAPI.swift; sourceTree = "<group>"; };
 		D20000000000000000000002 /* OffersService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OffersService.swift; sourceTree = "<group>"; };
@@ -442,6 +446,7 @@
 				D96EC575EEFC792DF568DDA1 /* Frameworks */,
 				D34EA61964B71F28ACC9D861 /* Tests */,
 				DF09DD906BEAC70EAB7712F9 /* TabbySDK */,
+				2DF1660E3E3FF774DF0D7912 /* OnboardingTests */,
 			);
 			sourceTree = "<group>";
 		};
@@ -500,6 +505,14 @@
 			path = Models;
 			sourceTree = "<group>";
 		};
+		2DF1660E3E3FF774DF0D7912 /* OnboardingTests */ = {
+			isa = PBXGroup;
+			children = (
+				7424A6C778DB9B53C9E69D9C /* OnboardingModelsTests.swift */,
+			);
+			name = OnboardingTests;
+			sourceTree = "<group>";
+		};
 		3F77E8D9DF9E60D0B474E4CD /* Components */ = {
 			isa = PBXGroup;
 			children = (
@@ -512,6 +525,14 @@
 				2046F53D35A046F3280995F2 /* BoltTravelDreamscape.swift */,
 			);
 			path = Components;
+			sourceTree = "<group>";
+		};
+		5D8F80E6140856B940805190 /* Onboarding */ = {
+			isa = PBXGroup;
+			children = (
+				C457E7B0E32EF233674A7A86 /* Models */,
+			);
+			name = Onboarding;
 			sourceTree = "<group>";
 		};
 		6DB24FE4F364AB27BAE608B3 /* Core */ = {
@@ -614,6 +635,7 @@
 				A3000000000000000000001A /* Launch */,
 				A3000000000000000000000C /* Me */,
 				E30000000000000000000001 /* Video */,
+				5D8F80E6140856B940805190 /* Onboarding */,
 			);
 			path = Modules;
 			sourceTree = "<group>";
@@ -1190,6 +1212,14 @@
 			path = Components;
 			sourceTree = "<group>";
 		};
+		C457E7B0E32EF233674A7A86 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				C4A46090F96A6EBCEB971AA2 /* OnboardingModels.swift */,
+			);
+			name = Models;
+			sourceTree = "<group>";
+		};
 		D30000000000000000000001 /* Offers */ = {
 			isa = PBXGroup;
 			children = (
@@ -1621,6 +1651,7 @@
 				9687A82443195C0D8FD6B3B3 /* BoltActivityCard.swift in Sources */,
 				19E26CCD9CFD4FB73552AF58 /* ONBPersonaModels.swift in Sources */,
 				03C99E90901ED07AF7262D53 /* BoltTravelDreamscape.swift in Sources */,
+				C3C3BE2A62E9F3D197FF990D /* OnboardingModels.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1636,6 +1667,7 @@
 				9B1DDD03FB9FE1ACD88AC8C0 /* IntentSignalFusionTests.swift in Sources */,
 				D6129576132371549A682D89 /* CoreMLIntentClassifierTests.swift in Sources */,
 				8BB7721C4CF889F8B80F0FDB /* CoreMLIntentRecognitionIntegrationTests.swift in Sources */,
+				D0FCF998B3FD4132EC9F7EE1 /* OnboardingModelsTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
