@@ -73,6 +73,8 @@
 		A10000000000000000000028 /* SplashAdView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000028 /* SplashAdView.swift */; };
 		A10000000000000000000029 /* SessionKeychainStores.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000029 /* SessionKeychainStores.swift */; };
 		A1000000000000000000002A /* SessionUserDefaultsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000002A /* SessionUserDefaultsStore.swift */; };
+		A1ONB0000000000000001 /* OnboardingStateStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2ONB0000000000000001 /* OnboardingStateStore.swift */; };
+		E0FCF998B3FD4132EC9F7EE2 /* OnboardingStateStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1424A6C778DB9B53C9E69D9D /* OnboardingStateStoreTests.swift */; };
 		A1000000000000000000002B /* NotificationAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000002B /* NotificationAPI.swift */; };
 		A1000000000000000000002C /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000002C /* NotificationService.swift */; };
 		A1000000000000000000002D /* MessageCenterModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000002D /* MessageCenterModels.swift */; };
@@ -282,6 +284,8 @@
 		A20000000000000000000028 /* SplashAdView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashAdView.swift; sourceTree = "<group>"; };
 		A20000000000000000000029 /* SessionKeychainStores.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionKeychainStores.swift; sourceTree = "<group>"; };
 		A2000000000000000000002A /* SessionUserDefaultsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionUserDefaultsStore.swift; sourceTree = "<group>"; };
+		A2ONB0000000000000001 /* OnboardingStateStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingStateStore.swift; sourceTree = "<group>"; };
+		B1424A6C778DB9B53C9E69D9D /* OnboardingStateStoreTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = OnboardingStateStoreTests.swift; path = Tests/OnboardingTests/OnboardingStateStoreTests.swift; sourceTree = "<group>"; };
 		A2000000000000000000002B /* NotificationAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationAPI.swift; sourceTree = "<group>"; };
 		A2000000000000000000002C /* NotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationService.swift; sourceTree = "<group>"; };
 		A2000000000000000000002D /* MessageCenterModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageCenterModels.swift; sourceTree = "<group>"; };
@@ -509,6 +513,7 @@
 			isa = PBXGroup;
 			children = (
 				7424A6C778DB9B53C9E69D9C /* OnboardingModelsTests.swift */,
+				B1424A6C778DB9B53C9E69D9D /* OnboardingStateStoreTests.swift */,
 			);
 			name = OnboardingTests;
 			sourceTree = "<group>";
@@ -657,6 +662,7 @@
 				A20000000000000000000029 /* SessionKeychainStores.swift */,
 				A2000000000000000000002A /* SessionUserDefaultsStore.swift */,
 				A20000000000000000000001 /* SessionStore.swift */,
+				A2ONB0000000000000001 /* OnboardingStateStore.swift */,
 			);
 			path = Storage;
 			sourceTree = "<group>";
@@ -1605,6 +1611,7 @@
 				A10000000000000000000008 /* MeService.swift in Sources */,
 				A1000000000000000000002C /* NotificationService.swift in Sources */,
 				A10000000000000000000001 /* SessionStore.swift in Sources */,
+				A1ONB0000000000000001 /* OnboardingStateStore.swift in Sources */,
 				04E692CB2F5EA2CE0082C59F /* ContentView.swift in Sources */,
 				04E692C92F5EA2CE0082C59F /* ioscrmappApp.swift in Sources */,
 				A10000000000000000000047 /* MockWeatherData.swift in Sources */,
@@ -1668,6 +1675,7 @@
 				D6129576132371549A682D89 /* CoreMLIntentClassifierTests.swift in Sources */,
 				8BB7721C4CF889F8B80F0FDB /* CoreMLIntentRecognitionIntegrationTests.swift in Sources */,
 				D0FCF998B3FD4132EC9F7EE1 /* OnboardingModelsTests.swift in Sources */,
+				E0FCF998B3FD4132EC9F7EE2 /* OnboardingStateStoreTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
