@@ -314,7 +314,11 @@ private struct ActivationPathCard: View {
         ActivationStep(icon: "iphone.gen3", title: "Device supports eSIM"),
         ActivationStep(icon: "checkmark.shield.fill", title: "Verify identity with UAE Pass"),
         ActivationStep(icon: "sparkles", title: "Personalize your experience"),
-        ActivationStep(icon: "arrow.triangle.branch", title: "Choose Buy eSIM or Port In")
+        ActivationStep(icon: "arrow.triangle.branch", title: "Choose Buy eSIM or Port In"),
+        ActivationStep(icon: "creditcard.fill", title: "Payment"),
+        ActivationStep(icon: "antenna.radiowaves.left.and.right", title: "Activation eSIM"),
+        ActivationStep(icon: "person.crop.circle.badge.checkmark", title: "Login")
+    
     ]
 
     var body: some View {
