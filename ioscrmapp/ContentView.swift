@@ -46,7 +46,11 @@ struct ContentView: View {
                     notificationService: notificationService
                 )
             } else {
-                AuthLoginContainerView(sessionStore: sessionStore, authService: authService, uaePassService: uaePassService)
+                EntryContainerView(
+                    sessionStore: sessionStore,
+                    authService: authService,
+                    uaePassService: uaePassService
+                )
             }
         }
         .animation(.easeInOut(duration: 0.2), value: sessionStore.isAuthenticated)

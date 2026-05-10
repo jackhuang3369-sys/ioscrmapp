@@ -7,6 +7,7 @@ import os
 final class OnboardingStateStore: Sendable {
     private let defaults: UserDefaults
     private let stateKey = "onboarding.entryRoutingState"
+    private let numberSelectionKey = "onboarding.numberSelection"
     // ADDED: Logger for tracking encode/decode failures
     private let logger = Logger(subsystem: "com.crmapp.onboarding", category: "OnboardingStateStore")
 
@@ -26,24 +27,42 @@ final class OnboardingStateStore: Sendable {
     /// Save entry routing state for downstream consumption.
     // IMPROVED: Added error logging for encode failures
     func save(_ state: EntryRoutingState) {
+        saveCodable(state, forKey: stateKey, label: "EntryRoutingState")
+    }
+
+    /// Save the selected/locked number for downstream plan, order, and activation journeys.
+    func save(_ selection: NumberSelection) {
+        saveCodable(selection, forKey: numberSelectionKey, label: "NumberSelection")
+    }
+
+    /// Load persisted number selection after the short lock succeeds.
+    func loadNumberSelection() -> NumberSelection? {
+        loadCodable(NumberSelection.self, forKey: numberSelectionKey, label: "NumberSelection")
+    }
+
+    private func saveCodable<T: Encodable>(_ value: T, forKey key: String, label: String) {
         do {
-            let data = try JSONEncoder().encode(state)
-            defaults.set(data, forKey: stateKey)
+            let data = try JSONEncoder().encode(value)
+            defaults.set(data, forKey: key)
         } catch {
-            logger.error("Failed to encode EntryRoutingState: \(error.localizedDescription)")
+            logger.error("Failed to encode \(label): \(error.localizedDescription)")
         }
     }
 
     /// Load persisted entry routing state.
     // IMPROVED: Added error logging for decode failures
     func load() -> EntryRoutingState? {
-        guard let data = defaults.data(forKey: stateKey) else {
+        loadCodable(EntryRoutingState.self, forKey: stateKey, label: "EntryRoutingState")
+    }
+
+    private func loadCodable<T: Decodable>(_ type: T.Type, forKey key: String, label: String) -> T? {
+        guard let data = defaults.data(forKey: key) else {
             return nil
         }
         do {
-            return try JSONDecoder().decode(EntryRoutingState.self, from: data)
+            return try JSONDecoder().decode(type, from: data)
         } catch {
-            logger.error("Failed to decode EntryRoutingState: \(error.localizedDescription)")
+            logger.error("Failed to decode \(label): \(error.localizedDescription)")
             return nil
         }
     }
@@ -51,6 +70,7 @@ final class OnboardingStateStore: Sendable {
     /// Clear persisted state (e.g., after flow completion or reset).
     func clear() {
         defaults.removeObject(forKey: stateKey)
+        defaults.removeObject(forKey: numberSelectionKey)
     }
 
     /// Check if acquisition path has been selected.

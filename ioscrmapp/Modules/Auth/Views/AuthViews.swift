@@ -26,24 +26,13 @@ struct AuthLoginContainerView: View {
         GeometryReader { proxy in
             ScrollView(showsIndicators: false) {
                 VStack(spacing: DUSpacing.xxl) {
-                    AuthBrandMark()
+                    DUBrandMark()
                     header
-                    tabs
                     if let bannerMessage = viewModel.bannerMessage {
                         AuthBannerView(message: localized(bannerMessage), tone: viewModel.bannerTone)
                     }
-                    phoneField
-                    if viewModel.selectedMode == .password {
-                        passwordField
-                        loginOptions
-                    } else {
-                        otpField
-                    }
-                    Group {
-                        primaryButton
-                        socialLogin
-                        registerLink
-                    }
+                    uaePassLoginButton
+                    registerButton
                 }
                 .padding(.horizontal, DUSpacing.xl)
                 .padding(.top, max(proxy.safeAreaInsets.top, DUSpacing.sm))
@@ -85,200 +74,29 @@ struct AuthLoginContainerView: View {
         }
     }
 
-    private var tabs: some View {
-        HStack(spacing: DUSpacing.xs) {
-            ForEach(LoginMode.allCases) { mode in
-                Button {
-                    withAnimation(.easeInOut(duration: 0.2)) {
-                        viewModel.select(mode: mode)
-                    }
-                } label: {
-                    Text(localized(mode.titleKey))
-                        .font(.du(.bodyStrong))
-                        .foregroundColor(viewModel.selectedMode == mode ? theme.colors.text.primary : theme.colors.text.secondary)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 48)
-                        .background(
-                            RoundedRectangle(cornerRadius: DURadius.field, style: .continuous)
-                                .fill(viewModel.selectedMode == mode ? theme.colors.surface.card : DUColorPrimitives.Chrome.transparent)
-                                .shadow(
-                                    color: viewModel.selectedMode == mode ? theme.components.card.elevation.color : DUElevation.none.color,
-                                    radius: theme.components.card.elevation.radius,
-                                    x: theme.components.card.elevation.x,
-                                    y: theme.components.card.elevation.y
-                                )
-                        )
-                }
-                .buttonStyle(.plain)
-            }
-        }
-        .padding(DUSpacing.xs)
-        .background(theme.colors.background.secondary)
-        .clipShape(RoundedRectangle(cornerRadius: theme.components.card.cornerRadius, style: .continuous))
-    }
-
-    private var phoneField: some View {
-        DUPhoneField(
-            title: localized("auth.field.phone.title"),
-            countryCode: "+\(AuthValidator.countryCode)",
-            placeholder: localized("auth.field.phone.placeholder"),
-            text: $viewModel.phoneNumber,
-            error: localized(viewModel.phoneError),
-            displayText: AuthValidator.localPhoneDigits,
-            normalizeText: AuthValidator.normalizedPhone
-        )
-    }
-
-    private var passwordField: some View {
-        DUTextField(
-            title: localized("auth.field.password.title"),
-            placeholder: localized("auth.field.password.placeholder"),
-            text: $viewModel.password,
-            error: localized(viewModel.passwordError),
-            isSecure: true
-        )
-    }
-
-    private var otpField: some View {
-        VStack(alignment: .leading, spacing: DUSpacing.sm) {
-            Text(localized("auth.field.otp.title"))
-                .font(.du(.bodySmallStrong))
-                .foregroundColor(theme.colors.text.secondary)
-            HStack(alignment: .top, spacing: DUSpacing.md) {
-                DUTextField(
-                    title: nil,
-                    placeholder: localized("auth.field.otp.placeholder"),
-                    text: $viewModel.otp,
-                    error: localized(viewModel.otpError),
-                    keyboardType: .numberPad
-                )
-                DUButton(
-                    title: localized(viewModel.otpButtonText),
-                    style: .secondary,
-                    isEnabled: viewModel.isSendOTPEnabled,
-                    fixedWidth: 114,
-                    textStyle: .bodySmallEmphasized
-                ) {
-                    viewModel.sendOTP()
-                }
-            }
-            Text(localized("auth.otp.expiry"))
-                .font(.du(.bodySmall))
-                .foregroundColor(theme.colors.text.tertiary)
-        }
-    }
-
-    private var loginOptions: some View {
-        HStack {
-            Button {
-                viewModel.rememberMe.toggle()
-            } label: {
-                HStack(spacing: DUSpacing.sm) {
-                    Image(systemName: viewModel.rememberMe ? "checkmark.square.fill" : "square")
-                        .foregroundColor(viewModel.rememberMe ? theme.colors.action.primary : theme.colors.text.disabled)
-                    Text(localized("auth.option.rememberMe"))
-                        .foregroundColor(theme.colors.text.secondary)
-                }
-                .font(.du(.label))
-            }
-            .buttonStyle(.plain)
-
-            Spacer()
-
-            DUTextButton(
-                title: localized("auth.option.forgotPassword"),
-                textStyle: .label
-            ) {
-                isShowingForgotPassword = true
-            }
-        }
-    }
-
-    private var primaryButton: some View {
+    private var uaePassLoginButton: some View {
         DUButton(
-            title: localized(
-                viewModel.selectedMode == .password
-                    ? "auth.primary.password"
-                    : "auth.primary.otp"
-            ),
+            title: localized("auth.button.signInWithUAEPass"),
             style: .primary,
             isLoading: viewModel.isLoading,
-            isEnabled: viewModel.isPrimaryActionEnabled,
+            isEnabled: !viewModel.isLoading,
             height: 56,
             textStyle: .titleSmall
         ) {
-            viewModel.login()
+            viewModel.loginWithUAEPass()
         }
     }
 
-    private var socialLogin: some View {
-        VStack(spacing: DUSpacing.lg) {
-            HStack {
-                Rectangle()
-                    .fill(theme.colors.border.subtle)
-                    .frame(height: 1)
-                Text(localized("auth.social.otherWays"))
-                    .font(.du(.label))
-                    .foregroundColor(theme.colors.text.tertiary)
-                    .padding(.horizontal, DUSpacing.sm)
-                Rectangle()
-                    .fill(theme.colors.border.subtle)
-                    .frame(height: 1)
-            }
-
-            HStack(spacing: DUSpacing.lg) {
-                DUIconButton(
-                    title: localized("auth.social.uaePass")
-                ) {
-                    Image("LoginUAEPassIcon")
-                        .renderingMode(.original)
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 48, height: 48)
-                        .offset(y: 6)
-                } action: {
-                    viewModel.loginWithUAEPass()
-                }
-                DUIconButton(
-                    title: localized("auth.social.sms")
-                ) {
-                    Image("LoginSMSIcon")
-                        .renderingMode(.original)
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 48, height: 48)
-                        .offset(y: 6)
-                } action: {
-                    viewModel.showPlaceholderMessage(for: "auth.placeholder.sms")
-                }
-                DUIconButton(
-                    title: localized("auth.social.face")
-                ) {
-                    Image(systemName: "faceid")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 30, height: 30)
-                        .foregroundColor(theme.colors.text.secondary)
-                } action: {
-                    viewModel.showPlaceholderMessage(for: "auth.placeholder.face")
-                }
-            }
+    private var registerButton: some View {
+        DUButton(
+            title: localized("auth.register.action"),
+            style: .secondary,
+            isEnabled: !viewModel.isLoading,
+            height: 56,
+            textStyle: .titleSmall
+        ) {
+            isShowingRegistration = true
         }
-    }
-
-    private var registerLink: some View {
-        HStack(spacing: DUSpacing.xs) {
-            Text(localized("auth.register.prompt"))
-                .foregroundColor(theme.colors.text.tertiary)
-            DUTextButton(
-                title: localized("auth.register.action"),
-                textStyle: .body
-            ) {
-                isShowingRegistration = true
-            }
-        }
-        .font(.du(.bodySmall))
-        .padding(.bottom, DUSpacing.xxxl)
     }
 
     private func localized(_ key: String, arguments: [String] = []) -> String {
@@ -389,7 +207,7 @@ private struct AuthForgotPasswordVerifyView: View {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: DUSpacing.xxl) {
                     AuthFlowChrome(closeAction: closeAction)
-                    AuthBrandMark()
+                    DUBrandMark()
                     header
                     AuthStepBadge(title: localized("auth.forgot.step.verify"))
                     if let bannerMessage = viewModel.bannerMessage {
@@ -514,7 +332,7 @@ private struct AuthForgotPasswordPasswordView: View {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: DUSpacing.xxl) {
                     AuthFlowChrome(backAction: backAction, closeAction: closeAction)
-                    AuthBrandMark()
+                    DUBrandMark()
                     header
                     AuthStepBadge(title: localized("auth.forgot.step.password"))
                     if let bannerMessage = viewModel.bannerMessage {
@@ -701,7 +519,7 @@ private struct AuthRegistrationVerifyView: View {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: DUSpacing.xxl) {
                     AuthFlowChrome(closeAction: closeAction)
-                    AuthBrandMark()
+                    DUBrandMark()
                     header
                     AuthStepBadge(title: localized("auth.registration.step.verify"))
                     if let bannerMessage = viewModel.bannerMessage {
@@ -838,7 +656,7 @@ private struct AuthRegistrationPasswordView: View {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: DUSpacing.xxl) {
                     AuthFlowChrome(backAction: backAction, closeAction: closeAction)
-                    AuthBrandMark()
+                    DUBrandMark()
                     header
                     AuthStepBadge(title: localized("auth.registration.step.password"))
                     if let bannerMessage = viewModel.bannerMessage {
@@ -942,27 +760,7 @@ private struct AuthRegistrationPasswordView: View {
     }
 }
 
-private struct AuthBrandMark: View {
-    @Environment(\.duTheme) private var theme
-
-    var body: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: theme.components.sheet.cornerRadius, style: .continuous)
-                .fill(theme.colors.gradient.brand)
-                .frame(width: 88, height: 88)
-                .shadow(
-                    color: theme.components.button.primary.shadowColor,
-                    radius: theme.components.card.elevation.radius,
-                    x: theme.components.card.elevation.x,
-                    y: theme.components.card.elevation.y
-                )
-            Text("du")
-                .font(.du(.screenTitle))
-                .foregroundColor(DUColorPrimitives.Neutral.white)
-        }
-        .padding(.top, DUSpacing.sm)
-    }
-}
+// AuthBrandMark extracted to Common/Components/Brand/DUBrandMark.swift as DUBrandMark
 
 private struct AuthFlowChrome: View {
     @Environment(\.duTheme) private var theme

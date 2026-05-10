@@ -60,6 +60,9 @@
       "fingerprint": "指纹",
       "face": "面容"
     },
+    "button": {
+      "signInWithUAEPass": "使用 UAE Pass 登录"
+    },
     "register": {
       "prompt": "第一次使用？",
       "action": "创建账号"
@@ -1287,6 +1290,21 @@
     },
     "loading": {
       "failed": "广告暂不可用，正在进入应用..."
+    }
+  },
+  "entry": {
+    "welcome": {
+      "title": "欢迎来到 du",
+      "subtitle": "您的旅程从这里开始",
+      "getStarted": "开始使用",
+      "signIn": "登录"
+    },
+    "acquisition": {
+      "title": "您希望如何开始？",
+      "subtitle": "选择您的路径",
+      "newNumber": "获取新号码",
+      "portIn": "保留我的号码",
+      "back": "返回"
     }
   }
 }

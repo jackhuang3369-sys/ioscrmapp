@@ -15,22 +15,35 @@
 		04E692D02F5EA2CF0082C59F /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 04E692CF2F5EA2CF0082C59F /* Preview Assets.xcassets */; };
 		04E6BE5D19F04B28B98D8ABD /* CoreMLIntentClassifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = B847A96D4392BF4534DD18F3 /* CoreMLIntentClassifier.swift */; };
 		09E468BCF7C79C4391195058 /* IntentModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0902C5CBF350AECA0D0BF902 /* IntentModels.swift */; };
+		114A949404CBC2D0F2256420 /* DocumentOCRServicing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 461B3FF00CD5438CCEE784ED /* DocumentOCRServicing.swift */; };
 		1491C96972D624FC819C8653 /* IntentClassifierServicing.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A3AE9D6BBB3399C911B5B8 /* IntentClassifierServicing.swift */; };
 		19E26CCD9CFD4FB73552AF58 /* ONBPersonaModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90EB538A9DFD7E021A5CE730 /* ONBPersonaModels.swift */; };
+		265335644CBEB09DC59184A0 /* NumberSelectionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DAC9186397C75E90785FE708 /* NumberSelectionViewModel.swift */; };
+		A1EKYC000000000000000001 /* EKYCViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2EKYC000000000000000001 /* EKYCViewModel.swift */; };
+		A1CHK0000000000000000001 /* CheckoutSummary.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2CHK0000000000000000001 /* CheckoutSummary.swift */; };
+		A1CHK0000000000000000002 /* CheckoutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2CHK0000000000000000002 /* CheckoutView.swift */; };
 		284FE4ACEF0743BA19783816 /* IntentRecognitionIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5464F08E1DFA446C4546066B /* IntentRecognitionIntegrationTests.swift */; };
 		2BB8E032C18107EB6643F224 /* IntentRecognitionIntegrationExample.swift in Sources */ = {isa = PBXBuildFile; fileRef = 505682D2070CD6ED025471AD /* IntentRecognitionIntegrationExample.swift */; };
 		37FEF17DF975A26796165D2B /* IntentModelsXCTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 439D49860A0C5D7E7CF76F27 /* IntentModelsXCTests.swift */; };
 		3AFC95ABEACFFC1684763647 /* BoltFlightCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 353C64820D82296D39692DB1 /* BoltFlightCard.swift */; };
 		430108B6C80F87D4522A031F /* Tabby in Frameworks */ = {isa = PBXBuildFile; productRef = 9FF01388F3298FD17E444802 /* Tabby */; };
 		433F87247F486D638CCBD040 /* IntentRecognitionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC7B9C80A05189AD86FF81B6 /* IntentRecognitionService.swift */; };
+		44148C5CD5F8EECD459FFCF6 /* NumberSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C7BBEE281369EDAD47ADBE8 /* NumberSelectionView.swift */; };
+		47B66063BFB9BFBC349AD39C /* EKYCModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E1B90C45EDE64268F9445BF /* EKYCModels.swift */; };
 		48E45BC1E84FA2B343BAE41F /* IntentClassificationModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43C07370EAF9C8043A86D6D4 /* IntentClassificationModels.swift */; };
+		58793C4BF1A37DD8486F2472 /* EKYCModelsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDF14AA6ACA577AC0155D0DD /* EKYCModelsTests.swift */; };
+		624E39BE45D3079BC15D9017 /* NumberInventoryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71BC64CB1ED1ED005E46AABF /* NumberInventoryService.swift */; };
+		6EC415B0416C1C0AB62691C4 /* EKYCRiskEngineServicing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6828C1CF8DE21A82E427FC10 /* EKYCRiskEngineServicing.swift */; };
 		7C3C438D604FE056CE6EEDAD /* BoltTravelCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4A801A4D64CBB6F0AF180D7 /* BoltTravelCard.swift */; };
 		7CBB6A24A08F57A053687FEA /* IntentFeedbackView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFCE8308F215885FBCA8AA3F /* IntentFeedbackView.swift */; };
 		7F67316FEE030FD68D80B117 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34A671BDB3E34751046806B2 /* Foundation.framework */; };
 		820370252C923F2E68704BE3 /* IntentClassificationModelsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A992F1572F7EF11BB287301E /* IntentClassificationModelsTests.swift */; };
 		82CB00685EF5053CF8DD749E /* IntentModelsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92D225A4B440E2161D2C61EB /* IntentModelsTests.swift */; };
 		8360F036EDDABA1708A879B1 /* ONBIntentFusionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = DED4BD6003762BC2702C8BF3 /* ONBIntentFusionService.swift */; };
+		86FF702F5DC48162A1FB3319 /* EKYCServicing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E26026BC71B0EA36CCC66E4 /* EKYCServicing.swift */; };
 		8BB7721C4CF889F8B80F0FDB /* CoreMLIntentRecognitionIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 356D4630895576C6BD1113CA /* CoreMLIntentRecognitionIntegrationTests.swift */; };
+		8E52472E1BD500F4132EAD55 /* EKYCService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D245044E7618070A34DE09B /* EKYCService.swift */; };
+		94463F12161C22F83E58CB61 /* EKYCDeviceContextEncryptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3DFCA6D92B45074C9BB17549 /* EKYCDeviceContextEncryptor.swift */; };
 		9687A82443195C0D8FD6B3B3 /* BoltActivityCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F872A4C65C0D9AE5DF73013 /* BoltActivityCard.swift */; };
 		9B1DDD03FB9FE1ACD88AC8C0 /* IntentSignalFusionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A06CFACD49A9269EA36AC84F /* IntentSignalFusionTests.swift */; };
 		A10000000000000000000001 /* SessionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000001 /* SessionStore.swift */; };
@@ -73,8 +86,6 @@
 		A10000000000000000000028 /* SplashAdView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000028 /* SplashAdView.swift */; };
 		A10000000000000000000029 /* SessionKeychainStores.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000029 /* SessionKeychainStores.swift */; };
 		A1000000000000000000002A /* SessionUserDefaultsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000002A /* SessionUserDefaultsStore.swift */; };
-		A1ONB0000000000000001 /* OnboardingStateStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2ONB0000000000000001 /* OnboardingStateStore.swift */; };
-		E0FCF998B3FD4132EC9F7EE2 /* OnboardingStateStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1424A6C778DB9B53C9E69D9D /* OnboardingStateStoreTests.swift */; };
 		A1000000000000000000002B /* NotificationAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000002B /* NotificationAPI.swift */; };
 		A1000000000000000000002C /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000002C /* NotificationService.swift */; };
 		A1000000000000000000002D /* MessageCenterModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000002D /* MessageCenterModels.swift */; };
@@ -128,6 +139,13 @@
 		A10000000000000000000081 /* UAEPassModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000081 /* UAEPassModels.swift */; };
 		A10000000000000000000082 /* MockUAEPassService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000082 /* MockUAEPassService.swift */; };
 		A10000000000000000000083 /* RemoteUAEPassService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000083 /* RemoteUAEPassService.swift */; };
+		A1ONB0000000000000001 /* OnboardingStateStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2ONB0000000000000001 /* OnboardingStateStore.swift */; };
+		A1ONB0000000000000002 /* EntryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2ONB0000000000000002 /* EntryViewModel.swift */; };
+		A1ONB0000000000000003 /* DUBrandMark.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2ONB0000000000000003 /* DUBrandMark.swift */; };
+		A1ONB0000000000000004 /* WelcomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2ONB0000000000000004 /* WelcomeView.swift */; };
+		A1ONB0000000000000005 /* AcquisitionSplitView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2ONB0000000000000005 /* AcquisitionSplitView.swift */; };
+		A1ONB0000000000000006 /* EntryContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2ONB0000000000000006 /* EntryContainerView.swift */; };
+		A1ONB0000000000000007 /* PlanSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2ONB0000000000000007 /* PlanSelectionView.swift */; };
 		AB1000000000000000000101 /* AppThemeStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000000000000000000101 /* AppThemeStore.swift */; };
 		AB1000000000000000000102 /* ThemeSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000000000000000000102 /* ThemeSettingsView.swift */; };
 		AB1000000000000000000103 /* DUColorPrimitives.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000000000000000000103 /* DUColorPrimitives.swift */; };
@@ -149,6 +167,7 @@
 		AB1000000000000000000113 /* DUSurfaceStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000000000000000000113 /* DUSurfaceStyle.swift */; };
 		AB1000000000000000000114 /* DesignSystemPreviewCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000000000000000000114 /* DesignSystemPreviewCatalog.swift */; };
 		ADDBA59D97962DF045C0E6F1 /* IntentClassifier.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = D779B8F9C014A7007629BCFB /* IntentClassifier.mlmodel */; };
+		AFEBDE7C06D779F99486D4A9 /* EKYCServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7438DE52313654F56C185DB3 /* EKYCServiceTests.swift */; };
 		B0263E0EC76AE15F2673DB6D /* IntentSignalFusion.swift in Sources */ = {isa = PBXBuildFile; fileRef = D241C9C3684F8D1CD9F2C9C5 /* IntentSignalFusion.swift */; };
 		B10000000000000000000001 /* BillingAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000001 /* BillingAPI.swift */; };
 		B10000000000000000000002 /* BillingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000002 /* BillingService.swift */; };
@@ -167,6 +186,7 @@
 		C10000000000000000000007 /* BadgeDetailContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20000000000000000000007 /* BadgeDetailContentView.swift */; };
 		C10000000000000000000008 /* BadgeUnlockPromptView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20000000000000000000008 /* BadgeUnlockPromptView.swift */; };
 		C3C3BE2A62E9F3D197FF990D /* OnboardingModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4A46090F96A6EBCEB971AA2 /* OnboardingModels.swift */; };
+		C54F194E37D95D37E51DF587 /* UAEPassOAuthHandling.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49ADAAD2743F8833767E8E09 /* UAEPassOAuthHandling.swift */; };
 		C5C72B507EAAE13342FA6888 /* BoltTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DC1BE07F8B27099803E03CB /* BoltTheme.swift */; };
 		C5EB1411228903915135A355 /* ONBPersonaClassifierService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4453371ECF9D623BF12D1E4 /* ONBPersonaClassifierService.swift */; };
 		C684EC50DE3BD834FB63F41B /* BoltTravelShowcase.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9A7DBB55514AE930F68A6B3 /* BoltTravelShowcase.swift */; };
@@ -182,6 +202,8 @@
 		D10000000000000000000008 /* DIYOfferViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = D20000000000000000000008 /* DIYOfferViews.swift */; };
 		D483B9D5FD3CFC8FA4A6C732 /* BoltHotelCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C9E5735A53CED795C2B2D1 /* BoltHotelCard.swift */; };
 		D6129576132371549A682D89 /* CoreMLIntentClassifierTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42BA8CF6D977425AD1FDFE09 /* CoreMLIntentClassifierTests.swift */; };
+		DEAFFF2B64C344BC5AEF544E /* MockEKYCDependencies.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7352990E4D4B4D0FD5DC7815 /* MockEKYCDependencies.swift */; };
+		E0FCF998B3FD4132EC9F7EE2 /* OnboardingStateStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1424A6C778DB9B53C9E69D9D /* OnboardingStateStoreTests.swift */; };
 		E10000000000000000000001 /* DUFeaturePlaceholderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20000000000000000000001 /* DUFeaturePlaceholderView.swift */; };
 		E10000000000000000000002 /* VideoAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20000000000000000000002 /* VideoAPI.swift */; };
 		E10000000000000000000003 /* VideoService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20000000000000000000003 /* VideoService.swift */; };
@@ -191,9 +213,11 @@
 		E10000000000000000000007 /* VideoContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20000000000000000000007 /* VideoContainerView.swift */; };
 		E10000000000000000000008 /* VideoViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20000000000000000000008 /* VideoViews.swift */; };
 		E10000000000000000000009 /* CRMVideoExperienceViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20000000000000000000009 /* CRMVideoExperienceViews.swift */; };
+		E6392064A1C4AA668D64D6C3 /* DeviceBiometricServicing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B33CDC94DFF98A32B53027E /* DeviceBiometricServicing.swift */; };
 		E799C0A0DFA5A32ABAF4598F /* TravelModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B540C7FFAF11297FD6803E0 /* TravelModels.swift */; };
 		EB37EC24E114C8A91596CC29 /* BoltPackageCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF5DA21917F2349D61F7ACFD /* BoltPackageCard.swift */; };
 		ECD87B019FA4E91BC38A232D /* BoltBaseCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92EE40570799139CAA99DF07 /* BoltBaseCard.swift */; };
+		F0VM00000000000000001 /* EntryViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1VM00000000000000001 /* EntryViewModelTests.swift */; };
 		F10000000000000000000001 /* AIChatService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F20000000000000000000001 /* AIChatService.swift */; };
 		F10000000000000000000002 /* AIChatModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = F20000000000000000000002 /* AIChatModels.swift */; };
 		F10000000000000000000003 /* AIChatViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F20000000000000000000003 /* AIChatViewModel.swift */; };
@@ -223,26 +247,38 @@
 		04E692CC2F5EA2CF0082C59F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		04E692CF2F5EA2CF0082C59F /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		0902C5CBF350AECA0D0BF902 /* IntentModels.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = IntentModels.swift; sourceTree = "<group>"; };
+		0C7BBEE281369EDAD47ADBE8 /* NumberSelectionView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NumberSelectionView.swift; sourceTree = "<group>"; };
 		1B540C7FFAF11297FD6803E0 /* TravelModels.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TravelModels.swift; sourceTree = "<group>"; };
+		1D245044E7618070A34DE09B /* EKYCService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EKYCService.swift; sourceTree = "<group>"; };
 		2046F53D35A046F3280995F2 /* BoltTravelDreamscape.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = BoltTravelDreamscape.swift; sourceTree = "<group>"; };
 		34A671BDB3E34751046806B2 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
 		353C64820D82296D39692DB1 /* BoltFlightCard.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = BoltFlightCard.swift; sourceTree = "<group>"; };
 		356D4630895576C6BD1113CA /* CoreMLIntentRecognitionIntegrationTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CoreMLIntentRecognitionIntegrationTests.swift; path = Tests/AIModelsTests/CoreMLIntentRecognitionIntegrationTests.swift; sourceTree = "<group>"; };
 		36BE5016ABFC4820FCB72DB1 /* LocalIntentMatcher.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = LocalIntentMatcher.swift; path = Utilities/LocalIntentMatcher.swift; sourceTree = "<group>"; };
 		384D22F625300DAFB05C7468 /* ioscrmappTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ioscrmappTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		3DFCA6D92B45074C9BB17549 /* EKYCDeviceContextEncryptor.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EKYCDeviceContextEncryptor.swift; sourceTree = "<group>"; };
 		42BA8CF6D977425AD1FDFE09 /* CoreMLIntentClassifierTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CoreMLIntentClassifierTests.swift; path = Tests/AIModelsTests/CoreMLIntentClassifierTests.swift; sourceTree = "<group>"; };
 		439D49860A0C5D7E7CF76F27 /* IntentModelsXCTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = IntentModelsXCTests.swift; path = Tests/AIModelsTests/IntentModelsXCTests.swift; sourceTree = "<group>"; };
 		43C07370EAF9C8043A86D6D4 /* IntentClassificationModels.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = IntentClassificationModels.swift; sourceTree = "<group>"; };
+		461B3FF00CD5438CCEE784ED /* DocumentOCRServicing.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DocumentOCRServicing.swift; sourceTree = "<group>"; };
+		49ADAAD2743F8833767E8E09 /* UAEPassOAuthHandling.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = UAEPassOAuthHandling.swift; path = UAEPass/UAEPassOAuthHandling.swift; sourceTree = "<group>"; };
+		4E26026BC71B0EA36CCC66E4 /* EKYCServicing.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EKYCServicing.swift; sourceTree = "<group>"; };
 		4F872A4C65C0D9AE5DF73013 /* BoltActivityCard.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = BoltActivityCard.swift; sourceTree = "<group>"; };
 		505682D2070CD6ED025471AD /* IntentRecognitionIntegrationExample.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = IntentRecognitionIntegrationExample.swift; sourceTree = "<group>"; };
 		544C4DBC9062BEAA4969F5FC /* IntentConfidenceCalculator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = IntentConfidenceCalculator.swift; path = Utilities/IntentConfidenceCalculator.swift; sourceTree = "<group>"; };
 		5464F08E1DFA446C4546066B /* IntentRecognitionIntegrationTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = IntentRecognitionIntegrationTests.swift; path = Tests/AIModelsTests/IntentRecognitionIntegrationTests.swift; sourceTree = "<group>"; };
 		61C9E5735A53CED795C2B2D1 /* BoltHotelCard.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = BoltHotelCard.swift; sourceTree = "<group>"; };
+		6828C1CF8DE21A82E427FC10 /* EKYCRiskEngineServicing.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EKYCRiskEngineServicing.swift; sourceTree = "<group>"; };
+		71BC64CB1ED1ED005E46AABF /* NumberInventoryService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NumberInventoryService.swift; sourceTree = "<group>"; };
+		7352990E4D4B4D0FD5DC7815 /* MockEKYCDependencies.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = MockEKYCDependencies.swift; path = Tests/OnboardingTests/Mocks/MockEKYCDependencies.swift; sourceTree = "<group>"; };
 		7424A6C778DB9B53C9E69D9C /* OnboardingModelsTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = OnboardingModelsTests.swift; path = Tests/OnboardingTests/OnboardingModelsTests.swift; sourceTree = "<group>"; };
+		7438DE52313654F56C185DB3 /* EKYCServiceTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = EKYCServiceTests.swift; path = Tests/OnboardingTests/EKYCServiceTests.swift; sourceTree = "<group>"; };
+		7E1B90C45EDE64268F9445BF /* EKYCModels.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EKYCModels.swift; sourceTree = "<group>"; };
 		8DC1BE07F8B27099803E03CB /* BoltTheme.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = BoltTheme.swift; sourceTree = "<group>"; };
 		90EB538A9DFD7E021A5CE730 /* ONBPersonaModels.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ONBPersonaModels.swift; sourceTree = "<group>"; };
 		92D225A4B440E2161D2C61EB /* IntentModelsTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = IntentModelsTests.swift; path = Tests/AIModelsTests/IntentModelsTests.swift; sourceTree = "<group>"; };
 		92EE40570799139CAA99DF07 /* BoltBaseCard.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = BoltBaseCard.swift; sourceTree = "<group>"; };
+		9B33CDC94DFF98A32B53027E /* DeviceBiometricServicing.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DeviceBiometricServicing.swift; sourceTree = "<group>"; };
 		A06CFACD49A9269EA36AC84F /* IntentSignalFusionTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = IntentSignalFusionTests.swift; path = Tests/AIModelsTests/IntentSignalFusionTests.swift; sourceTree = "<group>"; };
 		A20000000000000000000001 /* SessionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionStore.swift; sourceTree = "<group>"; };
 		A20000000000000000000002 /* AuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthService.swift; sourceTree = "<group>"; };
@@ -284,8 +320,6 @@
 		A20000000000000000000028 /* SplashAdView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashAdView.swift; sourceTree = "<group>"; };
 		A20000000000000000000029 /* SessionKeychainStores.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionKeychainStores.swift; sourceTree = "<group>"; };
 		A2000000000000000000002A /* SessionUserDefaultsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionUserDefaultsStore.swift; sourceTree = "<group>"; };
-		A2ONB0000000000000001 /* OnboardingStateStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingStateStore.swift; sourceTree = "<group>"; };
-		B1424A6C778DB9B53C9E69D9D /* OnboardingStateStoreTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = OnboardingStateStoreTests.swift; path = Tests/OnboardingTests/OnboardingStateStoreTests.swift; sourceTree = "<group>"; };
 		A2000000000000000000002B /* NotificationAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationAPI.swift; sourceTree = "<group>"; };
 		A2000000000000000000002C /* NotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationService.swift; sourceTree = "<group>"; };
 		A2000000000000000000002D /* MessageCenterModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageCenterModels.swift; sourceTree = "<group>"; };
@@ -339,6 +373,16 @@
 		A20000000000000000000081 /* UAEPassModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UAEPass/UAEPassModels.swift; sourceTree = "<group>"; };
 		A20000000000000000000082 /* MockUAEPassService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UAEPass/MockUAEPassService.swift; sourceTree = "<group>"; };
 		A20000000000000000000083 /* RemoteUAEPassService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UAEPass/RemoteUAEPassService.swift; sourceTree = "<group>"; };
+		A2ONB0000000000000001 /* OnboardingStateStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingStateStore.swift; sourceTree = "<group>"; };
+		A2ONB0000000000000002 /* EntryViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntryViewModel.swift; sourceTree = "<group>"; };
+		A2EKYC000000000000000001 /* EKYCViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EKYCViewModel.swift; sourceTree = "<group>"; };
+		A2CHK0000000000000000001 /* CheckoutSummary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckoutSummary.swift; sourceTree = "<group>"; };
+		A2CHK0000000000000000002 /* CheckoutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckoutView.swift; sourceTree = "<group>"; };
+		A2ONB0000000000000003 /* DUBrandMark.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DUBrandMark.swift; sourceTree = "<group>"; };
+		A2ONB0000000000000004 /* WelcomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeView.swift; sourceTree = "<group>"; };
+		A2ONB0000000000000005 /* AcquisitionSplitView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AcquisitionSplitView.swift; sourceTree = "<group>"; };
+		A2ONB0000000000000006 /* EntryContainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntryContainerView.swift; sourceTree = "<group>"; };
+		A2ONB0000000000000007 /* PlanSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanSelectionView.swift; sourceTree = "<group>"; };
 		A992F1572F7EF11BB287301E /* IntentClassificationModelsTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = IntentClassificationModelsTests.swift; path = Tests/AIModelsTests/IntentClassificationModelsTests.swift; sourceTree = "<group>"; };
 		AB2000000000000000000101 /* AppThemeStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppThemeStore.swift; sourceTree = "<group>"; };
 		AB2000000000000000000102 /* ThemeSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeSettingsView.swift; sourceTree = "<group>"; };
@@ -361,6 +405,7 @@
 		AB2000000000000000000113 /* DUSurfaceStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DUSurfaceStyle.swift; sourceTree = "<group>"; };
 		AB2000000000000000000114 /* DesignSystemPreviewCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignSystemPreviewCatalog.swift; sourceTree = "<group>"; };
 		AC7B9C80A05189AD86FF81B6 /* IntentRecognitionService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = IntentRecognitionService.swift; sourceTree = "<group>"; };
+		B1424A6C778DB9B53C9E69D9D /* OnboardingStateStoreTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = OnboardingStateStoreTests.swift; path = Tests/OnboardingTests/OnboardingStateStoreTests.swift; sourceTree = "<group>"; };
 		B20000000000000000000001 /* BillingAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BillingAPI.swift; sourceTree = "<group>"; };
 		B20000000000000000000002 /* BillingService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BillingService.swift; sourceTree = "<group>"; };
 		B20000000000000000000003 /* BillingModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BillingModels.swift; sourceTree = "<group>"; };
@@ -379,7 +424,7 @@
 		C20000000000000000000006 /* BadgeCenterSharedComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BadgeCenterSharedComponents.swift; sourceTree = "<group>"; };
 		C20000000000000000000007 /* BadgeDetailContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BadgeDetailContentView.swift; sourceTree = "<group>"; };
 		C20000000000000000000008 /* BadgeUnlockPromptView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BadgeUnlockPromptView.swift; sourceTree = "<group>"; };
-		C4A46090F96A6EBCEB971AA2 /* OnboardingModels.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = OnboardingModels.swift; path = Onboarding/Models/OnboardingModels.swift; sourceTree = "<group>"; };
+		C4A46090F96A6EBCEB971AA2 /* OnboardingModels.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OnboardingModels.swift; sourceTree = "<group>"; };
 		CF5DA21917F2349D61F7ACFD /* BoltPackageCard.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = BoltPackageCard.swift; sourceTree = "<group>"; };
 		D20000000000000000000001 /* OffersAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OffersAPI.swift; sourceTree = "<group>"; };
 		D20000000000000000000002 /* OffersService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OffersService.swift; sourceTree = "<group>"; };
@@ -392,6 +437,8 @@
 		D241C9C3684F8D1CD9F2C9C5 /* IntentSignalFusion.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = IntentSignalFusion.swift; sourceTree = "<group>"; };
 		D779B8F9C014A7007629BCFB /* IntentClassifier.mlmodel */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = file.mlmodel; path = IntentClassifier.mlmodel; sourceTree = "<group>"; };
 		D9A7DBB55514AE930F68A6B3 /* BoltTravelShowcase.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = BoltTravelShowcase.swift; sourceTree = "<group>"; };
+		DAC9186397C75E90785FE708 /* NumberSelectionViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NumberSelectionViewModel.swift; sourceTree = "<group>"; };
+		DDF14AA6ACA577AC0155D0DD /* EKYCModelsTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = EKYCModelsTests.swift; path = Tests/OnboardingTests/EKYCModelsTests.swift; sourceTree = "<group>"; };
 		DE8D66D9EDED1702D313A076 /* IntentRecognitionPerformanceTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = IntentRecognitionPerformanceTests.swift; path = Tests/AIModelsTests/IntentRecognitionPerformanceTests.swift; sourceTree = "<group>"; };
 		DED4BD6003762BC2702C8BF3 /* ONBIntentFusionService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ONBIntentFusionService.swift; sourceTree = "<group>"; };
 		DFCE8308F215885FBCA8AA3F /* IntentFeedbackView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = IntentFeedbackView.swift; sourceTree = "<group>"; };
@@ -405,6 +452,7 @@
 		E20000000000000000000008 /* VideoViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoViews.swift; sourceTree = "<group>"; };
 		E20000000000000000000009 /* CRMVideoExperienceViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CRMVideoExperienceViews.swift; sourceTree = "<group>"; };
 		E742F688841E3679D2510E80 /* LocalizedTextValue.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LocalizedTextValue.swift; sourceTree = "<group>"; };
+		F1VM00000000000000001 /* EntryViewModelTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = EntryViewModelTests.swift; path = Tests/OnboardingTests/EntryViewModelTests.swift; sourceTree = "<group>"; };
 		F20000000000000000000001 /* AIChatService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIChatService.swift; sourceTree = "<group>"; };
 		F20000000000000000000002 /* AIChatModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIChatModels.swift; sourceTree = "<group>"; };
 		F20000000000000000000003 /* AIChatViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIChatViewModel.swift; sourceTree = "<group>"; };
@@ -514,8 +562,40 @@
 			children = (
 				7424A6C778DB9B53C9E69D9C /* OnboardingModelsTests.swift */,
 				B1424A6C778DB9B53C9E69D9D /* OnboardingStateStoreTests.swift */,
+				F1VM00000000000000001 /* EntryViewModelTests.swift */,
+				31A27197DB5290C3C6D4A913 /* Mocks */,
+				DDF14AA6ACA577AC0155D0DD /* EKYCModelsTests.swift */,
+				7438DE52313654F56C185DB3 /* EKYCServiceTests.swift */,
 			);
 			name = OnboardingTests;
+			sourceTree = "<group>";
+		};
+		31A27197DB5290C3C6D4A913 /* Mocks */ = {
+			isa = PBXGroup;
+			children = (
+				7352990E4D4B4D0FD5DC7815 /* MockEKYCDependencies.swift */,
+			);
+			name = Mocks;
+			sourceTree = "<group>";
+		};
+		33DFB8139B4175DB74C13DEA /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				71BC64CB1ED1ED005E46AABF /* NumberInventoryService.swift */,
+				4E26026BC71B0EA36CCC66E4 /* EKYCServicing.swift */,
+				6828C1CF8DE21A82E427FC10 /* EKYCRiskEngineServicing.swift */,
+				3DFCA6D92B45074C9BB17549 /* EKYCDeviceContextEncryptor.swift */,
+				1D245044E7618070A34DE09B /* EKYCService.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		34E8A195DE7424F9102143F3 /* UAEPass */ = {
+			isa = PBXGroup;
+			children = (
+				49ADAAD2743F8833767E8E09 /* UAEPassOAuthHandling.swift */,
+			);
+			name = UAEPass;
 			sourceTree = "<group>";
 		};
 		3F77E8D9DF9E60D0B474E4CD /* Components */ = {
@@ -536,8 +616,11 @@
 			isa = PBXGroup;
 			children = (
 				C457E7B0E32EF233674A7A86 /* Models */,
+				V1GRP0000000000000001 /* ViewModels */,
+				V1GRP0000000000000002 /* Views */,
+				33DFB8139B4175DB74C13DEA /* Services */,
 			);
-			name = Onboarding;
+			path = Onboarding;
 			sourceTree = "<group>";
 		};
 		6DB24FE4F364AB27BAE608B3 /* Core */ = {
@@ -621,6 +704,9 @@
 				A20000000000000000000081 /* UAEPassModels.swift */,
 				A20000000000000000000082 /* MockUAEPassService.swift */,
 				A20000000000000000000083 /* RemoteUAEPassService.swift */,
+				34E8A195DE7424F9102143F3 /* UAEPass */,
+				9B33CDC94DFF98A32B53027E /* DeviceBiometricServicing.swift */,
+				461B3FF00CD5438CCEE784ED /* DocumentOCRServicing.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -770,6 +856,7 @@
 			isa = PBXGroup;
 			children = (
 				A30000000000000000000014 /* Buttons */,
+				A3ONB0000000000000001 /* Brand */,
 				A30000000000000000000017 /* Containers */,
 				A30000000000000000000015 /* Fields */,
 				A30000000000000000000016 /* Lists */,
@@ -1042,6 +1129,14 @@
 			path = Views;
 			sourceTree = "<group>";
 		};
+		A3ONB0000000000000001 /* Brand */ = {
+			isa = PBXGroup;
+			children = (
+				A2ONB0000000000000003 /* DUBrandMark.swift */,
+			);
+			path = Brand;
+			sourceTree = "<group>";
+		};
 		A577DEA2174C86D02824455E /* ML */ = {
 			isa = PBXGroup;
 			children = (
@@ -1222,8 +1317,10 @@
 			isa = PBXGroup;
 			children = (
 				C4A46090F96A6EBCEB971AA2 /* OnboardingModels.swift */,
+				7E1B90C45EDE64268F9445BF /* EKYCModels.swift */,
+				A2CHK0000000000000000001 /* CheckoutSummary.swift */,
 			);
-			name = Models;
+			path = Models;
 			sourceTree = "<group>";
 		};
 		D30000000000000000000001 /* Offers */ = {
@@ -1371,6 +1468,29 @@
 				F20000000000000000000006 /* AIChatPaymentViews.swift */,
 				F20000000000000000000007 /* AIChatItineraryViews.swift */,
 				DFCE8308F215885FBCA8AA3F /* IntentFeedbackView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		V1GRP0000000000000001 /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				A2ONB0000000000000002 /* EntryViewModel.swift */,
+				A2EKYC000000000000000001 /* EKYCViewModel.swift */,
+				DAC9186397C75E90785FE708 /* NumberSelectionViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		V1GRP0000000000000002 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				A2ONB0000000000000006 /* EntryContainerView.swift */,
+				A2ONB0000000000000005 /* AcquisitionSplitView.swift */,
+				A2ONB0000000000000004 /* WelcomeView.swift */,
+				0C7BBEE281369EDAD47ADBE8 /* NumberSelectionView.swift */,
+				A2ONB0000000000000007 /* PlanSelectionView.swift */,
+				A2CHK0000000000000000002 /* CheckoutView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -1659,6 +1779,26 @@
 				19E26CCD9CFD4FB73552AF58 /* ONBPersonaModels.swift in Sources */,
 				03C99E90901ED07AF7262D53 /* BoltTravelDreamscape.swift in Sources */,
 				C3C3BE2A62E9F3D197FF990D /* OnboardingModels.swift in Sources */,
+				A1ONB0000000000000002 /* EntryViewModel.swift in Sources */,
+				A1EKYC000000000000000001 /* EKYCViewModel.swift in Sources */,
+				A1ONB0000000000000003 /* DUBrandMark.swift in Sources */,
+				A1ONB0000000000000004 /* WelcomeView.swift in Sources */,
+				A1ONB0000000000000005 /* AcquisitionSplitView.swift in Sources */,
+				A1ONB0000000000000006 /* EntryContainerView.swift in Sources */,
+				265335644CBEB09DC59184A0 /* NumberSelectionViewModel.swift in Sources */,
+				44148C5CD5F8EECD459FFCF6 /* NumberSelectionView.swift in Sources */,
+				A1ONB0000000000000007 /* PlanSelectionView.swift in Sources */,
+				A1CHK0000000000000000001 /* CheckoutSummary.swift in Sources */,
+				A1CHK0000000000000000002 /* CheckoutView.swift in Sources */,
+				624E39BE45D3079BC15D9017 /* NumberInventoryService.swift in Sources */,
+				47B66063BFB9BFBC349AD39C /* EKYCModels.swift in Sources */,
+				86FF702F5DC48162A1FB3319 /* EKYCServicing.swift in Sources */,
+				6EC415B0416C1C0AB62691C4 /* EKYCRiskEngineServicing.swift in Sources */,
+				94463F12161C22F83E58CB61 /* EKYCDeviceContextEncryptor.swift in Sources */,
+				8E52472E1BD500F4132EAD55 /* EKYCService.swift in Sources */,
+				E6392064A1C4AA668D64D6C3 /* DeviceBiometricServicing.swift in Sources */,
+				114A949404CBC2D0F2256420 /* DocumentOCRServicing.swift in Sources */,
+				C54F194E37D95D37E51DF587 /* UAEPassOAuthHandling.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1676,6 +1816,10 @@
 				8BB7721C4CF889F8B80F0FDB /* CoreMLIntentRecognitionIntegrationTests.swift in Sources */,
 				D0FCF998B3FD4132EC9F7EE1 /* OnboardingModelsTests.swift in Sources */,
 				E0FCF998B3FD4132EC9F7EE2 /* OnboardingStateStoreTests.swift in Sources */,
+				F0VM00000000000000001 /* EntryViewModelTests.swift in Sources */,
+				58793C4BF1A37DD8486F2472 /* EKYCModelsTests.swift in Sources */,
+				AFEBDE7C06D779F99486D4A9 /* EKYCServiceTests.swift in Sources */,
+				DEAFFF2B64C344BC5AEF544E /* MockEKYCDependencies.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -60,6 +60,9 @@
       "fingerprint": "Fingerprint",
       "face": "Face"
     },
+    "button": {
+      "signInWithUAEPass": "Sign in with UAE Pass"
+    },
     "register": {
       "prompt": "New here?",
       "action": "Create an account"
@@ -1287,6 +1290,21 @@
     },
     "loading": {
       "failed": "Ad unavailable. Opening the app..."
+    }
+  },
+  "entry": {
+    "welcome": {
+      "title": "Welcome to du",
+      "subtitle": "Your journey starts here",
+      "getStarted": "Get Started",
+      "signIn": "Sign In"
+    },
+    "acquisition": {
+      "title": "How would you like to get started?",
+      "subtitle": "Choose your path",
+      "newNumber": "Get a New Number",
+      "portIn": "Keep My Number",
+      "back": "Back"
     }
   }
 }
