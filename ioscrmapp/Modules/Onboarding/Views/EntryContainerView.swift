@@ -486,19 +486,31 @@ struct OnboardingCard<Content: View>: View {
             .padding(padding)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(
-                .ultraThinMaterial,
-                in: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-            )
-            .background(
-                LinearGradient(
-                    colors: [
-                        Color(hex: 0xE10600).opacity(0.18),
-                        Color.white.opacity(0.04)
-                    ],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                ),
-                in: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                // Layered ZStack background for richer depth (PlanCarouselCard-inspired):
+                //   1. ultraThinMaterial — frosted glass base
+                //   2. brand red linear gradient — directional brand tone
+                //   3. inner red glow (blur 20, opacity 0.15) — subtle "lit from within" feel
+                ZStack {
+                    RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                        .fill(.ultraThinMaterial)
+
+                    RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                        .fill(
+                            LinearGradient(
+                                colors: [
+                                    Color(hex: 0xE10600).opacity(0.18),
+                                    Color.white.opacity(0.04)
+                                ],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+
+                    RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                        .fill(Color(hex: 0xE10600))
+                        .blur(radius: 20)
+                        .opacity(0.15)
+                }
             )
             .overlay(
                 RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
