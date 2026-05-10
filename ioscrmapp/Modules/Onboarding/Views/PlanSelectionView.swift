@@ -281,7 +281,8 @@ struct PlanSelectionView: View {
                 .frame(width: 164, height: 32, alignment: .trailing)
                 .shadow(color: Color.white.opacity(0.16), radius: 14, x: 0, y: 0)
         }
-        .padding(.top, safeTop + 8)
+        // Reduced top spacing by 18pt to tighten header proximity to status bar (was safeTop+8)
+        .padding(.top, max(safeTop - 10, 12))
         .padding(.horizontal, mode == .carousel ? 26 : 0)
     }
 

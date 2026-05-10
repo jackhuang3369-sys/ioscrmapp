@@ -105,7 +105,8 @@ struct NumberSelectionView: View {
                 .font(.system(size: 36, weight: .heavy, design: .rounded))
                 .foregroundColor(.white)
         }
-        .padding(.top, safeTop + 8)
+        // Reduced top spacing by 18pt to tighten header proximity to status bar (was safeTop+8)
+        .padding(.top, max(safeTop - 10, 12))
     }
 
     private func continueWithSelectedNumber() {

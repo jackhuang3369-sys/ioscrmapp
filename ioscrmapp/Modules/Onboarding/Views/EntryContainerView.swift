@@ -171,7 +171,8 @@ private struct OnboardingFlowHeader: View {
                 .frame(width: 164, height: 32, alignment: .trailing)
                 .shadow(color: Color.white.opacity(0.16), radius: 14, x: 0, y: 0)
         }
-        .padding(.top, safeTop + 8)
+        // Reduced top spacing by 18pt to tighten header proximity to status bar (was safeTop+8)
+        .padding(.top, max(safeTop - 10, 12))
         .padding(.horizontal, 26)
     }
 }
@@ -195,10 +196,12 @@ private struct OnboardingEKYCView: View {
                             .tracking(4)
                             .foregroundColor(.white.opacity(0.42))
 
+                        // lineLimit(1) + minimumScaleFactor: prevent title from wrapping on narrow screens
                         Text("Verify with UAE Pass")
                             .font(.system(size: 36, weight: .heavy, design: .rounded))
                             .foregroundColor(.white)
-                            .lineSpacing(2)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.75)
 
                         Text("Your device is ready for eSIM. Now verify your identity before choosing a number or porting in.")
                             .font(.system(size: 15, weight: .semibold, design: .rounded))
@@ -456,7 +459,7 @@ private struct OnboardingPersonalizationView: View {
                         Spacer()
                     }
                     .padding(.horizontal, 24)
-                    .padding(.top, proxy.safeAreaInsets.top + 8)
+                    .padding(.top, max(proxy.safeAreaInsets.top - 10, 12))
 
                     Spacer()
                 }

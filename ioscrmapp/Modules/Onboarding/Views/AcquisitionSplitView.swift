@@ -24,7 +24,8 @@ struct AcquisitionSplitView: View {
                     }
                 }
                 .padding(.horizontal, DUSpacing.xl)
-                .padding(.top, proxy.safeAreaInsets.top + 8)
+                // Reduced top spacing by 18pt to tighten header proximity to status bar (was safeTop+8)
+                .padding(.top, max(proxy.safeAreaInsets.top - 10, 12))
                 .padding(.bottom, DUSpacing.xxxl)
             }
             .background(theme.colors.background.canvas.ignoresSafeArea())
