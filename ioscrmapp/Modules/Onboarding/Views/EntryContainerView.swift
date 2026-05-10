@@ -366,26 +366,17 @@ private struct OnboardingPersonalizationView: View {
 
                 ScrollView(showsIndicators: false) {
                     VStack(alignment: .leading, spacing: 0) {
-                        VStack(alignment: .leading, spacing: 12) {
-                            Text("PERSONALIZATION")
-                                .font(.system(size: 12, weight: .bold, design: .default))
-                                .tracking(3)
-                                .foregroundColor(.white.opacity(0.6))
+                        // Unified header (back + RedBullLogo) consistent with NumberSelection/Checkout/EKYC pages
+                        OnboardingFlowHeader(safeTop: proxy.safeAreaInsets.top, onBack: onBack)
 
-                            Text("Tune your Red Bull\nMobile experience")
-                                .font(.system(size: 32, weight: .heavy, design: .default))
-                                .foregroundColor(.white)
-                                .lineSpacing(1)
+                        // Display title — same style as "Numbers" (36pt, .heavy, .rounded)
+                        Text("Personalization")
+                            .font(.system(size: 36, weight: .heavy, design: .rounded))
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 24)
+                            .padding(.top, 18)
 
-                            Text("These choices help us recommend numbers, plans, offers, and activation guidance after verification.")
-                                .font(.system(size: 15, weight: .regular, design: .default))
-                                .foregroundColor(.white.opacity(0.6))
-                                .lineSpacing(3)
-                        }
-                        .padding(.horizontal, 24)
-                        .padding(.top, max(proxy.safeAreaInsets.top, 20) + 70)
-
-                        VStack(spacing: 24) {
+                        VStack(spacing: 16) {
                             PreferenceSection(title: "Interests") {
                                 FlowWrap(items: interests) { interest in
                                     PreferenceChip(
@@ -442,27 +433,6 @@ private struct OnboardingPersonalizationView: View {
                         )
                     }
                 }
-
-                VStack {
-                    HStack {
-                        Button(action: onBack) {
-                            Image(systemName: "chevron.left")
-                                .font(.system(size: 17, weight: .bold))
-                                .foregroundColor(.white)
-                                .frame(width: 40, height: 40)
-                                .background(Color.white.opacity(0.08), in: Circle())
-                                .overlay(Circle().stroke(Color.white.opacity(0.12), lineWidth: 1))
-                        }
-                        .buttonStyle(.plain)
-                        .accessibilityLabel("Back")
-
-                        Spacer()
-                    }
-                    .padding(.horizontal, 24)
-                    .padding(.top, max(proxy.safeAreaInsets.top - 10, 12))
-
-                    Spacer()
-                }
             }
         }
         .preferredColorScheme(.dark)
@@ -493,6 +463,50 @@ private struct PersonalizationBackground: View {
     }
 }
 
+/// Unified card style for all onboarding pages.
+/// Layers: ultraThinMaterial (frosted glass) + brand red gradient + subtle white stroke.
+/// Designed to match PlanSelectionView's card aesthetic — single source of truth for onboarding cards.
+struct OnboardingCard<Content: View>: View {
+    var cornerRadius: CGFloat = 24
+    var padding: CGFloat = 20
+    let content: () -> Content
+
+    init(
+        cornerRadius: CGFloat = 24,
+        padding: CGFloat = 20,
+        @ViewBuilder content: @escaping () -> Content
+    ) {
+        self.cornerRadius = cornerRadius
+        self.padding = padding
+        self.content = content
+    }
+
+    var body: some View {
+        content()
+            .padding(padding)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(
+                .ultraThinMaterial,
+                in: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+            )
+            .background(
+                LinearGradient(
+                    colors: [
+                        Color(hex: 0xE10600).opacity(0.18),
+                        Color.white.opacity(0.04)
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                ),
+                in: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                    .stroke(Color.white.opacity(0.16), lineWidth: 1)
+            )
+    }
+}
+
 private struct PreferenceSection<Content: View>: View {
     let title: String
     let content: () -> Content
@@ -503,22 +517,17 @@ private struct PreferenceSection<Content: View>: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text(title)
-                .font(.system(size: 16, weight: .semibold, design: .default))
-                .tracking(0.5)
-                .foregroundColor(.white)
+        // Use unified OnboardingCard for consistent frosted-glass + red gradient look across all pages
+        OnboardingCard {
+            VStack(alignment: .leading, spacing: 16) {
+                Text(title)
+                    .font(.system(size: 16, weight: .semibold, design: .rounded))
+                    .tracking(0.5)
+                    .foregroundColor(.white)
 
-            content()
+                content()
+            }
         }
-        .padding(24)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.white.opacity(0.06), in: RoundedRectangle(cornerRadius: 24, style: .continuous))
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .stroke(Color.white.opacity(0.12), lineWidth: 1)
-        )
     }
 }
 
