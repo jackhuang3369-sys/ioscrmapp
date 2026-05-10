@@ -586,8 +586,9 @@ private struct PlanCarouselCard: View {
                 .tracking(3)
                 .foregroundColor(PlanPalette.gold)
 
+            // Unified typography: Title1 style (28pt, .heavy, .rounded) for plan card title
             Text(plan.title)
-                .font(.system(size: 34, weight: .heavy, design: .rounded))
+                .font(.system(size: 28, weight: .heavy, design: .rounded))
                 .foregroundColor(.white)
                 .lineSpacing(-2)
                 .minimumScaleFactor(0.75)

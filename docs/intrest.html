@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Red Bull eSim - Personalization</title>
+    <style>
+        :root {
+            --bg-dark: #000000;
+            --rb-red: #E10600;
+            --text-main: #FFFFFF;
+            --text-secondary: rgba(255, 255, 255, 0.6);
+            --glass-bg: rgba(255, 255, 255, 0.06);
+            --glass-border: rgba(255, 255, 255, 0.12);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+            /* 背景环境光：红牛红与深邃蓝的微弱光晕，用于透过毛玻璃 */
+            background-image: 
+                radial-gradient(circle at 85% 10%, rgba(225, 6, 0, 0.2) 0%, transparent 40%),
+                radial-gradient(circle at 10% 80%, rgba(30, 40, 80, 0.3) 0%, transparent 50%);
+            background-attachment: fixed;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 414px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            padding-bottom: 100px; /* 为底部按钮留出空间 */
+        }
+
+        /* 顶部标题栏 */
+        .header-section { margin-top: 20px; }
+        .subtitle {
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 3px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            margin-bottom: 12px;
+        }
+        .title {
+            font-size: 32px;
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 12px;
+        }
+        .desc {
+            font-size: 15px;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+
+        /* iOS 毛玻璃卡片基类 */
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 24px;
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-main);
+            margin-bottom: 16px;
+            letter-spacing: 0.5px;
+        }
+
+        /* 标签群 (Interests) */
+        .chip-group { display: flex; flex-wrap: wrap; gap: 10px; }
+        .chip {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 10px 18px;
+            border-radius: 100px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-main);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .chip.active {
+            background: var(--rb-red);
+            border-color: var(--rb-red);
+            box-shadow: 0 4px 12px rgba(225, 6, 0, 0.4);
+        }
+
+        /* 列表单选 (Plan Recommendation) */
+        .list-group { display: flex; flex-direction: column; gap: 12px; }
+        .list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 16px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: all 0.2s ease;
+        }
+        .list-item.active {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+        .item-text { font-size: 16px; font-weight: 500; }
+        
+        /* 模拟原生 Radio 按钮 */
+        .radio-circle {
+            width: 22px; height: 22px;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            display: flex; justify-content: center; align-items: center;
+        }
+        .list-item.active .radio-circle {
+            border-color: var(--rb-red);
+            background: var(--rb-red);
+        }
+        .list-item.active .radio-circle::after {
+            content: '';
+            width: 8px; height: 8px;
+            background: white; border-radius: 50%;
+        }
+
+        /* 营销授权行 */
+        .toggle-row {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-top: 24px; padding-top: 24px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .toggle-text { font-size: 14px; color: var(--text-secondary); line-height: 1.4; padding-right: 20px;}
+        
+        /* 模拟 iOS Toggle */
+        .toggle-switch {
+            width: 50px; height: 30px;
+            background: var(--rb-red);
+            border-radius: 30px;
+            position: relative; flex-shrink: 0;
+            box-shadow: inset 0 0 5px rgba(0,0,0,0.2);
+        }
+        .toggle-knob {
+            width: 26px; height: 26px;
+            background: white; border-radius: 50%;
+            position: absolute; top: 2px; right: 2px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        /* 底部固定操作区 */
+        .bottom-bar {
+            position: fixed; bottom: 0; left: 0; width: 100%;
+            padding: 20px 24px 34px;
+            background: linear-gradient(to top, rgba(0,0,0,0.9) 30%, rgba(0,0,0,0));
+            display: flex; justify-content: center;
+        }
+        .btn-continue {
+            width: 100%; max-width: 366px;
+            background: #FFFFFF;
+            color: #000000;
+            font-size: 17px;
+            font-weight: 700;
+            padding: 18px;
+            border-radius: 100px;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(255, 255, 255, 0.2);
+            transition: transform 0.1s ease;
+        }
+        .btn-continue:active { transform: scale(0.97); }
+
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    
+    <div class="header-section">
+        <div class="subtitle">Personalization</div>
+        <div class="title">Tune your Red Bull<br>Mobile experience</div>
+        <div class="desc">These choices help us recommend numbers, plans, offers, and activation guidance after verification.</div>
+    </div>
+
+    <!-- 卡片 1: Interests -->
+    <div class="glass-card">
+        <div class="card-title">Interests</div>
+        <div class="chip-group">
+            <div class="chip active">Events</div>
+            <div class="chip active">Gaming</div>
+            <div class="chip">Fitness</div>
+            <div class="chip">Music</div>
+            <div class="chip">Travel</div>
+            <div class="chip">Rewards</div>
+        </div>
+    </div>
+
+    <!-- 卡片 2: Plan Recommendation -->
+    <div class="glass-card">
+        <div class="card-title">Plan recommendation</div>
+        <div class="list-group">
+            <div class="list-item">
+                <span class="item-text">Data first</span>
+                <div class="radio-circle"></div>
+            </div>
+            <div class="list-item active">
+                <span class="item-text">Balanced</span>
+                <div class="radio-circle"></div>
+            </div>
+            <div class="list-item">
+                <span class="item-text">Voice heavy</span>
+                <div class="radio-circle"></div>
+            </div>
+            <div class="list-item">
+                <span class="item-text">Annual value</span>
+                <div class="radio-circle"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 卡片 3: Language & Marketing -->
+    <div class="glass-card">
+        <div class="card-title">Language & marketing</div>
+        <div class="chip-group">
+            <div class="chip active">English</div>
+            <div class="chip">Arabic</div>
+            <div class="chip">Chinese</div>
+        </div>
+        <div class="toggle-row">
+            <div class="toggle-text">Allow Red Bull Mobile offers and event updates</div>
+            <div class="toggle-switch"><div class="toggle-knob"></div></div>
+        </div>
+    </div>
+
+</div>
+
+<!-- 悬浮底部按钮 -->
+<div class="bottom-bar">
+    <button class="btn-continue">Continue</button>
+</div>
+
+</body>
+</html>

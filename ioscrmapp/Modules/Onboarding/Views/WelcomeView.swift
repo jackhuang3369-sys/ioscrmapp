@@ -202,9 +202,9 @@ private struct RedBullMobileWordmark: View {
 
 private struct WelcomeESIMHero: View {
     var body: some View {
-        // 首屏只保留核心标题，删除说明文案后用外层 spacing 控制上下等距。
+        // Unified typography: Display style (36pt, .heavy, .rounded) for main page title
         Text("Start your UAE eSIM")
-            .font(.system(size: 38, weight: .heavy, design: .rounded))
+            .font(.system(size: 36, weight: .heavy, design: .rounded))
             .foregroundColor(.white)
             .multilineTextAlignment(.center)
             .lineLimit(2)

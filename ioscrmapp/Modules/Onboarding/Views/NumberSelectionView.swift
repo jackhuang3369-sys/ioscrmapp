@@ -91,11 +91,18 @@ struct NumberSelectionView: View {
 
                 Spacer()
 
-                RedBullMobileLogo()
+                // Unified with other onboarding pages: use RedBullLogo asset instead of text-based logo
+                Image("RedBullLogo")
+                    .resizable()
+                    .renderingMode(.original)
+                    .scaledToFit()
+                    .frame(width: 164, height: 32, alignment: .trailing)
+                    .shadow(color: Color.white.opacity(0.16), radius: 14, x: 0, y: 0)
             }
 
+            // Unified typography: Display style (36pt, .heavy, .rounded) for main page title
             Text("Numbers")
-                .font(.system(size: 40, weight: .heavy, design: .monospaced))
+                .font(.system(size: 36, weight: .heavy, design: .rounded))
                 .foregroundColor(.white)
         }
         .padding(.top, safeTop + 8)
@@ -126,36 +133,6 @@ private struct NumberSelectionBackground: View {
             )
         }
         .ignoresSafeArea()
-    }
-}
-
-private struct RedBullMobileLogo: View {
-    var body: some View {
-        HStack(spacing: 9) {
-            ZStack {
-                Circle()
-                    .fill(Color(red: 1, green: 0.08, blue: 0.18))
-                    .frame(width: 28, height: 28)
-                Image(systemName: "bolt.fill")
-                    .font(.system(size: 13, weight: .black))
-                    .foregroundColor(.white)
-            }
-
-            VStack(alignment: .leading, spacing: -1) {
-                Text("Red Bull")
-                    .font(.system(size: 13, weight: .black, design: .monospaced))
-                Text("Mobile")
-                    .font(.system(size: 10, weight: .semibold, design: .monospaced))
-                    .foregroundColor(.white.opacity(0.68))
-            }
-        }
-        .foregroundColor(.white)
-        .padding(.horizontal, 14)
-        .padding(.vertical, 10)
-        .background(.ultraThinMaterial, in: Capsule())
-        .overlay(
-            Capsule().stroke(Color.white.opacity(0.08), lineWidth: 1)
-        )
     }
 }
 
